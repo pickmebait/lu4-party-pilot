@@ -1,21 +1,20 @@
 import { useState } from 'react'
 import type { Db } from '@/types'
 import { createParty, fetchDb, openSession, saveDb, type PartyInfo } from '@/lib/api'
-import { BUILD_API_URL, PLACEHOLDER_API_URL, looksLikeUrl } from '@/lib/config'
-import { getDb, replaceDb, signIn, updateSettings, useSettings } from '@/lib/store'
+import { API_URL, CONFIGURED } from '@/lib/config'
+import { getDb, replaceDb, signIn, useSettings } from '@/lib/store'
 
 /**
  * Вход в приложение.
  *
- * Два пути: ввести токен, который дал лидер, или завести свою пати
- * и получить токен, чтобы передать его игрокам.
+ * Два пути: вставить токен, который выдал лидер пати, или завести свою пати
+ * и получить токен, чтобы передать игрокам.
+ *
+ * Адрес базы вшит в сборку при развёртывании (VITE_API_URL) — вводить его
+ * здесь незачем, поэтому и не предлагаем.
  */
 export function Login({ onDone }: { onDone: (name: string) => void }) {
   const settings = useSettings()
-
-  // Приоритет: адрес из сборки — потом уже сохранённый — потом спрашиваем.
-  const preset = BUILD_API_URL || settings.apiUrl
-  const [apiUrl, setApiUrl] = useState(preset)
   const [token, setToken] = useState('')
   const [partyName, setPartyName] = useState('')
   const [mode, setMode] = useState<'enter' | 'create'>('enter')
@@ -26,16 +25,7 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
     name: string
     partyId: string
     role: 'owner' | 'member'
-    apiUrl: string
   } | null>(null)
-  const [showSettings, setShowSettings] = useState(!looksLikeUrl(preset))
-
-  const url = apiUrl.trim().replace(/\/+$/, '')
-
-  /** Адрес задаётся один раз и запоминается — дальше про него забываем. */
-  const rememberUrl = () => {
-    if (looksLikeUrl(url)) updateSettings({ apiUrl: url })
-  }
 
   const enter = async () => {
     const t = token.trim()
@@ -43,15 +33,10 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
       setError('Вставь токен пати')
       return
     }
-    if (!looksLikeUrl(url)) {
-      setError('Сначала укажи адрес базы — раскрой «Адрес сервера» внизу')
-      setShowSettings(true)
-      return
-    }
     setBusy(true)
     setError(null)
-    rememberUrl()
-    const res = await openSession(url, t)
+
+    const res = await openSession(API_URL, t)
     if (!res.ok) {
       setBusy(false)
       setError(res.error)
@@ -62,7 +47,7 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
     // База на сервере — источник истины. Подтягиваем её сразу при входе,
     // иначе локальные данные окажутся «от другой версии» и первое же
     // сохранение упрётся в конфликт.
-    const loaded = await fetchDb(url, t)
+    const loaded = await fetchDb(API_URL, t)
     if (loaded.ok) {
       replaceDb(loaded.value)
     } else if ((info.chars ?? 0) > 0) {
@@ -77,22 +62,16 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
       partyId: info.partyId,
       name: info.name,
       role: info.role,
-      apiUrl: url,
+      apiUrl: API_URL,
       lastSyncedAt: loaded.ok ? loaded.value.updatedAt : '',
     })
     onDone(info.name)
   }
 
   const create = async () => {
-    if (!looksLikeUrl(url)) {
-      setError('Сначала укажи адрес базы — раскрой «Адрес сервера» внизу')
-      setShowSettings(true)
-      return
-    }
     setBusy(true)
     setError(null)
-    rememberUrl()
-    const res = await createParty(url, partyName.trim())
+    const res = await createParty(API_URL, partyName.trim())
     setBusy(false)
     if (!res.ok) {
       setError(res.error)
@@ -106,9 +85,12 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
       name: res.value.name,
       partyId: res.value.partyId,
       role: res.value.role,
-      apiUrl: url,
     })
   }
+
+  // Сборка без VITE_API_URL — это не поломка у игрока, а незавершённая
+  // настройка у того, кто разворачивал. Говорим прямо, кому и что делать.
+  if (!CONFIGURED) return <NotConfigured />
 
   if (issued) {
     return (
@@ -119,7 +101,7 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
           // Только что созданная база пуста, но в браузере уже могут быть
           // данные. Заливаем их сразу — чтобы пати не начиналась с нуля и
           // первое сохранение не упиралось в конфликт.
-          const base = await fetchDb(issued.apiUrl, issued.token)
+          const base = await fetchDb(API_URL, issued.token)
           let lastSyncedAt = base.ok ? base.value.updatedAt : ''
           if (base.ok) {
             const mine: Db = {
@@ -127,7 +109,7 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
               updatedAt: new Date().toISOString(),
               updatedBy: settings.playerName,
             }
-            const saved = await saveDb(issued.apiUrl, issued.token, mine, base.value.updatedAt)
+            const saved = await saveDb(API_URL, issued.token, mine, base.value.updatedAt)
             if (saved.ok) lastSyncedAt = saved.value.updatedAt
           }
           signIn({
@@ -135,7 +117,7 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
             partyId: issued.partyId,
             name: issued.name,
             role: issued.role,
-            apiUrl: issued.apiUrl,
+            apiUrl: API_URL,
             lastSyncedAt,
           })
           onDone(issued.name)
@@ -151,7 +133,7 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
           <span className="logo">⚔</span>
           <div>
             <h1>Party Pilot</h1>
-            <p className="tag">экипировка пати · общая казна · хотелки</p>
+            <p className="tag">экипировки пати · общая казна · хотелки</p>
           </div>
         </div>
 
@@ -208,27 +190,6 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
         )}
 
         {error && <div className="sync-msg err">{error}</div>}
-
-        <div className="login-foot">
-          <button className="link-btn" onClick={() => setShowSettings((v) => !v)}>
-            {showSettings ? 'Скрыть' : 'Адрес сервера'}
-          </button>
-          {showSettings && (
-            <label className="login-api">
-              Адрес базы
-              <input
-                className="input mono"
-                value={apiUrl}
-                onChange={(e) => setApiUrl(e.target.value)}
-                placeholder={PLACEHOLDER_API_URL}
-              />
-              <span className="hint">
-                Нужен один раз. Обычному игроку пати это поле трогать не приходится:
-                адрес подставляется сам при сборке.
-              </span>
-            </label>
-          )}
-        </div>
       </div>
     </div>
   )
@@ -279,6 +240,33 @@ function TokenIssued({ token, name, onDone }: { token: string; name: string; onD
         <button className="btn primary wide" onClick={onDone}>
           Войти в пати
         </button>
+      </div>
+    </div>
+  )
+}
+
+/** Сборка без адреса базы: приложение нельзя использовать до настройки. */
+function NotConfigured() {
+  return (
+    <div className="login-wrap">
+      <div className="login">
+        <div className="login-brand">
+          <span className="logo">⚔</span>
+          <div>
+            <h1>Приложение не настроено</h1>
+            <p className="tag">нет адреса базы</p>
+          </div>
+        </div>
+        <p className="hint">
+          Адрес базы должен быть зашит в сборку, но при сборке не был задан.
+          Это значит, что разворачивал не ты — напиши тому, кто размещал сайт.
+        </p>
+        <p className="hint">
+          Тому, кто разворачивает: задай переменную{' '}
+          <code>VITE_API_URL</code> в репозитории (Settings → Secrets and
+          variables → Actions → Variables) со значением адреса Worker'а и
+          перезапусти деплой.
+        </p>
       </div>
     </div>
   )

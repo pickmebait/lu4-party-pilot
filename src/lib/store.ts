@@ -19,13 +19,10 @@ const SETTINGS_KEY = 'pp:settings'
 export interface Settings {
   /** Ник текущего игрока — пишется в историю операций. */
   playerName: string
-  /** Адрес Worker'а с базой пати. Задаётся один раз, дальше живёт здесь. */
-  apiUrl: string
 }
 
 const DEFAULT_SETTINGS: Settings = {
   playerName: '',
-  apiUrl: '',
 }
 
 export function emptyChar(): Char {
