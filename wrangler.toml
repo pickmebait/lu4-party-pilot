@@ -2,14 +2,20 @@ name = "lu4-party-pilot"
 main = "worker/src/index.ts"
 compatibility_date = "2025-01-01"
 
-# Пространство имён KV. Локально (npm run cf:dev) подставь любой идентификатор —
-# данные всё равно пишутся на диск. Для настоящего развёртывания выполни
-#   npm run cf:kv
-# и вставь сюда выданный id.
-kv_namespaces = [
-  { binding = "DB", id = "localdev" }
-]
+# Базы пати лежат файлами в репозитории: data/parties/<partyId>.json
+#
+# Секреты (не в этом файле):
+#   npx wrangler secret put GITHUB_TOKEN
+#     fine-grained токен с правом Contents: Read and write на репозиторий ниже.
+#     В браузер он не попадает: им подписывает запросы только Worker.
+#
+# Переменные (можно в этом файле или через окружение):
+#   REPO_OWNER / REPO_NAME / REPO_BRANCH / DATA_DIR
+#   Ограничить запросы своим доменом (по умолчанию любой — доступ защищён токеном):
+#   ALLOWED_ORIGIN = "https://<ник>.github.io"
 
-# Ограничить запросы своим доменом. Пусто = любой источник (безопасно, потому
-# что доступ защищён токеном). Для github.io лучше задать:
-# ALLOWED_ORIGIN = "https://<ник>.github.io"
+[vars]
+REPO_OWNER = "pickmebait"
+REPO_NAME = "lu4-party-pilot"
+REPO_BRANCH = "main"
+DATA_DIR = "data/parties"

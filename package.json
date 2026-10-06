@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "items": "node scripts/build-items.mjs",
     "cf:login": "wrangler login",
-    "cf:kv": "wrangler kv namespace create DB",
+    "cf:secret": "wrangler secret put GITHUB_TOKEN",
     "cf:dev": "wrangler dev --local --port 8787",
     "cf:deploy": "wrangler deploy",
     "cf:tail": "wrangler tail"
