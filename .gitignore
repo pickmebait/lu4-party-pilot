@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.DS_Store
+*.local
+
+# Никогда не коммитить токены
+.env
+.env.*
+token*.txt
+secrets*
+
+# Кэш редактора
+.vscode/
+.idea/
