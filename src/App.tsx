@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
 import { CharsView } from './components/Chars'
+import { Login } from './components/Login'
 import { SetsView } from './components/Sets'
 import { SyncBar } from './components/SyncBar'
 import { WarehouseView } from './components/Warehouse'
 import { WishesView } from './components/Wishes'
 import { startCatalogLoad, useCatalog } from './lib/catalog'
 import { computeSummary, usedItemIds } from './lib/derived'
-import { useDb } from './lib/store'
+import { useDb, useSession } from './lib/store'
 import { plural } from './lib/util'
 
 startCatalogLoad()
@@ -22,10 +23,16 @@ const TABS: { key: Tab; label: string }[] = [
 
 export default function App() {
   const db = useDb()
+  const session = useSession()
   const [tab, setTab] = useState<Tab>('chars')
 
   const catalog = useCatalog(useMemo(() => usedItemIds(db), [db]), db.customNames)
+
+  // Считаем сводку до раннего выхода, чтобы порядок хуков не зависел от сессии.
   const sum = computeSummary(db)
+
+  // Без токена пати приложением пользоваться нельзя: вся база живёт на сервере.
+  if (!session) return <Login onDone={() => undefined} />
 
   return (
     <div className="app">
@@ -83,7 +90,10 @@ export default function App() {
       </main>
 
       <footer className="foot">
-        <span>Данные лежат в этом браузере. Общая база — файл data/data.json в репозитории.</span>
+        <span>
+          Данные лежат в этом браузере. Общая база пати — на сервере, доступ по
+          токену.
+        </span>
       </footer>
     </div>
   )

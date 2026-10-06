@@ -1,0 +1,15 @@
+name = "lu4-party-pilot"
+main = "worker/src/index.ts"
+compatibility_date = "2025-01-01"
+
+# Пространство имён KV. Локально (npm run cf:dev) подставь любой идентификатор —
+# данные всё равно пишутся на диск. Для настоящего развёртывания выполни
+#   npm run cf:kv
+# и вставь сюда выданный id.
+kv_namespaces = [
+  { binding = "DB", id = "localdev" }
+]
+
+# Ограничить запросы своим доменом. Пусто = любой источник (безопасно, потому
+# что доступ защищён токеном). Для github.io лучше задать:
+# ALLOWED_ORIGIN = "https://<ник>.github.io"

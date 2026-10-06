@@ -1166,6 +1166,139 @@ body {
   text-align: center;
 }
 
+/* ------------------------------------------------------------- вход в пати */
+
+.login-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.login {
+  width: 460px;
+  max-width: 100%;
+  background: var(--bg-2);
+  border: 1px solid var(--line-2);
+  border-radius: 16px;
+  padding: 26px;
+  box-shadow: var(--shadow);
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.login-brand h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.login-tabs {
+  display: flex;
+  width: 100%;
+  margin-bottom: 18px;
+}
+
+.login-tabs button {
+  flex: 1;
+}
+
+.login .btn.wide {
+  width: 100%;
+  margin-top: 6px;
+  justify-content: center;
+  padding: 11px;
+}
+
+.login .hint {
+  margin: 0 0 14px;
+}
+
+.input.mono,
+.token-box code {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  letter-spacing: 0.3px;
+}
+
+.login-foot {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.login-api {
+  display: block;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.login-api .hint {
+  display: block;
+  margin: 6px 0 0;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.link-btn:hover {
+  color: var(--accent-2);
+}
+
+.token-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  background: #0f1420;
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  padding: 12px;
+  margin: 16px 0;
+}
+
+.token-box code {
+  flex: 1;
+  min-width: 180px;
+  font-size: 14px;
+  word-break: break-all;
+  color: var(--accent-2);
+}
+
+.token-box .hint {
+  width: 100%;
+  margin: 0;
+}
+
+.kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--muted);
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 12px;
+}
+
+.kv b {
+  color: var(--text);
+  font-weight: 600;
+  text-align: right;
+}
+
 @media (max-width: 720px) {
   .chars-grid {
     grid-template-columns: 1fr;

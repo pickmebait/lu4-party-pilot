@@ -16,26 +16,16 @@ export const DB_VERSION = 1
 const DB_KEY = 'pp:db'
 const SETTINGS_KEY = 'pp:settings'
 
-/** Куда и откуда синхронизируем по умолчанию. */
-export const DEFAULT_REMOTE = {
-  owner: 'pickmebait',
-  repo: 'lu4-party-pilot',
-  branch: 'main',
-  path: 'data/data.json',
-}
-
 export interface Settings {
   /** Ник текущего игрока — пишется в историю операций. */
   playerName: string
-  remote: typeof DEFAULT_REMOTE
-  /** Токен хранится только в этом браузере и никогда не попадает в репозиторий. */
-  token: string
+  /** Адрес Worker'а с базой пати. Задаётся один раз, дальше живёт здесь. */
+  apiUrl: string
 }
 
 const DEFAULT_SETTINGS: Settings = {
   playerName: '',
-  remote: DEFAULT_REMOTE,
-  token: '',
+  apiUrl: '',
 }
 
 export function emptyChar(): Char {
@@ -125,7 +115,6 @@ function loadState(): { db: Db; settings: Settings } {
   } catch {
     /* игнорируем */
   }
-  settings.remote = { ...DEFAULT_REMOTE, ...settings.remote }
   return { db, settings }
 }
 
@@ -348,6 +337,84 @@ export function removeSet(id: string): void {
   commit({ ...db, sets: db.sets.filter((s) => s.id !== id) })
 }
 
+/* ------------------------------------------------------- сессия пати */
+
+export interface PartySession {
+  /** Токен доступа. Хранится только в этом браузере. */
+  token: string
+  partyId: string
+  name: string
+  role: 'owner' | 'member'
+  /** Адрес Worker'а с базой. */
+  apiUrl: string
+  /**
+   * Метка версии базы на сервере, на которой основаны локальные правки.
+   *
+   * Отдельная от db.updatedAt: та меняется при каждом локальном изменении,
+   * а эта нужна для проверки «не затер ли кто-то моё». Пока совпадает с тем,
+   * что лежит на сервере, — сохранение проходит без конфликта.
+   */
+  lastSyncedAt: string
+}
+
+const SESSION_KEY = 'pp:session'
+
+let session: PartySession | null = loadSession()
+
+function loadSession(): PartySession | null {
+  if (typeof localStorage === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(SESSION_KEY)
+    if (!raw) return null
+    const s = JSON.parse(raw) as PartySession
+    if (!s?.token || !s?.apiUrl) return null
+    return s
+  } catch {
+    return null
+  }
+}
+
+const sessionListeners = new Set<() => void>()
+
+export function useSession(): PartySession | null {
+  return useSyncExternalStore(
+    (cb) => {
+      sessionListeners.add(cb)
+      return () => sessionListeners.delete(cb)
+    },
+    () => session,
+  )
+}
+
+export function getSession(): PartySession | null {
+  return session
+}
+
+function saveSession(next: PartySession | null): void {
+  session = next
+  try {
+    if (next) localStorage.setItem(SESSION_KEY, JSON.stringify(next))
+    else localStorage.removeItem(SESSION_KEY)
+  } catch {
+    /* приватный режим — сессия живёт только до перезагрузки */
+  }
+  for (const l of sessionListeners) l()
+}
+
+export function signIn(next: PartySession): void {
+  saveSession(next)
+}
+
+/** Точечное изменение сессии — метки синхронизации, например. */
+export function updateSession(patch: Partial<PartySession>): void {
+  if (!session) return
+  saveSession({ ...session, ...patch })
+}
+
+export function signOut(): void {
+  saveSession(null)
+}
+
 /* -------------------------------------------------- свои названия предметов */
 
 /** Запомнить название предмета, которого нет в справочнике. */
@@ -362,8 +429,23 @@ export function setCustomName(itemId: number, name: string): void {
 
 /* ------------------------------------------------------------- общие операции */
 
+/**
+ * Заменяет базу целиком — вход в пати, импорт файла, принятие чужой версии.
+ *
+ * Важно: метку updatedAt берём из входящих данных, а не ставим новую.
+ * Здесь мы не меняем игровые данные, а принимаем уже существующие.
+ * Если бы ставили своё время, следующая же запись выглядела бы как
+ * конфликт с сервером.
+ */
 export function replaceDb(next: unknown): void {
-  commit(normalizeDb(next))
+  const normalized = normalizeDb(next)
+  db = { ...normalized, version: DB_VERSION }
+  try {
+    localStorage.setItem(DB_KEY, JSON.stringify(db))
+  } catch {
+    /* приватный режим */
+  }
+  emit()
 }
 
 export function resetDb(): void {

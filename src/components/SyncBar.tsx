@@ -1,10 +1,20 @@
 import { useState } from 'react'
 import type { Db } from '@/types'
+import {
+  fetchDb,
+  fetchMeta,
+  rotateToken,
+  saveDb,
+  type PartyInfo,
+} from '@/lib/api'
 import type { CatalogApi } from '@/lib/catalog'
-import { describeTarget, probe, push, type RemoteConfig } from '@/lib/github'
 import {
   getDb,
+  getSession,
   replaceDb,
+  signIn,
+  signOut,
+  updateSession,
   updateSettings,
   useDb,
   useSettings,
@@ -13,65 +23,70 @@ import { downloadJson, formatAgo, formatStamp } from '@/lib/util'
 
 type SyncState =
   | { kind: 'idle' }
-  | { kind: 'busy'; what: 'pull' | 'push' }
+  | { kind: 'busy'; what: string }
   | { kind: 'ok'; text: string }
   | { kind: 'err'; text: string }
 
 export function SyncBar({ catalog }: { catalog: CatalogApi }) {
   const db = useDb()
   const settings = useSettings()
+  const session = getSession()!
   const [state, setState] = useState<SyncState>({ kind: 'idle' })
   const [open, setOpen] = useState(false)
-  const [cfg, setCfg] = useState<RemoteConfig>(settings.remote)
   const [incoming, setIncoming] = useState<Db | null>(null)
+  const [meta, setMeta] = useState<PartyInfo | null>(null)
+  const [rotated, setRotated] = useState<string | null>(null)
 
   const busy = state.kind === 'busy'
 
   const doPull = async () => {
-    setState({ kind: 'busy', what: 'pull' })
-    const res = await probe(cfg)
+    setState({ kind: 'busy', what: 'Загружаю из пати…' })
+    const res = await fetchDb(session.apiUrl, session.token)
     if (!res.ok) {
       setState({ kind: 'err', text: res.error })
       return
     }
-    if (!res.value.exists || !res.value.db) {
-      setState({
-        kind: 'err',
-        text: `Файл ${describeTarget(cfg)} не найден. Сначала сохрани данные — он создастся при первой записи.`,
-      })
-      return
-    }
-    const remote = res.value.db
+    const remote = res.value
     const local = getDb()
-    const remoteNewer = (remote.updatedAt ?? '') > (local.updatedAt ?? '')
-    if (remoteNewer && local.chars.length + db.wishes.length > 0) {
-      // Не затираем локальные данные молча — показываем оба варианта.
+    const dirty = (local.updatedAt ?? '') !== session.lastSyncedAt
+
+    // Есть несохранённые правки и в базе кто-то уже работал — не затираем молча.
+    if (dirty && (remote.updatedAt ?? '') !== session.lastSyncedAt) {
       setIncoming(remote)
       setState({
         kind: 'err',
-        text: `В репозитории более свежая версия (от: ${remote.updatedBy || 'неизвестно'}, ${formatAgo(remote.updatedAt)}). Выбери, что оставить.`,
+        text: `В пати есть более свежая версия (от: ${remote.updatedBy || 'неизвестно'}, ${formatAgo(remote.updatedAt)}), а у тебя есть несохранённые правки. Выбери, что оставить.`,
       })
       return
     }
     replaceDb(remote)
+    updateSession({ lastSyncedAt: remote.updatedAt })
     setState({
       kind: 'ok',
-      text: `Загружено из репозитория${remote.updatedBy ? ` (от: ${remote.updatedBy})` : ''}`,
+      text: `Загружено из пати${remote.updatedBy ? ` (от: ${remote.updatedBy})` : ''}`,
     })
   }
 
   const doPush = async () => {
-    setState({ kind: 'busy', what: 'push' })
-    updateSettings({ remote: cfg })
-    const res = await push(cfg, settings.token, getDb(), settings.playerName)
+    setState({ kind: 'busy', what: 'Сохраняю в пати…' })
+    const current = getDb()
+    // База на сервере та, что мы последний раз видели. Если с тех пор её
+    // кто-то поменял — сервер откажет, и мы покажем чужую версию.
+    const res = await saveDb(session.apiUrl, session.token, current, session.lastSyncedAt)
     if (!res.ok) {
+      if (res.conflict) {
+        setIncoming(res.conflict)
+        setState({ kind: 'err', text: 'Кто-то опередил: в пати уже есть другое состояние.' })
+        return
+      }
       setState({ kind: 'err', text: res.error })
       return
     }
-    // Запись в репозитории меняет файл — забираем свежую метку времени.
-    const fresh = await probe(cfg, settings.token)
-    if (fresh.ok && fresh.value.db) replaceDb(fresh.value.db)
-    setState({ kind: 'ok', text: `Сохранено в ${describeTarget(cfg)}` })
+    updateSession({ lastSyncedAt: res.value.updatedAt })
+    // Локальная метка должна совпасть с серверной, иначе следующая
+    // запись снова сочтётся конфликтом.
+    replaceDb({ ...current, updatedAt: res.value.updatedAt })
+    setState({ kind: 'ok', text: 'Сохранено в общую базу пати' })
   }
 
   const doExport = () => {
@@ -83,14 +98,43 @@ export function SyncBar({ catalog }: { catalog: CatalogApi }) {
     const reader = new FileReader()
     reader.onload = () => {
       try {
-        const parsed = JSON.parse(String(reader.result)) as Db
-        replaceDb(parsed)
+        replaceDb(JSON.parse(String(reader.result)) as Db)
         setState({ kind: 'ok', text: 'Данные загружены из файла' })
       } catch {
         setState({ kind: 'err', text: 'Не удалось прочитать файл: это не валидный JSON' })
       }
     }
     reader.readAsText(file)
+  }
+
+  const openPanel = async () => {
+    const next = !open
+    setOpen(next)
+    if (next) {
+      const res = await fetchMeta(session.apiUrl, session.token)
+      if (res.ok) setMeta(res.value)
+    }
+  }
+
+  const doRotate = async () => {
+    if (
+      !confirm(
+        'Выпустить новый токен? Старый перестанет работать сразу — у всех, кто его\n' +
+          'сохранил, придётся вводить новый.',
+      )
+    ) {
+      return
+    }
+    setState({ kind: 'busy', what: 'Выпускаю новый токен…' })
+    const res = await rotateToken(session.apiUrl, session.token)
+    if (!res.ok) {
+      setState({ kind: 'err', text: res.error })
+      return
+    }
+    signIn({ ...session, token: res.value.token })
+    setRotated(res.value.token)
+    // Метка синхронизации сохраняется: база-то та же, сменился только ключ.
+    setState({ kind: 'ok', text: 'Новый токен выпущен, старый отключён' })
   }
 
   return (
@@ -106,28 +150,20 @@ export function SyncBar({ catalog }: { catalog: CatalogApi }) {
         <button className="btn" disabled={busy} onClick={doPull}>
           Загрузить
         </button>
-        <button
-          className="btn"
-          disabled={busy}
-          onClick={doPush}
-          title={settings.token ? 'Записать data.json в репозиторий' : 'Нужен токен — открой настройки'}
-        >
+        <button className="btn primary" disabled={busy} onClick={doPush} title="Записать в общую базу пати">
           Сохранить
         </button>
-        <button className="icon-btn" onClick={() => setOpen((v) => !v)} title="Настройки синхронизации">
+        <button className="icon-btn" onClick={openPanel} title="Настройки пати">
           ⚙
         </button>
       </div>
 
-      {catalog.count > 0 && (
-        <div className="sync-note muted">
-          Справочник: {catalog.count} предметов
-        </div>
-      )}
+      <div className="sync-note muted">
+        пати: {session.name}
+        {catalog.count > 0 && ` · справочник: ${catalog.count}`}
+      </div>
 
-      {state.kind === 'busy' && (
-        <div className="sync-msg">{state.what === 'pull' ? 'Загружаю…' : 'Сохраняю…'}</div>
-      )}
+      {state.kind === 'busy' && <div className="sync-msg">{state.what}</div>}
       {state.kind === 'ok' && <div className="sync-msg ok">{state.text}</div>}
       {state.kind === 'err' && <div className="sync-msg err">{state.text}</div>}
 
@@ -137,21 +173,22 @@ export function SyncBar({ catalog }: { catalog: CatalogApi }) {
             className="btn primary tiny"
             onClick={() => {
               replaceDb(incoming)
+              updateSession({ lastSyncedAt: incoming.updatedAt })
               setIncoming(null)
-              setState({ kind: 'ok', text: 'Принята версия из репозитория' })
+              setState({ kind: 'ok', text: 'Принята версия из пати' })
             }}
           >
-            Взять версию из репозитория
+            Взять версию из пати
           </button>
           <button
             className="btn tiny"
             onClick={() => {
-              downloadJson(`party-pilot-local-${new Date().toISOString().slice(0, 10)}.json`, getDb())
+              downloadJson(`party-pilot-mine-${new Date().toISOString().slice(0, 10)}.json`, getDb())
               setIncoming(null)
-              setState({ kind: 'ok', text: 'Локальная копия выгружена, теперь можно сохранять поверх' })
+              setState({ kind: 'ok', text: 'Твоя версия выгружена в файл, теперь сохраняй поверх' })
             }}
           >
-            Сохранить мою версию в файл и перезаписать
+            Выгрузить мою версию в файл
           </button>
           <button className="btn tiny" onClick={() => setIncoming(null)}>
             Отмена
@@ -161,56 +198,36 @@ export function SyncBar({ catalog }: { catalog: CatalogApi }) {
 
       {open && (
         <div className="sync-panel">
-          <h4>Общая база в репозитории</h4>
+          <h4>Пати «{session.name}»</h4>
           <p className="hint">
-            Все данные лежат в одном файле <code>data/data.json</code>. Чтение — без токена,
-            репозиторий публичный. Запись требует токена.
+            Доступ идёт по токену, GitHub тут ни при чём. Токен хранится только в этом
+            браузере. {session.role === 'owner' ? 'Ты автор пати.' : 'Ты участник пати.'}
           </p>
 
-          <div className="grid-2">
-            <label>
-              Владелец
-              <input className="input" value={cfg.owner} onChange={(e) => setCfg({ ...cfg, owner: e.target.value })} />
-            </label>
-            <label>
-              Репозиторий
-              <input className="input" value={cfg.repo} onChange={(e) => setCfg({ ...cfg, repo: e.target.value })} />
-            </label>
-            <label>
-              Ветка
-              <input className="input" value={cfg.branch} onChange={(e) => setCfg({ ...cfg, branch: e.target.value })} />
-            </label>
-            <label>
-              Путь к файлу
-              <input className="input" value={cfg.path} onChange={(e) => setCfg({ ...cfg, path: e.target.value })} />
-            </label>
-          </div>
+          {meta && (
+            <div className="kv">
+              <span>Записей в базе</span>
+              <b>
+                {meta.chars ?? 0} перс. · изменено {meta.updatedAt ? formatAgo(meta.updatedAt) : '—'}
+                {meta.updatedBy ? ` (${meta.updatedBy})` : ''}
+              </b>
+            </div>
+          )}
 
-          <label>
-            Токен (хранится только в этом браузере)
-            <input
-              className="input"
-              type="password"
-              placeholder="github_pat_…"
-              value={settings.token}
-              onChange={(e) => updateSettings({ token: e.target.value })}
-            />
-          </label>
-          <p className="hint">
-            Fine-grained токен с правом <b>Contents: Read and write</b> только на этот репозиторий.
-            Токен не попадает в репозиторий и не передаётся третьим лицам. Подробнее — в README.
-          </p>
+          {rotated && (
+            <div className="token-box">
+              <code>{rotated}</code>
+              <button
+                className="btn"
+                onClick={() => navigator.clipboard.writeText(rotated).catch(() => {})}
+              >
+                Скопировать
+              </button>
+              <span className="hint">Старый токен больше не работает.</span>
+            </div>
+          )}
 
           <div className="row gap">
-            <button
-              className="btn primary"
-              onClick={() => {
-                updateSettings({ remote: cfg })
-                setState({ kind: 'ok', text: 'Настройки сохранены' })
-              }}
-            >
-              Сохранить настройки
-            </button>
             <button className="btn" onClick={doExport}>
               Выгрузить в файл
             </button>
@@ -226,11 +243,27 @@ export function SyncBar({ catalog }: { catalog: CatalogApi }) {
                 }}
               />
             </label>
+            {session.role === 'owner' && (
+              <button className="btn danger" disabled={busy} onClick={doRotate}>
+                Сменить токен
+              </button>
+            )}
+            <button
+              className="btn danger"
+              onClick={() => {
+                if (confirm('Выйти из пати? Токен будет удалён из этого браузера.')) {
+                  signOut()
+                  location.reload()
+                }
+              }}
+            >
+              Выйти
+            </button>
           </div>
 
           <p className="hint">
-            Локально данные менялись: {formatStamp(db.updatedAt)}
-            {db.updatedBy ? ` (${db.updatedBy})` : ''}
+            Локальные изменения: {formatStamp(db.updatedAt)}
+            {db.updatedBy ? ` (${db.updatedBy})` : ''}. После правок нажми «Сохранить».
           </p>
         </div>
       )}
