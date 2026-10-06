@@ -92,6 +92,19 @@ npm run items -- --items "D:\l2server\data\stats\items" --lang "C:\Games\L2\syst
 через «Загрузить». Если изменения нужны нескольким — пользуйтесь кнопками
 «Выгрузить в файл» / «Загрузить из файла», это работает без токена вообще.
 
+### Свой токен для каждого в пати
+
+Fine-grained токен — правильный выбор для остальных участников. Один токен на
+всех не нужен: каждый вставляет свой, и GitHub ведёт историю по коммитам.
+
+<https://github.com/settings/personal-access-tokens/new>
+
+| Поле | Значение |
+| --- | --- |
+| Repository access | **Only select repositories** → `pickmebait/lu4-party-pilot` |
+| Contents | **Read and write** |
+| Остальные права | не выдавать |
+
 ## Деплой на GitHub Pages
 
 Репозиторий должен быть **публичным**: на бесплатном плане Pages не
