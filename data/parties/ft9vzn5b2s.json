@@ -1,0 +1,20 @@
+{
+  "partyId": "ft9vzn5b2s",
+  "name": "Клан Медведей",
+  "createdAt": "2026-10-06T23:10:27.439Z",
+  "tokenHash": "4af6153778a4146b9d45054d583c6f9ba435b24bc67c98ed7f5ff38841134640",
+  "tokensIssued": 1,
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-06T23:10:27.439Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
