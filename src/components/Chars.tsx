@@ -181,6 +181,8 @@ function CharCard({
   const [editing, setEditing] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [transferFrom, setTransferFrom] = useState<{ slot: SlotKey; index: number } | null>(null)
+  const [enchEdit, setEnchEdit] = useState<{ slot: SlotKey; index: number; value: string } | null>(null)
+  const [transferNote, setTransferNote] = useState<string | null>(null)
 
   const filled = SLOT_DEFS.reduce(
     (a, s) => a + (char.slots[s.key] ?? []).filter(Boolean).length,
@@ -263,6 +265,7 @@ function CharCard({
                   const name = catalog.nameOf(entry.itemId)
                   const grade = catalog.byId(entry.itemId)?.grade
                   const hide = filter.trim() && !matches(name, filter)
+                  const editingEnch = enchEdit?.slot === s.key && enchEdit.index === i
                   return (
                     <div
                       key={i}
@@ -271,24 +274,49 @@ function CharCard({
                       }`}
                       title={`${name}${entry.ench ? ` (${entry.ench})` : ''} — ${s.label}`}
                     >
-                      <button className="cell-main" onClick={() => onPick(s.key, i)}>
-                        <span className="cell-name">{name}</span>
-                        <span className="cell-sub">
-                          {entry.ench && <span className="chip ench">{entry.ench}</span>}
-                          {typeof grade === 'number' && grade > 0 && (
-                            <span className="chip grade">{gradeLabel(grade)}</span>
-                          )}
-                          <span className="cell-id">#{entry.itemId}</span>
-                        </span>
-                      </button>
+                      {editingEnch ? (
+                        <div className="ench-editor">
+                          <input
+                            className="input tiny-input"
+                            autoFocus
+                            value={enchEdit.value}
+                            placeholder="+16"
+                            onChange={(e) => setEnchEdit({ ...enchEdit, value: e.target.value })}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                setSlotEnch(char.id, s.key, i, enchEdit.value)
+                                setEnchEdit(null)
+                              }
+                              if (e.key === 'Escape') setEnchEdit(null)
+                            }}
+                          />
+                          <button
+                            className="btn tiny"
+                            onClick={() => {
+                              setSlotEnch(char.id, s.key, i, enchEdit.value)
+                              setEnchEdit(null)
+                            }}
+                          >
+                            ✓
+                          </button>
+                        </div>
+                      ) : (
+                        <button className="cell-main" onClick={() => onPick(s.key, i)}>
+                          <span className="cell-name">{name}</span>
+                          <span className="cell-sub">
+                            {entry.ench && <span className="chip ench">{entry.ench}</span>}
+                            {typeof grade === 'number' && grade > 0 && (
+                              <span className="chip grade">{gradeLabel(grade)}</span>
+                            )}
+                            <span className="cell-id">#{entry.itemId}</span>
+                          </span>
+                        </button>
+                      )}
                       <div className="cell-tools">
                         <button
                           className="icon-btn tiny"
                           title="Заточка"
-                          onClick={() => {
-                            const v = window.prompt('Заточка или метка (например +16, ТГ, ОФ):', entry.ench ?? '')
-                            if (v !== null) setSlotEnch(char.id, s.key, i, v)
-                          }}
+                          onClick={() => setEnchEdit({ slot: s.key, index: i, value: entry.ench ?? '' })}
                         >
                           ✦
                         </button>
@@ -317,7 +345,7 @@ function CharCard({
       </div>
 
       {transferFrom && (
-        <div className="modal-backdrop" onClick={() => setTransferFrom(null)}>
+        <div className="modal-backdrop" onClick={() => { setTransferFrom(null); setTransferNote(null) }}>
           <div className="modal small" onClick={(e) => e.stopPropagation()}>
             <h3>Передать предмет</h3>
             <p className="hint">
@@ -334,10 +362,17 @@ function CharCard({
                       key={c.id}
                       className="btn"
                       disabled={!free}
+                      title={free ? 'Передать' : `Слот «${SLOT_LABEL[transferFrom.slot]}» занят`}
                       onClick={() => {
                         const ok = transferSlot(char.id, transferFrom.slot, transferFrom.index, c.id)
-                        if (ok) setTransferFrom(null)
-                        else window.alert(`У «${c.name}» нет свободного слота: ${SLOT_LABEL[transferFrom.slot]}`)
+                        if (ok) {
+                          setTransferFrom(null)
+                          setTransferNote(null)
+                        } else {
+                          setTransferNote(
+                            `У «${c.name || 'персонажа без имени'}» нет свободного слота «${SLOT_LABEL[transferFrom.slot]}».`,
+                          )
+                        }
                       }}
                     >
                       {c.name || 'Без имени'}
@@ -349,8 +384,15 @@ function CharCard({
                 <p className="hint">Добавь второго персонажа, чтобы передавать вещи.</p>
               )}
             </div>
+            {transferNote && <div className="sync-msg err">{transferNote}</div>}
             <div className="form-actions">
-              <button className="btn" onClick={() => setTransferFrom(null)}>
+              <button
+                className="btn"
+                onClick={() => {
+                  setTransferFrom(null)
+                  setTransferNote(null)
+                }}
+              >
                 Закрыть
               </button>
             </div>

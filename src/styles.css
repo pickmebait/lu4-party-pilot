@@ -662,6 +662,16 @@ body {
   color: #5d6883;
 }
 
+.ench-editor {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.ench-editor .tiny-input {
+  width: 58px;
+}
+
 .cell-tools {
   position: absolute;
   top: 2px;
@@ -942,6 +952,14 @@ body {
   color: var(--ok);
   font-weight: 700;
   flex: none;
+}
+
+.pieces .stored {
+  color: #9fc4ee;
+}
+
+.pieces .stored .tick {
+  color: var(--in);
 }
 
 .pieces .missing {

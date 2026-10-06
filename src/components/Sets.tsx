@@ -67,19 +67,20 @@ export function SetsView({ catalog }: { catalog: CatalogApi }) {
               {p.set.pieces.map((id) => {
                 const name = catalog.nameOf(id)
                 const grade = catalog.byId(id)?.grade
-                const state = p.missing.includes(id) ? 'missing' : 'have'
-                const extra = state === 'have' && p.stored > 0 && !p.complete ? '' : ''
+                // Три разных состояния: надето на ком-то, лежит в казне, не найдено.
+                // Считать казну «собранной» нельзя — комплект собран только тем, что надето.
+                const state = p.worn.includes(id) ? 'worn' : p.storedIds.includes(id) ? 'stored' : 'missing'
                 return (
                   <li key={id} className={state}>
-                    <span className="tick">{state === 'have' ? '✓' : '·'}</span>
+                    <span className="tick">{state === 'worn' ? '✓' : state === 'stored' ? '▣' : '·'}</span>
                     <span className="pname">{name}</span>
                     {typeof grade === 'number' && grade > 0 && (
                       <span className="chip grade">{gradeLabel(grade)}</span>
                     )}
-                    <span className="cell-id">
-                      #{id}
-                      {extra}
-                    </span>
+                    {state !== 'worn' && (
+                      <span className="chip subtle">{state === 'stored' ? 'в казне' : 'нет'}</span>
+                    )}
+                    <span className="cell-id">#{id}</span>
                   </li>
                 )
               })}

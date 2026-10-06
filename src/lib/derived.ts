@@ -9,6 +9,10 @@ export interface SetProgress {
   equipped: number
   /** Сколько частей лежит в общей казне (уникальных). */
   stored: number
+  /** id частей, которые надеты. */
+  worn: number[]
+  /** id частей, которые лежат в казне. */
+  storedIds: number[]
   /** id частей, которых нет нигде. */
   missing: number[]
   complete: boolean
@@ -44,21 +48,25 @@ export function computeSets(db: Db): SetProgress[] {
   return db.sets
     .map((set) => {
       const pieces = [...new Set(set.pieces)]
-      let equipped = 0
-      let storedCount = 0
+      const worn: number[] = []
+      const storedIds: number[] = []
       const missing: number[] = []
       for (const p of pieces) {
-        if (eq.has(p)) equipped += 1
-        else if (stored.has(p)) storedCount += 1
+        if (eq.has(p)) worn.push(p)
+        else if (stored.has(p)) storedIds.push(p)
         else missing.push(p)
       }
       return {
         set,
         total: pieces.length,
-        equipped,
-        stored: storedCount,
+        equipped: worn.length,
+        stored: storedIds.length,
+        worn,
+        storedIds,
         missing,
-        complete: pieces.length > 0 && equipped === pieces.length,
+        // Собран только тот комплект, где все части надето. Наличие в казне
+        // не засчитывается: бонус дают вещи на персонажах.
+        complete: pieces.length > 0 && worn.length === pieces.length,
       }
     })
     .sort((a, b) => Number(a.complete) - Number(b.complete) || a.set.name.localeCompare(b.set.name))
