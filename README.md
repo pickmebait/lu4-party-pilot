@@ -44,7 +44,16 @@ Cloudflare Worker    ← проверяет токен, пишет и читае
 
 ## Как поднять своё развёртывание
 
-Нужен бесплатный аккаунт Cloudflare: <https://dash.cloudflare.com/sign-up>
+**Уже развёрнуто:**
+
+| Что | Где |
+| --- | --- |
+| Сайт | <https://pickmebait.github.io/lu4-party-pilot/> |
+| База (Worker) | `https://lu4-party-pilot.lu4-pilot.workers.dev` |
+| Базы пати | `data/parties/<partyId>.json` в этом репозитории |
+| Переменная сборки | `VITE_API_URL` в Variables репозитория |
+
+Если разворачиваешь заново — те же шаги, что были при первом запуске:
 
 ```sh
 npm install
@@ -59,18 +68,21 @@ npm run cf:login     # откроется браузер — разреши до
 2. Repository access — **Only select repositories** → твой репозиторий
 3. Permissions → Contents: **Read and write**
 4. Больше ничего не выдавай
-5. `npm run cf:secret` и вставь токен
+5. Вставь токен в `.dev.vars` одной строкой `GITHUB_TOKEN=github_pat_…`
 
-Затем:
+Затем — **именно в таком порядке**:
 
 ```sh
-npm run cf:deploy
+npm run cf:deploy    # 1. развернуть Worker
+npm run cf:secret    # 2. загрузить секрет
 ```
 
-Worker скажет адрес вида `https://lu4-party-pilot.<поддомен>.workers.dev`.
-Пропиши его в репозитории: **Settings → Secrets and variables → Actions →
-Variables**, имя `VITE_API_URL`, значение — адрес Worker'а. После этого
-игрокам вообще не нужно вводить ничего, кроме токена.
+Порядок обязателен: секрет накладывается поверх последнего деплоя, и
+следующий `cf:deploy` его сотрёт. Скрипт сам об этом предупреждает.
+
+Адрес Worker'а прописывается в **Settings → Secrets and variables → Actions →
+Variables** как `VITE_API_URL` — тогда сайт соберётся с готовым адресом и
+игрокам вообще не нужно ничего вводить, кроме токена.
 
 Репозиторий и каталог с базами задаются в `wrangler.toml`
 (`REPO_OWNER`, `REPO_NAME`, `REPO_BRANCH`, `DATA_DIR`).
@@ -79,17 +91,17 @@ Variables**, имя `VITE_API_URL`, значение — адрес Worker'а. �
 и подскажет, что именно нужно сделать. Это лучше, чем предлагать игроку
 вводить адрес, которого в рабочей сборке нет.
 
+### Если workers.dev недоступен
+
+`*.workers.dev` бывает заблокирован на уровне сети провайдера. Если Worker
+не открывается — привяжи его к своему домену: **Workers → Routes → Add →
+Custom domain**, и поправь `ALLOWED_ORIGIN` в `wrangler.toml`.
+
 ### Для разработки
 
 ```sh
 npm run cf:dev       # Worker локально на :8787
 npm run dev          # приложение на :5173
-```
-
-Для локального Worker'а положи токен в `.dev.vars` (файл в `.gitignore`):
-
-```
-GITHUB_TOKEN=github_pat_…
 ```
 
 Локальный Worker работает с тем же репозиторием — правки баз попадут туда
