@@ -1,0 +1,20 @@
+{
+  "partyId": "2wjgmdxfj3",
+  "name": "Проверка связи",
+  "createdAt": "2026-10-07T07:10:42.710Z",
+  "tokenHash": "cc05fb64f8ba1ba8f1988ce73149fdd391ca3d40a1e7085ade901f9298aed56d",
+  "tokensIssued": 1,
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-07T07:10:42.710Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
