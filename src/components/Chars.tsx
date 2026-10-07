@@ -17,6 +17,8 @@ import {
   useDb,
 } from '@/lib/store'
 import { ItemPicker, gradeLabel, matches } from './ItemPicker'
+import { ClassSelect, LevelInput } from './ClassLevel'
+import { clampLevel } from '@/lib/classes'
 
 interface PickerTarget {
   charId: string
@@ -118,6 +120,11 @@ function QuickAddForm({
   const [level, setLevel] = useState('')
   const ok = name.trim().length > 0
 
+  const submit = () => {
+    if (!ok) return
+    onDone(name.trim(), cls, clampLevel(level) === '' ? 0 : Number(clampLevel(level)))
+  }
+
   return (
     <div className="form">
       <label>
@@ -127,38 +134,26 @@ function QuickAddForm({
           autoFocus
           value={name}
           onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && ok) onDone(name.trim(), cls.trim(), Number(level) || 0)
-          }}
+          onKeyDown={(e) => e.key === 'Enter' && submit()}
         />
       </label>
-      <label>
-        Класс
-        <input
-          className="input"
-          placeholder="SM, Маг, Оракул…"
-          value={cls}
-          onChange={(e) => setCls(e.target.value)}
-        />
-      </label>
-      <label>
-        Уровень
-        <input
-          className="input"
-          inputMode="numeric"
-          value={level}
-          onChange={(e) => setLevel(e.target.value.replace(/\D/g, ''))}
-        />
-      </label>
+
+      <div className="row">
+        <label className="grow">
+          Профессия
+          <ClassSelect value={cls} onChange={setCls} />
+        </label>
+        <label>
+          Уровень
+          <LevelInput value={level} onChange={setLevel} />
+        </label>
+      </div>
+
       <div className="form-actions">
         <button className="btn" onClick={onCancel}>
           Отмена
         </button>
-        <button
-          className="btn primary"
-          disabled={!ok}
-          onClick={() => onDone(name.trim(), cls.trim(), Number(level) || 0)}
-        >
+        <button className="btn primary" disabled={!ok} onClick={submit}>
           Добавить
         </button>
       </div>
@@ -414,29 +409,26 @@ function EditForm({
 }) {
   const [name, setName] = useState(char.name)
   const [cls, setCls] = useState(char.cls)
-  const [level, setLevel] = useState(String(char.level))
+  const [level, setLevel] = useState(char.level > 0 ? String(char.level) : '')
+
+  const save = () =>
+    onDone({
+      name: name.trim(),
+      cls,
+      level: clampLevel(level) === '' ? 0 : Number(clampLevel(level)),
+    })
+
   return (
     <div className="edit-form">
       <input className="input" autoFocus value={name} onChange={(e) => setName(e.target.value)} />
       <div className="row">
-        <input
-          className="input"
-          placeholder="Класс"
-          value={cls}
-          onChange={(e) => setCls(e.target.value)}
-        />
-        <input
-          className="input narrow"
-          inputMode="numeric"
-          value={level}
-          onChange={(e) => setLevel(e.target.value.replace(/\D/g, ''))}
-        />
+        <div className="grow">
+          <ClassSelect value={cls} onChange={setCls} />
+        </div>
+        <LevelInput value={level} onChange={setLevel} />
       </div>
       <div className="row">
-        <button
-          className="btn tiny primary"
-          onClick={() => onDone({ name: name.trim(), cls: cls.trim(), level: Number(level) || 0 })}
-        >
+        <button className="btn tiny primary" onClick={save}>
           Сохранить
         </button>
         <button className="btn tiny" onClick={onCancel}>

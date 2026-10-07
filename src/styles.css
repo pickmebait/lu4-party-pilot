@@ -354,6 +354,17 @@ body {
   width: 92px;
 }
 
+/* Уровень: две цифры, поэтому поле узкое и не перескакивает на новую строку. */
+.input.level {
+  width: 72px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.form .row label {
+  margin-bottom: 10px;
+}
+
 .input.tiny-input {
   width: 62px;
   padding: 4px 6px;
