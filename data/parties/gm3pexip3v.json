@@ -1,0 +1,20 @@
+{
+  "partyId": "gm3pexip3v",
+  "name": "4234",
+  "createdAt": "2026-10-07T07:12:47.058Z",
+  "tokenHash": "a7fd309c45c3eead41d8e225c4b985caa16d2b0287930cba57bbe864619a1709",
+  "tokensIssued": 1,
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-07T07:12:47.058Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
