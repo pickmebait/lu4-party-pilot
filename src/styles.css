@@ -356,13 +356,20 @@ body {
 
 /* Уровень: две цифры, поэтому поле узкое и не перескакивает на новую строку. */
 .input.level {
-  width: 72px;
+  width: 60px;
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
 
+/*
+ * Подпись внутри .row обязана лежать НАД полем, а не рядом.
+ * .row — flex-контейнер, и без column текст подписи стал бы его отдельным
+ * элементом: «Уровень» прижимался бы к полю слева, как соседний блок.
+ */
 .form .row label {
   margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
 }
 
 .input.tiny-input {
