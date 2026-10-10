@@ -10,6 +10,12 @@ import type { CatalogApi } from '@/lib/catalog'
 import { normalize } from '@/lib/util'
 import { ItemIcon } from './ItemIcon'
 
+/** Сколько предметов показывать на одной странице. */
+const PAGE_SIZE = 100
+
+/** Потолок для поиска: справочник меньше двух тысяч предметов. */
+const SEARCH_LIMIT = 5000
+
 interface Props {
   catalog: CatalogApi
   /** Слот экранировки: задаёт и то, что подходит, и какие фильтры показывать. */
@@ -24,8 +30,11 @@ interface Props {
 /**
  * Выбор предмета из справочника.
  *
- * Список закрытый, ручного ввода по id нет. Кроме поиска есть фильтры:
- * тип предмета (оружие или броня) и грейд. Они дополняют друг друга.
+ * Список закрытый, ручного ввода по id нет. Сразу открывается весь список
+ * предметов, подходящих под слот, — постранично, чтобы можно было
+ * полистать, а не гадать. Поиск и фильтры только сужают этот список,
+ * и пустым он становится ровно тогда, когда под условия не подошёл
+ * ни один предмет.
  *
  * Важно: предмет, у которого тип или грейд определить не удалось,
  * показывается при любом выборе. Иначе фильтр молча прятал бы вещи,
@@ -35,12 +44,11 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, onClose }: P
   const [q, setQ] = useState('')
   const [type, setType] = useState<string | null>(null)
   const [grade, setGrade] = useState<string | null>(null)
+  const [page, setPage] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
 
-  const acceptsFn = useMemo(
-    () => accepts ?? slot?.accepts ?? (() => true),
-    [accepts, slot],
-  )
+  const acceptsFn = useMemo(() => accepts ?? slot?.accepts ?? (() => true), [accepts, slot])
   const filters = slot?.filters ?? {}
 
   useEffect(() => {
@@ -55,8 +63,11 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, onClose }: P
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  // Список предметов, подходящих под слот, с раскладкой по вариантам фильтра.
-  const pool = useMemo(() => catalog.all().filter(acceptsFn), [catalog, acceptsFn])
+  /** Предметы, подходящие под слот, по алфавиту: с ними удобно листать. */
+  const pool = useMemo(
+    () => catalog.all().filter(acceptsFn).sort((a, b) => a.name.localeCompare(b.name, 'ru')),
+    [catalog, acceptsFn],
+  )
 
   const typeField =
     filters.type === 'weapon' ? 'weaponType' : filters.type === 'armor' ? 'armorType' : null
@@ -67,36 +78,57 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, onClose }: P
     return []
   }, [filters.type])
 
+  const matches = (it: CatalogItem) =>
+    acceptsFn(it) && passesType(it, typeField, type) && passesGrade(it, grade)
+
   /** Сколько предметов в слоте с указанным типом и выбранным грейдом. */
-const typeCount = (value: string) =>
+  const typeCount = (value: string) =>
     pool.filter((it) => passesType(it, typeField, value) && passesGrade(it, grade)).length
 
   const gradeCount = (value: string) =>
     pool.filter((it) => passesType(it, typeField, type) && passesGrade(it, value)).length
 
-  const matches = (it: CatalogItem) =>
-    passesType(it, typeField, type) && passesGrade(it, grade)
-
-  const results = useMemo(() => catalog.search(q, 200).filter(matches), [catalog, q, type, grade, typeField]) // eslint-disable-line react-hooks/exhaustive-deps
-  const showResults = q.trim().length > 0
-
-  const known = useMemo(() => {
-    return [...catalog.knownIds]
-      .map((id) => catalog.byId(id))
-      .filter((it): it is CatalogItem => !!it && acceptsFn(it) && matches(it)) // eslint-disable-line react-hooks/exhaustive-deps
-      .slice(0, 20)
-  }, [catalog, acceptsFn, type, grade, typeField]) // eslint-disable-line react-hooks/exhaustive-deps
+  // С пустым поиском берём весь список слота по алфавиту. С поиском —
+  // ранжированную выдачу справочника, она умеет искать по синонимам
+  // и по техническому имени.
+  const query = q.trim()
+  const results = useMemo(
+    () => (query ? catalog.search(q, SEARCH_LIMIT) : pool).filter(matches),
+    [query, q, catalog, pool, acceptsFn, type, grade, typeField], // eslint-disable-line react-hooks/exhaustive-deps
+  )
 
   const total = pool.length
-  // Сколько предметов проходят фильтры — считаем по всему списку слота,
-  // а не по тому, что сейчас видно в окне: иначе при пустом поиске
-  // показывалось бы «0», хотя под фильтры что-то подходит.
-  const matching = useMemo(() => pool.filter(matches).length, [pool, type, grade, typeField]) // eslint-disable-line react-hooks/exhaustive-deps
-  const filtered = type !== null || grade !== null || showResults
+  const filtered = query.length > 0 || type !== null || grade !== null
+
+  const pages = Math.max(1, Math.ceil(results.length / PAGE_SIZE))
+  const pageNo = Math.min(page, pages - 1)
+  const shown = results.slice(pageNo * PAGE_SIZE, (pageNo * PAGE_SIZE) + PAGE_SIZE)
+  const from = results.length === 0 ? 0 : pageNo * PAGE_SIZE + 1
+  const to = Math.min((pageNo + 1) * PAGE_SIZE, results.length)
+
+  /** Любое изменение условий возвращает на первую страницу. */
+  const reset = <T,>(set: (v: T) => void) => (v: T) => {
+    set(v)
+    setPage(0)
+    listRef.current?.scrollTo({ top: 0 })
+  }
+  const onQuery = reset(setQ)
+  const onType = reset(setType)
+  const onGrade = reset(setGrade)
+
+  const goTo = (n: number) => {
+    setPage(n)
+    listRef.current?.scrollTo({ top: 0 })
+  }
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={title ?? slot?.label ?? "выбор предмета"}>
+      <div
+        className="modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-label={title ?? slot?.label ?? 'выбор предмета'}
+      >
         <div className="modal-head">
           <h3>{title ?? slot?.label ?? 'Выбери предмет'}</h3>
           <button className="icon-btn" onClick={onClose} aria-label="Закрыть">
@@ -109,7 +141,7 @@ const typeCount = (value: string) =>
           className="input"
           placeholder="Поиск: название, техническое имя или номер…"
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => onQuery(e.target.value)}
         />
 
         {(typeOptions.length > 0 || filters.grade) && (
@@ -121,7 +153,7 @@ const typeCount = (value: string) =>
                 value={type}
                 total={total}
                 countFor={typeCount}
-                onChange={setType}
+                onChange={onType}
               />
             )}
             {filters.grade && (
@@ -131,50 +163,70 @@ const typeCount = (value: string) =>
                 value={grade}
                 total={total}
                 countFor={gradeCount}
-                onChange={setGrade}
+                onChange={onGrade}
               />
             )}
           </div>
         )}
 
         <div className="picker-count">
-          {filtered ? `Под фильтры подходит ${matching} из ${total}` : `Всего в слоте: ${total}`}
-          {(type || grade) && (
+          <span>
+            {filtered ? `Подходит ${results.length} из ${total}` : `Всего в слоте: ${total}`}
+            {results.length > 0 && ` · показано ${from}–${to}`}
+          </span>
+          {(type || grade || query) && (
             <button
               className="link-btn"
               onClick={() => {
                 setType(null)
                 setGrade(null)
+                setQ('')
+                setPage(0)
+                listRef.current?.scrollTo({ top: 0 })
               }}
             >
-              Сбросить фильтры
+              Сбросить всё
             </button>
           )}
         </div>
 
-        <div className="picker-list scroll tall">
-          {!showResults &&
-            known.length === 0 &&
-            (type || grade ? (
-              <p className="hint">Под выбранные фильтры ничего не подходит.</p>
-            ) : (
-              <p className="hint">
-                Под этот слот подходит {total} предметов. Начни вводить название — или ищи по
-                техническому имени.
-              </p>
-            ))}
-          {showResults && results.length === 0 && (
+        <div className="picker-list scroll tall" ref={listRef}>
+          {results.length === 0 && (
             <p className="hint">
-              Ничего не найдено. Проверь раскладку, фильтры или попробуй техническое имя
-              предмета — например <code>avadon_boots</code>.
+              {filtered
+                ? 'Под эти условия не подошёл ни один предмет.'
+                : 'Справочник ещё загружается или пуст.'}{' '}
+              {filtered && 'Попробуй снять часть фильтров или упростить запрос.'}
             </p>
           )}
-          {!showResults &&
-            known.map((it) => <Row key={it.id} it={it} onPick={onPick} onClose={onClose} />)}
-          {showResults && results.map((it) => (
-            <Row key={it.id} it={it} onPick={onPick} onClose={onClose} />
+          {shown.map((it) => (
+            <Row
+              key={it.id}
+              it={it}
+              inApp={catalog.knownIds.has(it.id)}
+              onPick={onPick}
+              onClose={onClose}
+            />
           ))}
         </div>
+
+        {pages > 1 && (
+          <div className="pager">
+            <button className="pg" onClick={() => goTo(pageNo - 1)} disabled={pageNo === 0}>
+              ‹ Назад
+            </button>
+            <span className="pg-num">
+              Страница {pageNo + 1} из {pages}
+            </span>
+            <button
+              className="pg"
+              onClick={() => goTo(pageNo + 1)}
+              disabled={pageNo >= pages - 1}
+            >
+              Вперёд ›
+            </button>
+          </div>
+        )}
 
         <div className="picker-foot">
           Справочник: {catalog.count} предметов
@@ -244,10 +296,13 @@ function FilterRow({
 
 function Row({
   it,
+  inApp,
   onPick,
   onClose,
 }: {
   it: CatalogItem
+  /** Уже надето в пати или лежит в казне — помечаем, чтобы было видно. */
+  inApp: boolean
   onPick: (itemId: number) => void
   onClose: () => void
 }) {
@@ -262,7 +317,7 @@ function Row({
 
   return (
     <button
-      className="picker-row"
+      className={`picker-row ${inApp ? 'in-app' : ''}`}
       onClick={() => {
         onPick(it.id)
         onClose()
@@ -277,6 +332,7 @@ function Row({
       {it.weaponType && <span className="tag">{it.weaponType}</span>}
       {it.armorType && <span className="tag">{ARMOR_TYPE_LABELS[it.armorType] ?? it.armorType}</span>}
       {it.gradeName && <span className={`tag grade g-${it.gradeName}`}>{it.gradeName}</span>}
+      {inApp && <span className="tag in-app-mark" title="Уже есть в пати">в пати</span>}
       <span className="picker-id">#{it.id}</span>
     </button>
   )

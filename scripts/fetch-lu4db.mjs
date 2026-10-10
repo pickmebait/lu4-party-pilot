@@ -195,44 +195,55 @@ function mapVariant(v) {
  * признакам, от надёжного к спорному:
  *   1. суффикс в техническом имени: avadon_boots_heavy, _light, _robe
  *   2. слово в названии вещи: «Heavy Armor», «Light», «Robe»
- *   3. комплект: «Avadon Heavy Set», «Tallum Light Set»
- *   4. единственный вариант вещи, если он назван прямо
- *   5. материал в техническом имени: leather, plate, chain, robe
- * Если определить не вышло, тип остаётся пустым, и такая вещь видна при
- * любом выборе типа, а не прячется.
+ *   3. единственный вариант вещи, если он назван прямо
+ *   4. материал в техническом имени: leather, plate, chain, robe
+ *   5. комплект: «Avadon Heavy Set», «Tallum Light Set» — самое слабое
+ * Если определить не вышло или сработало только правило 5, тип
+ * остаётся пустым, и такая вещь видна при любом выборе типа.
  */
 function deriveArmorType(it, w, variants) {
   const tex = (it.id || '').toLowerCase()
   const name = (it.name || '').toLowerCase()
   const both = `${tex} ${name}`
 
-  if (/_(heavy|hvy)($|_)|heavy armor/.test(both)) return 'heavy'
-  if (/_(light|lth)($|_)|light armor/.test(both)) return 'light'
-  if (/_robe($|_)|robe$/.test(both)) return 'magic'
+  const sure = (type) => ({ type, sure: true })
 
-  const sets = [it.setName, w?.setName].filter(Boolean).join(' ')
-  if (/heavy/i.test(sets)) return 'heavy'
-  if (/light/i.test(sets)) return 'light'
-  if (/magic|robe/i.test(sets)) return 'magic'
+  if (/_(heavy|hvy)($|_)|heavy armor/.test(both)) return sure('heavy')
+  if (/_(light|lth)($|_)|light armor/.test(both)) return sure('light')
+  if (/_robe($|_)|robe$/.test(both)) return sure('magic')
 
   const own = variants.find((v) => v.name === it.name)
-  if (own?.variant) return mapVariant(own.variant)
-  if (variants.length === 1) return mapVariant(variants[0].variant)
+  if (own?.variant) return sure(mapVariant(own.variant))
+  // Вариант без знакомого типа ничего не решает — иначе правила ниже
+  // уже не пров��ряются.
+  if (variants.length === 1) {
+    const only = mapVariant(variants[0].variant)
+    if (only) return sure(only)
+  }
 
-  if (/leather|leggings|buckskin/.test(tex)) return 'light'
-  if (/plate|chain|composite|scale/.test(tex)) return 'heavy'
-  if (/robe|cloth|cotton|tunic|shirt|pants/.test(tex)) return 'magic'
+  if (/leather|leggings|buckskin/.test(tex)) return sure('light')
+  if (/plate|chain|composite|scale/.test(tex)) return sure('heavy')
+  if (/robe|cloth|cotton|tunic|shirt|pants/.test(tex)) return sure('magic')
 
   // Материал в техническом имени. В игре эти признаки однозначны:
   // кость, бронза, кольчуга и чешуя — тяжёлая броня, кожа и лён —
-  // лёгкая, халат и маг��ческие ткани — магическая.
+  // лёгкая, халат и магические ткани — магическая.
   if (/(plate|chain|scale|ring|bone|bronze|brigandine|kite|viking|heavy)/.test(tex)) {
-    return 'heavy'
+    return sure('heavy')
   }
   if (/(leather|linen|cloth|cotton|buckskin|leggings|elven|silver_crab|britannia|apprentice)/.test(tex)) {
-    return 'light'
+    return sure('light')
   }
-  if (/(robe|mage|mystical|nightshade|sorcerer|shaman|pajama)/.test(tex)) return 'magic'
+  if (/(robe|mage|mystical|nightshade|sorcerer|shaman|pajama)/.test(tex)) return sure('magic')
+
+  // Название комплекта — самое слабое правило, и именно оно ошибается:
+  // lu4db относит Tallum Helmet (тяжёлый шлем A-класса) к «Tallum
+  // Light Set». Поэтому оно последнее и результат помечается как
+  // неточный — такой предмет виден при любом выборе типа.
+  const sets = [it.setName, w?.setName].filter(Boolean).join(' ')
+  if (/heavy/i.test(sets)) return { type: 'heavy', sure: false }
+  if (/light/i.test(sets)) return { type: 'light', sure: false }
+  if (/magic|robe/i.test(sets)) return { type: 'magic', sure: false }
 
   return null
 }
@@ -281,7 +292,7 @@ async function main() {
   source.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
 
   const iconFiles = new Set()
-  const stats = { соСлотом: 0, безСлота: 0, изВики: 0, экипировка: 0, рецепты: 0, ресурсы: 0, сТипомОружия: 0, сТипомБрони: 0 }
+  const stats = { соСлотом: 0, безСлота: 0, изВики: 0, экипировка: 0, рецепты: 0, ресурсы: 0, сТипомОружия: 0, сТипомБрони: 0, сТипомБрониПоКомплекту: 0 }
   const noSlotNames = []
 
   const items = source.map((it, index) => {
@@ -327,9 +338,13 @@ async function main() {
     const market = marketByCatalog.get(it.id)
 
     const weaponType = slot === 'r_hand' ? deriveWeaponType(it, w) : null
-    const armorType = ARMOR_SLOTS.has(slot) ? deriveArmorType(it, w, variants) : null
+    const armor = ARMOR_SLOTS.has(slot) ? deriveArmorType(it, w, variants) : null
+    // Тип по названию комплекта неточный: в источнике такие комплекты
+    // иногда указаны неверно, поэтому наружу он не попадает.
+    const armorType = armor?.sure ? armor.type : null
     if (weaponType) stats.сТипомОружия++
     if (armorType) stats.сТипомБрони++
+    if (armor && !armor.sure) stats.сТипомБрониПоКомплекту++
 
     const out = {
       id,
@@ -416,6 +431,9 @@ async function main() {
   console.log(`  нашлось в вики: ${stats.изВики}`)
   console.log(`  тип оружия определён: ${stats.сТипомОружия}`)
   console.log(`  тип брони определён: ${stats.сТипомБрони}`)
+  console.log(
+    `  тип брони только по комплекту (неточный, пропущен): ${stats.сТипомБрониПоКомплекту}`,
+  )
   if (noSlotNames.length) {
     console.log(`  готовых без слота: ${noSlotNames.length} → ${noSlotNames.slice(0, 6).join(', ')}`)
   }

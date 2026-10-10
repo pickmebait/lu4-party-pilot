@@ -634,8 +634,45 @@ body {
   color: var(--muted);
 }
 
+/* Высота списка — от экрана, а не фиксированная: на низком окне
+   пагинация под списком не должна уезжать за край. */
 .picker-list.scroll.tall {
-  max-height: 340px;
+  max-height: min(420px, 42vh);
+}
+
+/* Переключатель страниц под списком. */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.pg {
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.pg:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.pg-num {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Предмет, который уже есть в пати: полоска слева. */
+.picker-row.in-app {
+  box-shadow: inset 2px 0 0 #4c7a5a;
+}
+
+.tag.in-app-mark {
+  border-color: #3f6b4c;
+  color: #93e0a8;
 }
 
 /* Кнопка-ссылка: сброс фильтров в пикере. */
