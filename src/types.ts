@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Доменная модель трекера.
  *
  * Всё, что описывает состояние пати, лежит в одном объекте `Db`.
@@ -39,78 +39,83 @@ export const WEAPON_TYPES = new Set([
   'Dual Sword',
 ])
 
-const isArmor = (i: CatalogItem) => i.type === 'Armor'
-const isJewelry = (i: CatalogItem) => i.type === 'Jewelry'
-
+/**
+ * Что можно положить в слот.
+ *
+ * Проверяем только поле slot: в справочнике с восстановленными слотами
+ * его есть у всей экипировки, а вот type заполнен меньше чем у половины.
+ * Раньше проверка требовала type === 'Armor', из-за чего 12 шлемов и
+ * 15 щитов в список не попадали.
+ */
 export const SLOTS: Record<string, SlotDef> = {
   rhand: {
     key: 'rhand',
     label: 'В правой руке',
     max: 1,
-    accepts: (i) => i.slot === 'r_hand' || WEAPON_TYPES.has(i.type ?? ''),
+    accepts: (i) => i.slot === 'r_hand',
     hint: 'Оружие: мечи, копья, луки, дробящие, кинжалы, посохи',
   },
   lhand: {
     key: 'lhand',
     label: 'В левой руке',
     max: 1,
-    accepts: (i) => i.type === 'Shield' || i.slot === 'l_hand',
+    accepts: (i) => i.slot === 'l_hand',
     hint: 'Щит. Занят, если оружие двуручное',
   },
   head: {
     key: 'head',
     label: 'Шлем',
     max: 1,
-    accepts: (i) => isArmor(i) && i.slot === 'head',
+    accepts: (i) => i.slot === 'head',
     hint: 'Шлемы, капюшоны, диадемы',
   },
   chest: {
     key: 'chest',
     label: 'Верх',
     max: 1,
-    accepts: (i) => isArmor(i) && i.slot === 'chest',
+    accepts: (i) => i.slot === 'chest',
     hint: 'Нагрудники и халаты. Цельная броня занимает ещё и низ',
   },
   legs: {
     key: 'legs',
     label: 'Низ',
     max: 1,
-    accepts: (i) => isArmor(i) && i.slot === 'legs',
+    accepts: (i) => i.slot === 'legs',
     hint: 'Поножи и штаны',
   },
   gloves: {
     key: 'gloves',
     label: 'Перчатки',
     max: 1,
-    accepts: (i) => isArmor(i) && i.slot === 'gloves',
+    accepts: (i) => i.slot === 'gloves',
     hint: 'Перчатки и рукавицы',
   },
   feet: {
     key: 'feet',
     label: 'Ботинки',
     max: 1,
-    accepts: (i) => isArmor(i) && i.slot === 'feet',
+    accepts: (i) => i.slot === 'feet',
     hint: 'Сапоги и башмаки',
   },
   neck: {
     key: 'neck',
     label: 'Ожерелье',
     max: 1,
-    accepts: (i) => isJewelry(i) && i.slot === 'neck',
+    accepts: (i) => i.slot === 'neck',
     hint: 'Ожерелья и амулеты',
   },
   ear: {
     key: 'ear',
     label: 'Серьги',
     max: 2,
-    accepts: (i) => isJewelry(i) && i.slot === 'l_ear',
+    accepts: (i) => i.slot === 'l_ear',
     hint: 'Серьги, по две штуки',
   },
   ring: {
     key: 'ring',
     label: 'Кольца',
     max: 2,
-    accepts: (i) => isJewelry(i) && i.slot === 'l_ring',
+    accepts: (i) => i.slot === 'l_ring',
     hint: 'Кольца, по две штуки',
   },
 }
@@ -256,23 +261,47 @@ export interface CatalogItem {
   name: string
   /** Техническое имя из клиента: "draco_blade". */
   tex?: string
-  /** Имя комплекта, если предмет входит в сет. */
-  set?: string
+  /** Исходное название, если в нём были две формы через звёздочку. */
+  fullName?: string
+
+  /* ------------------------------------------------------ что это за предмет */
+
+  /** finished — готовая вещь, recipe, part, resource, misc, other. */
+  kind?: string
+  /** Рыночная секция: armor-A, weapon-C, jewelry-B, resources-1… */
+  section?: string
+  /** Слот экипировки: r_hand, l_hand, head, chest, legs, gloves, feet, neck, l_ear, l_ring. */
+  slot?: string
+  /** Armor | Weapon | Jewelry | Shield | Sword 1H… */
+  type?: string
+  /** Идентификатор вещи у эмулятора: "ear_adamantite", "ft_avadon". */
+  equipmentId?: string
   /** Грейд 0-16: NG 0, D 7, C 9, B 12, A 14, S 16. */
   grade?: number
+  /** Грейд словами, как в источнике: "NG", "B", "A". */
+  gradeName?: string
   /** Иконка относительно корня сайта: "icons/foo.webp". */
   icon?: string
-  /** finished | recipe | part | resource | misc | other */
-  kind?: string
-  /** Слот по данным источника: "r_hand", "l_ear", "feet". */
-  slot?: string
-  /** Armor | Weapon | Jewelry | Sword 1H | … */
-  type?: string
-  /** Бонус комплекта, если предмет его часть. */
+
+  /* ---------------------------------------------------------------- комплекты */
+
+  set?: string
+  /** Бонус комплекта одной строкой. */
   bonus?: string
+  /** Бонусы комплекта по частям: тяжёлая, лёгкая, мантия. */
+  setBonuses?: string[]
+  /** Бонусы редкого варианта вещи. */
+  rareBonuses?: string[]
+  /** Бонусы после полной обработки. */
+  masterworkBonuses?: string[]
+  /** Все комплекты предмета, когда их больше одного. */
+  sets?: { setName: string; setBonuses?: string[]; rareBonuses?: string[] }[]
+
+  /* ----------------------------------------------------------- оружие и броня */
+
   /** Класс оружия по данным источника: «Двуручные Мечи», «Копья»… */
   weaponClass?: string
-  /** Занимает обе руки: двуручное или дуальное оружие. */
+  /** Занимает обе руки: двуручное или дуальное. */
   twoHanded?: boolean
   /** Дуальное оружие: надевается парой в обе руки. */
   dual?: boolean
@@ -282,12 +311,44 @@ export interface CatalogItem {
   atkPhys?: number
   /** Маг. атака оружия. */
   atkMag?: number
-  /** Исходное название, если в нём были две формы через звёздочку. */
-  fullName?: string
-  /** Магическая защита. */
-  mDef?: number
-  /** Физическая защита. */
+  /** Физ. защита брони. */
   physDef?: number
+  /** Маг. защита брони. */
+  mDef?: number
+  /** Прирост маны. */
+  mpIncrease?: number
+  /** Название части: у брони может отличаться от названия вещи. */
+  pieceName?: string
+  /** SA-эффекты: тир, цвет, название, описание. */
+  saEffects?: { tier?: string; color?: string; name?: string; effect?: string }[]
+  /** Особый эффект редкой вещи. */
+  rareEffect?: string
+
+  /* --------------------------------------------------------------------- крафт */
+
+  recipe?: {
+    chance?: string
+    outputQty?: number
+    ingredients?: { name: string; qty: number; catalogId?: string }[]
+  }
+  materialRecipe?: { outputQty?: number; ingredients?: { name: string; qty: number }[] }
+
+  /* ------------------------------------------------------------ торговые данные */
+
+  /** Требуемый уровень по данным рынка. */
+  marketLevel?: number
+  derivedPrice?: boolean
+
+  /* ------------------------------------------------------------------- прочее */
+
+  /** Варианты вещи: тяжёлая, лёгкая, мантия — со своими значками и бонусами. */
+  variants?: {
+    name: string
+    icon?: string
+    variant?: string
+    set?: string
+    setBonuses?: string[]
+  }[]
   /** Другие названия того же предмета. */
   aliases?: string[]
 }
