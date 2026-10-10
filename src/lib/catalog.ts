@@ -22,6 +22,8 @@ export interface CatalogApi extends CatalogState {
   search: (q: string, limit?: number) => CatalogItem[]
   /** Сколько предметов подходит под фильтр слота — для подсказки в пикере. */
   countMatching: (accepts: (item: CatalogItem) => boolean) => number
+  /** Все предметы справочника — нужно для подсчёта вариантов в фильтрах. */
+  all: () => CatalogItem[]
   /** Предметы, которые уже есть в инвентаре/казне — чтобы выбирать из них. */
   knownIds: Set<number>
 }
@@ -165,6 +167,11 @@ export function useCatalog(
     return [...starts, ...inner].slice(0, limit)
   }, [])
 
+  const all = useCallback(
+    (): CatalogItem[] => (cache.catalog?.items ?? []),
+    [cache.catalog],
+  )
+
   const countMatching = useCallback(
     (accepts: (item: CatalogItem) => boolean): number => {
       if (!index) return 0
@@ -184,8 +191,9 @@ export function useCatalog(
       nameOf,
       search,
       countMatching,
+      all,
       knownIds,
     }),
-    [state, byId, nameOf, search, countMatching, knownIds],
+    [state, byId, nameOf, search, countMatching, all, knownIds],
   )
 }

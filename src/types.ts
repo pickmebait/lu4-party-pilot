@@ -22,7 +22,29 @@ export interface SlotDef {
   accepts: (item: CatalogItem) => boolean
   /** Короткая подсказка для окна выбора. */
   hint: string
+  /** Какие фильтры показывать в пикере для этого слота. */
+  filters: { type?: 'weapon' | 'armor'; grade?: boolean }
 }
+
+/** Типы оружия для фильтра: 17 классов источника сведены к семи. */
+export const WEAPON_TYPE_LABELS = [
+  'Мечи',
+  'Дробящие',
+  'Кинжалы',
+  'Луки и арбалеты',
+  'Копья',
+  'Посохи',
+  'Кастеты',
+] as const
+
+export const ARMOR_TYPE_OPTIONS = [
+  { value: 'heavy', label: 'Тяжёлая' },
+  { value: 'light', label: 'Лёгкая' },
+  { value: 'magic', label: 'Магическая' },
+] as const
+
+/** Грейды в порядке убывания: так привычнее игроку. */
+export const GRADE_OPTIONS = ['NG', 'D', 'C', 'B', 'A'] as const
 
 export const WEAPON_TYPES = new Set([
   'Weapon',
@@ -54,6 +76,7 @@ export const SLOTS: Record<string, SlotDef> = {
     max: 1,
     accepts: (i) => i.slot === 'r_hand',
     hint: 'Оружие: мечи, копья, луки, дробящие, кинжалы, посохи',
+    filters: { type: 'weapon', grade: true },
   },
   lhand: {
     key: 'lhand',
@@ -61,6 +84,7 @@ export const SLOTS: Record<string, SlotDef> = {
     max: 1,
     accepts: (i) => i.slot === 'l_hand',
     hint: 'Щит. Занят, если оружие двуручное',
+    filters: { grade: true },
   },
   head: {
     key: 'head',
@@ -68,6 +92,7 @@ export const SLOTS: Record<string, SlotDef> = {
     max: 1,
     accepts: (i) => i.slot === 'head',
     hint: 'Шлемы, капюшоны, диадемы',
+    filters: { type: 'armor', grade: true },
   },
   chest: {
     key: 'chest',
@@ -75,6 +100,7 @@ export const SLOTS: Record<string, SlotDef> = {
     max: 1,
     accepts: (i) => i.slot === 'chest',
     hint: 'Нагрудники и халаты. Цельная броня занимает ещё и низ',
+    filters: { type: 'armor', grade: true },
   },
   legs: {
     key: 'legs',
@@ -82,6 +108,7 @@ export const SLOTS: Record<string, SlotDef> = {
     max: 1,
     accepts: (i) => i.slot === 'legs',
     hint: 'Поножи и штаны',
+    filters: { type: 'armor', grade: true },
   },
   gloves: {
     key: 'gloves',
@@ -89,6 +116,7 @@ export const SLOTS: Record<string, SlotDef> = {
     max: 1,
     accepts: (i) => i.slot === 'gloves',
     hint: 'Перчатки и рукавицы',
+    filters: { type: 'armor', grade: true },
   },
   feet: {
     key: 'feet',
@@ -96,6 +124,7 @@ export const SLOTS: Record<string, SlotDef> = {
     max: 1,
     accepts: (i) => i.slot === 'feet',
     hint: 'Сапоги и башмаки',
+    filters: { type: 'armor', grade: true },
   },
   neck: {
     key: 'neck',
@@ -103,6 +132,7 @@ export const SLOTS: Record<string, SlotDef> = {
     max: 1,
     accepts: (i) => i.slot === 'neck',
     hint: 'Ожерелья и амулеты',
+    filters: { grade: true },
   },
   ear: {
     key: 'ear',
@@ -110,6 +140,7 @@ export const SLOTS: Record<string, SlotDef> = {
     max: 2,
     accepts: (i) => i.slot === 'l_ear',
     hint: 'Серьги, по две штуки',
+    filters: { grade: true },
   },
   ring: {
     key: 'ring',
@@ -117,6 +148,7 @@ export const SLOTS: Record<string, SlotDef> = {
     max: 2,
     accepts: (i) => i.slot === 'l_ring',
     hint: 'Кольца, по две штуки',
+    filters: { grade: true },
   },
 }
 
@@ -301,6 +333,17 @@ export interface CatalogItem {
 
   /** Класс оружия по данным источника: «Двуручные Мечи», «Копья»… */
   weaponClass?: string
+  /**
+   * Тип оружия для фильтра: семь групп, в которые сведены семнадцать
+   * классов источника. Пусто, если определить не удалось.
+   */
+  weaponType?: string
+  /**
+   * Тип брони для фильтра: `heavy`, `light` или `magic`.
+   * Пусто у части стартовой брони — такие вещи видны при любом
+   * выборе типа, чтобы фильтр ничего не прятал молча.
+   */
+  armorType?: 'heavy' | 'light' | 'magic'
   /** Занимает обе руки: двуручное или дуальное. */
   twoHanded?: boolean
   /** Дуальное оружие: надевается парой в обе руки. */

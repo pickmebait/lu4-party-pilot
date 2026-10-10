@@ -57,6 +57,9 @@ const EQUIP_SLOT = {
   rng: 'l_ring',
 }
 
+/** Слоты брони — для них считаем тип: тяжёлая, лёгкая или магическая. */
+const ARMOR_SLOTS = new Set(['head', 'chest', 'legs', 'gloves', 'feet'])
+
 function die(msg) {
   console.error(`Ошибка: ${msg}`)
   process.exit(1)
@@ -130,6 +133,110 @@ function deriveSlot(it, wikiEntry) {
   return slotFromName(it.name)
 }
 
+/**
+ * Типы оружия для фильтра в пикере.
+ * Классы источника мельче, чем это разбиение, но каждое покрывается.
+ */
+const WEAPON_CLASS_TO_TYPE = {
+  'Одноручные Мечи': 'Мечи',
+  'Двуручные Мечи': 'Мечи',
+  'Одноручные Магические Мечи': 'Мечи',
+  'Дуал-мечи': 'Мечи',
+  'Одноручные Бланты': 'Дробящие',
+  'Двуручные Бланты': 'Дробящие',
+  'Дуал-бланты': 'Дробящие',
+  'Одноручное Магическое Дробящее': 'Дробящие',
+  Кинжалы: 'Кинжалы',
+  'Дуал-кинжалы': 'Кинжалы',
+  'Магические Кинжалы': 'Кинжалы',
+  Луки: 'Луки и арбалеты',
+  Арбалеты: 'Луки и арбалеты',
+  Копья: 'Копья',
+  'Одноручное Магическое': 'Посохи',
+  'Двуручное Магическое': 'Посохи',
+  Кастеты: 'Кастеты',
+}
+
+/** Запасной путь для нескольких предметов без класса оружия. */
+function weaponTypeFallback(it) {
+  const t = it.equipmentType || ''
+  const n = it.name || ''
+  if (/^Sword/.test(t) || /Меч/i.test(n)) return 'Мечи'
+  if (/^Blunt/.test(t) || /Дробящ/i.test(n)) return 'Дробящие'
+  if (/Dagger/.test(t) || /Кинжал/i.test(n)) return 'Кинжалы'
+  if (/Bow/.test(t) || /Лук/i.test(n)) return 'Луки и арбалеты'
+  if (/Spear/.test(t) || /Копь/i.test(n)) return 'Копья'
+  if (/Staff/.test(t) || /Посох/i.test(n)) return 'Посохи'
+  if (/Fist|Cestus/i.test(t) || /Кастет/i.test(n)) return 'Кастеты'
+  if (/axe|mace|club|hammer|flail|tobacco/i.test(n)) return 'Дробящие'
+  if (/spear|halberd|glaive|pike/i.test(n)) return 'Копья'
+  if (/bow|crossbow/i.test(n)) return 'Луки и арбалеты'
+  if (/knife|dagger|kriss|khram/i.test(n)) return 'Кинжалы'
+  if (/sword|blade|falchion/i.test(n)) return 'Мечи'
+  return null
+}
+
+function deriveWeaponType(it, w) {
+  const byClass = WEAPON_CLASS_TO_TYPE[w?.weaponClass]
+  return byClass || weaponTypeFallback(it)
+}
+
+function mapVariant(v) {
+  if (v === 'heavy') return 'heavy'
+  if (v === 'light') return 'light'
+  if (v === 'robe') return 'magic'
+  return null
+}
+
+/**
+ * Тип брони: тяжёлая, лёгкая, магическая.
+ *
+ * Отдельного поля в источнике нет, поэтому собираем по нескольким
+ * признакам, от надёжного к спорному:
+ *   1. суффикс в техническом имени: avadon_boots_heavy, _light, _robe
+ *   2. слово в названии вещи: «Heavy Armor», «Light», «Robe»
+ *   3. комплект: «Avadon Heavy Set», «Tallum Light Set»
+ *   4. единственный вариант вещи, если он назван прямо
+ *   5. материал в техническом имени: leather, plate, chain, robe
+ * Если определить не вышло, тип остаётся пустым, и такая вещь видна при
+ * любом выборе типа, а не прячется.
+ */
+function deriveArmorType(it, w, variants) {
+  const tex = (it.id || '').toLowerCase()
+  const name = (it.name || '').toLowerCase()
+  const both = `${tex} ${name}`
+
+  if (/_(heavy|hvy)($|_)|heavy armor/.test(both)) return 'heavy'
+  if (/_(light|lth)($|_)|light armor/.test(both)) return 'light'
+  if (/_robe($|_)|robe$/.test(both)) return 'magic'
+
+  const sets = [it.setName, w?.setName].filter(Boolean).join(' ')
+  if (/heavy/i.test(sets)) return 'heavy'
+  if (/light/i.test(sets)) return 'light'
+  if (/magic|robe/i.test(sets)) return 'magic'
+
+  const own = variants.find((v) => v.name === it.name)
+  if (own?.variant) return mapVariant(own.variant)
+  if (variants.length === 1) return mapVariant(variants[0].variant)
+
+  if (/leather|leggings|buckskin/.test(tex)) return 'light'
+  if (/plate|chain|composite|scale/.test(tex)) return 'heavy'
+  if (/robe|cloth|cotton|tunic|shirt|pants/.test(tex)) return 'magic'
+
+  // Материал в техническом имени. В игре эти признаки однозначны:
+  // кость, бронза, кольчуга и чешуя — тяжёлая броня, кожа и лён —
+  // лёгкая, халат и маг��ческие ткани — магическая.
+  if (/(plate|chain|scale|ring|bone|bronze|brigandine|kite|viking|heavy)/.test(tex)) {
+    return 'heavy'
+  }
+  if (/(leather|linen|cloth|cotton|buckskin|leggings|elven|silver_crab|britannia|apprentice)/.test(tex)) {
+    return 'light'
+  }
+  if (/(robe|mage|mystical|nightshade|sorcerer|shaman|pajama)/.test(tex)) return 'magic'
+
+  return null
+}
+
 function localIcon(path) {
   return `icons/${path.split('/').pop()}`
 }
@@ -174,7 +281,7 @@ async function main() {
   source.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
 
   const iconFiles = new Set()
-  const stats = { соСлотом: 0, безСлота: 0, изВики: 0, экипировка: 0, рецепты: 0, ресурсы: 0 }
+  const stats = { соСлотом: 0, безСлота: 0, изВики: 0, экипировка: 0, рецепты: 0, ресурсы: 0, сТипомОружия: 0, сТипомБрони: 0 }
   const noSlotNames = []
 
   const items = source.map((it, index) => {
@@ -219,6 +326,11 @@ async function main() {
     const recipe = recipesByCatalog.get(it.id)
     const market = marketByCatalog.get(it.id)
 
+    const weaponType = slot === 'r_hand' ? deriveWeaponType(it, w) : null
+    const armorType = ARMOR_SLOTS.has(slot) ? deriveArmorType(it, w, variants) : null
+    if (weaponType) stats.сТипомОружия++
+    if (armorType) stats.сТипомБрони++
+
     const out = {
       id,
       name: readableName(it.name),
@@ -251,6 +363,8 @@ async function main() {
 
       // оружие и броня
       ...(w.weaponClass ? { weaponClass: w.weaponClass } : {}),
+      ...(weaponType ? { weaponType } : {}),
+      ...(armorType ? { armorType } : {}),
       // Занимает обе руки. Луки двуручные, хотя слово «двуручное» в их
       // классе не написано, поэтому проверяем отдельно.
       ...(w.weaponClass && (/^Двуручн/.test(w.weaponClass) || w.weaponClass === 'Луки')
@@ -300,6 +414,8 @@ async function main() {
   console.log(`  из них экипировка: ${stats.экипировка}`)
   console.log(`  рецептов: ${stats.рецепты}, ресурсов: ${stats.ресурсы}`)
   console.log(`  нашлось в вики: ${stats.изВики}`)
+  console.log(`  тип оружия определён: ${stats.сТипомОружия}`)
+  console.log(`  тип брони определён: ${stats.сТипомБрони}`)
   if (noSlotNames.length) {
     console.log(`  готовых без слота: ${noSlotNames.length} → ${noSlotNames.slice(0, 6).join(', ')}`)
   }

@@ -1,20 +1,22 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import type { CatalogItem } from '@/types'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  ARMOR_TYPE_OPTIONS,
+  GRADE_OPTIONS,
+  WEAPON_TYPE_LABELS,
+  type CatalogItem,
+  type SlotDef,
+} from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
 import { normalize } from '@/lib/util'
 import { ItemIcon } from './ItemIcon'
 
 interface Props {
   catalog: CatalogApi
-  title?: string
-  /**
-   * Фильтр по типу предмета. В оружейный слот показываются только
-   * оружие, в слот бижутерии — только украшения: перепутать слот
-   * больше нельзя.
-   */
+  /** Слот экранировки: задаёт и то, что подходит, и какие фильтры показывать. */
+  slot?: SlotDef
+  /** Для мест без слота — казны и хотелок: просто ограничение по типу. */
   accepts?: (item: CatalogItem) => boolean
-  /** Подсказка, какие предметы сюда подходят. */
-  hint?: string
+  title?: string
   onPick: (itemId: number) => void
   onClose: () => void
 }
@@ -22,13 +24,24 @@ interface Props {
 /**
  * Выбор предмета из справочника.
  *
- * Ручного ввода по id нет: список закрытый, предметы берутся только
- * из загруженной базы. Иначе в пати появляются «Предмет #99999», которых
- * нет ни в игре, ни в базе, и потом их не найти.
+ * Список закрытый, ручного ввода по id нет. Кроме поиска есть фильтры:
+ * тип предмета (оружие или броня) и грейд. Они дополняют друг друга.
+ *
+ * Важно: предмет, у которого тип или грейд определить не удалось,
+ * показывается при любом выборе. Иначе фильтр молча прятал бы вещи,
+ * и игрок решил бы, что их не существует.
  */
-export function ItemPicker({ catalog, title = 'Выбери предмет', accepts, hint, onPick, onClose }: Props) {
+export function ItemPicker({ catalog, slot, accepts, title, onPick, onClose }: Props) {
   const [q, setQ] = useState('')
+  const [type, setType] = useState<string | null>(null)
+  const [grade, setGrade] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const acceptsFn = useMemo(
+    () => accepts ?? slot?.accepts ?? (() => true),
+    [accepts, slot],
+  )
+  const filters = slot?.filters ?? {}
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -42,31 +55,54 @@ export function ItemPicker({ catalog, title = 'Выбери предмет', acc
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  const fits = useMemo(() => (item: CatalogItem) => (accepts ? accepts(item) : true), [accepts])
+  // Список предметов, подходящих под слот, с раскладкой по вариантам фильтра.
+  const pool = useMemo(() => catalog.all().filter(acceptsFn), [catalog, acceptsFn])
 
-  const results = useMemo(() => catalog.search(q, 200).filter(fits), [catalog, q, fits])
+  const typeField =
+    filters.type === 'weapon' ? 'weaponType' : filters.type === 'armor' ? 'armorType' : null
+
+  const typeOptions = useMemo(() => {
+    if (filters.type === 'weapon') return WEAPON_TYPE_LABELS.map((v) => ({ value: v, label: v }))
+    if (filters.type === 'armor') return ARMOR_TYPE_OPTIONS.map((v) => ({ value: v.value, label: v.label }))
+    return []
+  }, [filters.type])
+
+  /** Сколько предметов в слоте с указанным типом и выбранным грейдом. */
+const typeCount = (value: string) =>
+    pool.filter((it) => passesType(it, typeField, value) && passesGrade(it, grade)).length
+
+  const gradeCount = (value: string) =>
+    pool.filter((it) => passesType(it, typeField, type) && passesGrade(it, value)).length
+
+  const matches = (it: CatalogItem) =>
+    passesType(it, typeField, type) && passesGrade(it, grade)
+
+  const results = useMemo(() => catalog.search(q, 200).filter(matches), [catalog, q, type, grade, typeField]) // eslint-disable-line react-hooks/exhaustive-deps
   const showResults = q.trim().length > 0
 
-  // При пустом поиске показываем то, что уже надето или лежит в казне:
-  // чаще всего нужен именно этот предмет.
   const known = useMemo(() => {
     return [...catalog.knownIds]
       .map((id) => catalog.byId(id))
-      .filter((it): it is CatalogItem => !!it && fits(it))
+      .filter((it): it is CatalogItem => !!it && acceptsFn(it) && matches(it)) // eslint-disable-line react-hooks/exhaustive-deps
       .slice(0, 20)
-  }, [catalog, fits])
+  }, [catalog, acceptsFn, type, grade, typeField]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const total = pool.length
+  // Сколько предметов проходят фильтры — считаем по всему списку слота,
+  // а не по тому, что сейчас видно в окне: иначе при пустом поиске
+  // показывалось бы «0», хотя под фильтры что-то подходит.
+  const matching = useMemo(() => pool.filter(matches).length, [pool, type, grade, typeField]) // eslint-disable-line react-hooks/exhaustive-deps
+  const filtered = type !== null || grade !== null || showResults
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={title}>
+      <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={title ?? slot?.label ?? "выбор предмета"}>
         <div className="modal-head">
-          <h3>{title}</h3>
+          <h3>{title ?? slot?.label ?? 'Выбери предмет'}</h3>
           <button className="icon-btn" onClick={onClose} aria-label="Закрыть">
             ✕
           </button>
         </div>
-
-        {hint && <p className="hint picker-hint">{hint}</p>}
 
         <input
           ref={inputRef}
@@ -76,45 +112,131 @@ export function ItemPicker({ catalog, title = 'Выбери предмет', acc
           onChange={(e) => setQ(e.target.value)}
         />
 
-        {catalog.error && <p className="hint warn">{catalog.error}</p>}
-
-        {!showResults && known.length > 0 && (
-          <div className="picker-section">
-            <div className="picker-label">Уже в приложении</div>
-            <div className="picker-list">
-              {known.map((it) => (
-                <Row key={it.id} it={it} onPick={onPick} onClose={onClose} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {showResults && (
-          <div className="picker-list scroll">
-            {results.length === 0 && (
-              <p className="hint">
-                Ничего не найдено. Проверь раскладку или попробуй техническое имя
-                предмета — например <code>avadon_boots</code>.
-              </p>
+        {(typeOptions.length > 0 || filters.grade) && (
+          <div className="filters">
+            {typeOptions.length > 0 && (
+              <FilterRow
+                label={filters.type === 'weapon' ? 'Тип оружия' : 'Тип брони'}
+                options={typeOptions}
+                value={type}
+                total={total}
+                countFor={typeCount}
+                onChange={setType}
+              />
             )}
-            {results.map((it) => (
-              <Row key={it.id} it={it} onPick={onPick} onClose={onClose} />
-            ))}
+            {filters.grade && (
+              <FilterRow
+                label="Грейд"
+                options={GRADE_OPTIONS.map((g) => ({ value: g, label: g }))}
+                value={grade}
+                total={total}
+                countFor={gradeCount}
+                onChange={setGrade}
+              />
+            )}
           </div>
         )}
 
-        {!showResults && known.length === 0 && (
-          <p className="hint picker-empty">
-            Под этот слот подходит {catalog.countMatching(fits)} предметов. Начни вводить
-            название — или ищи по техническому имени.
-          </p>
-        )}
+        <div className="picker-count">
+          {filtered ? `Под фильтры подходит ${matching} из ${total}` : `Всего в слоте: ${total}`}
+          {(type || grade) && (
+            <button
+              className="link-btn"
+              onClick={() => {
+                setType(null)
+                setGrade(null)
+              }}
+            >
+              Сбросить фильтры
+            </button>
+          )}
+        </div>
+
+        <div className="picker-list scroll tall">
+          {!showResults &&
+            known.length === 0 &&
+            (type || grade ? (
+              <p className="hint">Под выбранные фильтры ничего не подходит.</p>
+            ) : (
+              <p className="hint">
+                Под этот слот подходит {total} предметов. Начни вводить название — или ищи по
+                техническому имени.
+              </p>
+            ))}
+          {showResults && results.length === 0 && (
+            <p className="hint">
+              Ничего не найдено. Проверь раскладку, фильтры или попробуй техническое имя
+              предмета — например <code>avadon_boots</code>.
+            </p>
+          )}
+          {!showResults &&
+            known.map((it) => <Row key={it.id} it={it} onPick={onPick} onClose={onClose} />)}
+          {showResults && results.map((it) => (
+            <Row key={it.id} it={it} onPick={onPick} onClose={onClose} />
+          ))}
+        </div>
 
         <div className="picker-foot">
           Справочник: {catalog.count} предметов
-          {catalog.source ? ` · ${catalog.source}` : ''}
-          {accepts ? '. Показаны только подходящие под слот' : ''}. Список закрытый.
+          {catalog.source ? ` · ${catalog.source}` : ''}. Список закрытый — предмет выбирается
+          только из него.
         </div>
+      </div>
+    </div>
+  )
+}
+
+/** Неизвестный тип или грейд не прячет предмет: он проходит любой фильтр. */
+function passesType(
+  it: CatalogItem,
+  field: 'weaponType' | 'armorType' | null,
+  value: string | null,
+): boolean {
+  if (!value || !field) return true
+  return it[field] === value
+}
+
+function passesGrade(it: CatalogItem, value: string | null): boolean {
+  if (!value) return true
+  return it.gradeName === value
+}
+
+function FilterRow({
+  label,
+  options,
+  value,
+  total,
+  countFor,
+  onChange,
+}: {
+  label: string
+  options: { value: string; label: string }[]
+  value: string | null
+  total: number
+  countFor: (v: string) => number
+  onChange: (v: string | null) => void
+}) {
+  return (
+    <div className="filter-row">
+      <div className="filter-label">{label}</div>
+      <div className="chips">
+        <button className={`chip pick ${value === null ? 'on' : ''}`} onClick={() => onChange(null)}>
+          все
+          <span className="chip-count">{total}</span>
+        </button>
+        {options.map((o) => {
+          const n = countFor(o.value)
+          return (
+            <button
+              key={o.value}
+              className={`chip pick ${value === o.value ? 'on' : ''} ${n === 0 ? 'zero' : ''}`}
+              onClick={() => onChange(value === o.value ? null : o.value)}
+            >
+              {o.label}
+              <span className="chip-count">{n}</span>
+            </button>
+          )
+        })}
       </div>
     </div>
   )
@@ -134,7 +256,6 @@ function Row({
   if (typeof it.atkMag === 'number') stats.push(`маг. АТК ${it.atkMag}`)
   if (typeof it.physDef === 'number') stats.push(`физ. ЗАЩ ${it.physDef}`)
   if (typeof it.mDef === 'number') stats.push(`маг. ЗАЩ ${it.mDef}`)
-  if (it.weaponClass) stats.push(it.weaponClass)
   if (it.twoHanded) stats.push('двуручное')
   if (it.dual) stats.push('дуальное')
   if (it.fullbody) stats.push('цельное')
@@ -146,17 +267,25 @@ function Row({
         onPick(it.id)
         onClose()
       }}
-      title={[it.set, ...stats].filter(Boolean).join(' · ')}
+      title={[it.set, it.weaponClass, ...stats].filter(Boolean).join(' · ')}
     >
       <ItemIcon item={it} name={it.name} size={26} />
       <span className="picker-name">{it.name}</span>
       {stats.length > 0 && <span className="picker-stats">{stats.slice(0, 2).join(' · ')}</span>}
-      {typeof it.grade === 'number' && it.grade > 0 && (
-        <span className="chip grade">{gradeLabel(it.grade)}</span>
-      )}
+      {/* Тип и грейд видно в строке: сразу понятно, почему предмет
+          остался в списке при выбранном фильтре. */}
+      {it.weaponType && <span className="tag">{it.weaponType}</span>}
+      {it.armorType && <span className="tag">{ARMOR_TYPE_LABELS[it.armorType] ?? it.armorType}</span>}
+      {it.gradeName && <span className={`tag grade g-${it.gradeName}`}>{it.gradeName}</span>}
       <span className="picker-id">#{it.id}</span>
     </button>
   )
+}
+
+const ARMOR_TYPE_LABELS: Record<string, string> = {
+  heavy: 'Тяжёлая',
+  light: 'Лёгкая',
+  magic: 'Магическая',
 }
 
 const GRADE_NAMES: Record<number, string> = {

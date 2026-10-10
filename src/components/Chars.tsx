@@ -110,7 +110,7 @@ function DbChars({
   )
 }
 
-/** Окно выбора предмета с фильтром по типу слота. */
+/** Окно выбора предмета с фильтрами по типу и грейду. */
 function SlotPicker({
   target,
   catalog,
@@ -120,10 +120,6 @@ function SlotPicker({
   catalog: CatalogApi
   onClose: () => void
 }) {
-  const db = useDb()
-  const slotDef = SLOTS[target.slot]
-  const char = db.chars.find((c) => c.id === target.charId)
-
   const onPick = (itemId: number) => {
     const chosen = catalog.byId(itemId)
     if (!chosen) return
@@ -136,9 +132,7 @@ function SlotPicker({
   return (
     <ItemPicker
       catalog={catalog}
-      title={`${slotDef.label} — ${char?.name || 'персонаж'}`}
-      accepts={slotDef.accepts}
-      hint={slotDef.hint}
+      slot={SLOTS[target.slot]}
       onPick={onPick}
       onClose={onClose}
     />
