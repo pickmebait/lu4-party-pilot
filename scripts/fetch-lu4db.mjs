@@ -86,7 +86,9 @@ async function main() {
       it.setBonus ??
       (Array.isArray(it.setBonuses) && it.setBonuses.length ? it.setBonuses.join('; ') : undefined)
 
-    return {
+    const w = it.wiki ?? {}
+
+return {
       id,
       name: readableName(it.name),
       tex: it.id,
@@ -98,7 +100,24 @@ async function main() {
       ...(it.setName ? { set: it.setName } : {}),
       ...(bonus ? { bonus } : {}),
       ...(typeof it.mDef === 'number' ? { mDef: it.mDef } : {}),
-      ...(typeof it.wiki?.physDef === 'number' ? { physDef: it.wiki.physDef } : {}),
+      ...(typeof w.physDef === 'number' ? { physDef: w.physDef } : {}),
+      ...(typeof w.physAtk === 'number' ? { atkPhys: w.physAtk } : {}),
+      ...(typeof w.magAtk === 'number' ? { atkMag: w.magAtk } : {}),
+      // Двуручное и дуальное оружие занимает обе руки. Признак берём из
+      // класса оружия источника: по типу это не определить — посох,
+      // например, бывает и одноручным магическим, и двуручным.
+      //
+      // Осторожно с окончанием: в источнике «Двуручные Мечи» и «Двуручные
+      // Бланты» (широкие) и «Двуручное Магическое» (среднее), поэтому ищем
+      // по началу слова, а не по вхождению «Двуручное». Луки в игре тоже
+      // двуручные, хотя слово «двуручное» в их классе не написано.
+      ...(w.weaponClass ? { weaponClass: w.weaponClass } : {}),
+      ...(w.weaponClass && (/^Двуручн/.test(w.weaponClass) || w.weaponClass === 'Луки')
+        ? { twoHanded: true }
+        : {}),
+      ...(w.weaponClass && w.weaponClass.startsWith('Дуал') ? { dual: true } : {}),
+      // Цельная броня надевается вместо верха и низа сразу.
+      ...(it.fullbody === true ? { fullbody: true } : {}),
       ...(aliases.length ? { aliases } : {}),
       // Если в названии была форма через звёздочку — сохраняем и её,
       // иначе предмет перестанет находиться по второму имени.

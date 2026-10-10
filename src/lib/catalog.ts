@@ -20,6 +20,8 @@ export interface CatalogApi extends CatalogState {
   nameOf: (id: number) => string
   /** Поиск по названию, техническому имени и id. */
   search: (q: string, limit?: number) => CatalogItem[]
+  /** Сколько предметов подходит под фильтр слота — для подсказки в пикере. */
+  countMatching: (accepts: (item: CatalogItem) => boolean) => number
   /** Предметы, которые уже есть в инвентаре/казне — чтобы выбирать из них. */
   knownIds: Set<number>
 }
@@ -163,6 +165,16 @@ export function useCatalog(
     return [...starts, ...inner].slice(0, limit)
   }, [])
 
+  const countMatching = useCallback(
+    (accepts: (item: CatalogItem) => boolean): number => {
+      if (!index) return 0
+      let n = 0
+      for (const it of index.values()) if (accepts(it)) n++
+      return n
+    },
+    [],
+  )
+
   return useMemo(
     () => ({
       ...state,
@@ -171,8 +183,9 @@ export function useCatalog(
       byId,
       nameOf,
       search,
+      countMatching,
       knownIds,
     }),
-    [state, byId, nameOf, search, knownIds],
+    [state, byId, nameOf, search, countMatching, knownIds],
   )
 }

@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react'
 import {
   SLOT_KEYS,
   SLOT_MAX,
+  type CatalogItem,
   type Char,
   type Db,
   type Priority,
@@ -10,9 +11,10 @@ import {
   type SlotKey,
   type Wish,
 } from '@/types'
+import { emptySlots, equip, unequip } from './slots'
 import { uid } from './util'
 
-export const DB_VERSION = 1
+export const DB_VERSION = 2
 const DB_KEY = 'pp:db'
 const SETTINGS_KEY = 'pp:settings'
 
@@ -26,9 +28,7 @@ const DEFAULT_SETTINGS: Settings = {
 }
 
 export function emptyChar(): Char {
-  const slots: Char['slots'] = {}
-  for (const k of SLOT_KEYS) slots[k] = new Array(SLOT_MAX[k]).fill(null)
-  return { id: uid('c'), name: '', cls: '', level: 0, slots }
+  return { id: uid('c'), name: '', cls: '', level: 0, slots: emptySlots() }
 }
 
 export function emptyDb(): Db {
@@ -74,14 +74,16 @@ function normalizeDb(raw: unknown): Db {
 }
 
 function normalizeChar(c: Partial<Char>): Char {
-  const slots: Char['slots'] = {}
+  const slots = emptySlots()
+  const old = (c.slots ?? {}) as Record<string, unknown>
   for (const k of SLOT_KEYS) {
-    const src = Array.isArray(c.slots?.[k]) ? (c.slots as any)[k] : []
-    const max = SLOT_MAX[k]
-    const arr: (SlotEntry | null)[] = new Array(max).fill(null)
-    for (let i = 0; i < max; i++) {
+    const src = Array.isArray(old[k]) ? (old[k] as SlotEntry[]) : []
+    const arr: (SlotEntry | null)[] = new Array(SLOT_MAX[k]).fill(null)
+    for (let i = 0; i < SLOT_MAX[k]; i++) {
       const e = src[i]
-      if (e && typeof e.itemId === 'number') arr[i] = { itemId: e.itemId, ench: e.ench }
+      if (e && typeof e.itemId === 'number') {
+        arr[i] = { itemId: e.itemId, ench: e.ench, spans: e.spans }
+      }
     }
     slots[k] = arr
   }
@@ -184,21 +186,33 @@ export function removeChar(id: string): void {
   commit({ ...db, chars: db.chars.filter((c) => c.id !== id) })
 }
 
-export function setSlot(
+/**
+ * Надевает предмет с учётом правил занятости слотов.
+ * Возвращает подписи слотов, которые пришлось занять заново.
+ */
+export function equipItem(
   charId: string,
   slot: SlotKey,
   index: number,
-  entry: SlotEntry | null,
-): void {
-  commit({
-    ...db,
-    chars: db.chars.map((c) => {
-      if (c.id !== charId) return c
-      const arr = [...(c.slots[slot] ?? new Array(SLOT_MAX[slot]).fill(null))]
-      if (index >= 0 && index < arr.length) arr[index] = entry
-      return { ...c, slots: { ...c.slots, [slot]: arr } }
-    }),
-  })
+  item: CatalogItem,
+): string[] {
+  const char = db.chars.find((c) => c.id === charId)
+  if (!char) return []
+
+  const copy: Char = { ...char, slots: { ...char.slots } }
+  const displaced = equip(copy, slot, index, item)
+  commit({ ...db, chars: db.chars.map((c) => (c.id === charId ? copy : c)) })
+  return displaced
+}
+
+/** Снимает предмет. Двуручное оружие и цельная броня освобождают оба слота. */
+export function unequipItem(charId: string, slot: SlotKey, index: number): void {
+  const char = db.chars.find((c) => c.id === charId)
+  if (!char) return
+
+  const copy: Char = { ...char, slots: { ...char.slots } }
+  unequip(copy, slot, index)
+  commit({ ...db, chars: db.chars.map((c) => (c.id === charId ? copy : c)) })
 }
 
 /** Заточка — это не отдельный предмет, а свойство надетой вещи. */
@@ -206,7 +220,12 @@ export function setSlotEnch(charId: string, slot: SlotKey, index: number, ench: 
   const char = db.chars.find((c) => c.id === charId)
   const cur = char?.slots[slot]?.[index]
   if (!char || !cur) return
-  setSlot(charId, slot, index, { ...cur, ench: ench.trim() || undefined })
+
+  const copy: Char = { ...char, slots: { ...char.slots } }
+  const arr = [...(copy.slots[slot] ?? [])]
+  arr[index] = { ...cur, ench: ench.trim() || undefined }
+  copy.slots[slot] = arr
+  commit({ ...db, chars: db.chars.map((c) => (c.id === charId ? copy : c)) })
 }
 
 /** Передать надетое другому персонажу: ищем пустой слот подходящего типа. */
@@ -221,18 +240,19 @@ export function transferSlot(fromId: string, slot: SlotKey, index: number, toId:
   const free = (to.slots[slot] ?? []).findIndex((e) => e === null)
   if (free === -1) return false
 
-  const fromSlots = [...(from.slots[slot] ?? [])]
-  fromSlots[index] = null
-  const toSlots = [...(to.slots[slot] ?? [])]
-  toSlots[free] = entry
+  const fromCopy: Char = { ...from, slots: { ...from.slots } }
+  const toCopy: Char = { ...to, slots: { ...to.slots } }
+
+  // Снимаем через общие правила: двуручное оружие и цельная броня
+  // освободят оба своих слота, а не один.
+  unequip(fromCopy, slot, index)
+  const toSlots = [...(toCopy.slots[slot] ?? [])]
+  toSlots[free] = { itemId: entry.itemId, ench: entry.ench }
+  toCopy.slots[slot] = toSlots
 
   commit({
     ...db,
-    chars: db.chars.map((c) => {
-      if (c.id === fromId) return { ...c, slots: { ...c.slots, [slot]: fromSlots } }
-      if (c.id === toId) return { ...c, slots: { ...c.slots, [slot]: toSlots } }
-      return c
-    }),
+    chars: db.chars.map((c) => (c.id === fromId ? fromCopy : c.id === toId ? toCopy : c)),
   })
   return true
 }

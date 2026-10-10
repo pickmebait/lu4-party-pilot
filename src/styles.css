@@ -542,6 +542,40 @@ body {
   background: none;
 }
 
+/* Предмет, занимающий два слота: двуручное оружие или цельная броня. */
+.chip.span {
+  border-color: #4b3f7a;
+  color: #b9a7f0;
+  background: #191530;
+}
+
+.gear-cell.spans {
+  border-style: dashed;
+}
+
+.picker-hint {
+  margin: 0 0 10px;
+  padding: 7px 10px;
+  background: #0f1420;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.picker-stats {
+  font-size: 11px;
+  color: #7f8ca8;
+  white-space: nowrap;
+}
+
+.picker-empty {
+  margin: 12px 0 0;
+  padding: 14px 12px;
+  background: #0f1420;
+  border: 1px dashed var(--line-2);
+  border-radius: 8px;
+  text-align: center;
+}
+
 .chip.ench {
   border-color: #6b4b12;
   color: var(--accent-2);
@@ -593,6 +627,21 @@ body {
 
 /* -------------------------------------------------------------- экипировка */
 
+.gear-group + .gear-group {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.gear-group h4 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
 .gear {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
@@ -605,6 +654,13 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.6px;
   margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.gear-count {
+  color: #5d6883;
 }
 
 .gear-cells {

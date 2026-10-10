@@ -7,6 +7,14 @@ import { ItemIcon } from './ItemIcon'
 interface Props {
   catalog: CatalogApi
   title?: string
+  /**
+   * Фильтр по типу предмета. В оружейный слот показываются только
+   * оружие, в слот бижутерии — только украшения: перепутать слот
+   * больше нельзя.
+   */
+  accepts?: (item: CatalogItem) => boolean
+  /** Подсказка, какие предметы сюда подходят. */
+  hint?: string
   onPick: (itemId: number) => void
   onClose: () => void
 }
@@ -18,7 +26,7 @@ interface Props {
  * из загруженной базы. Иначе в пати появляются «Предмет #99999», которых
  * нет ни в игре, ни в базе, и потом их не найти.
  */
-export function ItemPicker({ catalog, title = 'Выбери предмет', onPick, onClose }: Props) {
+export function ItemPicker({ catalog, title = 'Выбери предмет', accepts, hint, onPick, onClose }: Props) {
   const [q, setQ] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -34,17 +42,19 @@ export function ItemPicker({ catalog, title = 'Выбери предмет', onP
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  const results = useMemo(() => catalog.search(q, 200), [catalog, q])
+  const fits = useMemo(() => (item: CatalogItem) => (accepts ? accepts(item) : true), [accepts])
+
+  const results = useMemo(() => catalog.search(q, 200).filter(fits), [catalog, q, fits])
   const showResults = q.trim().length > 0
 
-  // При пустом поиске показываем то, что уже есть в приложении: чаще всего
-  // нужен именно этот предмет.
+  // При пустом поиске показываем то, что уже надето или лежит в казне:
+  // чаще всего нужен именно этот предмет.
   const known = useMemo(() => {
     return [...catalog.knownIds]
-      .sort((a, b) => a - b)
+      .map((id) => catalog.byId(id))
+      .filter((it): it is CatalogItem => !!it && fits(it))
       .slice(0, 20)
-      .map((id) => ({ id, name: catalog.nameOf(id), grade: catalog.byId(id)?.grade }))
-  }, [catalog])
+  }, [catalog, fits])
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -55,6 +65,8 @@ export function ItemPicker({ catalog, title = 'Выбери предмет', onP
             ✕
           </button>
         </div>
+
+        {hint && <p className="hint picker-hint">{hint}</p>}
 
         <input
           ref={inputRef}
@@ -71,7 +83,7 @@ export function ItemPicker({ catalog, title = 'Выбери предмет', onP
             <div className="picker-label">Уже в приложении</div>
             <div className="picker-list">
               {known.map((it) => (
-                <Row key={it.id} it={it} id={it.id} name={it.name} grade={it.grade} onPick={onPick} onClose={onClose} />
+                <Row key={it.id} it={it} onPick={onPick} onClose={onClose} />
               ))}
             </div>
           </div>
@@ -86,22 +98,22 @@ export function ItemPicker({ catalog, title = 'Выбери предмет', onP
               </p>
             )}
             {results.map((it) => (
-              <Row
-                key={it.id}
-                it={it}
-                id={it.id}
-                name={it.name}
-                grade={it.grade}
-                onPick={onPick}
-                onClose={onClose}
-              />
+              <Row key={it.id} it={it} onPick={onPick} onClose={onClose} />
             ))}
           </div>
         )}
 
+        {!showResults && known.length === 0 && (
+          <p className="hint picker-empty">
+            Под этот слот подходит {catalog.countMatching(fits)} предметов. Начни вводить
+            название — или ищи по техническому имени.
+          </p>
+        )}
+
         <div className="picker-foot">
-          Справочник: {catalog.count} предметов{catalog.source ? ` · ${catalog.source}` : ''}.
-          Список закрытый — предметы добавляются только из него.
+          Справочник: {catalog.count} предметов
+          {catalog.source ? ` · ${catalog.source}` : ''}
+          {accepts ? '. Показаны только подходящие под слот' : ''}. Список закрытый.
         </div>
       </div>
     </div>
@@ -110,32 +122,39 @@ export function ItemPicker({ catalog, title = 'Выбери предмет', onP
 
 function Row({
   it,
-  id,
-  name,
-  grade,
   onPick,
   onClose,
 }: {
-  it?: CatalogItem
-  id: number
-  name: string
-  grade?: number
+  it: CatalogItem
   onPick: (itemId: number) => void
   onClose: () => void
 }) {
+  const stats: string[] = []
+  if (typeof it.atkPhys === 'number') stats.push(`физ. АТК ${it.atkPhys}`)
+  if (typeof it.atkMag === 'number') stats.push(`маг. АТК ${it.atkMag}`)
+  if (typeof it.physDef === 'number') stats.push(`физ. ЗАЩ ${it.physDef}`)
+  if (typeof it.mDef === 'number') stats.push(`маг. ЗАЩ ${it.mDef}`)
+  if (it.weaponClass) stats.push(it.weaponClass)
+  if (it.twoHanded) stats.push('двуручное')
+  if (it.dual) stats.push('дуальное')
+  if (it.fullbody) stats.push('цельное')
+
   return (
     <button
       className="picker-row"
       onClick={() => {
-        onPick(id)
+        onPick(it.id)
         onClose()
       }}
-      title={it?.set ?? it?.type ?? undefined}
+      title={[it.set, ...stats].filter(Boolean).join(' · ')}
     >
-      <ItemIcon item={it} name={name} size={26} />
-      <span className="picker-name">{name}</span>
-      {typeof grade === 'number' && grade > 0 && <span className="chip grade">{gradeLabel(grade)}</span>}
-      <span className="picker-id">#{id}</span>
+      <ItemIcon item={it} name={it.name} size={26} />
+      <span className="picker-name">{it.name}</span>
+      {stats.length > 0 && <span className="picker-stats">{stats.slice(0, 2).join(' · ')}</span>}
+      {typeof it.grade === 'number' && it.grade > 0 && (
+        <span className="chip grade">{gradeLabel(it.grade)}</span>
+      )}
+      <span className="picker-id">#{it.id}</span>
     </button>
   )
 }
