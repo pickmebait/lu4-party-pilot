@@ -11,7 +11,7 @@ import { normalize } from '@/lib/util'
 import { ItemIcon } from './ItemIcon'
 
 /** Сколько предметов показывать на одной странице. */
-const PAGE_SIZE = 100
+const PAGE_SIZES = [5, 10, 20] as const
 
 /** Потолок для поиска: справочник меньше двух тысяч предметов. */
 const SEARCH_LIMIT = 5000
@@ -45,6 +45,7 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, onClose }: P
   const [type, setType] = useState<string | null>(null)
   const [grade, setGrade] = useState<string | null>(null)
   const [page, setPage] = useState(0)
+  const [pageSize, setPageSize] = useState<number>(20)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
 
@@ -100,11 +101,11 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, onClose }: P
   const total = pool.length
   const filtered = query.length > 0 || type !== null || grade !== null
 
-  const pages = Math.max(1, Math.ceil(results.length / PAGE_SIZE))
+  const pages = Math.max(1, Math.ceil(results.length / pageSize))
   const pageNo = Math.min(page, pages - 1)
-  const shown = results.slice(pageNo * PAGE_SIZE, (pageNo * PAGE_SIZE) + PAGE_SIZE)
-  const from = results.length === 0 ? 0 : pageNo * PAGE_SIZE + 1
-  const to = Math.min((pageNo + 1) * PAGE_SIZE, results.length)
+  const shown = results.slice(pageNo * pageSize, (pageNo * pageSize) + pageSize)
+  const from = results.length === 0 ? 0 : pageNo * pageSize + 1
+  const to = Math.min((pageNo + 1) * pageSize, results.length)
 
   /** Любое изменение условий возвращает на первую страницу. */
   const reset = <T,>(set: (v: T) => void) => (v: T) => {
@@ -119,6 +120,11 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, onClose }: P
   const goTo = (n: number) => {
     setPage(n)
     listRef.current?.scrollTo({ top: 0 })
+  }
+
+  const onPageSize = (n: number) => {
+    setPageSize(n)
+    setPage(0)
   }
 
   return (
@@ -215,9 +221,22 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, onClose }: P
             <button className="pg" onClick={() => goTo(pageNo - 1)} disabled={pageNo === 0}>
               ‹ Назад
             </button>
-            <span className="pg-num">
-              Страница {pageNo + 1} из {pages}
-            </span>
+            <div className="pager-mid">
+              <span className="pg-num">
+                Страница {pageNo + 1} из {pages}
+              </span>
+              <div className="pg-size" role="group" aria-label="Предметов на странице">
+                {PAGE_SIZES.map((n) => (
+                  <button
+                    key={n}
+                    className={`pg-size-btn ${pageSize === n ? 'on' : ''}`}
+                    onClick={() => onPageSize(n)}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
             <button
               className="pg"
               onClick={() => goTo(pageNo + 1)}

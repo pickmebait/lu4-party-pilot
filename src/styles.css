@@ -665,6 +665,31 @@ body {
   color: var(--muted);
 }
 
+.pager-mid {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Переключатель размера страницы: 5, 10 или 20. */
+.pg-size {
+  display: flex;
+  gap: 3px;
+}
+
+.pg-size-btn {
+  padding: 2px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.pg-size-btn.on {
+  background: #2a2412;
+  border-color: #8a6e1c;
+  color: var(--accent-2);
+}
+
 /* Предмет, который уже есть в пати: полоска слева. */
 .picker-row.in-app {
   box-shadow: inset 2px 0 0 #4c7a5a;
