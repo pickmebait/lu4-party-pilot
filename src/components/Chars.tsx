@@ -17,6 +17,7 @@ import {
   useDb,
 } from '@/lib/store'
 import { ItemPicker, gradeLabel, matches } from './ItemPicker'
+import { ItemIcon } from './ItemIcon'
 import { ClassSelect, LevelInput } from './ClassLevel'
 import { clampLevel } from '@/lib/classes'
 
@@ -297,13 +298,18 @@ function CharCard({
                         </div>
                       ) : (
                         <button className="cell-main" onClick={() => onPick(s.key, i)}>
-                          <span className="cell-name">{name}</span>
-                          <span className="cell-sub">
-                            {entry.ench && <span className="chip ench">{entry.ench}</span>}
-                            {typeof grade === 'number' && grade > 0 && (
-                              <span className="chip grade">{gradeLabel(grade)}</span>
-                            )}
-                            <span className="cell-id">#{entry.itemId}</span>
+                          <span className="cell-icon">
+                            <ItemIcon item={catalog.byId(entry.itemId)} name={name} size={26} />
+                          </span>
+                          <span className="cell-text">
+                            <span className="cell-name">{name}</span>
+                            <span className="cell-sub">
+                              {entry.ench && <span className="chip ench">{entry.ench}</span>}
+                              {typeof grade === 'number' && grade > 0 && (
+                                <span className="chip grade">{gradeLabel(grade)}</span>
+                              )}
+                              <span className="cell-id">#{entry.itemId}</span>
+                            </span>
                           </span>
                         </button>
                       )}

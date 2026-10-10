@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && tsc -p worker/tsconfig.json && vite build",
     "preview": "vite preview",
-    "items": "node scripts/build-items.mjs",
+    "items:lu4db": "node scripts/fetch-lu4db.mjs",
     "cf:login": "wrangler login",
     "cf:secret": "node scripts/set-secret.mjs",
     "cf:dev": "wrangler dev --local --port 8787",

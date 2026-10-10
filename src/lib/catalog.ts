@@ -12,6 +12,8 @@ interface CatalogState {
 
 export interface CatalogApi extends CatalogState {
   count: number
+  /** Откуда взят справочник — показываем в подсказке под списком. */
+  source?: string
   /** Предмет по id или null, если его нет в справочнике. */
   byId: (id: number) => CatalogItem | null
   /** Название для показа. Никогда не пустая строка. */
@@ -39,8 +41,14 @@ function buildIndex(items: CatalogItem[]) {
     if (it.tex) {
       const t = normalize(it.tex)
       keys.add(t)
-      // «draco_blade» должно находиться по «драко» — режем на части.
+      // «avadon_boots» должно находиться по «боots» — режем на части.
       for (const part of t.split(/[\s_\-.]+/)) if (part.length >= 3) keys.add(part)
+    }
+    // Синонимы из источника: у одной вещи несколько названий, и игроки
+    // ищут по любому из них.
+    for (const alias of it.aliases ?? []) {
+      const a = normalize(alias)
+      if (a.length >= 3) keys.add(a)
     }
     for (const k of keys) {
       if (!k) continue
@@ -156,6 +164,7 @@ export function useCatalog(
     () => ({
       ...state,
       count: state.catalog?.items.length ?? 0,
+      source: state.catalog?.source,
       byId,
       nameOf,
       search,

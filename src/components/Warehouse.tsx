@@ -9,6 +9,7 @@ import {
 } from '@/lib/store'
 import { formatAgo, formatStamp, plural } from '@/lib/util'
 import { ItemPicker, gradeLabel, matches } from './ItemPicker'
+import { ItemIcon } from './ItemIcon'
 
 export function WarehouseView({ catalog }: { catalog: CatalogApi }) {
   const db = useDb()
@@ -90,6 +91,7 @@ export function WarehouseView({ catalog }: { catalog: CatalogApi }) {
               <tr key={s.itemId}>
                 <td>
                   <div className="cell-title">
+                    <ItemIcon item={catalog.byId(s.itemId)} name={s.name} size={28} />
                     <span className={typeof s.grade === 'number' ? `chip grade g${s.grade}` : ''}>
                       {s.name}
                     </span>

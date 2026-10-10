@@ -1,21 +1,25 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { CatalogItem } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
-import { useDb, setCustomName } from '@/lib/store'
 import { normalize } from '@/lib/util'
+import { ItemIcon } from './ItemIcon'
 
 interface Props {
   catalog: CatalogApi
-  /** Что уже есть в приложении — показываем этот блок первым. */
   title?: string
   onPick: (itemId: number) => void
   onClose: () => void
 }
 
-/** Модальное окно выбора предмета: поиск по справочнику или ввод id вручную. */
+/**
+ * Выбор предмета из справочника.
+ *
+ * Ручного ввода по id нет: список закрытый, предметы берутся только
+ * из загруженной базы. Иначе в пати появляются «Предмет #99999», которых
+ * нет ни в игре, ни в базе, и потом их не найти.
+ */
 export function ItemPicker({ catalog, title = 'Выбери предмет', onPick, onClose }: Props) {
-  const db = useDb()
   const [q, setQ] = useState('')
-  const [manual, setManual] = useState<{ id: string; name: string } | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -30,32 +34,17 @@ export function ItemPicker({ catalog, title = 'Выбери предмет', onP
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  const results = useMemo(() => catalog.search(q, 80), [catalog, q])
-
-  // Что уже есть в приложении — самые вероятные кандидаты при пустом поиске.
-  const known = useMemo(() => {
-    const ids = [...catalog.knownIds].sort((a, b) => a - b)
-    return ids.slice(0, 20).map((id) => ({
-      id,
-      name: catalog.nameOf(id),
-      grade: catalog.byId(id)?.grade,
-    }))
-  }, [catalog])
-
+  const results = useMemo(() => catalog.search(q, 200), [catalog, q])
   const showResults = q.trim().length > 0
 
-  const pickManual = () => {
-    if (!manual) return
-    const id = Number(manual.id)
-    if (!Number.isInteger(id) || id <= 0) return
-    if (manual.name.trim()) setCustomName(id, manual.name.trim())
-    onPick(id)
-    onClose()
-  }
-
-  const renameId = manual ? Number(manual.id) : 0
-  const renameKnown =
-    renameId > 0 && !catalog.byId(renameId) ? (db.customNames[String(renameId)] ?? '') : ''
+  // При пустом поиске показываем то, что уже есть в приложении: чаще всего
+  // нужен именно этот предмет.
+  const known = useMemo(() => {
+    return [...catalog.knownIds]
+      .sort((a, b) => a - b)
+      .slice(0, 20)
+      .map((id) => ({ id, name: catalog.nameOf(id), grade: catalog.byId(id)?.grade }))
+  }, [catalog])
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -70,7 +59,7 @@ export function ItemPicker({ catalog, title = 'Выбери предмет', onP
         <input
           ref={inputRef}
           className="input"
-          placeholder="Поиск: название, латинское имя или ID предмета…"
+          placeholder="Поиск: название, техническое имя или номер…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
@@ -82,10 +71,7 @@ export function ItemPicker({ catalog, title = 'Выбери предмет', onP
             <div className="picker-label">Уже в приложении</div>
             <div className="picker-list">
               {known.map((it) => (
-                <button key={it.id} className="picker-row" onClick={() => { onPick(it.id); onClose() }}>
-                  <span className="picker-name">{it.name}</span>
-                  <span className="picker-id">#{it.id}</span>
-                </button>
+                <Row key={it.id} it={it} id={it.id} name={it.name} grade={it.grade} onPick={onPick} onClose={onClose} />
               ))}
             </div>
           </div>
@@ -95,51 +81,62 @@ export function ItemPicker({ catalog, title = 'Выбери предмет', onP
           <div className="picker-list scroll">
             {results.length === 0 && (
               <p className="hint">
-                Ничего не найдено. Возможно, предмета нет в справочнике — заполни ID вручную
-                ниже.
+                Ничего не найдено. Проверь раскладку или попробуй техническое имя
+                предмета — например <code>avadon_boots</code>.
               </p>
             )}
             {results.map((it) => (
-              <button key={it.id} className="picker-row" onClick={() => { onPick(it.id); onClose() }}>
-                <span className="picker-name">{it.name}</span>
-                {typeof it.grade === 'number' && it.grade > 0 && (
-                  <span className="chip grade">{gradeLabel(it.grade)}</span>
-                )}
-                <span className="picker-id">#{it.id}</span>
-              </button>
+              <Row
+                key={it.id}
+                it={it}
+                id={it.id}
+                name={it.name}
+                grade={it.grade}
+                onPick={onPick}
+                onClose={onClose}
+              />
             ))}
           </div>
         )}
 
-        <div className="picker-section manual">
-          <div className="picker-label">Нет в справочнике — введи вручную</div>
-          <div className="manual-row">
-            <input
-              className="input narrow"
-              inputMode="numeric"
-              placeholder="ID"
-              value={manual?.id ?? ''}
-              onChange={(e) => setManual({ id: e.target.value.replace(/\D/g, ''), name: manual?.name ?? '' })}
-            />
-            <input
-              className="input"
-              placeholder="Название (видно всей пати)"
-              value={manual?.name ?? renameKnown}
-              onChange={(e) => setManual({ id: manual?.id ?? '', name: e.target.value })}
-            />
-            <button className="btn primary" onClick={pickManual} disabled={!manual?.id}>
-              Добавить
-            </button>
-          </div>
-          {catalog.count > 0 && (
-            <p className="hint">
-              В справочнике {catalog.count} предметов. Если твой сервер использует другой датабаз —
-              пересобери его командой <code>npm run items</code>.
-            </p>
-          )}
+        <div className="picker-foot">
+          Справочник: {catalog.count} предметов{catalog.source ? ` · ${catalog.source}` : ''}.
+          Список закрытый — предметы добавляются только из него.
         </div>
       </div>
     </div>
+  )
+}
+
+function Row({
+  it,
+  id,
+  name,
+  grade,
+  onPick,
+  onClose,
+}: {
+  it?: CatalogItem
+  id: number
+  name: string
+  grade?: number
+  onPick: (itemId: number) => void
+  onClose: () => void
+}) {
+  return (
+    <button
+      className="picker-row"
+      onClick={() => {
+        onPick(id)
+        onClose()
+      }}
+      title={it?.set ?? it?.type ?? undefined}
+    >
+      <ItemIcon item={it} name={name} size={26} />
+      <span className="picker-name">{name}</span>
+      {typeof grade === 'number' && grade > 0 && <span className="chip grade">{gradeLabel(grade)}</span>}
+      <span className="picker-id">#{id}</span>
+    </button>
   )
 }
 
@@ -164,28 +161,6 @@ const GRADE_NAMES: Record<number, string> = {
 
 export function gradeLabel(grade: number): string {
   return GRADE_NAMES[grade] ?? String(grade)
-}
-
-/** Строка поиска с подсветкой — маленький переиспользуемый инпут. */
-export function SearchBox({
-  value,
-  onChange,
-  placeholder,
-  className = 'input',
-}: {
-  value: string
-  onChange: (v: string) => void
-  placeholder: string
-  className?: string
-}) {
-  return (
-    <input
-      className={className}
-      value={value}
-      placeholder={placeholder}
-      onChange={(e) => onChange(e.target.value)}
-    />
-  )
 }
 
 /** Фильтр по названию для уже готовых списков. */

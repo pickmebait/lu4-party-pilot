@@ -1116,6 +1116,53 @@ body {
   color: #5d6883;
 }
 
+/* Иконка предмета: картинка или первая буква, если файла нет. */
+.icon {
+  flex: none;
+  border-radius: 3px;
+  image-rendering: -webkit-optimize-contrast;
+  background: #0b0f18;
+}
+
+.icon-fallback {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 3px;
+  background: #1b2130;
+  border: 1px solid var(--line-2);
+  color: var(--muted);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.picker-row {
+  align-items: center;
+}
+
+.picker-foot {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  color: #5d6883;
+}
+
+.cell-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cell-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.cell-icon {
+  flex: none;
+}
+
 .manual {
   border-top: 1px solid var(--line);
   padding-top: 14px;

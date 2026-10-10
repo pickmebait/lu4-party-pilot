@@ -134,16 +134,33 @@ export interface Db {
   customNames: Record<string, string>
 }
 
-/** Запись справочника предметов, собранного из дампа сервера/клиента. */
+/** Запись справочника предметов. */
 export interface CatalogItem {
+  /** Порядковый номер в справочнике. Ноль означает «пусто». */
   id: number
   name: string
   /** Техническое имя из клиента: "draco_blade". */
   tex?: string
   /** Имя комплекта, если предмет входит в сет. */
   set?: string
-  /** Грейд 0-16, если удалось определить. */
+  /** Грейд 0-16: NG 0, D 7, C 9, B 12, A 14, S 16. */
   grade?: number
+  /** Иконка относительно корня сайта: "icons/foo.webp". */
+  icon?: string
+  /** finished | recipe | part | resource | misc | other */
+  kind?: string
+  /** Слот по данным источника: "r_hand", "l_ear", "feet". */
+  slot?: string
+  /** Armor | Weapon | Jewelry | Sword 1H | … */
+  type?: string
+  /** Бонус комплекта, если предмет его часть. */
+  bonus?: string
+  /** Магическая защита. */
+  mDef?: number
+  /** Физическая защита. */
+  physDef?: number
+  /** Другие названия того же предмета. */
+  aliases?: string[]
 }
 
 export interface Catalog {

@@ -4,6 +4,7 @@ import { computeSets } from '@/lib/derived'
 import { addSet, removeSet, updateSet, useDb } from '@/lib/store'
 import { gradeLabel } from './ItemPicker'
 import { ItemPicker } from './ItemPicker'
+import { ItemIcon } from './ItemIcon'
 
 interface SetDraft {
   id: string | null
@@ -73,6 +74,7 @@ export function SetsView({ catalog }: { catalog: CatalogApi }) {
                 return (
                   <li key={id} className={state}>
                     <span className="tick">{state === 'worn' ? '✓' : state === 'stored' ? '▣' : '·'}</span>
+                    <ItemIcon item={catalog.byId(id)} name={name} size={22} />
                     <span className="pname">{name}</span>
                     {typeof grade === 'number' && grade > 0 && (
                       <span className="chip grade">{gradeLabel(grade)}</span>
