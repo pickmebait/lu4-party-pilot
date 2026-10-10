@@ -50,6 +50,9 @@ function buildIndex(items: CatalogItem[]) {
       const a = normalize(alias)
       if (a.length >= 3) keys.add(a)
     }
+    // Название со звёздочкой из источника: ищем и по нему тоже, чтобы
+    // «Bastard Sword*Sword of Revolution» находился по обоим именам.
+    if (it.fullName) keys.add(normalize(it.fullName))
     for (const k of keys) {
       if (!k) continue
       const arr = byName!.get(k)

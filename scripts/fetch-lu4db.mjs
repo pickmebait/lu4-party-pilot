@@ -88,7 +88,7 @@ async function main() {
 
     return {
       id,
-      name: it.name,
+      name: readableName(it.name),
       tex: it.id,
       ...(it.grade ? { grade: GRADE_NUM[it.grade] ?? 0 } : {}),
       ...(it.icon ? { icon: localIcon(it.icon) } : {}),
@@ -100,6 +100,9 @@ async function main() {
       ...(typeof it.mDef === 'number' ? { mDef: it.mDef } : {}),
       ...(typeof it.wiki?.physDef === 'number' ? { physDef: it.wiki.physDef } : {}),
       ...(aliases.length ? { aliases } : {}),
+      // Если в названии была форма через звёздочку — сохраняем и её,
+      // иначе предмет перестанет находиться по второму имени.
+      ...(it.name.includes('*') ? { fullName: it.name } : {}),
     }
   })
 
@@ -117,6 +120,16 @@ async function main() {
   writeFileSync(OUT, `${JSON.stringify(catalog)}\n`, 'utf8')
   const size = statSync(OUT).size
   console.log(`\nГотово: ${OUT} (${items.length} предметов, ${Math.round(size / 1024)} КБ)`)
+}
+
+/**
+ * В источнике две формы одного предмета склеены звёздочкой:
+ * "Bastard Sword*Sword of Revolution". Это один и тот же меч, который
+ * надевается и как бастард, и как меч революции. Для показа «/» читается
+ * сразу, а исходное имя остаётся в fullName и в поиске.
+ */
+function readableName(name) {
+  return name.replace(/\*/g, ' / ')
 }
 
 /** Путь вида /media/site/img/foo.webp -> icons/foo.webp — так он будет отдан с сайта. */
