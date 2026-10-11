@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "items": "node scripts/build-catalog.mjs",
     "items:no-icons": "node scripts/build-catalog.mjs --no-icons",
+    "check": "node scripts/check-catalog.mjs && tsc --noEmit",
     "mw:serve": "node scripts/serve-scrape.mjs",
     "cf:login": "wrangler login",
     "cf:secret": "node scripts/set-secret.mjs",
