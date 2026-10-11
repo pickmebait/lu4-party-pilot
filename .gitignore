@@ -16,3 +16,4 @@ secrets*
 # Кэш редактора
 .vscode/
 .idea/
+items-prev.json
