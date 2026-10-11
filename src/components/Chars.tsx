@@ -458,7 +458,7 @@ function SlotCells({
               */}
               <button className="cell-main" onClick={() => onPick(i)}>
                 <span className="cell-icon">
-                  <ItemIcon item={item} name={name} size={18} />
+                  <ItemIcon item={item} name={name} size={24} />
                 </span>
                 <span className="cell-name">{name}</span>
               </button>
