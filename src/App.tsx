@@ -7,7 +7,7 @@ import { SyncBar } from './components/SyncBar'
 import { WarehouseView } from './components/Warehouse'
 import { WishesView } from './components/Wishes'
 import { startCatalogLoad, useCatalog } from './lib/catalog'
-import { computeSummary, usedItemIds } from './lib/derived'
+import { computeSummary, usedItemIds, type Summary } from './lib/derived'
 import { useDb, useSession } from './lib/store'
 import { applyPalette, loadPalette } from './lib/palette'
 import { plural } from './lib/util'
@@ -25,6 +25,29 @@ const TABS: { key: Tab; label: string }[] = [
   { key: 'wishes', label: 'Хотелки' },
   { key: 'sets', label: 'Комплекты' },
 ]
+
+/**
+ * Цифры под названием вкладки.
+ *
+ * Раньше сводка стояла отдельной строкой под вкладками: чтобы увидеть,
+ * сколько занято слотов или лежит в казне, надо было бросить взгляд ниже и
+ * вправо. Теперь каждая цифра стоит под своим разделом — там, где её и
+ * ждут, потому что вкладка уже открыта именно за этим.
+ */
+function заметка(ключ: Tab, s: Summary): string {
+  switch (ключ) {
+    case 'chars':
+      return `${s.gearSlots.filled}/${s.gearSlots.total} слотов`
+    case 'warehouse':
+      return s.warehouseKinds === 0
+        ? 'пусто'
+        : `${s.warehouseKinds} ${plural(s.warehouseKinds, 'позиция', 'позиции', 'позиций')} · ${s.warehouseItems} шт.`
+    case 'wishes':
+      return `${s.wishesOpen} ${plural(s.wishesOpen, 'активная', 'активные', 'активных')}`
+    case 'sets':
+      return `${s.setsDone} из ${s.setsTotal}`
+  }
+}
 
 export default function App() {
   const db = useDb()
@@ -56,37 +79,11 @@ export default function App() {
       <nav className="tabs">
         {TABS.map((t) => (
           <button key={t.key} className={tab === t.key ? 'on' : ''} onClick={() => setTab(t.key)}>
-            {t.label}
-            {t.key === 'chars' && sum.chars > 0 && <span className="badge">{sum.chars}</span>}
-            {t.key === 'wishes' && sum.wishesOpen > 0 && (
-              <span className="badge accent">{sum.wishesOpen}</span>
-            )}
-            {t.key === 'sets' && sum.setsDone > 0 && (
-              <span className="badge">
-                {sum.setsDone}/{sum.setsTotal}
-              </span>
-            )}
+            <span className="tab-label">{t.label}</span>
+            <span className="tab-note">{заметка(t.key, sum)}</span>
           </button>
         ))}
       </nav>
-
-      {sum.chars > 0 && (
-        <div className="statbar">
-          <span>
-            Слоты: <b>{sum.gearSlots.filled}</b> из {sum.gearSlots.total}
-          </span>
-          <span>
-            Казна: <b>{sum.warehouseKinds}</b> {plural(sum.warehouseKinds, 'позиция', 'позиции', 'позиций')} /{' '}
-            {sum.warehouseItems} шт.
-          </span>
-          <span>
-            Хотелки: <b>{sum.wishesOpen}</b> активных
-          </span>
-          <span>
-            Комплекты: <b>{sum.setsDone}</b> из {sum.setsTotal}
-          </span>
-        </div>
-      )}
 
       <main>
         {tab === 'chars' && <CharsView catalog={catalog} />}

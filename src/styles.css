@@ -284,23 +284,31 @@ body {
 .tabs {
   display: flex;
   gap: 4px;
-  margin: 16px 0;
+  margin: 16px 0 20px;
   border-bottom: 1px solid var(--line);
   flex-wrap: wrap;
 }
 
+/*
+ * Вкладка в две строки: название и цифры под ним. Цифры стоят здесь, а не
+ * отдельной сводкой под всеми вкладками: чтобы узнать, сколько занято
+ * слотов, не надо бросать взгляд вниз и вправо от того места, где и так
+ * видно, сколько занято.
+ */
 .tabs button {
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
   color: var(--muted);
-  padding: 10px 14px;
+  padding: 8px 14px;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
   display: flex;
-  align-items: center;
-  gap: 7px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  text-align: left;
 }
 
 .tabs button:hover {
@@ -312,38 +320,16 @@ body {
   border-bottom-color: var(--accent);
 }
 
-.badge {
-  background: var(--bg-3);
-  border: 1px solid var(--line-2);
-  border-radius: 20px;
-  padding: 0 7px;
+.tab-note {
   font-size: 11px;
+  font-weight: 400;
   color: var(--muted);
+  white-space: nowrap;
 }
 
-.badge.accent {
-  border-color: var(--accent-line);
+.tabs button.on .tab-note {
   color: var(--accent-2);
-  background: var(--accent-deep);
-}
-
-/* ----------------------------------------------------------------- статбар */
-
-.statbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  padding: 10px 14px;
-  background: var(--bg-2);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  font-size: 13px;
-  color: var(--muted);
-  margin-bottom: 18px;
-}
-
-.statbar b {
-  color: var(--text);
+  opacity: 0.85;
 }
 
 /* ------------------------------------------------------------------ кнопки */
