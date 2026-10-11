@@ -12,7 +12,7 @@ import {
   type SlotKey,
   type Wish,
 } from '@/types'
-import { emptySlots, equip, unequip } from './slots'
+import { emptySlots, equip, partnerOf, unequip } from './slots'
 import { uid } from './util'
 
 /**
@@ -278,8 +278,12 @@ export function unequipItem(charId: string, slot: SlotKey, index: number): void 
  * верхе и в низу. В базе это две записи одного предмета, и без сверки они
  * расходятся: заточка, поставленная в одной клетке, не появлялась бы в
  * другой, а на экране один и тот же предмет показывал бы разные значения.
+ *
+ * Само правило поиска пары живёт в slots.ts — там же, где надевание и
+ * снятие. Держать его здесь в третий раз значит через месяц забыть, что
+ * одно из правил поправили, а другое нет.
  */
-export function partnerEntry(
+function partnerEntry(
   char: Char,
   slot: SlotKey,
   index: number,
@@ -287,18 +291,13 @@ export function partnerEntry(
   const entry = char.slots[slot]?.[index]
   if (!entry) return null
 
-  for (const [a, b] of [
-    ['rhand', 'lhand'],
-    ['chest', 'legs'],
-  ] as [SlotKey, SlotKey][]) {
-    if (slot !== a && slot !== b) continue
-    const другой = slot === a ? b : a
-    const сосед = (char.slots[другой] ?? []).findIndex(
-      (e) => e && e.itemId === entry.itemId && (e.spans === true || entry.spans === true),
-    )
-    if (сосед !== -1) return { slot: другой, index: сосед }
-  }
-  return null
+  const другой = partnerOf(char, slot, entry.itemId, entry.spans === true)
+  if (!другой) return null
+
+  const позиция = (char.slots[другой] ?? []).findIndex(
+    (e) => e?.itemId === entry.itemId && (e?.spans === true || entry.spans === true),
+  )
+  return позиция === -1 ? null : { slot: другой, index: позиция }
 }
 
 /**

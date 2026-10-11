@@ -116,6 +116,36 @@ function blank(n: number): (SlotEntry | null)[] {
 }
 
 /**
+ * Второй слот, если предмет занимает оба.
+ *
+ * Отметка spans стоит на копии, а не на оригинале: при надевании оригинал
+ * кладётся туда, куда нажали, а копия — в парный слот. Поэтому пару ищем
+ * сразу по обоим признакам: и по отметке у соседа, и по отметке у того,
+ * что снимают.
+ *
+ * Раньше стояло только «есть отметка у соседа», и двуручное оружие снималось
+ * лишь из одной руки — из правой в левой оставалась его копия. Обратная
+ * проверка тоже не годится: два одинаковых предмета в разных руках — это
+ * разные вещи, и снимать надо один.
+ */
+export function partnerOf(
+  char: Char,
+  slot: SlotKey,
+  itemId: number,
+  снятыйПомечен: boolean,
+): SlotKey | null {
+  for (const [a, b] of SPAN_PAIRS) {
+    if (slot !== a && slot !== b) continue
+    const другой = slot === a ? b : a
+    const сосед = (char.slots[другой] ?? []).some(
+      (e) => e?.itemId === itemId && (e?.spans === true || снятыйПомечен),
+    )
+    if (сосед) return другой
+  }
+  return null
+}
+
+/**
  * Снимает предмет. Если он занимал два слота, освобождаются оба.
  */
 export function unequip(char: Char, slot: SlotKey, index: number): void {
@@ -123,14 +153,8 @@ export function unequip(char: Char, slot: SlotKey, index: number): void {
   const entry = arr[index]
   arr[index] = null
   char.slots[slot] = arr
-  if (!entry?.spans) return
+  if (!entry) return
 
-  // Второй слот с тем же предметом освобождаем: иначе после снятия
-  // двуручного оружия в левой руке осталась бы его копия.
-  for (const key of Object.keys(SLOTS) as SlotKey[]) {
-    if (key === slot) continue
-    if (!char.slots[key]?.some((e) => e?.itemId === entry.itemId)) continue
-    char.slots[key] = char.slots[key]!.map(() => null)
-    break
-  }
+  const другой = partnerOf(char, slot, entry.itemId, entry.spans === true)
+  if (другой) char.slots[другой] = char.slots[другой]!.map(() => null)
 }
