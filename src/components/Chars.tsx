@@ -236,13 +236,16 @@ function CharCard({
                 {char.cls && <span className="chip cls">{char.cls}</span>}
                 {char.level > 0 && <span className="chip lvl">ур. {char.level}</span>}
                 {filled === total ? (
-                  <span className="chip slots full" title="Все слоты заняты">
+                  <span className="chip slots full" title={`Все ${total} слотов заняты`}>
                     <IconCheck />
                     Заполнено
                   </span>
                 ) : (
+                  // Без слова «слотов»: в строке уже есть профессия и
+                  // уровень, и на «Elemental Summoner · ур. 75 · 11 из 12»
+                  // всё умещается, а с «слотов» профессия не влезала.
                   <span className="chip slots" title={`${filled} из ${total} слотов занято`}>
-                    {filled}/{total} слотов
+                    {filled} из {total}
                   </span>
                 )}
               </div>
