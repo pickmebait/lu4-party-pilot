@@ -194,17 +194,17 @@ body {
 /* Палитры: шесть кружков, у каждого три цвета самой палитры. */
 .palettes {
   display: flex;
-  gap: 3px;
+  gap: 5px;
   margin-left: 8px;
-  padding: 3px 4px;
+  padding: 4px 6px;
   background: var(--bg-2);
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 18px;
 }
 
 .palette {
-  width: 10px;
-  height: 10px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   border: 1px solid var(--line);
   padding: 0;
@@ -218,7 +218,7 @@ body {
 
 .palette.on {
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent-2);
+  box-shadow: 0 0 0 2px var(--accent-2);
 }
 
 .brand h1 {
