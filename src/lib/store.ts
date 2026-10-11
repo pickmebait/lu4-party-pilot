@@ -7,9 +7,11 @@ import {
   type Char,
   type Contacts,
   type Db,
+  type MoveLog,
   type SetDef,
   type SlotEntry,
   type SlotKey,
+  type WarehouseStack,
   type Wish,
 } from '@/types'
 import { emptySlots, equip, partnerOf, unequip } from './slots'
@@ -58,13 +60,17 @@ function normalizeDb(raw: unknown): Db {
   const d = raw as Partial<Db>
 
   const chars = Array.isArray(d.chars) ? d.chars.map(normalizeChar) : []
-  const stacks = Array.isArray(d.warehouse?.stacks)
-    ? d.warehouse!.stacks
-        .filter((s) => s && typeof s.itemId === 'number')
-        .map((s) => ({ itemId: s.itemId, count: Math.max(0, Math.trunc(s.count) || 0) }))
-        .filter((s) => s.count > 0)
-    : []
-  const log = Array.isArray(d.warehouse?.log) ? d.warehouse!.log : []
+
+  // Склад приходит из сети и может быть чем угодно: без склада, со складами
+  // вместо массива, с нулевым количеством. Проверка идёт по самому значению,
+  // поэтому лишних утверждений тут не нужно.
+  const склад = d.warehouse as { stacks?: unknown; log?: unknown } | undefined
+  const стопки = Array.isArray(склад?.stacks) ? склад.stacks : []
+  const stacks = стопки
+    .filter((s): s is WarehouseStack => !!s && typeof (s as WarehouseStack).itemId === 'number')
+    .map((s) => ({ itemId: s.itemId, count: Math.max(0, Math.trunc(s.count) || 0) }))
+    .filter((s) => s.count > 0)
+  const log = Array.isArray(склад?.log) ? (склад.log as MoveLog[]) : []
 
   return {
     version: DB_VERSION,
