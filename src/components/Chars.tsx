@@ -7,7 +7,6 @@ import {
   equipItem,
   removeChar,
   setSlotMod,
-  transferSlot,
   unequipItem,
   updateChar,
   useDb,
@@ -16,6 +15,7 @@ import { ItemPicker, matches } from './ItemPicker'
 import { ItemIcon } from './ItemIcon'
 import { ClassSelect, LevelInput } from './ClassLevel'
 import { ContactsModal } from './ContactsModal'
+import { IconDiscord, IconPhone, IconTelegram, IconUser } from './Icons'
 import {
   discordLabel,
   discordLink,
@@ -252,14 +252,17 @@ function CharCard({
 
               {/*
                 Контакты видны сразу, без открытия окна: иначе о них не
-                узнать, пока не догадаешься нажать кнопку. Каждый контакт —
-                ссылка туда, куда человек и правда пойдёт: телефон звонит,
-                телеграм и дискорд открывают профиль.
+                узнать, пока не догадаешься нажать кнопку. Блоком и с
+                понятными значками — чтобы было видно, где искать
+                человека вне игры. Каждый контакт — ссылка туда, куда
+                человек и правда пойдёт: телефон звонит, телеграм и дискорд
+                открывают профиль.
               */}
               {hasContacts(char.contacts) && (
                 <div className="char-contacts">
                   {char.contacts?.realName && (
                     <span className="chip plain" title="Имя в реальной жизни">
+                      <IconUser />
                       {char.contacts.realName}
                     </span>
                   )}
@@ -270,7 +273,8 @@ function CharCard({
                       title="Позвонить"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      ☎ {char.contacts?.phone}
+                      <IconPhone />
+                      {char.contacts?.phone}
                     </a>
                   )}
                   {telegramLink(char.contacts?.telegram) && (
@@ -282,7 +286,8 @@ function CharCard({
                       title="Открыть профиль в телеграме"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      ✈ {telegramLabel(char.contacts?.telegram!)}
+                      <IconTelegram />
+                      {telegramLabel(char.contacts?.telegram!)}
                     </a>
                   )}
                   {discordLink(char.contacts?.discord) && (
@@ -294,7 +299,8 @@ function CharCard({
                       title="Открыть профиль в дискорде"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      ◈ {discordLabel(char.contacts?.discord!)}
+                      <IconDiscord />
+                      {discordLabel(char.contacts?.discord!)}
                     </a>
                   )}
                 </div>
@@ -392,7 +398,6 @@ function SlotCells({
 }) {
   const def = SLOTS[slot]
   const arr = char.slots[slot] ?? []
-  const [transfer, setTransfer] = useState<number | null>(null)
 
   return (
     <div className="gear-slot">
@@ -493,19 +498,13 @@ function SlotCells({
               </div>
 
               {/*
-                Кнопки передачи и снятия при наведении встают на место иконки
-                столбиком: она всё равно не нужна, а место под неё уже есть.
-                Название при этом не сдвигается, и счётчик заточки остаётся
-                свободным — ради него ячейку и наводят.
+                Снять вещь. Кнопка одна и стоит в правом верхнем углу: в
+                ячейке шириной в 240 пикселей она закрывает пару букв у
+                конца названия, а не начало, как столбик из двух кнопок.
+                Появляется только при наведении и только на заполненную
+                ячейку — у пустой и так понятно, что надето нечего.
               */}
               <div className="cell-tools">
-                <button
-                  className="icon-btn tiny"
-                  title="Передать другому персонажу"
-                  onClick={() => setTransfer(i)}
-                >
-                  →
-                </button>
                 <button
                   className="icon-btn tiny danger"
                   title={entry.spans ? 'Снять с обоих слотов' : 'Снять'}
@@ -517,68 +516,6 @@ function SlotCells({
             </div>
           )
         })}
-      </div>
-
-      {transfer !== null && (
-        <TransferModal
-          char={char}
-          from={{ slot, index: transfer }}
-          onClose={() => setTransfer(null)}
-        />
-      )}
-    </div>
-  )
-}
-
-function TransferModal({
-  char,
-  from,
-  onClose,
-}: {
-  char: Char
-  from: { slot: SlotKey; index: number }
-  onClose: () => void
-}) {
-  const db = useDb()
-  const [note, setNote] = useState<string | null>(null)
-  const others = db.chars.filter((c) => c.id !== char.id)
-
-  return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal small" onClick={(e) => e.stopPropagation()}>
-        <h3>Передать предмет</h3>
-        <p className="hint">
-          Передать вещь из слота «{SLOTS[from.slot].label}» другому персонажу?
-          Слот получателя должен быть свободен.
-        </p>
-        <div className="transfer-list">
-          {others.map((c) => {
-            const free = (c.slots[from.slot] ?? []).some((e) => e === null)
-            return (
-              <button
-                key={c.id}
-                className="btn"
-                disabled={!free}
-                title={free ? 'Передать' : 'Слот занят'}
-                onClick={() => {
-                  const ok = transferSlot(char.id, from.slot, from.index, c.id)
-                  if (ok) onClose()
-                  else setNote(`У «${c.name || 'персонажа без имени'}» слот занят.`)
-                }}
-              >
-                {c.name || 'Без имени'}
-                {!free && <span className="chip subtle">занято</span>}
-              </button>
-            )
-          })}
-          {others.length === 0 && <p className="hint">Добавь второго персонажа, чтобы передавать вещи.</p>}
-        </div>
-        {note && <div className="sync-msg err">{note}</div>}
-        <div className="form-actions">
-          <button className="btn" onClick={onClose}>
-            Закрыть
-          </button>
-        </div>
       </div>
     </div>
   )

@@ -635,7 +635,6 @@ body {
    * карточки между собой: иначе они разъезжаются по длине имён.
    */
   --card-w: 268px;
-  --stack-label: 56px;
   display: flex;
   gap: 12px;
   overflow-x: auto;
@@ -698,19 +697,26 @@ body {
 }
 
 /*
- * Контакты в шапке. Имя в реальной жизни — просто текст, остальное — ссылки:
- * телефон звонит, телеграм и дискорд открывают профиль.
+ * Контакты в шапке. Блоком и с рамкой: человек в игре ищет, кого звать на
+ * бой, и контакты должны бросаться в глаза, а не теряться среди плашек
+ * класса и уровня.
  */
 .char-contacts {
   display: flex;
-  gap: 5px;
+  gap: 4px;
   flex-wrap: wrap;
-  margin-top: 5px;
+  margin-top: 6px;
+  padding: 4px;
+  background: var(--bg-3);
+  border: 1px solid var(--line-2);
+  border-left: 3px solid var(--accent);
+  border-radius: 7px;
 }
 
 .chip.plain {
   color: var(--text);
-  background: var(--bg-3);
+  background: var(--bg-2);
+  border-color: var(--line-2);
 }
 
 .chip.link {
@@ -723,6 +729,13 @@ body {
 .chip.link:hover {
   background: var(--accent);
   color: var(--bg);
+}
+
+/* Значки контактов внутри плашек: свой цвет, не наследуемый от текста. */
+.char-contacts .chip svg {
+  flex: none;
+  vertical-align: -2px;
+  margin-right: 4px;
 }
 
 .char-tools {
@@ -1083,22 +1096,26 @@ body {
  * а длинные не обрезаются.
  */
 .stack-row {
-  display: grid;
-  grid-template-columns: var(--stack-label) minmax(0, 1fr);
-  gap: 8px;
-  align-items: start;
+  display: block;
 }
 
 .stack-row + .stack-row {
+  margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid var(--line);
 }
 
+/*
+ * Подпись блока — над ячейками, а не сбоку. Сбоку она съедала 56 пикселей
+ * из 268, то есть пятую часть ширины карточки, ради трёх слов. Над
+ * ячейками ширина целиком уходит под названия предметов, а три подписи
+ * стоят 14 пикселей высоты каждый.
+ */
 .stack-row h4 {
-  margin: 6px 0 0;
+  margin: 0 0 4px;
   font-size: 9px;
   text-transform: uppercase;
-  letter-spacing: 0.7px;
+  letter-spacing: 0.8px;
   color: var(--muted);
   font-weight: 600;
   white-space: nowrap;
@@ -1274,36 +1291,21 @@ body {
 .cell-tools {
   position: absolute;
   /*
-   * Кнопки стоят столбиком на месте иконки: она при наведении всё равно не
-   * нужна, а место под неё уже есть. Столбик занимает ту же ширину, что и
-   * иконка, поэтому название не сдвигается и не накрывается — в отличие от
-   * горизонтальной пары, которая на горизонтальной строке съедала первые
-   * буквы коротких названий вроде «Gaz Blade».
+   * Кнопка снятия в правом верхнем углу. Столбик из двух кнопок на месте
+   * иконки перекрывал начало названия («Gaz Blade» превращался в «ade»),
+   * а одна кнопка справа закрывает пару букв у конца — там и так многоточие
+   * у длинных названий.
    */
-  top: 4px;
-  left: 4px;
+  top: 3px;
+  right: 4px;
   display: none;
-  flex-direction: column;
-  gap: 1px;
   background: #0f1420;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-2);
   border-radius: 5px;
-  padding: 1px;
-}
-
-.cell-tools .icon-btn.tiny {
-  width: 16px;
-  height: 15px;
-  font-size: 10px;
-  border-radius: 3px;
 }
 
 .gear-cell.filled:hover .cell-tools {
-  display: flex;
-}
-
-.gear-cell.filled:hover .cell-icon {
-  visibility: hidden;
+  display: block;
 }
 
 /* Грейды предметов: чем выше, тем «ценнее» цвет рамки. */
