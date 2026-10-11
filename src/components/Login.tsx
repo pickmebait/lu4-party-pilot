@@ -3,6 +3,7 @@ import type { Db } from '@/types'
 import { createParty, fetchDb, openSession, saveDb, type PartyInfo } from '@/lib/api'
 import { API_URL, CONFIGURED } from '@/lib/config'
 import { getDb, replaceDb, signIn, useSettings } from '@/lib/store'
+import { PaletteBar } from './PaletteBar'
 
 /**
  * Вход в приложение.
@@ -135,6 +136,9 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
             <h1>Party Pilot</h1>
             <p className="tag">экипировки пати · общая казна · хотелки</p>
           </div>
+          {/* Палитра действует на всё приложение, значит её можно выбрать и
+              не заходя внутрь — тем более, что цвет страницы тут и виден. */}
+          <PaletteBar />
         </div>
 
         <div className="segmented login-tabs">
