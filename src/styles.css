@@ -620,13 +620,16 @@ body {
  */
 .chars-grid {
   /*
-   * Ширина карточки фиксированная, а не по содержимому. По содержимому
-   * колонка ячеек растягивалась под самое длинное название на руках — все
-   * ячейки становились по 274 пикселя, и «Willow Staff» занимал столько же,
-   * сколько «Tateossian Necklace». Фиксированная ширина ещё и уравнивает
-   * карточки между собой: иначе они разъезжаются по длине имён.
+   * Ширина карточки фиксированная, а не по содержимому: по содержимому
+   * колонка ячеек растягивалась под самое длинное название на руках, и
+   * карточки разъезжались между собой по длине имён.
+   *
+   * 320px — это то, что нужно названию целиком в одну строку: иконка, ранг,
+   * счётчик заточки и место под кнопку снятия вместе занимают 147
+   * пикселей, остаётся 133 под текст. Самое длинное название в справочнике,
+   * «Saint Knight's Gauntlets», требует 126.
    */
-  --card-w: 268px;
+  --card-w: 320px;
   display: flex;
   gap: 12px;
   overflow-x: auto;
@@ -689,20 +692,51 @@ body {
 }
 
 /*
- * Контакты в шапке. Блоком и с рамкой: человек в игре ищет, кого звать на
- * бой, и контакты должны бросаться в глаза, а не теряться среди плашек
- * класса и уровня.
+ * Контакты в шапке. Свёрнутое состояние — одна полоса со значками и
+ * стрелкой: видно, что контакты заполнены, и не надо гадать. Развёрнутое —
+ * блок с рамкой, каждым контактом в отдельной плашке.
  */
 .char-contacts {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
+  align-items: center;
   margin-top: 6px;
   padding: 4px;
   background: var(--bg-3);
   border: 1px solid var(--line-2);
   border-left: 3px solid var(--accent);
   border-radius: 7px;
+}
+
+.contacts-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0 2px;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.contacts-toggle:hover {
+  color: var(--accent);
+}
+
+.contacts-marks {
+  display: flex;
+  gap: 5px;
+  color: var(--accent);
+}
+
+.chevron {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.char-contacts.open {
+  padding-bottom: 5px;
 }
 
 .chip.plain {
@@ -1115,7 +1149,7 @@ body {
   border-radius: 6px;
   border: 1px solid var(--line);
   background: #0f1420;
-  padding: 5px 6px;
+  padding: 3px 6px;
   /*
    * Высота заполненной ячейки считается сама: строка предмера 18px плюс
    * нижняя строка с рангом и счётчиком 14px, отступы и рамка. Один и тот же
@@ -1123,7 +1157,7 @@ body {
    * бижутерии строка из одних пустых ячеек выходит ниже соседних, и ряд
    * рвётся.
    */
-  min-height: 60px;
+  min-height: 34px;
   overflow: hidden;
 }
 
@@ -1150,10 +1184,14 @@ body {
   border-left-width: 3px;
   border-left-color: var(--line-2);
   position: relative;
-}
-
-.gear-cell.dim {
-  opacity: 0.22;
+  /*
+   * Вся ячейка — одна строка: иконка, ранг, название, счётчик заточки.
+   * Раньше ранг и заточка стояли под названием, ячейка была вдвое выше,
+   * и карточка не помещалась в экран по высоте.
+   */
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .cell-main {
@@ -1162,7 +1200,8 @@ body {
   color: inherit;
   font: inherit;
   text-align: left;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   cursor: pointer;
   padding: 0;
   display: flex;
@@ -1181,6 +1220,7 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
+  flex: 1;
 }
 
 /* Номер предмета: нужен складу и комплектам. В ячейке персонажа он уехал
@@ -1190,27 +1230,14 @@ body {
   color: #5d6883;
 }
 
-/* Нижняя строка ячейки: ранг слева, счётчик заточки справа. */
-.cell-foot {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 3px;
-  min-height: 14px;
-}
-
-.cell-foot-marks {
-  display: flex;
-  gap: 3px;
-  align-items: center;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.cell-foot-marks .chip {
+/* Ранг идёт перед названием, поэтому поджат по высоте. */
+.cell-main .chip.grade,
+.cell-main .chip.span {
+  flex: none;
   padding: 0 5px;
   font-size: 10px;
-  line-height: 15px;
+  line-height: 16px;
+  border-radius: 4px;
 }
 
 .cell-mod {
@@ -1218,6 +1245,13 @@ body {
   align-items: center;
   gap: 1px;
   margin-left: auto;
+  /*
+   * Место под кнопку снятия в правом верхнем углу резервируется здесь, а
+   * не в .cell-main: кнопка стоит у правого края ячейки, то есть как раз
+   * за счётчиком. Если резервировать в .cell-main, счётчик подползал под
+   * кнопку и нажимать на + в её правой части было нельзя.
+   */
+  margin-right: 18px;
   background: #0b101a;
   border: 1px solid var(--line);
   border-radius: 5px;
@@ -1265,41 +1299,32 @@ body {
 
 .cell-tools {
   position: absolute;
-  /*
-   * Кнопка снятия в правом верхнем углу. Столбик из двух кнопок перекрывал
-   * начало названия, «Gaz Blade» превращался в «ade», а одна кнопка справа
-   * закрывает пару букв у конца — там и так многоточие у длинных названий.
-   */
-  top: 3px;
-  right: 3px;
+  top: 2px;
+  right: 2px;
   display: none;
   background: #0f1420;
   border: 1px solid var(--line-2);
   border-radius: 4px;
 }
 
-/* Вдвое меньше обычной кнопки: снимать вещь — не повседневное дело,
-   а кнопка занимала место в самом углу названия. */
-.cell-tools .icon-btn.tiny {
-  position: relative;
-  width: 13px;
-  height: 13px;
-  font-size: 9px;
-  /* Строка не должна быть выше кнопки: привычные 1.5 от шрифта страницы
-     давали 22 пикселя в боксе 13, и крест уезжал за нижний край. */
-  line-height: 1;
-  border-radius: 3px;
-}
-
 /*
- * Невидимая область нажатия шире самой кнопки. На 13 пикселях попасть
- * мышью — лотерея, а увеличивать кнопку нельзя: она специально мелкая.
- * Псевдоэлемент не видно, но он ловит клик по всей зоне.
+ * Крестик нарисован, а не набран символом шрифта: на строке в 14 пикселей
+ * символ рисовался ниже рамки, и метрики шрифта решали, где он окажется.
+ * Замер по прямоугольнику текста показывал попадание в центр, а на деле
+ * глиф был вне кнопки.
+ *
+ * Место под кнопку зарезервировано в .cell-main постоянно: если резервировать
+ * только при наведении, ячейка прыгала бы, а счётчик заточки накрывался бы.
  */
-.cell-tools .icon-btn.tiny::before {
-  content: '';
-  position: absolute;
-  inset: -7px;
+.cell-tools .icon-btn.tiny {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: none;
+  background: none;
+  border-radius: 3px;
 }
 
 .gear-cell.filled:hover .cell-tools {

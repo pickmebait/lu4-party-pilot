@@ -11,11 +11,11 @@ import {
   updateChar,
   useDb,
 } from '@/lib/store'
-import { ItemPicker, matches } from './ItemPicker'
+import { ItemPicker } from './ItemPicker'
 import { ItemIcon } from './ItemIcon'
 import { ClassSelect, LevelInput } from './ClassLevel'
 import { ContactsModal } from './ContactsModal'
-import { IconDiscord, IconPhone, IconTelegram, IconUser } from './Icons'
+import { IconClose, IconDiscord, IconPhone, IconTelegram, IconUser } from './Icons'
 import {
   discordLabel,
   discordLink,
@@ -32,12 +32,8 @@ interface PickerTarget {
   index: number
 }
 
-/** Значение фильтра «покажи только этот предмет». */
-const NO_FILTER = ''
-
 export function CharsView({ catalog }: { catalog: CatalogApi }) {
   const [target, setTarget] = useState<PickerTarget | null>(null)
-  const [q, setQ] = useState(NO_FILTER)
   const [quickAdd, setQuickAdd] = useState(false)
 
   return (
@@ -51,19 +47,8 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
         </div>
       </div>
 
-      <input
-        className="input filter-wide"
-        placeholder="Фильтр по предмету во всех слотах…"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-      />
-
       <div className="chars-grid">
-        <DbChars
-          catalog={catalog}
-          filter={q}
-          onPick={(charId, slot, index) => setTarget({ charId, slot, index })}
-        />
+        <DbChars catalog={catalog} onPick={(charId, slot, index) => setTarget({ charId, slot, index })} />
       </div>
 
       {quickAdd && (
@@ -86,14 +71,12 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
   )
 }
 
-/** Список персонажей: вынесен, чтобы фильтр читался из одного места. */
+/** Список персонажей: вынесен, чтобы пустое состояние не мешало вёрстке. */
 function DbChars({
   catalog,
-  filter,
   onPick,
 }: {
   catalog: CatalogApi
-  filter: string
   onPick: (charId: string, slot: SlotKey, index: number) => void
 }) {
   const db = useDb()
@@ -113,7 +96,7 @@ function DbChars({
   return (
     <>
       {db.chars.map((c) => (
-        <CharCard key={c.id} char={c} catalog={catalog} filter={filter} onPick={onPick} />
+        <CharCard key={c.id} char={c} catalog={catalog} onPick={onPick} />
       ))}
     </>
   )
@@ -205,17 +188,16 @@ function QuickAddForm({
 function CharCard({
   char,
   catalog,
-  filter,
   onPick,
 }: {
   char: Char
   catalog: CatalogApi
-  filter: string
   onPick: (charId: string, slot: SlotKey, index: number) => void
 }) {
   const [editing, setEditing] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [contactsOpen, setContactsOpen] = useState(false)
+  const [editContacts, setEditContacts] = useState(false)
 
   let filled = 0
   let total = 0
@@ -251,15 +233,32 @@ function CharCard({
               </div>
 
               {/*
-                Контакты видны сразу, без открытия окна: иначе о них не
-                узнать, пока не догадаешься нажать кнопку. Блоком и с
-                понятными значками — чтобы было видно, где искать
-                человека вне игры. Каждый контакт — ссылка туда, куда
-                человек и правда пойдёт: телефон звонит, телеграм и дискорд
-                открывают профиль.
+                Контакты сворачиваются: в пати их обычно заполняют один раз,
+                а блок на четыре строки каждым персонажем съедал высоту
+                карточки. Свёрнутое состояние показывает значки — видно,
+                что контакты есть, и не надо гадать, заполнено ли поле.
+                Каждый контакт — ссылка туда, куда человек и правда пойдёт:
+                телефон звонит, телеграм и дискорд открывают профиль.
               */}
               {hasContacts(char.contacts) && (
-                <div className="char-contacts">
+                <div className={`char-contacts${contactsOpen ? ' open' : ''}`}>
+                  <button
+                    className="contacts-toggle"
+                    title={contactsOpen ? 'Свернуть контакты' : 'Показать контакты'}
+                    aria-expanded={contactsOpen}
+                    onClick={() => setContactsOpen((v) => !v)}
+                  >
+                    <span className="contacts-marks">
+                      {char.contacts?.realName && <IconUser size={11} />}
+                      {char.contacts?.phone && <IconPhone size={11} />}
+                      {char.contacts?.telegram && <IconTelegram size={11} />}
+                      {char.contacts?.discord && <IconDiscord size={11} />}
+                    </span>
+                    <span className="chevron">{contactsOpen ? '▾' : '▸'}</span>
+                  </button>
+
+                  {contactsOpen && (
+                    <>
                   {char.contacts?.realName && (
                     <span className="chip plain" title="Имя в реальной жизни">
                       <IconUser />
@@ -303,6 +302,8 @@ function CharCard({
                       {discordLabel(char.contacts?.discord!)}
                     </a>
                   )}
+                    </>
+                  )}
                 </div>
               )}
             </>
@@ -315,9 +316,9 @@ function CharCard({
           <button
             className="icon-btn"
             title={hasContacts(char.contacts) ? 'Изменить контакты' : 'Указать контакты'}
-            onClick={() => setContactsOpen(true)}
+            onClick={() => setEditContacts(true)}
           >
-            ☎
+            <IconPhone size={14} />
           </button>
           <button className="icon-btn danger" title="Удалить персонажа" onClick={() => setConfirmDelete(true)}>
             🗑
@@ -325,7 +326,18 @@ function CharCard({
         </div>
       </header>
 
-      {contactsOpen && <ContactsModal char={char} onClose={() => setContactsOpen(false)} />}
+      {editContacts && (
+        <ContactsModal
+          char={char}
+          onClose={() => {
+            setEditContacts(false)
+            // Только что открытые контакты показываем сразу, иначе после
+            // сохранения ничего не изменилось бы и человек решил бы, что
+            // правка не прошла.
+            setContactsOpen(true)
+          }}
+        />
+      )}
 
       {confirmDelete && (
         <div className="confirm">
@@ -370,7 +382,6 @@ function CharCard({
                   char={char}
                   catalog={catalog}
                   slot={key}
-                  filter={filter}
                   onPick={(index) => onPick(char.id, key, index)}
                 />
               ))}
@@ -387,13 +398,11 @@ function SlotCells({
   char,
   catalog,
   slot,
-  filter,
   onPick,
 }: {
   char: Char
   catalog: CatalogApi
   slot: SlotKey
-  filter: string
   onPick: (index: number) => void
 }) {
   const def = SLOTS[slot]
@@ -404,14 +413,12 @@ function SlotCells({
       <div className="gear-cells">
         {arr.map((entry, i) => {
           const name = entry ? catalog.nameOf(entry.itemId) : ''
-          // При активном фильтре приглушаем всё, что не подходит по названию.
-          const hide = filter.trim() !== NO_FILTER && (!entry || !matches(name, filter))
 
           if (!entry) {
             return (
               <button
                 key={i}
-                className={`gear-cell void ${hide ? 'dim' : ''}`}
+                className="gear-cell void"
                 title={`${def.label}: пусто`}
                 onClick={() => onPick(i)}
               >
@@ -428,7 +435,7 @@ function SlotCells({
           return (
             <div
               key={i}
-              className={`gear-cell filled ${hide ? 'dim' : ''} ${
+              className={`gear-cell filled ${
                 gradeCss !== null ? `g${gradeCss}` : ''
               } ${entry.spans ? 'spans' : ''}`}
               title={[
@@ -451,58 +458,55 @@ function SlotCells({
                 .join(' · ')}
             >
               {/*
-                Ячейка узкая, а названия длинные, поэтому иконка и название
-                стоят рядом, а грейд и заточка — отдельной строкой снизу:
-                так название занимает всю ширину минус иконка, а не делится
-                ещё и с плашками.
+                Всё в одну строку: иконка, ранг, название, счётчик заточки.
+                Раньше ранг и заточка стояли под названием, и ячейка была
+                вдвое выше — карточка не помещалась в экран по высоте.
               */}
               <button className="cell-main" onClick={() => onPick(i)}>
                 <span className="cell-icon">
                   <ItemIcon item={item} name={name} size={24} />
                 </span>
+                {grade && <span className="chip grade">{gradeLabel(grade)}</span>}
+                {entry.spans && <span className="chip span">2</span>}
                 <span className="cell-name">{name}</span>
               </button>
 
-              <div className="cell-foot">
-                <span className="cell-foot-marks">
-                  {grade && <span className="chip grade">{gradeLabel(grade)}</span>}
-                  {entry.spans && <span className="chip span">2</span>}
-                </span>
-
-                {/*
-                  Заточка всегда на виду: в ячейке двенадцать вещей, спрятать
-                  её под наведение — значит забыть про неё и упустить
-                  перезаточку перед походом. Кнопки стоят отдельными элементами
-                  от .cell-main, потому что кнопка внутри кнопки браузером не
-                  разбирается, а нажатие на + открывало бы пикер предмета.
-                */}
-                <div className="cell-mod" title={`Заточка от 0 до ${MAX_MOD}`}>
-                  <button
-                    className="mod-btn"
-                    disabled={mod <= 0}
-                    onClick={() => setSlotMod(char.id, slot, i, mod - 1)}
-                    title="Убавить заточку на 1"
-                  >
-                    −
-                  </button>
-                  <span className={`mod-value${mod > 0 ? ' on' : ''}`}>+{mod}</span>
-                  <button
-                    className="mod-btn"
-                    disabled={mod >= MAX_MOD}
-                    onClick={() => setSlotMod(char.id, slot, i, mod + 1)}
-                    title="Добавить заточку на 1"
-                  >
-                    +
-                  </button>
-                </div>
+              {/*
+                Заточка всегда на виду: в ячейке двенадцать вещей, спрятать
+                её под наведение — значит забыть про неё и упустить
+                перезаточку перед походом. Кнопки стоят отдельными элементами
+                от .cell-main, потому что кнопка внутри кнопки браузером не
+                разбирается, а нажатие на + открывало бы пикер предмета.
+              */}
+              <div className="cell-mod" title={`Заточка от 0 до ${MAX_MOD}`}>
+                <button
+                  className="mod-btn"
+                  disabled={mod <= 0}
+                  onClick={() => setSlotMod(char.id, slot, i, mod - 1)}
+                  title="Убавить заточку на 1"
+                >
+                  −
+                </button>
+                <span className={`mod-value${mod > 0 ? ' on' : ''}`}>+{mod}</span>
+                <button
+                  className="mod-btn"
+                  disabled={mod >= MAX_MOD}
+                  onClick={() => setSlotMod(char.id, slot, i, mod + 1)}
+                  title="Добавить заточку на 1"
+                >
+                  +
+                </button>
               </div>
 
               {/*
-                Снять вещь. Кнопка одна и стоит в правом верхнем углу: в
-                ячейке шириной в 240 пикселей она закрывает пару букв у
-                конца названия, а не начало, как столбик из двух кнопок.
-                Появляется только при наведении и только на заполненную
-                ячейку — у пустой и так понятно, что надето нечего.
+                Снять вещь. Кнопка в правом верхнем углу, по наведению и
+                только на заполненной ячейке: у пустой и так понятно, что
+                снимать нечего.
+
+                Место под неё зарезервировано в .cell-main постоянно, а не
+                только при наведении: иначе наведение сдвигало бы счётчик
+                заточки и накрывало его — а нажать на + нужно как раз для
+                того, ради чего ячейку и наводят.
               */}
               <div className="cell-tools">
                 <button
@@ -510,7 +514,7 @@ function SlotCells({
                   title={entry.spans ? 'Снять с обоих слотов' : 'Снять'}
                   onClick={() => unequipItem(char.id, slot, i)}
                 >
-                  ✕
+                  <IconClose />
                 </button>
               </div>
             </div>
