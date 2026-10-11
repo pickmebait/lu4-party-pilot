@@ -5,8 +5,8 @@
   "tokenHash": "216c24148c23c38dae318db91ec64a30cead5802b88d2805ca29055d968d805d",
   "tokensIssued": 1,
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-11T17:23:29.064Z",
+    "version": 4,
+    "updatedAt": "2026-10-11T17:23:32.727Z",
     "updatedBy": "",
     "chars": [],
     "warehouse": {
