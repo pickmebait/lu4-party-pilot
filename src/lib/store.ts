@@ -5,7 +5,6 @@ import {
   type CatalogItem,
   type Char,
   type Db,
-  type Priority,
   type SetDef,
   type SlotEntry,
   type SlotKey,
@@ -432,18 +431,6 @@ export function signOut(): void {
   saveSession(null)
 }
 
-/* -------------------------------------------------- свои названия предметов */
-
-/** Запомнить название предмета, которого нет в справочнике. */
-export function setCustomName(itemId: number, name: string): void {
-  const key = String(itemId)
-  const customNames = { ...db.customNames }
-  const clean = name.trim()
-  if (!clean) delete customNames[key]
-  else customNames[key] = clean
-  commit({ ...db, customNames })
-}
-
 /* ------------------------------------------------------------- общие операции */
 
 /**
@@ -463,12 +450,4 @@ export function replaceDb(next: unknown): void {
     /* приватный режим */
   }
   emit()
-}
-
-export function resetDb(): void {
-  commit(emptyDb())
-}
-
-export function newWishPriorityDefault(): Priority {
-  return 2
 }

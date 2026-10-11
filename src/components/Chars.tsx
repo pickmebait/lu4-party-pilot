@@ -1,5 +1,5 @@
 ﻿import { useState } from 'react'
-import { SLOTS, SLOT_GROUPS, type Char, type SlotKey } from '@/types'
+import { SLOTS, SLOT_GROUPS, gradeCode, gradeLabel, type Char, type SlotKey } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
 import {
   addChar,
@@ -12,7 +12,7 @@ import {
   updateChar,
   useDb,
 } from '@/lib/store'
-import { ItemPicker, gradeCode, gradeLabel, matches } from './ItemPicker'
+import { ItemPicker, matches } from './ItemPicker'
 import { ItemIcon } from './ItemIcon'
 import { ClassSelect, LevelInput } from './ClassLevel'
 import { clampLevel } from '@/lib/classes'

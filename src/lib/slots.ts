@@ -135,11 +135,6 @@ export function unequip(char: Char, slot: SlotKey, index: number): void {
   }
 }
 
-/** Подходит ли предмет в слот — с учётом того, что слот занят партнёром. */
-export function fits(slot: SlotKey, item: CatalogItem): boolean {
-  return SLOTS[slot].accepts(item)
-}
-
 /** Все слоты, занятые предметом, — нужно для подсчёта комплектов. */
 export function slotsOf(char: Char, itemId: number): SlotKey[] {
   const out: SlotKey[] = []

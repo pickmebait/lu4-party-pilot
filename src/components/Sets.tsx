@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { CatalogApi } from '@/lib/catalog'
 import { computeSets } from '@/lib/derived'
 import { addSet, removeSet, updateSet, useDb } from '@/lib/store'
-import { gradeLabel } from './ItemPicker'
+import { gradeLabel } from '@/types'
 import { ItemPicker } from './ItemPicker'
 import { ItemIcon } from './ItemIcon'
 

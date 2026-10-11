@@ -380,46 +380,6 @@ const ARMOR_TYPE_LABELS: Record<string, string> = {
   magic: 'Магическая',
 }
 
-const GRADE_NAMES: Record<number, string> = {
-  16: 'S',
-  15: 'S',
-  14: 'A',
-  13: 'A',
-  12: 'B',
-  11: 'B',
-  10: 'C',
-  9: 'C',
-  8: 'D',
-  7: 'D',
-  6: 'NG',
-  5: 'NG',
-  4: 'NG',
-  3: 'NG',
-  2: 'NG',
-  1: 'NG',
-  0: 'NG',
-}
-
-/**
- * Грейд словами. Раньше источник давал число 0-16, теперь приходит строка
- * «NG», «D», «C», «B», «A», «S» — принимаем оба вида.
- */
-export function gradeLabel(grade?: number | string): string {
-  if (typeof grade === 'string') return grade
-  if (typeof grade !== 'number') return ''
-  return GRADE_NAMES[grade] ?? String(grade)
-}
-
-/** Числовой код грейда для цвета метки: NG 0, D 7, C 9, B 12, A 14, S 16. */
-export function gradeCode(grade?: number | string): number | null {
-  if (typeof grade === 'number') return grade
-  if (typeof grade === 'string') {
-    const коды: Record<string, number> = { NG: 0, D: 7, C: 9, B: 12, A: 14, S: 16 }
-    return коды[grade] ?? null
-  }
-  return null
-}
-
 /** Фильтр по названию для уже готовых списков. */
 export function matches(text: string, q: string): boolean {
   return !q.trim() || normalize(text).includes(normalize(q))

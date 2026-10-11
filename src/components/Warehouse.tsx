@@ -8,7 +8,8 @@ import {
   useDb,
 } from '@/lib/store'
 import { formatAgo, formatStamp, plural } from '@/lib/util'
-import { ItemPicker, gradeCode, gradeLabel, matches } from './ItemPicker'
+import { gradeCode, gradeLabel } from '@/types'
+import { ItemPicker, matches } from './ItemPicker'
 import { ItemIcon } from './ItemIcon'
 
 export function WarehouseView({ catalog }: { catalog: CatalogApi }) {

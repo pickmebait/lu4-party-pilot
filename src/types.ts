@@ -60,6 +60,45 @@ export const ARMOR_TYPE_OPTIONS = [
 /** Грейды в порядке убывания: так привычнее игроку. */
 export const GRADE_OPTIONS = ['NG', 'D', 'C', 'B', 'A', 'S'] as const
 
+/**
+ * Числовой код грейда для цвета метки.
+ *
+ * Источник отдаёт грейд строкой, но старая база была числом 0-16, и в
+ * версии партии могут остаться оба вида — поэтому функция понимает и то и
+ * другое. Код нужен, чтобы красить метку классом g0…g16.
+ */
+const GRADE_CODES: Record<string, number> = { NG: 0, D: 7, C: 9, B: 12, A: 14, S: 16 }
+
+/**
+ * Границы диапазонов для обратного перевода.
+ *
+ * Это не то же самое, что GRADE_CODES: там характерное значение грейда,
+ * здесь — с какого числа он начинается. В игре 11 и 12 — это B, поэтому
+ * граница B равна 11, а не 12.
+ */
+const GRADE_BANDS: { от: number; имя: string }[] = [
+  { от: 15, имя: 'S' },
+  { от: 13, имя: 'A' },
+  { от: 11, имя: 'B' },
+  { от: 9, имя: 'C' },
+  { от: 7, имя: 'D' },
+  { от: 6, имя: 'NG' },
+]
+
+/** Грейд словами. Принимает строку («B») и число (11) — версии баз разные. */
+export function gradeLabel(grade?: number | string): string {
+  if (typeof grade === 'string') return grade
+  if (typeof grade !== 'number') return ''
+  return GRADE_BANDS.find((полоса) => grade >= полоса.от)?.имя ?? 'NG'
+}
+
+/** Числовой код грейда для цвета метки, либо null если грейда нет. */
+export function gradeCode(grade?: number | string): number | null {
+  if (typeof grade === 'number') return grade
+  if (typeof grade === 'string') return GRADE_CODES[grade] ?? null
+  return null
+}
+
 export const WEAPON_TYPES = new Set([
   'Weapon',
   'Sword 1H',
