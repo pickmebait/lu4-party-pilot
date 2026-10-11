@@ -82,7 +82,12 @@ export function WishesView({ catalog }: { catalog: CatalogApi }) {
           return (
             <article key={w.id} className={`wish ${w.done ? 'done' : ''} p${w.priority}`}>
               <label className="wish-check" title={w.done ? 'Вернуть в активные' : 'Отметить выполненной'}>
-                <input type="checkbox" checked={w.done} onChange={() => (w.done ? undone(w) : done(w))} />
+                <input
+                  className="wish-box"
+                  type="checkbox"
+                  checked={w.done}
+                  onChange={() => (w.done ? undone(w) : done(w))}
+                />
               </label>
               <div className="wish-main">
                 <div className="wish-title">

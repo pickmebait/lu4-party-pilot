@@ -19,6 +19,24 @@
   --accent-line: #4a3f1c;
   --radius: 10px;
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+
+  /*
+   * Производные цвета. Считаются из палитры через color-mix, поэтому
+   * следуют за ней сами и не надо заводить по одному на каждую из шести.
+   *
+   * Раньше такие цвета были зашиты прямо в правилах: #0f1420 в ячейке
+   * предмета, #5d6883 в счётчике заточки, #151c2b в кнопках. В синей и
+   * зелёной палитре они оставались сине-зелёными, и счётчик заточки +0 в
+   * каждой ячейке не менялся вместе со страницей.
+   *
+   * Палитра объявлена на том же элементе, что и :root, поэтому подстановка
+   * color-mix пересчитывается при её смене.
+   */
+  --surface: color-mix(in srgb, var(--bg-2) 55%, var(--bg));
+  --surface-deep: color-mix(in srgb, var(--bg) 70%, #000);
+  --surface-lit: color-mix(in srgb, var(--bg-3) 65%, var(--bg-2));
+  --muted-dim: color-mix(in srgb, var(--muted) 72%, var(--bg));
+
   color-scheme: dark;
 }
 
@@ -348,8 +366,8 @@ body {
 }
 
 .btn:hover:not(:disabled) {
-  background: #232b3d;
-  border-color: #4a5670;
+  background: var(--surface-lit);
+  border-color: var(--line-2);
 }
 
 .btn:disabled {
@@ -467,7 +485,7 @@ body {
 /* ------------------------------------------------------------------- поля */
 
 .input {
-  background: #0f1420;
+  background: var(--surface);
   border: 1px solid var(--line-2);
   border-radius: 8px;
   color: var(--text);
@@ -801,9 +819,11 @@ body {
 
 /* Предмет, занимающий два слота: двуручное оружие или цельная броня. */
 .chip.span {
-  border-color: #4b3f7a;
-  color: #b9a7f0;
-  background: #191530;
+  /* Плашка двуслотного предмета. Раньше была фиолетовой во всех палитрах:
+     в зелёной и синей она читалась как чужеродная. Теперь берёт акцент. */
+  border-color: var(--accent-line);
+  color: var(--accent-2);
+  background: var(--accent-deep);
 }
 
 .gear-cell.spans {
@@ -866,7 +886,7 @@ body {
 
 .chip-count {
   font-size: 10px;
-  color: #5d6883;
+  color: var(--muted-dim);
 }
 
 .chip.pick.on .chip-count {
@@ -975,13 +995,13 @@ body {
   border-radius: 4px;
   font-size: 10px;
   line-height: 15px;
-  color: #8d99b3;
-  background: #0e1219;
+  color: var(--muted);
+  background: var(--surface-deep);
 }
 
 .tag.grade {
   font-weight: 600;
-  color: #b9c2d4;
+  color: var(--text);
 }
 
 .tag.grade.g-A {
@@ -1007,7 +1027,7 @@ body {
 
 .picker-stats {
   font-size: 11px;
-  color: #7f8ca8;
+  color: var(--muted);
   white-space: nowrap;
 }
 
@@ -1018,7 +1038,7 @@ body {
 }
 
 .chip.grade {
-  border-color: #3f4a63;
+  border-color: var(--line-2);
   font-weight: 700;
   min-width: 24px;
   text-align: center;
@@ -1134,7 +1154,7 @@ body {
 .gear-cell {
   border-radius: 6px;
   border: 1px solid var(--line);
-  background: #0f1420;
+  background: var(--surface);
   padding: 3px 6px;
   /*
    * Высота заполненной ячейки считается сама: строка предмера 18px плюс
@@ -1155,7 +1175,7 @@ body {
 .gear-cell.void {
   display: grid;
   place-items: center;
-  color: #46506a;
+  color: var(--muted-dim);
   cursor: pointer;
   font-size: 15px;
   border-style: dashed;
@@ -1213,7 +1233,7 @@ body {
    в подсказку — название в ячейке и без него обрезано. */
 .cell-id {
   font-size: 10px;
-  color: #5d6883;
+  color: var(--muted-dim);
 }
 
 /* Ранг идёт перед названием, поэтому поджат по высоте. */
@@ -1238,7 +1258,7 @@ body {
    * кнопку и нажимать на + в её правой части было нельзя.
    */
   margin-right: 18px;
-  background: #0b101a;
+  background: var(--surface-deep);
   border: 1px solid var(--line);
   border-radius: 5px;
   padding: 1px;
@@ -1249,7 +1269,7 @@ body {
   height: 16px;
   display: grid;
   place-items: center;
-  background: #151c2b;
+  background: var(--surface-lit);
   border: 1px solid var(--line-2);
   border-radius: 3px;
   color: var(--text);
@@ -1275,7 +1295,7 @@ body {
   text-align: center;
   font-size: 11px;
   font-variant-numeric: tabular-nums;
-  color: #5d6883;
+  color: var(--muted-dim);
 }
 
 .mod-value.on {
@@ -1288,7 +1308,7 @@ body {
   top: 2px;
   right: 2px;
   display: none;
-  background: #0f1420;
+  background: var(--surface);
   border: 1px solid var(--line-2);
   border-radius: 4px;
 }
@@ -1460,8 +1480,35 @@ body {
 .wish-check input {
   width: 17px;
   height: 17px;
-  accent-color: var(--ok);
   cursor: pointer;
+  /*
+   * Галочка нарисована, а не оставлена системной. С appearance: auto
+   * браузер рисует её белой в любой теме, и в кровяной или изумрудной палитре
+   * она выглядела как чужеродный квадрат: проверка палитры показала, что
+   * цвет этого элемента не меняется ни при каком переключении.
+   */
+  appearance: none;
+  position: relative;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  background: var(--surface);
+}
+
+.wish-check input:checked {
+  background: var(--ok);
+  border-color: var(--ok);
+}
+
+.wish-check input:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--bg);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
 .wish-main {
@@ -1545,7 +1592,7 @@ body {
 
 .bar {
   height: 6px;
-  background: #0f1420;
+  background: var(--surface);
   border-radius: 4px;
   overflow: hidden;
   margin: 10px 0 12px;
@@ -1597,7 +1644,7 @@ body {
 }
 
 .pieces .missing .tick {
-  color: #46506a;
+  color: var(--muted-dim);
 }
 
 .pname {
@@ -1688,7 +1735,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #0f1420;
+  background: var(--surface);
   border: 1px solid transparent;
   border-radius: 7px;
   padding: 7px 10px;
@@ -1713,7 +1760,7 @@ body {
 
 .picker-id {
   font-size: 11px;
-  color: #5d6883;
+  color: var(--muted-dim);
 }
 
 /* Иконка предмета: картинка или первая буква, если файла нет. */
@@ -1721,9 +1768,9 @@ body {
   flex: none;
   border-radius: 3px;
   image-rendering: -webkit-optimize-contrast;
-  background: #0b0f18;
+  background: var(--surface-deep);
   /* Иконки в источнике тёмные, на тёмном фоне сливаются — рамка отделяет. */
-  box-shadow: inset 0 0 0 1px #2c3446;
+  box-shadow: inset 0 0 0 1px var(--line-2);
 }
 
 .icon-fallback {
@@ -1747,7 +1794,7 @@ body {
   padding-top: 12px;
   border-top: 1px solid var(--line);
   font-size: 11px;
-  color: #5d6883;
+  color: var(--muted-dim);
 }
 
 .label-row {
@@ -1790,7 +1837,7 @@ body {
   padding-top: 14px;
   border-top: 1px solid var(--line);
   font-size: 12px;
-  color: #5d6883;
+  color: var(--muted-dim);
   text-align: center;
 }
 
@@ -1864,7 +1911,7 @@ body {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  background: #0f1420;
+  background: var(--surface);
   border: 1px solid var(--line-2);
   border-radius: 10px;
   padding: 12px;
