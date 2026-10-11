@@ -127,11 +127,3 @@ export async function rotateToken(
   })
 }
 
-/** Проверка, что сервер вообще на месте — для понятной ошибки при настройке. */
-export async function ping(apiUrl: string): Promise<ApiResult<null>> {
-  const res = await call<{ error: string }>(apiUrl, '/api/nope', { method: 'GET' })
-  if (!res.ok && /Неизвестный адрес/.test(res.error)) {
-    return { ok: true, value: null }
-  }
-  return res.ok ? { ok: true, value: null } : res
-}

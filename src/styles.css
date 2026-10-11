@@ -496,10 +496,6 @@ body {
   border-color: var(--accent);
 }
 
-.input.narrow {
-  width: 92px;
-}
-
 /* Уровень: две цифры, поэтому поле узкое и не перескакивает на новую строку. */
 .input.level {
   width: 60px;
@@ -579,10 +575,6 @@ body {
   padding: 1px 5px;
   border-radius: 4px;
   font-size: 11px;
-}
-
-.hint.warn {
-  color: #e5c07b;
 }
 
 .muted {
@@ -798,14 +790,6 @@ body {
   border-style: dashed;
 }
 
-.picker-hint {
-  margin: 0 0 10px;
-  padding: 7px 10px;
-  background: #0f1420;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-}
-
 /* Фильтры: тип предмета и грейд дополняют поиск. */
 .filters {
   display: grid;
@@ -1005,15 +989,6 @@ body {
   font-size: 11px;
   color: #7f8ca8;
   white-space: nowrap;
-}
-
-.picker-empty {
-  margin: 12px 0 0;
-  padding: 14px 12px;
-  background: #0f1420;
-  border: 1px dashed var(--line-2);
-  border-radius: 8px;
-  text-align: center;
 }
 
 .chip.mod {
@@ -1663,18 +1638,6 @@ body {
   margin-bottom: 12px;
 }
 
-.picker-section {
-  margin-top: 14px;
-}
-
-.picker-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--muted);
-  margin-bottom: 6px;
-}
-
 .picker-list {
   display: flex;
   flex-direction: column;
@@ -1753,24 +1716,6 @@ body {
   color: #5d6883;
 }
 
-.manual {
-  border-top: 1px solid var(--line);
-  padding-top: 14px;
-}
-
-.manual-row {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 6px;
-}
-
-.transfer-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 10px 0;
-}
-
 .label-row {
   display: flex;
   justify-content: space-between;
@@ -1795,12 +1740,6 @@ body {
   border-radius: 20px;
   padding: 3px 5px 3px 11px;
   font-size: 12px;
-}
-
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0 10px;
 }
 
 .sync-panel label {
@@ -1928,19 +1867,18 @@ body {
   text-align: right;
 }
 
+/*
+ * Узкий экран. Карточки персонажей не перестраиваются: они и так в одну
+ * строку со своей прокруткой, а вот шапка приложения складывается в
+ * колонку, чтобы кнопки синхронизации не сжимали логотип с палитрой.
+ */
 @media (max-width: 720px) {
-  .chars-grid {
-    grid-template-columns: 1fr;
-  }
   .top {
     flex-direction: column;
     align-items: stretch;
   }
   .player {
     width: 100%;
-  }
-  .grid-2 {
-    grid-template-columns: 1fr;
   }
   .wish {
     flex-wrap: wrap;

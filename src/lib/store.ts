@@ -330,35 +330,6 @@ export function setSlotMod(charId: string, slot: SlotKey, index: number, mod: nu
   commit({ ...db, chars: db.chars.map((c) => (c.id === charId ? copy : c)) })
 }
 
-/** Передать надетое другому персонажу: ищем пустой слот подходящего типа. */
-export function transferSlot(fromId: string, slot: SlotKey, index: number, toId: string): boolean {
-  const from = db.chars.find((c) => c.id === fromId)
-  const to = db.chars.find((c) => c.id === toId)
-  if (!from || !to || fromId === toId) return false
-
-  const entry = from.slots[slot]?.[index]
-  if (!entry) return false
-
-  const free = (to.slots[slot] ?? []).findIndex((e) => e === null)
-  if (free === -1) return false
-
-  const fromCopy: Char = { ...from, slots: { ...from.slots } }
-  const toCopy: Char = { ...to, slots: { ...to.slots } }
-
-  // Снимаем через общие правила: двуручное оружие и цельная броня
-  // освободят оба своих слота, а не один.
-  unequip(fromCopy, slot, index)
-  const toSlots = [...(toCopy.slots[slot] ?? [])]
-  toSlots[free] = { itemId: entry.itemId, mod: entry.mod }
-  toCopy.slots[slot] = toSlots
-
-  commit({
-    ...db,
-    chars: db.chars.map((c) => (c.id === fromId ? fromCopy : c.id === toId ? toCopy : c)),
-  })
-  return true
-}
-
 /* -------------------------------------------------------------------- казна */
 
 function pushLog(dir: 'in' | 'out', itemId: number, count: number, who: string, note?: string) {

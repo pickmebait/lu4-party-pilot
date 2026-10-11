@@ -99,21 +99,6 @@ export function gradeCode(grade?: number | string): number | null {
   return null
 }
 
-export const WEAPON_TYPES = new Set([
-  'Weapon',
-  'Sword 1H',
-  'Sword 2H',
-  'Sword Mag 1H',
-  'Blunt 1H',
-  'Blunt 2H',
-  'Dagger',
-  'Staff',
-  'Bow',
-  'Spear',
-  'Fist',
-  'Dual Sword',
-])
-
 /**
  * Что можно положить в слот.
  *
@@ -222,24 +207,6 @@ export const SLOT_MAX: Record<SlotKey, number> = SLOT_KEYS.reduce(
   },
   {} as Record<SlotKey, number>,
 )
-
-export const SLOT_LABEL: Record<SlotKey, string> = SLOT_KEYS.reduce(
-  (acc, k) => {
-    acc[k] = SLOTS[k].label
-    return acc
-  },
-  {} as Record<SlotKey, string>,
-)
-
-/** Двуручное или дуальное оружие занимает обе руки. */
-export function occupiesBothHands(item: CatalogItem | null | undefined): boolean {
-  return !!item && (item.twoHanded === true || item.dual === true)
-}
-
-/** Цельная броня занимает верх и низ. */
-export function occupiesChestAndLegs(item: CatalogItem | null | undefined): boolean {
-  return !!item && item.fullbody === true
-}
 
 /** Наибольшая заточка в игре: +16. */
 export const MAX_MOD = 16

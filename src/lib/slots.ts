@@ -134,12 +134,3 @@ export function unequip(char: Char, slot: SlotKey, index: number): void {
     break
   }
 }
-
-/** Все слоты, занятые предметом, — нужно для подсчёта комплектов. */
-export function slotsOf(char: Char, itemId: number): SlotKey[] {
-  const out: SlotKey[] = []
-  for (const key of Object.keys(SLOTS) as SlotKey[]) {
-    if (char.slots[key]?.some((e) => e?.itemId === itemId)) out.push(key)
-  }
-  return out
-}
