@@ -118,13 +118,14 @@ for (const п of предметы) {
 }
 const подпись = (п) =>
   [
-    п.tex,
     п.slot ?? '',
     п.gradeName ?? '',
     п.atkPhys ?? '',
     п.atkMag ?? '',
     п.physDef ?? '',
     п.mDef ?? '',
+    п.weaponType ?? '',
+    п.armorType ?? '',
     п.variant ?? '',
     п.icon ?? '',
   ].join('|')
