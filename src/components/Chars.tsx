@@ -1,12 +1,12 @@
 ﻿import { useState } from 'react'
-import { SLOTS, SLOT_GROUPS, gradeCode, gradeLabel, type Char, type SlotKey } from '@/types'
+import { SLOTS, SLOT_GROUPS, MAX_MOD, gradeCode, gradeLabel, type Char, type SlotKey } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
 import {
   addChar,
   emptyChar,
   equipItem,
   removeChar,
-  setSlotEnch,
+  setSlotMod,
   transferSlot,
   unequipItem,
   updateChar,
@@ -307,7 +307,6 @@ function SlotCells({
 }) {
   const def = SLOTS[slot]
   const arr = char.slots[slot] ?? []
-  const [enchEdit, setEnchEdit] = useState<{ index: number; value: string } | null>(null)
   const [transfer, setTransfer] = useState<number | null>(null)
 
   return (
@@ -338,7 +337,7 @@ function SlotCells({
           const item = catalog.byId(entry.itemId)
           const grade = item?.gradeName
           const gradeCss = gradeCode(grade)
-          const editingEnch = enchEdit?.index === i
+          const mod = entry.mod ?? 0
 
           return (
             <div
@@ -348,7 +347,7 @@ function SlotCells({
               } ${entry.spans ? 'spans' : ''}`}
               title={[
                 name,
-                entry.ench ? `(${entry.ench})` : '',
+                entry.mod ? `заточка +${entry.mod}` : '',
                 entry.spans ? 'занимает два слота' : '',
                 item?.twoHanded ? 'двуручное' : '',
                 item?.dual ? 'дуальное' : '',
@@ -363,73 +362,64 @@ function SlotCells({
                 .filter(Boolean)
                 .join(' · ')}
             >
-              {editingEnch ? (
-                <div className="ench-editor">
-                  <input
-                    className="input tiny-input"
-                    autoFocus
-                    value={enchEdit.value}
-                    placeholder="+16"
-                    onChange={(e) => setEnchEdit({ index: i, value: e.target.value })}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        setSlotEnch(char.id, slot, i, enchEdit.value)
-                        setEnchEdit(null)
-                      }
-                      if (e.key === 'Escape') setEnchEdit(null)
-                    }}
-                  />
-                  <button
-                    className="btn tiny"
-                    onClick={() => {
-                      setSlotEnch(char.id, slot, i, enchEdit.value)
-                      setEnchEdit(null)
-                    }}
-                  >
-                    ✓
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <button className="cell-main" onClick={() => onPick(i)}>
-                    <span className="cell-icon">
-                      <ItemIcon item={item} name={name} size={26} />
-                    </span>
-                    <span className="cell-text">
-                      <span className="cell-name">{name}</span>
-                      <span className="cell-sub">
-                        {entry.ench && <span className="chip ench">{entry.ench}</span>}
-                        {grade && <span className="chip grade">{gradeLabel(grade)}</span>}
-                        {entry.spans && <span className="chip span">2 слота</span>}
-                        <span className="cell-id">#{entry.itemId}</span>
-                      </span>
-                    </span>
-                  </button>
-                  <div className="cell-tools">
-                    <button
-                      className="icon-btn tiny"
-                      title="Заточка"
-                      onClick={() => setEnchEdit({ index: i, value: entry.ench ?? '' })}
-                    >
-                      ✦
-                    </button>
-                    <button
-                      className="icon-btn tiny"
-                      title="Передать другому персонажу"
-                      onClick={() => setTransfer(i)}
-                    >
-                      →
-                    </button>
-                    <button
-                      className="icon-btn tiny danger"
-                      title={entry.spans ? 'Снять с обоих слотов' : 'Снять'}
-                      onClick={() => unequipItem(char.id, slot, i)}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </>
-              )}
+              <button className="cell-main" onClick={() => onPick(i)}>
+                <span className="cell-icon">
+                  <ItemIcon item={item} name={name} size={26} />
+                </span>
+                <span className="cell-text">
+                  <span className="cell-name">{name}</span>
+                  <span className="cell-sub">
+                    {mod > 0 && <span className="chip mod">+{mod}</span>}
+                    {grade && <span className="chip grade">{gradeLabel(grade)}</span>}
+                    {entry.spans && <span className="chip span">2 слота</span>}
+                    <span className="cell-id">#{entry.itemId}</span>
+                  </span>
+                </span>
+              </button>
+
+              {/*
+                Заточка живёт своей строкой под предметом и всегда на виду:
+                в ячейке 12 вещей, спрятать её под наведение — значит
+                забыть про неё и упустить перезаточку перед походом.
+                Кнопки отдельные от .cell-main, потому что кнопка внутри
+                кнопки браузером не разбирается.
+              */}
+              <div className="cell-mod" title={`Заточка от 0 до ${MAX_MOD}`}>
+                <button
+                  className="mod-btn"
+                  disabled={mod <= 0}
+                  onClick={() => setSlotMod(char.id, slot, i, mod - 1)}
+                  title="Убавить заточку на 1"
+                >
+                  −
+                </button>
+                <span className={`mod-value${mod > 0 ? ' on' : ''}`}>+{mod}</span>
+                <button
+                  className="mod-btn"
+                  disabled={mod >= MAX_MOD}
+                  onClick={() => setSlotMod(char.id, slot, i, mod + 1)}
+                  title="Добавить заточку на 1"
+                >
+                  +
+                </button>
+              </div>
+
+              <div className="cell-tools">
+                <button
+                  className="icon-btn tiny"
+                  title="Передать другому персонажу"
+                  onClick={() => setTransfer(i)}
+                >
+                  →
+                </button>
+                <button
+                  className="icon-btn tiny danger"
+                  title={entry.spans ? 'Снять с обоих слотов' : 'Снять'}
+                  onClick={() => unequipItem(char.id, slot, i)}
+                >
+                  ✕
+                </button>
+              </div>
             </div>
           )
         })}

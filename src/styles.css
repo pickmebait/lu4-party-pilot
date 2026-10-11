@@ -771,7 +771,7 @@ body {
   text-align: center;
 }
 
-.chip.ench {
+.chip.mod {
   border-color: #6b4b12;
   color: var(--accent-2);
   background: #241d09;
@@ -865,8 +865,8 @@ body {
 }
 
 .gear-cell {
-  flex: 1 1 85px;
-  min-width: 85px;
+  flex: 1 1 104px;
+  min-width: 104px;
   border-radius: 7px;
   border: 1px solid var(--line);
   background: #0f1420;
@@ -931,14 +931,56 @@ body {
   color: #5d6883;
 }
 
-.ench-editor {
+.cell-mod {
   display: flex;
-  gap: 4px;
   align-items: center;
+  gap: 2px;
+  margin-top: 4px;
+  width: fit-content;
+  margin-left: auto;
+  background: #0b101a;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 1px;
 }
 
-.ench-editor .tiny-input {
-  width: 58px;
+.mod-btn {
+  width: 18px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  background: #151c2b;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+
+.mod-btn:hover:not(:disabled) {
+  border-color: var(--accent-2);
+  color: var(--accent-2);
+}
+
+.mod-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* Нулевая заточка — обычное состояние, ненулевая подсвечивается золотом. */
+.mod-value {
+  min-width: 22px;
+  text-align: center;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: #5d6883;
+}
+
+.mod-value.on {
+  color: var(--accent-2);
+  font-weight: 700;
 }
 
 .cell-tools {

@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import {
+  MAX_MOD,
   SLOT_KEYS,
   SLOT_MAX,
   type CatalogItem,
@@ -13,7 +14,12 @@ import {
 import { emptySlots, equip, unequip } from './slots'
 import { uid } from './util'
 
-export const DB_VERSION = 2
+/**
+ * Версия 3: заточка в слоте стала числом от 0 до 16 (была произвольной
+ * строкой). Старые значения переносятся функцией modOf, поэтому поднимать
+ * версию для миграции не нужно — она и так вызывается при любой загрузке.
+ */
+export const DB_VERSION = 3
 const DB_KEY = 'pp:db'
 const SETTINGS_KEY = 'pp:settings'
 
@@ -81,7 +87,7 @@ function normalizeChar(c: Partial<Char>): Char {
     for (let i = 0; i < SLOT_MAX[k]; i++) {
       const e = src[i]
       if (e && typeof e.itemId === 'number') {
-        arr[i] = { itemId: e.itemId, ench: e.ench, spans: e.spans }
+        arr[i] = { itemId: e.itemId, mod: modOf(e), spans: e.spans }
       }
     }
     slots[k] = arr
@@ -93,6 +99,22 @@ function normalizeChar(c: Partial<Char>): Char {
     level: Math.max(0, Math.trunc(Number(c.level)) || 0),
     slots,
   }
+}
+
+/**
+ * Заточка приводится к числу от 0 до 16.
+ *
+ * В старых базах она лежала строкой («+16», «ТГ»), поэтому берём первое
+ * число из строки: «+16» станет 16, «ТГ» — 0. Всё, что вне диапазона,
+ * обрезается, иначе в ячейке появилось бы +99.
+ */
+function modOf(e: SlotEntry): number | undefined {
+  const старое = e as { mod?: unknown; ench?: unknown }
+  const сырое = старое.mod ?? старое.ench
+  if (сырое === undefined || сырое === null || сырое === '') return undefined
+  const n = typeof сырое === 'number' ? сырое : Number(String(сырое).match(/-?\d+/)?.[0])
+  if (!Number.isFinite(n)) return undefined
+  return Math.min(MAX_MOD, Math.max(0, Math.trunc(n)))
 }
 
 function loadState(): { db: Db; settings: Settings } {
@@ -214,15 +236,21 @@ export function unequipItem(charId: string, slot: SlotKey, index: number): void 
   commit({ ...db, chars: db.chars.map((c) => (c.id === charId ? copy : c)) })
 }
 
-/** Заточка — это не отдельный предмет, а свойство надетой вещи. */
-export function setSlotEnch(charId: string, slot: SlotKey, index: number, ench: string): void {
+/**
+ * Заточка надетой вещи.
+ *
+ * Это не отдельный предмет, а свойство вещи в слоте: при снятии и
+ * надевании заново она сбрасывается, как и заточка в игре.
+ */
+export function setSlotMod(charId: string, slot: SlotKey, index: number, mod: number): void {
   const char = db.chars.find((c) => c.id === charId)
   const cur = char?.slots[slot]?.[index]
   if (!char || !cur) return
 
+  const значение = Math.min(MAX_MOD, Math.max(0, Math.trunc(mod) || 0))
   const copy: Char = { ...char, slots: { ...char.slots } }
   const arr = [...(copy.slots[slot] ?? [])]
-  arr[index] = { ...cur, ench: ench.trim() || undefined }
+  arr[index] = { ...cur, mod: значение || undefined }
   copy.slots[slot] = arr
   commit({ ...db, chars: db.chars.map((c) => (c.id === charId ? copy : c)) })
 }
@@ -246,7 +274,7 @@ export function transferSlot(fromId: string, slot: SlotKey, index: number, toId:
   // освободят оба своих слота, а не один.
   unequip(fromCopy, slot, index)
   const toSlots = [...(toCopy.slots[slot] ?? [])]
-  toSlots[free] = { itemId: entry.itemId, ench: entry.ench }
+  toSlots[free] = { itemId: entry.itemId, mod: entry.mod }
   toCopy.slots[slot] = toSlots
 
   commit({
