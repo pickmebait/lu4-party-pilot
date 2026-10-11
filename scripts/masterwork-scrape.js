@@ -96,6 +96,8 @@
     корень.querySelectorAll('.stat_line').forEach((блок) => {
       const ключ = (блок.querySelector('.stat_name')?.innerText || '').trim()
       if (!ключ || ключ === 'Ограничения') return
+
+      // Обычное значение лежит в .stat_describe, иногда во втором .stat_name.
       const блокЗначения = блок.querySelector('.stat_describe')
       if (блокЗначения) {
         const таблица = блокЗначения.querySelector('.flex-table')
@@ -107,9 +109,20 @@
         if (текст) статы[ключ] = текст
         return
       }
-      // Значение иногда лежит во втором .stat_name, без обёртки.
       const имена = блок.querySelectorAll('.stat_name')
-      if (имена.length > 1) статы[ключ] = имена[1].innerText.trim()
+      if (имена.length > 1) {
+        статы[ключ] = имена[1].innerText.trim()
+        return
+      }
+      // Запасной путь: разметка меняется, а строка целиком всё равно читаема.
+      // Берём всё после подписи, если оно короткое и не таблица.
+      if (!блок.querySelector('.flex-table')) {
+        const целиком = блок.innerText.replace(/\s+/g, ' ').trim()
+        if (целиком.startsWith(ключ) && целиком.length <= 80) {
+          const хвост = целиком.slice(ключ.length).replace(/^[\s:]+/, '').trim()
+          if (хвост) статы[ключ] = хвост
+        }
+      }
     })
     return статы
   }

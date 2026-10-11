@@ -33,6 +33,12 @@ await mkdir(ЧАСТИ, { recursive: true })
 createServer(async (req, res) => {
   const путь = (req.url || '/').split('?')[0]
   try {
+    // POST с application/json из чужого домена вызывает предпроверку.
+    // Без неё браузер сам запрос не отправит, и драйвер решит, что сервер сломан.
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204, cors()).end()
+      return
+    }
     if (req.method === 'POST' && путь === '/save') return await сохранить(req, res)
     if (req.method === 'GET' && путь === '/done') return await отдатьСобранное(res)
     return await отдатьФайл(res, путь)
