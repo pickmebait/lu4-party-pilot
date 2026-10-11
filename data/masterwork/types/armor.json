@@ -1,0 +1,1722 @@
+{
+ "Tunic": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Feriotic Tunic": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Cotton Tunic": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Leather Tunic": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Tunic of Devotion": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Tunic of Magic": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Shirt": {
+  "slot": "chest",
+  "type": "light",
+  "set": null
+ },
+ "Leather Shirt": {
+  "slot": "chest",
+  "type": "light",
+  "set": null
+ },
+ "Wooden Breastplate": {
+  "slot": "chest",
+  "type": "light",
+  "set": null
+ },
+ "Bone Breastplate": {
+  "slot": "chest",
+  "type": "light",
+  "set": null
+ },
+ "Cotton Shirt": {
+  "slot": "chest",
+  "type": "light",
+  "set": null
+ },
+ "Hard Leather Shirt": {
+  "slot": "chest",
+  "type": "light",
+  "set": null
+ },
+ "Piece Bone Breastplate": {
+  "slot": "chest",
+  "type": "heavy",
+  "set": null
+ },
+ "Bronze Breastplate": {
+  "slot": "chest",
+  "type": "heavy",
+  "set": null
+ },
+ "Stockings": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Feriotic Stockings": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Cotton Stockings": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Leather Stockings": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Stockings of Devotion": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Stockings of Magic": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Pants": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Leather Pants": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Hard Leather Pants": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Wooden Gaiters": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Bone Gaiters": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Cotton Pants": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Hard Leather Gaiters": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Piece Bone Gaiters": {
+  "slot": "legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Bronze Gaiters": {
+  "slot": "legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Cloth Cap": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Leather Cap": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Wooden Helmet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Leather Helmet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Hard Leather Helmet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Short Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Short Leather Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Leather Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Bracer": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Apprentice's Shoes": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Cloth Shoes": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Leather Sandals": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Cotton Shoes": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Crude Leather Shoes": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Leather Shoes": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Low Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Leather Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Small Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Buckler": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Skeleton Buckler": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Round Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Bone Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Cursed Tunic": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Elven Tunic": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "White Tunic": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Mystic's Tunic": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Tunic of Knowledge": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Elven Mithril Tunic": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Puma Skin Shirt": {
+  "slot": "chest",
+  "type": "light",
+  "set": null
+ },
+ "Lion Skin Shirt": {
+  "slot": "chest",
+  "type": "light",
+  "set": null
+ },
+ "Mithril Banded Mail": {
+  "slot": "chest",
+  "type": "light",
+  "set": null
+ },
+ "Reinforced Leather Shirt": {
+  "slot": "chest",
+  "type": "light",
+  "set": null
+ },
+ "Manticore Skin Shirt": {
+  "slot": "chest",
+  "type": "light",
+  "set": null
+ },
+ "Ring Mail Breastplate": {
+  "slot": "chest",
+  "type": "heavy",
+  "set": null
+ },
+ "Scale Mail": {
+  "slot": "chest",
+  "type": "heavy",
+  "set": null
+ },
+ "Compound Scale Mail": {
+  "slot": "chest",
+  "type": "heavy",
+  "set": null
+ },
+ "Dwarven Scale Mail": {
+  "slot": "chest",
+  "type": "heavy",
+  "set": null
+ },
+ "Mithril Breastplate": {
+  "slot": "chest",
+  "type": "heavy",
+  "set": null
+ },
+ "Blast Plate": {
+  "slot": "chest",
+  "type": "heavy",
+  "set": null
+ },
+ "Brigandine Breastplate": {
+  "slot": "chest",
+  "type": "heavy",
+  "set": null
+ },
+ "Half Plate Armor": {
+  "slot": "chest",
+  "type": "heavy",
+  "set": null
+ },
+ "Cursed Stockings": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Elven Stockings": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Dark Stockings": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Mystic's Stockings": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Stockings of Knowledge": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Elven Mithril Stockings": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Puma Skin Gaiters": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Lion Skin Gaiters": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Mithril Banded Gaiters": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Reinforced Leather Gaiters": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Manticore Skin Gaiters": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Iron Plate Gaiters": {
+  "slot": "legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Scale Gaiters": {
+  "slot": "legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Compound Scale Gaiters": {
+  "slot": "legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Dwarven Scale Gaiters": {
+  "slot": "legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Mithril Gaiters": {
+  "slot": "legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Mithril Scale Gaiters": {
+  "slot": "legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Brigandine Gaiters": {
+  "slot": "legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Half Plate Gaiters": {
+  "slot": "legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Sage's Worn Robe": {
+  "slot": "chest+legs",
+  "type": "magic",
+  "set": null
+ },
+ "Salamander Skin Mail": {
+  "slot": "chest+legs",
+  "type": "light",
+  "set": null
+ },
+ "Bone Helmet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Bronze Helmet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Mithril Helmet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Brigandine Helmet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Half Plate Helmet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Crafted Leather Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Leather Gauntlets": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Gauntlets": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Reinforced Leather Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Gloves of Knowledge": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Rip Gauntlets": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Brigandine Gauntlets": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Manticore Skin Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Elven Mithril Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Half Plate Gauntlets": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Salamander Skin Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Sage's Worn Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Leather Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Blue Buckskin Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Iron Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Boots of Knowledge": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Reinforced Leather Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Boots of Power": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Brigandine Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Elven Mithril Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Manticore Skin Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Half Plate Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Sage's Worn Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Salamander Skin Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Bronze Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Aspis": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Hoplon": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Kite Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Brigandine Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Square Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Half Plate Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Karmian Tunic": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Demon's Tunic": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Divine Tunic": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Reinforced Mithril Shirt": {
+  "slot": "chest",
+  "type": "light",
+  "set": null
+ },
+ "Plated Leather Shirt": {
+  "slot": "chest",
+  "type": "light",
+  "set": null
+ },
+ "Rind Leather Armor": {
+  "slot": "chest",
+  "type": "light",
+  "set": null
+ },
+ "Theca Leather Armor": {
+  "slot": "chest",
+  "type": "light",
+  "set": null
+ },
+ "Chain Mail Shirt": {
+  "slot": "chest",
+  "type": "heavy",
+  "set": null
+ },
+ "Dwarven Chain Mail Shirt": {
+  "slot": "chest",
+  "type": "heavy",
+  "set": null
+ },
+ "Karmian Stockings": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Demon's Stockings": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Divine Stockings": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Reinforced Mithril Gaiters": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Plated Leather Gaiters": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Rind Leather Gaiters": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Theca Leather Gaiters": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Chain Gaiters": {
+  "slot": "legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Dwarven Chain Gaiters": {
+  "slot": "legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Robe of Seal": {
+  "slot": "chest+legs",
+  "type": "magic",
+  "set": null
+ },
+ "Drake Leather Armor": {
+  "slot": "chest+legs",
+  "type": "light",
+  "set": null
+ },
+ "Composite Armor": {
+  "slot": "chest+legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Full Plate Armor": {
+  "slot": "chest+legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Chain Hood": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Great Helmet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Composite Helmet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Shining Circlet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Full Plate Helmet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Reinforced Mithril Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Chain Gauntlets": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Karmian Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Plated Leather Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Dwarven Chain Gauntlets": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Gloves of Seal": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Rind Leather Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Composite Gauntlets": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Demon's Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Theca Leather Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Drake Leather Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Full Plate Gauntlets": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Divine Gloves": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Reinforced Mithril Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Chain Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Karmian Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Plated Leather Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Crimson Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Dwarven Chain Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Boots of Seal": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Rind Leather Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Composite Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Demon's Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Theca Leather Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Divine Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Drake Leather Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Full Plate Boots": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Eldarake": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Chain Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Dwarven Chain Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Knight's Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Tower Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Composite Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Full Plate Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Tunic of Zubei": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Blue Wolf Tunic": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Tunic of Doom": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Zubei's Leather Shirt": {
+  "slot": "chest",
+  "type": "light",
+  "set": null
+ },
+ "Zubei's Breastplate": {
+  "slot": "chest",
+  "type": "heavy",
+  "set": null
+ },
+ "Avadon Breastplate": {
+  "slot": "chest",
+  "type": "heavy",
+  "set": null
+ },
+ "Blue Wolf Breastplate": {
+  "slot": "chest",
+  "type": "heavy",
+  "set": null
+ },
+ "Stockings of Zubei": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Blue Wolf Stockings": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Stockings of Doom": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Zubei's Leather Gaiters": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Zubei's Gaiters": {
+  "slot": "legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Avadon Gaiters": {
+  "slot": "legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Blue Wolf Gaiters": {
+  "slot": "legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Avadon Robe": {
+  "slot": "chest+legs",
+  "type": "magic",
+  "set": null
+ },
+ "Avadon Leather Armor": {
+  "slot": "chest+legs",
+  "type": "light",
+  "set": null
+ },
+ "Blue Wolf Leather Armor": {
+  "slot": "chest+legs",
+  "type": "light",
+  "set": null
+ },
+ "Leather Armor of Doom": {
+  "slot": "chest+legs",
+  "type": "light",
+  "set": null
+ },
+ "Doom Plate Armor": {
+  "slot": "chest+legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Zubei's Helmet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Avadon Circlet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Blue Wolf Helmet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Doom Helmet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Zubei's Gauntlets Heavy Armor": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Zubei's Gauntlets Light Armor": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Zubei's Gauntlets Robe": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Avadon Gloves Heavy Armor": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Avadon Gloves Light Armor": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Avadon Gloves Robe": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Blue Wolf Gloves Heavy Armor": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Blue Wolf Gloves Light Armor": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Blue Wolf Gloves Robe": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Doom Gloves Heavy Armor": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Doom Gloves Light Armor": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Doom Gloves Robe": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Zubei's Boots Heavy Armor": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Zubei's Boots Light Armor": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Zubei's Boots Robe": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Avadon Boots Heavy Armor": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Avadon Boots Light Armor": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Avadon Boots Robe": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Blue Wolf Boots Heavy Armor": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Blue Wolf Boots Light Armor": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Blue Wolf Boots Robe": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Doom Boots Heavy Armor": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Doom Boots Light Armor": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Doom Boots Robe": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Zubei's Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Avadon Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Doom Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Tallum Tunic": {
+  "slot": "chest",
+  "type": "magic",
+  "set": null
+ },
+ "Dark Crystal Leather Armor": {
+  "slot": "chest",
+  "type": "light",
+  "set": null
+ },
+ "Dark Crystal Breastplate": {
+  "slot": "chest",
+  "type": "heavy",
+  "set": null
+ },
+ "Tallum Stockings": {
+  "slot": "legs",
+  "type": "magic",
+  "set": null
+ },
+ "Dark Crystal Leggings": {
+  "slot": "legs",
+  "type": "light",
+  "set": null
+ },
+ "Dark Crystal Gaiters": {
+  "slot": "legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Dark Crystal Robe": {
+  "slot": "chest+legs",
+  "type": "magic",
+  "set": null
+ },
+ "Robe of Nightmare": {
+  "slot": "chest+legs",
+  "type": "magic",
+  "set": null
+ },
+ "Majestic Robe": {
+  "slot": "chest+legs",
+  "type": "magic",
+  "set": null
+ },
+ "Tallum Leather Armor": {
+  "slot": "chest+legs",
+  "type": "light",
+  "set": null
+ },
+ "Leather Armor of Nightmare": {
+  "slot": "chest+legs",
+  "type": "light",
+  "set": null
+ },
+ "Majestic Leather Armor": {
+  "slot": "chest+legs",
+  "type": "light",
+  "set": null
+ },
+ "Tallum Plate Armor": {
+  "slot": "chest+legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Armor of Nightmare": {
+  "slot": "chest+legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Majestic Plate Armor": {
+  "slot": "chest+legs",
+  "type": "heavy",
+  "set": null
+ },
+ "Dark Crystal Helmet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Tallum Helm": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Helm of Nightmare": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Majestic Circlet": {
+  "slot": "head",
+  "type": null,
+  "set": "Шлем"
+ },
+ "Dark Crystal Gloves Heavy Armor": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Dark Crystal Gloves Light Armor": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Dark Crystal Gloves Robe": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Tallum Gloves Heavy Armor": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Tallum Gloves Light Armor": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Tallum Gloves Robe": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Gauntlets of Nightmare Heavy Armor": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Gauntlets of Nightmare Light Armor": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Gauntlets of Nightmare Robe": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Majestic Gauntlets Heavy Armor": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Majestic Gauntlets Light Armor": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Majestic Gauntlets Robe": {
+  "slot": "gloves",
+  "type": null,
+  "set": "Перчатки"
+ },
+ "Dark Crystal Boots Heavy Armor": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Dark Crystal Boots Light Armor": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Dark Crystal Boots Robe": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Tallum Boots Heavy Armor": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Tallum Boots Light Armor": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Tallum Boots Robe": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Boots of Nightmare Heavy Armor": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Boots of Nightmare Light Armor": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Boots of Nightmare Robe": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Majestic Boots Heavy Armor": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Majestic Boots Light Armor": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Majestic Boots Robe": {
+  "slot": "feet",
+  "type": null,
+  "set": "Ботинки"
+ },
+ "Dark Crystal Shield": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Shield of Nightmare": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Щит"
+ },
+ "Circlet of Innadril": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Аксессуар"
+ },
+ "Circlet of Dion": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Аксессуар"
+ },
+ "Circlet of Oren": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Аксессуар"
+ },
+ "Circlet of Gludio": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Аксессуар"
+ },
+ "Circlet of Giran": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Аксессуар"
+ },
+ "The Lord's Crown": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Аксессуар"
+ },
+ "Магические комплекты": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Бонусы"
+ },
+ "Devotion Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Magic Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Легкие комплекты": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Бонусы"
+ },
+ "Wooden Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Bone Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Cotton Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Hard Leather Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Тяжелые комплекты": {
+  "slot": "l_hand",
+  "type": null,
+  "set": "Бонусы"
+ },
+ "Piece Bone Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Bronze Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Cursed Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Elven Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "White Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Mystic's Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Knowledge Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Elven Mithril Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Sage's Rag Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Puma Skin Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Lion Skin Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Reinforced Leather Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Mithril Banded Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Manticore Skin Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Salamander Skin Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Ring Mail Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Scale Mail Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Mithril Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Compound Scale Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Dwarven Scale Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Brigandine Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Half Plate Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Karmian Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Seal Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Demon's Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Divine Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Reinforced Mithril Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Plated Leather Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Rind Leather Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Theca Leather Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Drake Leather Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Chain Mail Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Dwarven Chain Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Composite Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Plate Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Zubei Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Avadon Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Blue Wolf Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Doom Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Tallum Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Dark Crystal Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Nightmare Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Majestic Set": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ },
+ "Обновленные бонусы комплектов ранга": {
+  "slot": "l_hand",
+  "type": null,
+  "set": null
+ }
+}
