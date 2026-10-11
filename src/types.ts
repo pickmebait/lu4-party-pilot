@@ -26,14 +26,13 @@ export interface SlotDef {
   filters: { type?: 'weapon' | 'armor'; grade?: boolean }
 }
 
-/** Типы оружия для фильтра: 17 классов источника сведены к семи. */
+/** Типы оружия для фильтра: так их называет masterwork.wiki. */
 export const WEAPON_TYPE_LABELS = [
   'Мечи',
   'Дробящие',
   'Кинжалы',
-  'Луки и арбалеты',
+  'Луки',
   'Копья',
-  'Посохи',
   'Кастеты',
 ] as const
 
@@ -44,7 +43,7 @@ export const ARMOR_TYPE_OPTIONS = [
 ] as const
 
 /** Грейды в порядке убывания: так привычнее игроку. */
-export const GRADE_OPTIONS = ['NG', 'D', 'C', 'B', 'A'] as const
+export const GRADE_OPTIONS = ['NG', 'D', 'C', 'B', 'A', 'S'] as const
 
 export const WEAPON_TYPES = new Set([
   'Weapon',

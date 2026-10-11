@@ -67,7 +67,7 @@ export function SetsView({ catalog }: { catalog: CatalogApi }) {
             <ul className="pieces">
               {p.set.pieces.map((id) => {
                 const name = catalog.nameOf(id)
-                const grade = catalog.byId(id)?.grade
+                const grade = catalog.byId(id)?.gradeName
                 // Три разных состояния: надето на ком-то, лежит в казне, не найдено.
                 // Считать казну «собранной» нельзя — комплект собран только тем, что надето.
                 const state = p.worn.includes(id) ? 'worn' : p.storedIds.includes(id) ? 'stored' : 'missing'
@@ -76,9 +76,7 @@ export function SetsView({ catalog }: { catalog: CatalogApi }) {
                     <span className="tick">{state === 'worn' ? '✓' : state === 'stored' ? '▣' : '·'}</span>
                     <ItemIcon item={catalog.byId(id)} name={name} size={22} />
                     <span className="pname">{name}</span>
-                    {typeof grade === 'number' && grade > 0 && (
-                      <span className="chip grade">{gradeLabel(grade)}</span>
-                    )}
+                    {grade && <span className="chip grade">{gradeLabel(grade)}</span>}
                     {state !== 'worn' && (
                       <span className="chip subtle">{state === 'stored' ? 'в казне' : 'нет'}</span>
                     )}

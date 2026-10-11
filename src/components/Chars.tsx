@@ -12,7 +12,7 @@ import {
   updateChar,
   useDb,
 } from '@/lib/store'
-import { ItemPicker, gradeLabel, matches } from './ItemPicker'
+import { ItemPicker, gradeCode, gradeLabel, matches } from './ItemPicker'
 import { ItemIcon } from './ItemIcon'
 import { ClassSelect, LevelInput } from './ClassLevel'
 import { clampLevel } from '@/lib/classes'
@@ -336,14 +336,15 @@ function SlotCells({
           }
 
           const item = catalog.byId(entry.itemId)
-          const grade = item?.grade
+          const grade = item?.gradeName
+          const gradeCss = gradeCode(grade)
           const editingEnch = enchEdit?.index === i
 
           return (
             <div
               key={i}
               className={`gear-cell filled ${hide ? 'dim' : ''} ${
-                typeof grade === 'number' ? `g${Math.min(16, Math.max(0, grade))}` : ''
+                gradeCss !== null ? `g${gradeCss}` : ''
               } ${entry.spans ? 'spans' : ''}`}
               title={[
                 name,
@@ -398,9 +399,7 @@ function SlotCells({
                       <span className="cell-name">{name}</span>
                       <span className="cell-sub">
                         {entry.ench && <span className="chip ench">{entry.ench}</span>}
-                        {typeof grade === 'number' && grade > 0 && (
-                          <span className="chip grade">{gradeLabel(grade)}</span>
-                        )}
+                        {grade && <span className="chip grade">{gradeLabel(grade)}</span>}
                         {entry.spans && <span className="chip span">2 слота</span>}
                         <span className="cell-id">#{entry.itemId}</span>
                       </span>

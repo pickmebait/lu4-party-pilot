@@ -8,7 +8,7 @@ import {
   useDb,
 } from '@/lib/store'
 import { formatAgo, formatStamp, plural } from '@/lib/util'
-import { ItemPicker, gradeLabel, matches } from './ItemPicker'
+import { ItemPicker, gradeCode, gradeLabel, matches } from './ItemPicker'
 import { ItemIcon } from './ItemIcon'
 
 export function WarehouseView({ catalog }: { catalog: CatalogApi }) {
@@ -19,7 +19,11 @@ export function WarehouseView({ catalog }: { catalog: CatalogApi }) {
 
   const rows = useMemo(() => {
     const list = db.warehouse.stacks
-      .map((s) => ({ ...s, name: catalog.nameOf(s.itemId), grade: catalog.byId(s.itemId)?.grade }))
+      .map((s) => ({
+        ...s,
+        name: catalog.nameOf(s.itemId),
+        grade: catalog.byId(s.itemId)?.gradeName,
+      }))
       .filter((s) => matches(s.name, q) || String(s.itemId) === q.trim())
     return list.sort((a, b) => a.name.localeCompare(b.name, 'ru'))
   }, [db.warehouse.stacks, q, catalog])
@@ -87,55 +91,56 @@ export function WarehouseView({ catalog }: { catalog: CatalogApi }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((s) => (
-              <tr key={s.itemId}>
-                <td>
-                  <div className="cell-title">
-                    <ItemIcon item={catalog.byId(s.itemId)} name={s.name} size={28} />
-                    <span className={typeof s.grade === 'number' ? `chip grade g${s.grade}` : ''}>
-                      {s.name}
-                    </span>
-                    {typeof s.grade === 'number' && s.grade > 0 && (
-                      <span className="chip grade">{gradeLabel(s.grade)}</span>
-                    )}
-                  </div>
-                  <div className="cell-id">#{s.itemId}</div>
-                </td>
-                <td className="num">
-                  <div className="counter">
+            {rows.map((s) => {
+              const код = gradeCode(s.grade)
+              return (
+                <tr key={s.itemId}>
+                  <td>
+                    <div className="cell-title">
+                      <ItemIcon item={catalog.byId(s.itemId)} name={s.name} size={28} />
+                      <span className={код !== null ? `chip grade g${код}` : ''}>{s.name}</span>
+                      {s.grade && <span className="chip grade">{gradeLabel(s.grade)}</span>}
+                    </div>
+                    <div className="cell-id">#{s.itemId}</div>
+                  </td>
+                  <td className="num">
+                    <div className="counter">
+                      <button
+                        className="icon-btn tiny"
+                        title="Забрать одну штуку"
+                        onClick={() => takeFromWarehouse(s.itemId, 1)}
+                      >
+                        −
+                      </button>
+                      <input
+                        className="input tiny-input"
+                        inputMode="numeric"
+                        value={s.count}
+                        onChange={(e) =>
+                          setWarehouseCount(s.itemId, Number(e.target.value.replace(/\D/g, '')))
+                        }
+                      />
+                      <button
+                        className="icon-btn tiny"
+                        title="Положить одну штуку"
+                        onClick={() => addToWarehouse(s.itemId, 1)}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </td>
+                  <td className="right">
                     <button
-                      className="icon-btn tiny"
-                      title="Забрать одну штуку"
-                      onClick={() => takeFromWarehouse(s.itemId, 1)}
+                      className="icon-btn danger tiny"
+                      title="Убрать позицию из казны"
+                      onClick={() => dropFromWarehouse(s.itemId)}
                     >
-                      −
+                      🗑
                     </button>
-                    <input
-                      className="input tiny-input"
-                      inputMode="numeric"
-                      value={s.count}
-                      onChange={(e) => setWarehouseCount(s.itemId, Number(e.target.value.replace(/\D/g, '')))}
-                    />
-                    <button
-                      className="icon-btn tiny"
-                      title="Положить одну штуку"
-                      onClick={() => addToWarehouse(s.itemId, 1)}
-                    >
-                      +
-                    </button>
-                  </div>
-                </td>
-                <td className="right">
-                  <button
-                    className="icon-btn danger tiny"
-                    title="Убрать позицию из казны"
-                    onClick={() => dropFromWarehouse(s.itemId)}
-                  >
-                    🗑
-                  </button>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

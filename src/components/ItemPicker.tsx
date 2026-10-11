@@ -79,6 +79,23 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, onClose }: P
     return []
   }, [filters.type])
 
+  /**
+   * Показываем фильтр типа только если в данных есть хоть один предмет
+   * с этим типом. Иначе вылезут три кнопки с нулём — выглядит как поломка.
+   */
+  const естьТипВДанных = useMemo(
+    () =>
+      typeOptions.some((o) =>
+        pool.some((it) => {
+          if (typeField === 'weaponType') return it.weaponType === o.value
+          if (typeField === 'armorType') return it.armorType === o.value
+          return false
+        }),
+      ),
+    [typeOptions, pool, typeField],
+  )
+  const показыватьТип = typeOptions.length > 0 && естьТипВДанных
+
   const matches = (it: CatalogItem) =>
     acceptsFn(it) && passesType(it, typeField, type) && passesGrade(it, grade)
 
@@ -150,9 +167,9 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, onClose }: P
           onChange={(e) => onQuery(e.target.value)}
         />
 
-        {(typeOptions.length > 0 || filters.grade) && (
+        {(показыватьТип || filters.grade) && (
           <div className="filters">
-            {typeOptions.length > 0 && (
+            {показыватьТип && (
               <FilterRow
                 label={filters.type === 'weapon' ? 'Тип оружия' : 'Тип брони'}
                 options={typeOptions}
@@ -380,10 +397,27 @@ const GRADE_NAMES: Record<number, string> = {
   3: 'NG',
   2: 'NG',
   1: 'NG',
+  0: 'NG',
 }
 
-export function gradeLabel(grade: number): string {
+/**
+ * Грейд словами. Раньше источник давал число 0-16, теперь приходит строка
+ * «NG», «D», «C», «B», «A», «S» — принимаем оба вида.
+ */
+export function gradeLabel(grade?: number | string): string {
+  if (typeof grade === 'string') return grade
+  if (typeof grade !== 'number') return ''
   return GRADE_NAMES[grade] ?? String(grade)
+}
+
+/** Числовой код грейда для цвета метки: NG 0, D 7, C 9, B 12, A 14, S 16. */
+export function gradeCode(grade?: number | string): number | null {
+  if (typeof grade === 'number') return grade
+  if (typeof grade === 'string') {
+    const коды: Record<string, number> = { NG: 0, D: 7, C: 9, B: 12, A: 14, S: 16 }
+    return коды[grade] ?? null
+  }
+  return null
 }
 
 /** Фильтр по названию для уже готовых списков. */
