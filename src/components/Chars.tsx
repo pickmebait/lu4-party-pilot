@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+﻿import { useState, type ReactNode } from 'react'
 import { SLOTS, SLOT_GROUPS, MAX_MOD, gradeCode, gradeLabel, type Char, type SlotKey } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
 import {
@@ -19,7 +19,6 @@ import { IconCheck, IconClose, IconDiscord, IconPhone, IconTelegram, IconUser } 
 import {
   discordLabel,
   discordLink,
-  hasContacts,
   phoneLink,
   telegramLabel,
   telegramLink,
@@ -208,6 +207,59 @@ function CharCard({
     }
   }
 
+  /*
+   * Контакты собираются списком, а не набором плашек: строки с подписью
+   * читаются сами, и добавить пятое поле — одна строка здесь, а не новая
+   * разметка в трёх местах.
+   */
+  const контактные: {
+    ключ: string
+    подпись: string
+    значение: string
+    ссылка?: string
+    подсказка: string
+    иконка: ReactNode
+  }[] = []
+  if (char.contacts?.realName?.trim()) {
+    контактные.push({
+      ключ: 'realName',
+      подпись: 'Имя',
+      значение: char.contacts.realName.trim(),
+      подсказка: 'Имя в реальной жизни',
+      иконка: <IconUser size={12} />,
+    })
+  }
+  if (phoneLink(char.contacts?.phone)) {
+    контактные.push({
+      ключ: 'phone',
+      подпись: 'Телефон',
+      значение: char.contacts!.phone!,
+      ссылка: phoneLink(char.contacts?.phone)!,
+      подсказка: 'Позвонить',
+      иконка: <IconPhone size={12} />,
+    })
+  }
+  if (telegramLink(char.contacts?.telegram)) {
+    контактные.push({
+      ключ: 'telegram',
+      подпись: 'Телеграм',
+      значение: telegramLabel(char.contacts!.telegram!),
+      ссылка: telegramLink(char.contacts?.telegram)!,
+      подсказка: 'Открыть профиль в телеграме',
+      иконка: <IconTelegram size={12} />,
+    })
+  }
+  if (discordLink(char.contacts?.discord)) {
+    контактные.push({
+      ключ: 'discord',
+      подпись: 'Дискорд',
+      значение: discordLabel(char.contacts!.discord!),
+      ссылка: discordLink(char.contacts?.discord)!,
+      подсказка: 'Открыть профиль в дискорде',
+      иконка: <IconDiscord size={12} />,
+    })
+  }
+
   return (
     <article className="char-card">
       <header className="char-head">
@@ -251,14 +303,19 @@ function CharCard({
               </div>
 
               {/*
-                Контакты сворачиваются: в пати их обычно заполняют один раз,
-                а блок на четыре строки каждым персонажем съедал высоту
-                карточки. Свёрнутое состояние показывает значки — видно,
-                что контакты есть, и не надо гадать, заполнено ли поле.
-                Каждый контакт — ссылка туда, куда человек и правда пойдёт:
-                телефон звонит, телеграм и дискорд открывают профиль.
+                Контакты вне игры.
+                
+                Раньше они были плашками — и выглядели ровно как плашки
+                профессии и уровня прямо над ними, поэтому читались как
+                ещё одна строчка метаданных, а не как способ связаться с
+                человеком. Теперь это подписанный список: видно, что
+                именно написано, без угадывания по значку.
+
+                Свёрнутое состояние тоже несёт информацию — показывает
+                имя, потому что в игре ники ничего не говорят, и именно
+                по имени человека ищут.
               */}
-              {hasContacts(char.contacts) && (
+              {контактные.length > 0 && (
                 <div className={`char-contacts${contactsOpen ? ' open' : ''}`}>
                   <button
                     className="contacts-toggle"
@@ -266,61 +323,45 @@ function CharCard({
                     aria-expanded={contactsOpen}
                     onClick={() => setContactsOpen((v) => !v)}
                   >
-                    <span className="contacts-marks">
-                      {char.contacts?.realName && <IconUser size={11} />}
-                      {char.contacts?.phone && <IconPhone size={11} />}
-                      {char.contacts?.telegram && <IconTelegram size={11} />}
-                      {char.contacts?.discord && <IconDiscord size={11} />}
+                    <IconUser />
+                    <span className="contacts-brief">
+                      {char.contacts?.realName?.trim() || 'Контакты'}
                     </span>
+                    {контактные.length > 1 && (
+                      <span className="contacts-more" title="Заполнено полей">
+                        {контактные.length}
+                      </span>
+                    )}
                     <span className="chevron">{contactsOpen ? '▾' : '▸'}</span>
                   </button>
 
                   {contactsOpen && (
-                    <>
-                  {char.contacts?.realName && (
-                    <span className="chip plain" title="Имя в реальной жизни">
-                      <IconUser />
-                      {char.contacts.realName}
-                    </span>
-                  )}
-                  {phoneLink(char.contacts?.phone) && (
-                    <a
-                      className="chip link"
-                      href={phoneLink(char.contacts?.phone)!}
-                      title="Позвонить"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <IconPhone />
-                      {char.contacts?.phone}
-                    </a>
-                  )}
-                  {telegramLink(char.contacts?.telegram) && (
-                    <a
-                      className="chip link"
-                      href={telegramLink(char.contacts?.telegram)!}
-                      target="_blank"
-                      rel="noreferrer"
-                      title="Открыть профиль в телеграме"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <IconTelegram />
-                      {telegramLabel(char.contacts?.telegram!)}
-                    </a>
-                  )}
-                  {discordLink(char.contacts?.discord) && (
-                    <a
-                      className="chip link"
-                      href={discordLink(char.contacts?.discord)!}
-                      target="_blank"
-                      rel="noreferrer"
-                      title="Открыть профиль в дискорде"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <IconDiscord />
-                      {discordLabel(char.contacts?.discord!)}
-                    </a>
-                  )}
-                    </>
+                    <div className="contacts-list">
+                      {контактные.map((строка) => (
+                        <div className="contacts-row" key={строка.ключ}>
+                          <span className="contacts-key">
+                            {строка.иконка}
+                            {строка.подпись}
+                          </span>
+                          {строка.ссылка ? (
+                            <a
+                              className="contacts-val link"
+                              href={строка.ссылка}
+                              target={строка.ссылка.startsWith('http') ? '_blank' : undefined}
+                              rel={строка.ссылка.startsWith('http') ? 'noreferrer' : undefined}
+                              title={строка.подсказка}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {строка.значение}
+                            </a>
+                          ) : (
+                            <span className="contacts-val" title={строка.подсказка}>
+                              {строка.значение}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               )}
@@ -333,7 +374,7 @@ function CharCard({
           </button>
           <button
             className="icon-btn"
-            title={hasContacts(char.contacts) ? 'Изменить контакты' : 'Указать контакты'}
+            title={контактные.length > 0 ? 'Изменить контакты' : 'Указать контакты'}
             onClick={() => setEditContacts(true)}
           >
             <IconPhone size={14} />

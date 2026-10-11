@@ -1,5 +1,3 @@
-import type { Contacts } from '@/types'
-
 /**
  * Ссылки на профили из свободного текста.
  *
@@ -50,9 +48,4 @@ export function telegramLabel(raw: string): string {
 
 export function discordLabel(raw: string): string {
   return `@${raw.trim().replace(/^@/, '')}`
-}
-
-/** Есть ли хоть один заполненный контакт — от этого зависит кнопка в шапке. */
-export function hasContacts(c: Contacts | undefined): boolean {
-  return !!(c && (c.realName || c.phone || c.telegram || c.discord))
 }

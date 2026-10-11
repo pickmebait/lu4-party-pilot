@@ -746,77 +746,119 @@ body {
 }
 
 /*
- * Контакты в шапке. Свёрнутое состояние — одна полоса со значками и
- * стрелкой: видно, что контакты заполнены, и не надо гадать. Развёрнутое —
- * блок с рамкой, каждым контактом в отдельной плашке.
+ * Контакты вне игры.
+ *
+ * Раньше это были плашки — и выглядели ровно как плашки профессии и уровня
+ * прямо над ними. Одинаковый язык на двух разных вещах: контакты читались
+ * как ещё одна строчка метаданных, а не как способ связаться с человеком.
+ * Теперь это список с подписями, и видно, что именно написано, без
+ * угадывания по значку.
  */
 .char-contacts {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-  align-items: center;
   margin-top: 6px;
-  padding: 4px;
-  background: var(--bg-3);
-  border: 1px solid var(--line-2);
-  border-left: 3px solid var(--accent);
-  border-radius: 7px;
+  border-left: 2px solid var(--accent);
+  border-radius: 0 6px 6px 0;
 }
 
 .contacts-toggle {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: none;
-  border: none;
-  padding: 0 2px;
+  gap: 5px;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: none;
+  border-radius: 0 5px 5px 0;
+  padding: 2px 6px;
   cursor: pointer;
   color: var(--muted);
+  font-size: 11px;
+  text-align: left;
+  min-width: 0;
 }
 
 .contacts-toggle:hover {
-  color: var(--accent);
-}
-
-.contacts-marks {
-  display: flex;
-  gap: 5px;
-  color: var(--accent);
-}
-
-.chevron {
-  font-size: 10px;
-  line-height: 1;
-}
-
-.char-contacts.open {
-  padding-bottom: 5px;
-}
-
-.chip.plain {
   color: var(--text);
-  background: var(--bg-2);
   border-color: var(--line-2);
 }
 
-.chip.link {
-  text-decoration: none;
-  color: var(--accent);
-  border-color: var(--accent-line);
-  background: var(--accent-deep);
+.contacts-brief {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
 }
 
-.chip.link:hover {
-  background: var(--accent);
-  color: var(--bg);
-}
-
-/* Значки контактов внутри плашек: свой цвет, не наследуемый от текста. */
-.char-contacts .chip svg {
+.contacts-more {
   flex: none;
-  vertical-align: -2px;
-  margin-right: 4px;
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--surface-deep);
+  border-radius: 8px;
+  padding: 0 5px;
 }
+
+.chevron {
+  flex: none;
+  font-size: 9px;
+  line-height: 1;
+}
+
+.contacts-list {
+  display: grid;
+  gap: 1px;
+  margin-top: 1px;
+  padding: 5px 6px 6px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: none;
+  border-left: none;
+  border-radius: 0 0 5px 5px;
+}
+
+.contacts-row {
+  display: grid;
+  /* Подпись фиксированной ширины: значения выравниваются по левому краю
+     и различаются с первого взгляда, без чтения значков. */
+  grid-template-columns: 68px minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  min-height: 17px;
+}
+
+.contacts-key {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.contacts-key svg {
+  flex: none;
+  color: var(--accent);
+}
+
+.contacts-val {
+  font-size: 11px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contacts-val.link {
+  color: var(--accent-2);
+  text-decoration: none;
+}
+
+.contacts-val.link:hover {
+  text-decoration: underline;
+}
+
 
 .char-tools {
   display: flex;
