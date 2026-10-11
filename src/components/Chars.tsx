@@ -270,23 +270,35 @@ function CharCard({
         </div>
       )}
 
-      {SLOT_GROUPS.map((group) => (
-        <section key={group.key} className="gear-group">
-          <h4>{group.label}</h4>
-          <div className="gear">
-            {group.slots.map((key) => (
-              <SlotCells
-                key={key}
-                char={char}
-                catalog={catalog}
-                slot={key}
-                filter={filter}
-                onPick={(index) => onPick(char.id, key, index)}
-              />
-            ))}
-          </div>
-        </section>
-      ))}
+      {/*
+        Горизонтальная раскладка. Внутри карточки три колонки:
+        оружие (правая рука над левой), броня и бижутерия.
+
+        Слоты разворачиваются в ячейки через display: contents — обёртки
+        .gear-slot и .gear-cells не нужны, когда раскладку задаёт сетка.
+        Благодаря этому ячейки разных слотов становятся соседями сетки, а
+        не лежат в отдельных блоках: бижутерия раскладывается в две
+        колонки сверху вниз, и пара серёг не разрывается между строками.
+      */}
+      <div className="gear-hx">
+        {SLOT_GROUPS.map((group) => (
+          <section key={group.key} className={`hx-col hx-${group.key}`}>
+            <h4>{group.label}</h4>
+            <div className="hx-slots">
+              {group.slots.map((key) => (
+                <SlotCells
+                  key={key}
+                  char={char}
+                  catalog={catalog}
+                  slot={key}
+                  filter={filter}
+                  onPick={(index) => onPick(char.id, key, index)}
+                />
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
 
     </article>
   )
@@ -311,10 +323,6 @@ function SlotCells({
 
   return (
     <div className="gear-slot">
-      <div className="gear-label">
-        {def.label}
-        {def.max > 1 && <span className="gear-count">{arr.filter(Boolean).length}/{def.max}</span>}
-      </div>
       <div className="gear-cells">
         {arr.map((entry, i) => {
           const name = entry ? catalog.nameOf(entry.itemId) : ''
@@ -325,7 +333,7 @@ function SlotCells({
             return (
               <button
                 key={i}
-                className={`gear-cell empty ${hide ? 'dim' : ''}`}
+                className={`gear-cell void ${hide ? 'dim' : ''}`}
                 title={`${def.label}: пусто`}
                 onClick={() => onPick(i)}
               >
@@ -346,7 +354,9 @@ function SlotCells({
                 gradeCss !== null ? `g${gradeCss}` : ''
               } ${entry.spans ? 'spans' : ''}`}
               title={[
-                name,
+                `${def.label}: ${name}`,
+                grade ? `ранг ${grade}` : '',
+                `№${entry.itemId}`,
                 entry.mod ? `заточка +${entry.mod}` : '',
                 entry.spans ? 'занимает два слота' : '',
                 item?.twoHanded ? 'двуручное' : '',
@@ -362,48 +372,59 @@ function SlotCells({
                 .filter(Boolean)
                 .join(' · ')}
             >
+              {/*
+                Ячейка узкая, а названия длинные, поэтому иконка и название
+                стоят рядом, а грейд и заточка — отдельной строкой снизу:
+                так название занимает всю ширину минус иконка, а не делится
+                ещё и с плашками.
+              */}
               <button className="cell-main" onClick={() => onPick(i)}>
                 <span className="cell-icon">
-                  <ItemIcon item={item} name={name} size={26} />
+                  <ItemIcon item={item} name={name} size={18} />
                 </span>
-                <span className="cell-text">
-                  <span className="cell-name">{name}</span>
-                  <span className="cell-sub">
-                    {mod > 0 && <span className="chip mod">+{mod}</span>}
-                    {grade && <span className="chip grade">{gradeLabel(grade)}</span>}
-                    {entry.spans && <span className="chip span">2 слота</span>}
-                    <span className="cell-id">#{entry.itemId}</span>
-                  </span>
-                </span>
+                <span className="cell-name">{name}</span>
               </button>
 
-              {/*
-                Заточка живёт своей строкой под предметом и всегда на виду:
-                в ячейке 12 вещей, спрятать её под наведение — значит
-                забыть про неё и упустить перезаточку перед походом.
-                Кнопки отдельные от .cell-main, потому что кнопка внутри
-                кнопки браузером не разбирается.
-              */}
-              <div className="cell-mod" title={`Заточка от 0 до ${MAX_MOD}`}>
-                <button
-                  className="mod-btn"
-                  disabled={mod <= 0}
-                  onClick={() => setSlotMod(char.id, slot, i, mod - 1)}
-                  title="Убавить заточку на 1"
-                >
-                  −
-                </button>
-                <span className={`mod-value${mod > 0 ? ' on' : ''}`}>+{mod}</span>
-                <button
-                  className="mod-btn"
-                  disabled={mod >= MAX_MOD}
-                  onClick={() => setSlotMod(char.id, slot, i, mod + 1)}
-                  title="Добавить заточку на 1"
-                >
-                  +
-                </button>
+              <div className="cell-foot">
+                <span className="cell-foot-marks">
+                  {grade && <span className="chip grade">{gradeLabel(grade)}</span>}
+                  {entry.spans && <span className="chip span">2</span>}
+                </span>
+
+                {/*
+                  Заточка всегда на виду: в ячейке двенадцать вещей, спрятать
+                  её под наведение — значит забыть про неё и упустить
+                  перезаточку перед походом. Кнопки стоят отдельными элементами
+                  от .cell-main, потому что кнопка внутри кнопки браузером не
+                  разбирается, а нажатие на + открывало бы пикер предмета.
+                */}
+                <div className="cell-mod" title={`Заточка от 0 до ${MAX_MOD}`}>
+                  <button
+                    className="mod-btn"
+                    disabled={mod <= 0}
+                    onClick={() => setSlotMod(char.id, slot, i, mod - 1)}
+                    title="Убавить заточку на 1"
+                  >
+                    −
+                  </button>
+                  <span className={`mod-value${mod > 0 ? ' on' : ''}`}>+{mod}</span>
+                  <button
+                    className="mod-btn"
+                    disabled={mod >= MAX_MOD}
+                    onClick={() => setSlotMod(char.id, slot, i, mod + 1)}
+                    title="Добавить заточку на 1"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
 
+              {/*
+                Кнопки передачи и снятия при наведении встают на место иконки
+                столбиком: она всё равно не нужна, а место под неё уже есть.
+                Название при этом не сдвигается, и счётчик заточки остаётся
+                свободным — ради него ячейку и наводят.
+              */}
               <div className="cell-tools">
                 <button
                   className="icon-btn tiny"

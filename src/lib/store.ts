@@ -237,6 +237,36 @@ export function unequipItem(charId: string, slot: SlotKey, index: number): void 
 }
 
 /**
+ * Вторая клетка, если предмет занимает обе.
+ *
+ * Двуручное оружие лежит и в правой руке, и в левой, цельная броня — в
+ * верхе и в низу. В базе это две записи одного предмета, и без сверки они
+ * расходятся: заточка, поставленная в одной клетке, не появлялась бы в
+ * другой, а на экране один и тот же предмет показывал бы разные значения.
+ */
+export function partnerEntry(
+  char: Char,
+  slot: SlotKey,
+  index: number,
+): { slot: SlotKey; index: number } | null {
+  const entry = char.slots[slot]?.[index]
+  if (!entry) return null
+
+  for (const [a, b] of [
+    ['rhand', 'lhand'],
+    ['chest', 'legs'],
+  ] as [SlotKey, SlotKey][]) {
+    if (slot !== a && slot !== b) continue
+    const другой = slot === a ? b : a
+    const сосед = (char.slots[другой] ?? []).findIndex(
+      (e) => e && e.itemId === entry.itemId && (e.spans === true || entry.spans === true),
+    )
+    if (сосед !== -1) return { slot: другой, index: сосед }
+  }
+  return null
+}
+
+/**
  * Заточка надетой вещи.
  *
  * Это не отдельный предмет, а свойство вещи в слоте: при снятии и
@@ -252,6 +282,16 @@ export function setSlotMod(charId: string, slot: SlotKey, index: number, mod: nu
   const arr = [...(copy.slots[slot] ?? [])]
   arr[index] = { ...cur, mod: значение || undefined }
   copy.slots[slot] = arr
+
+  // У многослотного предмета вторая клетка показывает то же самое.
+  const пара = partnerEntry(char, slot, index)
+  const второй = пара ? copy.slots[пара.slot]?.[пара.index] : null
+  if (пара && второй) {
+    const arr2 = [...(copy.slots[пара.slot] ?? [])]
+    arr2[пара.index] = { ...второй, mod: значение || undefined }
+    copy.slots[пара.slot] = arr2
+  }
+
   commit({ ...db, chars: db.chars.map((c) => (c.id === charId ? copy : c)) })
 }
 
