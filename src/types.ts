@@ -263,6 +263,25 @@ export interface SlotEntry {
   spans?: boolean
 }
 
+/**
+ * Контакты персонажа вне игры.
+ *
+ * В игре ники ничего не говорят, а связаться с кем-то надо. Хранится
+ * свободным текстом, без проверки формата: телеграм-ссылку пишут и как
+ * t.me/nick, и как @nick, и как https://t.me/nick — приводим к ссылке
+ * только при показе.
+ */
+export interface Contacts {
+  /** Имя в реальной жизни. */
+  realName?: string
+  /** Номер телефона: +7 999 123-45-67. */
+  phone?: string
+  /** Телеграм: @nick, t.me/nick или полная ссылка. */
+  telegram?: string
+  /** Дискорд: user#1234 или ник — превращаем в ссылку на профиль. */
+  discord?: string
+}
+
 export interface Char {
   id: string
   name: string
@@ -271,6 +290,8 @@ export interface Char {
   level: number
   /** Ключи слотов массивом, где null = пустой слот. */
   slots: Partial<Record<SlotKey, (SlotEntry | null)[]>>
+  /** Контакты вне игры. Отсутствует, если их не заполняли. */
+  contacts?: Contacts
 }
 
 export interface WarehouseStack {

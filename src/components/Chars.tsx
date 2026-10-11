@@ -15,6 +15,15 @@ import {
 import { ItemPicker, matches } from './ItemPicker'
 import { ItemIcon } from './ItemIcon'
 import { ClassSelect, LevelInput } from './ClassLevel'
+import { ContactsModal } from './ContactsModal'
+import {
+  discordLabel,
+  discordLink,
+  hasContacts,
+  phoneLink,
+  telegramLabel,
+  telegramLink,
+} from '@/lib/contacts'
 import { clampLevel } from '@/lib/classes'
 
 interface PickerTarget {
@@ -206,6 +215,7 @@ function CharCard({
 }) {
   const [editing, setEditing] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [contactsOpen, setContactsOpen] = useState(false)
 
   let filled = 0
   let total = 0
@@ -239,6 +249,56 @@ function CharCard({
                   {filled} / {total} слотов
                 </span>
               </div>
+
+              {/*
+                Контакты видны сразу, без открытия окна: иначе о них не
+                узнать, пока не догадаешься нажать кнопку. Каждый контакт —
+                ссылка туда, куда человек и правда пойдёт: телефон звонит,
+                телеграм и дискорд открывают профиль.
+              */}
+              {hasContacts(char.contacts) && (
+                <div className="char-contacts">
+                  {char.contacts?.realName && (
+                    <span className="chip plain" title="Имя в реальной жизни">
+                      {char.contacts.realName}
+                    </span>
+                  )}
+                  {phoneLink(char.contacts?.phone) && (
+                    <a
+                      className="chip link"
+                      href={phoneLink(char.contacts?.phone)!}
+                      title="Позвонить"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      ☎ {char.contacts?.phone}
+                    </a>
+                  )}
+                  {telegramLink(char.contacts?.telegram) && (
+                    <a
+                      className="chip link"
+                      href={telegramLink(char.contacts?.telegram)!}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Открыть профиль в телеграме"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      ✈ {telegramLabel(char.contacts?.telegram!)}
+                    </a>
+                  )}
+                  {discordLink(char.contacts?.discord) && (
+                    <a
+                      className="chip link"
+                      href={discordLink(char.contacts?.discord)!}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Открыть профиль в дискорде"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      ◈ {discordLabel(char.contacts?.discord!)}
+                    </a>
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>
@@ -246,11 +306,20 @@ function CharCard({
           <button className="icon-btn" title="Переименовать" onClick={() => setEditing((v) => !v)}>
             ✎
           </button>
+          <button
+            className="icon-btn"
+            title={hasContacts(char.contacts) ? 'Изменить контакты' : 'Указать контакты'}
+            onClick={() => setContactsOpen(true)}
+          >
+            ☎
+          </button>
           <button className="icon-btn danger" title="Удалить персонажа" onClick={() => setConfirmDelete(true)}>
             🗑
           </button>
         </div>
       </header>
+
+      {contactsOpen && <ContactsModal char={char} onClose={() => setContactsOpen(false)} />}
 
       {confirmDelete && (
         <div className="confirm">
@@ -271,20 +340,21 @@ function CharCard({
       )}
 
       {/*
-        Горизонтальная раскладка. Внутри карточки три колонки:
-        оружие (правая рука над левой), броня и бижутерия.
+        Блоки идут друг под другом, а не справа друг от друга: каждый блок
+        занимает всю ширину карточки, поэтому ячейка может быть шире и
+        название предмета помещается целиком.
 
         Слоты разворачиваются в ячейки через display: contents — обёртки
         .gear-slot и .gear-cells не нужны, когда раскладку задаёт сетка.
-        Благодаря этому ячейки разных слотов становятся соседями сетки, а
-        не лежат в отдельных блоках: бижутерия раскладывается в две
-        колонки сверху вниз, и пара серёг не разрывается между строками.
+        Благодаря этому ячейки разных слотов становятся соседями сетки: у
+        брони пять ячеек в ряд, у бижутерии тоже пять, и пары не рвутся
+        между строками.
       */}
-      <div className="gear-hx">
+      <div className="gear-stack">
         {SLOT_GROUPS.map((group) => (
-          <section key={group.key} className={`hx-col hx-${group.key}`}>
+          <section key={group.key} className={`stack-row stack-${group.key}`}>
             <h4>{group.label}</h4>
-            <div className="hx-slots">
+            <div className="stack-slots">
               {group.slots.map((key) => (
                 <SlotCells
                   key={key}

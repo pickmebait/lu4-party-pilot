@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { CharsView } from './components/Chars'
 import { Login } from './components/Login'
+import { PaletteBar } from './components/PaletteBar'
 import { SetsView } from './components/Sets'
 import { SyncBar } from './components/SyncBar'
 import { WarehouseView } from './components/Warehouse'
@@ -8,9 +9,13 @@ import { WishesView } from './components/Wishes'
 import { startCatalogLoad, useCatalog } from './lib/catalog'
 import { computeSummary, usedItemIds } from './lib/derived'
 import { useDb, useSession } from './lib/store'
+import { applyPalette, loadPalette } from './lib/palette'
 import { plural } from './lib/util'
 
 startCatalogLoad()
+
+// Палитру ставим до первой отрисовки, иначе на тёмном фоне мелькнёт светлый.
+applyPalette(loadPalette())
 
 type Tab = 'chars' | 'warehouse' | 'wishes' | 'sets'
 
@@ -43,6 +48,7 @@ export default function App() {
             <h1>Party Pilot</h1>
             <p className="tag">экипировка пати · общая казна · хотелки</p>
           </div>
+          <PaletteBar />
         </div>
         <SyncBar catalog={catalog} />
       </header>

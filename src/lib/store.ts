@@ -5,6 +5,7 @@ import {
   SLOT_MAX,
   type CatalogItem,
   type Char,
+  type Contacts,
   type Db,
   type SetDef,
   type SlotEntry,
@@ -18,8 +19,10 @@ import { uid } from './util'
  * Версия 3: заточка в слоте стала числом от 0 до 16 (была произвольной
  * строкой). Старые значения переносятся функцией modOf, поэтому поднимать
  * версию для миграции не нужно — она и так вызывается при любой загрузке.
+ *
+ * Версия 4: у персонажа появились контакты вне игры.
  */
-export const DB_VERSION = 3
+export const DB_VERSION = 4
 const DB_KEY = 'pp:db'
 const SETTINGS_KEY = 'pp:settings'
 
@@ -98,7 +101,25 @@ function normalizeChar(c: Partial<Char>): Char {
     cls: typeof c.cls === 'string' ? c.cls : '',
     level: Math.max(0, Math.trunc(Number(c.level)) || 0),
     slots,
+    contacts: contactsOf(c.contacts),
   }
+}
+
+/**
+ * Контакты приводятся к строке, а пустой результат убирается целиком.
+ *
+ * Если оставить объект из пустых строк, в шапке персонажа будет висеть
+ * кнопка контактов, которая ничего не открывает.
+ */
+function contactsOf(сырое: unknown): Contacts | undefined {
+  if (!сырое || typeof сырое !== 'object') return undefined
+  const src = сырое as Record<string, unknown>
+  const out: Contacts = {}
+  for (const ключ of ['realName', 'phone', 'telegram', 'discord'] as const) {
+    const v = typeof src[ключ] === 'string' ? (src[ключ] as string).trim() : ''
+    if (v) out[ключ] = v
+  }
+  return Object.keys(out).length > 0 ? out : undefined
 }
 
 /**
@@ -200,6 +221,20 @@ export function updateChar(id: string, patch: Partial<Char>): void {
   commit({
     ...db,
     chars: db.chars.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+  })
+}
+
+/**
+ * Контакты персонажа.
+ *
+ * Отдельная функция, а не updateChar, потому что пустые строки должны
+ * убираться: иначе в шапке остаётся кнопка контактов у персонажа, у
+ * которого заполнено одно поле из четырёх, а остальные пустые.
+ */
+export function setCharContacts(id: string, contacts: Contacts | undefined): void {
+  commit({
+    ...db,
+    chars: db.chars.map((c) => (c.id === id ? { ...c, contacts: contactsOf(contacts) } : c)),
   })
 }
 
