@@ -232,11 +232,23 @@ for (const з of записи) {
     continue
   }
 
+  // Вики перечисляет через звёздочку все варианты крафта одной вещи:
+  // «Saber*Bastard Sword*Spinebone Sword» — это один Saber, который ещё и
+  // варится как другие мечи. Первое имя основное, остальные идут в
+  // синонимы, чтобы по любому из них вещь находилась поиском.
+  const варианты = имя.split('*').map((s) => s.trim()).filter(Boolean)
+  const основное = варианты[0] || имя
+  const синонимы = [...new Set(варианты.slice(1).filter((s) => s !== основное))]
+
   const out = {
     id: з.id,
-    name: имя,
+    name: основное,
     tex: з.slug.replace(/^\d+-/, ''),
     icon: з.иконка ? ПУТЬ_ИКОНОК + '/' + з.иконка.split('/').pop() : undefined,
+  }
+  if (синонимы.length) {
+    out.fullName = имя
+    out.aliases = синонимы
   }
 
   if (з.грейд) out.gradeName = з.грейд
