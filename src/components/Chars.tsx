@@ -15,7 +15,7 @@ import { ItemPicker } from './ItemPicker'
 import { ItemIcon } from './ItemIcon'
 import { ClassSelect, LevelInput } from './ClassLevel'
 import { ContactsModal } from './ContactsModal'
-import { IconClose, IconDiscord, IconPhone, IconTelegram, IconUser } from './Icons'
+import { IconCheck, IconClose, IconDiscord, IconPhone, IconTelegram, IconUser } from './Icons'
 import {
   discordLabel,
   discordLink,
@@ -224,12 +224,27 @@ function CharCard({
           ) : (
             <>
               <h3>{char.name || 'Без имени'}</h3>
+              {/*
+                Профессия, уровень и состояние слотов всегда в одну строку.
+                Раньше плашки переносились на вторую и третью, и шапка
+                персонажа съедала по высоте целую ячейку экипировки.
+
+                Длиннее всех профессия — пусть ужимается первой, числа
+                остаются читаемыми целиком.
+              */}
               <div className="char-meta">
-                {char.cls && <span className="chip">{char.cls}</span>}
-                {char.level > 0 && <span className="chip">ур. {char.level}</span>}
-                <span className="chip subtle">
-                  {filled} / {total} слотов
-                </span>
+                {char.cls && <span className="chip cls">{char.cls}</span>}
+                {char.level > 0 && <span className="chip lvl">ур. {char.level}</span>}
+                {filled === total ? (
+                  <span className="chip slots full" title="Все слоты заняты">
+                    <IconCheck />
+                    Заполнено
+                  </span>
+                ) : (
+                  <span className="chip slots" title={`${filled} из ${total} слотов занято`}>
+                    {filled}/{total} слотов
+                  </span>
+                )}
               </div>
 
               {/*

@@ -66,3 +66,18 @@ export function IconClose({ size = 8 }: Props) {
     </svg>
   )
 }
+
+/** Галочка «все слоты заняты». */
+export function IconCheck({ size = 11 }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <path
+        d="M1.5 6.5 4.5 9.5 10.5 2.5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}

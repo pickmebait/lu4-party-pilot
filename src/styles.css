@@ -663,6 +663,10 @@ body {
 .char-card {
   flex: 0 0 var(--card-w);
   width: var(--card-w);
+  /* Без этого длинная профессия распирает карточку: flex-элемент по
+     умолчанию не сжимается уже своего содержимого, и карточка наезжала на
+     соседнюю. */
+  min-width: 0;
   scroll-snap-align: start;
   background: var(--bg-2);
   border: 1px solid var(--line);
@@ -684,15 +688,58 @@ body {
   border-bottom: 1px solid var(--line);
 }
 
+/* Блок слева от кнопок в шапке. min-width: 0 нужен, чтобы длинные плашки
+   ужимались, а не распирали карточку. */
+.char-id {
+  min-width: 0;
+}
+
 .char-id h3 {
   margin: 0 0 5px;
   font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+/*
+ * Плашки в шапке персонажа: профессия, уровень, состояние слотов.
+ *
+ * Строка одна и не переносится никогда. Раньше flex-wrap разносил плашки
+ * на три строки, и шапка съедала высоту целой ячейки экипировки.
+ */
 .char-meta {
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+  gap: 5px;
+  flex-wrap: nowrap;
+  align-items: center;
+  min-width: 0;
+}
+
+.char-meta .chip {
+  padding: 0 7px;
+  font-size: 10px;
+  white-space: nowrap;
+  flex: none;
+}
+
+/* Профессия может быть длинной — ужимается и обрезается первой. */
+.char-meta .chip.cls {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Все слоты заняты: состояние, а не счёт. */
+.char-meta .chip.full {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--accent-2);
+  background: var(--accent-deep);
+  border-color: var(--accent-line);
 }
 
 /*
