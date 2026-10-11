@@ -176,31 +176,31 @@ body {
 /* Палитры: шесть кружков, у каждого три цвета самой палитры. */
 .palettes {
   display: flex;
-  gap: 6px;
+  gap: 3px;
   margin-left: 8px;
-  padding: 4px 6px;
+  padding: 3px 4px;
   background: var(--bg-2);
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: 14px;
 }
 
 .palette {
-  width: 20px;
-  height: 20px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
   padding: 0;
   cursor: pointer;
   transition: transform 0.12s ease;
 }
 
 .palette:hover {
-  transform: scale(1.15);
+  transform: scale(1.3);
 }
 
 .palette.on {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-2);
+  box-shadow: 0 0 0 1px var(--accent-2);
 }
 
 .brand h1 {
@@ -628,12 +628,14 @@ body {
  */
 .chars-grid {
   /*
-   * Ширина ячейки экипировки — отсюда и ширина всей карточки: пять ячеек
-   * в ряд плюс подпись блока и поля. Меньше 118 — название снова начнёт
-   * обрезаться, и весь смысл вертикальных блоков пропадёт.
+   * Ширина карточки фиксированная, а не по содержимому. По содержимому
+   * колонка ячеек растягивалась под самое длинное название на руках — все
+   * ячейки становились по 274 пикселя, и «Willow Staff» занимал столько же,
+   * сколько «Tateossian Necklace». Фиксированная ширина ещё и уравнивает
+   * карточки между собой: иначе они разъезжаются по длине имён.
    */
-  --cell-w: 124px;
-  --stack-label: 62px;
+  --card-w: 268px;
+  --stack-label: 56px;
   display: flex;
   gap: 12px;
   overflow-x: auto;
@@ -661,7 +663,8 @@ body {
 }
 
 .char-card {
-  flex: 0 0 auto;
+  flex: 0 0 var(--card-w);
+  width: var(--card-w);
   scroll-snap-align: start;
   background: var(--bg-2);
   border: 1px solid var(--line);
@@ -725,6 +728,18 @@ body {
 .char-tools {
   display: flex;
   gap: 2px;
+}
+
+/*
+ * Кнопки шапки меньше обычных: карточка теперь узкая, 268 пикселей, и
+ * три кнопки по 32 съедали бы четверть ширины — плашки класса и уровня
+ * переносились бы на третью строку.
+ */
+.char-tools .icon-btn {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  border-radius: 6px;
 }
 
 .edit-form {
@@ -1055,6 +1070,18 @@ body {
   gap: 8px;
 }
 
+/*
+ * Внутри блока ячейки стоят друг под другом, а не в ряд.
+ *
+ * Броня и бижутерия раньше были одной строкой по пять ячеек: карточка была
+ * низкой, но шириной в 780 пикселей, и в экран помещался один персонаж с
+ * половиной. Теперь все три блока устроены одинаково — одна колонка, — и
+ * карточка стала узкой: в экран влезает вся пати.
+ *
+ * Колонка одна на блок и общая для всех его ячеек, поэтому ширину задаёт
+ * самое длинное название — короткие ячейки просто получаются шире нужного,
+ * а длинные не обрезаются.
+ */
 .stack-row {
   display: grid;
   grid-template-columns: var(--stack-label) minmax(0, 1fr);
@@ -1077,21 +1104,10 @@ body {
   white-space: nowrap;
 }
 
-/*
- * Оружие: две руки одна под другой — так просили изначально, и колонкой
- * они читаются лучше, чем в ряд.
- */
-.stack-weapon .stack-slots {
+.stack-slots {
   display: grid;
-  gap: 4px;
-  grid-template-columns: var(--cell-w);
-}
-
-.stack-armor .stack-slots,
-.stack-jewelry .stack-slots {
-  display: grid;
-  gap: 4px;
-  grid-template-columns: repeat(5, minmax(var(--cell-w), 1fr));
+  gap: 3px;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 /*
