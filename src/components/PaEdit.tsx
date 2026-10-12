@@ -1,12 +1,16 @@
 /**
- * Правка платного аккаунта в форме персонажа.
+ * Правка премиум аккаунта в форме персонажа.
  *
  * Отдельным блоком, а не ещё одной строкой в ряду: полей тут два, и они не
  * помещаются в строку с профессией — там уже всё занято. Заодно это место,
  * где видно и результат («осталось 27 дней»), иначе посчитанное в шапке
  * приходилось бы запоминать на глаз.
  *
- * Поля пустые — значит ПА не заполнено: молчаливая пустота честнее, чем
+ * Поля на всю ширину блока: даты и сроку нужно видеть целиком, а не в
+ * обрезку поля шириной с два пальца — выпадающий список показывал одну цифру
+ * и выглядел пустым.
+ *
+ * Поля пустые — значит премиум не заполнен: молчаливая пустота честнее, чем
  * ноль дней, который выглядел бы как только что купленное и кончившееся.
  */
 import { useMemo } from 'react'
@@ -47,19 +51,20 @@ export function PaEdit({
   return (
     <div className="pa-edit">
       <div className="pa-edit-title">
-        Платный аккаунт
+        Премиум аккаунт
         {осталось !== null && (
-          <span className="pa-edit-left">
+          <span className={`pa-edit-left${осталось < 3 ? ' low' : ''}`}>
             {осталось > 0 ? `осталось ${осталось} дн.` : осталось === 0 ? 'истекает сегодня' : 'истёк'}
           </span>
         )}
       </div>
 
-      <div className="row">
-        <label className="grow">
+      <div className="pa-edit-fields">
+        <label>
           Дата покупки
           <input className="input" type="date" value={from} onChange={(e) => onFrom(e.target.value)} />
         </label>
+
         <label>
           На сколько
           <select className="input" value={days} onChange={(e) => onDays(Number(e.target.value))}>
@@ -70,14 +75,15 @@ export function PaEdit({
             ))}
           </select>
         </label>
+
         {заполнено && (
-          <button className="btn tiny" onClick={onClear} title="Убрать дату и срок">
+          <button className="btn pa-edit-clear" onClick={onClear} title="Убрать дату и срок">
             Снять
           </button>
         )}
       </div>
 
-      {осталось === null && <p className="hint">Пусто — ПА не заполнен.</p>}
+      {осталось === null && <p className="hint">Пусто — премиум не заполнен.</p>}
     </div>
   )
 }
