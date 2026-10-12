@@ -365,20 +365,36 @@ export function ScheduleView() {
         </div>
 
         <aside className="cal-side">
-          {/*
-            Редактор стоит в правой колонке, а не под календарём. Раньше он
-            открывался внизу, и чтобы назначить прайм, надо было увести взгляд
-            от только что выделенных дней куда-то за пределы экрана, а потом
-            вернуть, чтобы проверить результат. Теперь выделение, действия и
-            сводка — в одном месте, куда глаз и так возвращается.
-          */}
-          {границы && (
+          <DaySummary
+            день={выбор.length > 0 ? выбор[0] : сегодня}
+            выбрано={выбор.length}
+            chars={db.chars}
+            schedule={db.schedule}
+          />
+
+          <Checklist />
+        </aside>
+      </div>
+
+      {/*
+        Редактор — под календарём, где он и стоял, но на всю ширину.
+
+        Правая колонка оказалась для него тесной: блоков два, а места в трёхстах
+        пикселях — одно поле в ряд, и каждый второй ряд уезжал на третью
+        строку. В колонке под календарём чуть лучше, но не хватает: на блок
+        выходило по 377 пикселей, и готовые окна прайма с полями в одну строку
+        не влезали, а три кнопки переносились на третью строку.
+
+        Поэтому панель лежит под всей раскладкой, а не под одной колонкой.
+        Для календаря это то же самое место — он слева и выше, — но оба блока
+        получают по половине экрана и укладываются в два ряда.
+
+        Порядок блоков неслучаен: слева прайм — его ставят чаще, и он первым
+        попадает под курсор после выделения дней; справа отсутствие, которым
+        пользуются реже и по другому поводу.
+      */}
+    {границы && (
             <div className="cal-editor">
-              {/*
-                Кнопка сброса — крестик сразу рядом с тем, что сброшено,
-                а не отдельной кнопкой в конце ряда действий: стояла там,
-                сливалась с остальными и тянула взгляд не туда.
-              */}
               <div className="editor-what">
                 <strong>
                   {выбор.length === 1
@@ -386,6 +402,11 @@ export function ScheduleView() {
                     : `${деньПодпись(границы[0])} — ${деньПодпись(границы[1])}`}
                 </strong>
                 <span className="editor-count">{выбор.length} дн.</span>
+                {/*
+                  Кнопка сброса — крестик сразу рядом с тем, что сброшено,
+                  а не отдельной кнопкой в конце ряда действий: стояла там,
+                  сливалась с остальными и тянула взгляд не туда.
+                */}
                 <button
                   className="icon-btn tiny"
                   title="Снять выделение"
@@ -393,20 +414,22 @@ export function ScheduleView() {
                 >
                   <IconClose />
                 </button>
+
+                {/*
+                  Что стоит на выделенных днях сейчас. Выделение переживает
+                  назначение, и без этой строки не видно, что кнопка только
+                  что сделала. Справа от всего: это ответ, а не подпись, и
+                  читать его надо после того, как увидишь дни.
+                */}
+                <span className="editor-now">{чтоТам}</span>
               </div>
 
-              {/*
-                Что стоит на этих днях сейчас. Выделение переживает назначение,
-                и без этой строки не видно, что кнопка только что сделала —
-                результат виден только если знать, куда смотреть.
-              */}
-              <p className="editor-now">{чтоТам}</p>
-
-              <div className="editor-block">
-                <h4>Прайм</h4>
-                <div className="row time-row">
-                  <label>
-                    С
+              <div className="editor-grid">
+                <section className="editor-block">
+                  <h4>Прайм</h4>
+                  <div className="row time-row">
+                    <label>
+                      С
                       <input
                         className="input time"
                         type="time"
@@ -423,24 +446,24 @@ export function ScheduleView() {
                         onChange={(e) => setОкно({ ...окно, to: изПоля(e.target.value, true) })}
                       />
                     </label>
-                  </div>
 
-                  {/*
-                    Готовые окна. Одни и те же вечерние часы ставятся изо дня
-                    в день, а набирать их каждый раз в двух полях — работа
-                    ради работы. Нестандартное дописывается руками.
-                  */}
-                  <div className="presets">
-                    {БЫСТРЫЕ_ОКНА.map((п) => (
-                      <button
-                        key={`${п.from}-${п.to}`}
-                        className={`chip pick${окно.from === п.from && окно.to === п.to ? ' on' : ''}`}
-                        title={`С ${formatMinutes(п.from)} по ${formatMinutes(п.to)}`}
-                        onClick={() => setОкно({ from: п.from, to: п.to })}
-                      >
-                        {короткоеВремя(п.from)}–{короткоеВремя(п.to)}
-                      </button>
-                    ))}
+                    {/*
+                      Готовые окна в одну строку с полями, а не под ними:
+                      они ставят то же самое, что и поля, и держать их рядом
+                      с тем, чем они заменяются, — естественнее всего.
+                    */}
+                    <div className="presets">
+                      {БЫСТРЫЕ_ОКНА.map((п) => (
+                        <button
+                          key={`${п.from}-${п.to}`}
+                          className={`chip pick${окно.from === п.from && окно.to === п.to ? ' on' : ''}`}
+                          title={`С ${formatMinutes(п.from)} по ${formatMinutes(п.to)}`}
+                          onClick={() => setОкно({ from: п.from, to: п.to })}
+                        >
+                          {короткоеВремя(п.from)}–{короткоеВремя(п.to)}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="row">
@@ -459,14 +482,21 @@ export function ScheduleView() {
                     >
                       Очистить
                     </button>
-                  </div>
-                  <div className="row">
-                    {выходныхВВыборе === выбор.length && выбор.length > 0 ? (
-                      <button className="btn" onClick={снятьВыходной}>
+                    {/*
+                      Выходной отодвинут вправо: это не ещё одно назначение,
+                      а противоположное ему, и рядом с «назначить» он читался
+                      как часть того же действия.
+                    */}
+                    {выходныхВВыборе === выбор.length ? (
+                      <button className="btn aside-btn" onClick={снятьВыходной}>
                         Не выходной
                       </button>
                     ) : (
-                      <button className="btn" onClick={отметитьВыходной} title="Пати не собирается в эти дни">
+                      <button
+                        className="btn aside-btn"
+                        onClick={отметитьВыходной}
+                        title="Пати не собирается в эти дни"
+                      >
                         Назначить выходной
                       </button>
                     )}
@@ -474,83 +504,77 @@ export function ScheduleView() {
                   {окно.from >= окно.to && (
                     <p className="hint">Прайм должен заканчиваться позже, чем начинается.</p>
                   )}
-                </div>
+                </section>
 
-                <div className="editor-block">
-                <h4>Отсутствие</h4>
-                <label className="editor-field">
-                  Кто
-                  <select
-                    className="input"
-                    value={герой}
-                    onChange={(e) => setКто(e.target.value)}
-                    disabled={db.chars.length === 0}
-                  >
-                    {db.chars.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name || 'Без имени'}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="check">
-                  <input type="checkbox" checked={весьДень} onChange={(e) => setВесьДень(e.target.checked)} />
-                  Весь день
-                </label>
-
-                {!весьДень && (
-                  <div className="row time-row">
-                    <label>
-                      Не выйдет с
-                      <input
-                        className="input time"
-                        type="time"
-                        value={вПоле(окноУхода.from, false)}
-                        onChange={(e) => setОкноУхода({ ...окноУхода, from: изПоля(e.target.value, false) })}
-                      />
+                <section className="editor-block">
+                  <h4>Отсутствие</h4>
+                  <div className="row editor-who">
+                    <label className="grow">
+                      Кто
+                      <select
+                        className="input"
+                        value={герой}
+                        onChange={(e) => setКто(e.target.value)}
+                        disabled={db.chars.length === 0}
+                      >
+                        {db.chars.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name || 'Без имени'}
+                          </option>
+                        ))}
+                      </select>
                     </label>
-                    <label>
-                      до
+                    <label className="check">
                       <input
-                        className="input time"
-                        type="time"
-                        value={вПоле(окноУхода.to, true)}
-                        onChange={(e) => setОкноУхода({ ...окноУхода, to: изПоля(e.target.value, true) })}
+                        type="checkbox"
+                        checked={весьДень}
+                        onChange={(e) => setВесьДень(e.target.checked)}
                       />
+                      Весь день
                     </label>
                   </div>
-                )}
 
-                <div className="row">
-                  <button className="btn primary" disabled={!герой} onClick={отметитьОтсутствие}>
-                    Отметить
-                  </button>
-                  <button
-                    className="btn"
-                    disabled={!герой || уходовНет === 0}
-                    title={уходовНет ? 'На выбранных днях отметки об отсутствии нет' : undefined}
-                    onClick={снятьОтсутствие}
-                  >
-                    Снять отметку
-                  </button>
-                </div>
-                {уходовНет > 0 && <p className="editor-now">отмечено на {уходовНет} дн. выделения</p>}
+                  {!весьДень && (
+                    <div className="row time-row">
+                      <label>
+                        Не выйдет с
+                        <input
+                          className="input time"
+                          type="time"
+                          value={вПоле(окноУхода.from, false)}
+                          onChange={(e) => setОкноУхода({ ...окноУхода, from: изПоля(e.target.value, false) })}
+                        />
+                      </label>
+                      <label>
+                        до
+                        <input
+                          className="input time"
+                          type="time"
+                          value={вПоле(окноУхода.to, true)}
+                          onChange={(e) => setОкноУхода({ ...окноУхода, to: изПоля(e.target.value, true) })}
+                        />
+                      </label>
+                    </div>
+                  )}
+
+                  <div className="row">
+                    <button className="btn primary" disabled={!герой} onClick={отметитьОтсутствие}>
+                      Отметить
+                    </button>
+                    <button
+                      className="btn"
+                      disabled={!герой || уходовНет === 0}
+                      title={уходовНет === 0 ? 'На выбранных днях отметки об отсутствии нет' : undefined}
+                      onClick={снятьОтсутствие}
+                    >
+                      Снять отметку
+                    </button>
+                    {уходовНет > 0 && <span className="editor-note">отмечено на {уходовНет} дн.</span>}
+                  </div>
+                </section>
               </div>
             </div>
           )}
-
-
-          <DaySummary
-            день={выбор.length > 0 ? выбор[0] : сегодня}
-            выбрано={выбор.length}
-            chars={db.chars}
-            schedule={db.schedule}
-          />
-
-          <Checklist />
-        </aside>
-      </div>
     </section>
   )
 }

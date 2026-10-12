@@ -908,29 +908,45 @@ body {
 }
 
 /*
- * Редактор дня.
+ * Редактор дня — под календарём, своей карточкой.
  *
- * Живёт в правой колонке и отделён от сводки линией, а не собственной
- * карточкой: колонка уже в рамке, и вторая вложенная рамка читалась как
- * «ещё один раздел в разделе».
+ * Карточка, а не продолжение страницы: действий много, и без рамки они
+ * сливаются с календарём в одно полотно, а граница между «прайм» и
+ * «отсутствие» теряется.
  */
 .cal-editor {
-  padding-bottom: 10px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid var(--line);
+  margin-top: 10px;
+  padding: 9px 11px 11px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
 }
 
+/*
+ * Шапка: что выделено, сколько дней, крестик сброса и — справа — что там
+ * сейчас стоит.
+ *
+ * Ответ вынесен вправо, а не подписан под диапазоном: его читают после
+ * того, как увидели дни, и он отвечает на вопрос «а изменилось ли что-нибудь»,
+ * а не «что я выбрал».
+ */
 .editor-what {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 14px;
   line-height: 1.25;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
 }
 
-/* Счётчик дней отодвинут вправо, крестик прижат к краю: и то и другое —
-   служебное и не должно спорить с самим диапазоном за внимание. */
 .editor-count {
+  font-size: 11px;
+  color: var(--muted-dim);
+  white-space: nowrap;
+}
+
+.editor-now {
   margin-left: auto;
   font-size: 11px;
   color: var(--muted-dim);
@@ -938,15 +954,33 @@ body {
 }
 
 /*
- * Что стоит на выделенных днях сейчас.
+ * Два блока в одну строку.
  *
- * Появилось вместе с тем, что выделение перестало сбрасываться после
- * назначения: без этой строки результат нажатия не виден.
+ * В боковой колонке по 300 пикселей они не помещались: блоков два, а места
+ * — одно поле в ряд, и каждый второй ряд уезжал на третью строку. Под
+ * календарём ширины хватает обоим сразу, и каждый получает свою половину.
+ *
+ * На узком экране строка одна: две колонки оставляют полям времени ширину
+ * в три цифры.
  */
-.editor-now {
-  margin: 3px 0 0;
-  font-size: 11px;
-  color: var(--muted-dim);
+.editor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+  padding-top: 10px;
+}
+
+.editor-block h4 {
+  margin: 0 0 7px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+@media (max-width: 860px) {
+  .editor-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px 0;
+  }
 }
 
 .cal-editor .row {
@@ -954,7 +988,11 @@ body {
   align-items: flex-end;
   gap: 8px;
   flex-wrap: wrap;
-  margin-top: 6px;
+  margin-top: 7px;
+}
+
+.cal-editor .editor-block > .row:first-of-type {
+  margin-top: 0;
 }
 
 /* Подпись над полем, а не сбоку: в строке кнопок места сбоку нет, и
@@ -967,6 +1005,7 @@ body {
   color: var(--muted);
 }
 
+/* Флажок — в строку, а не подпись над полем: это переключатель, а не ввод. */
 .cal-editor label.check {
   display: flex;
   flex-direction: row;
@@ -974,44 +1013,60 @@ body {
   gap: 6px;
   font-size: 13px;
   color: var(--text);
-  margin-top: 6px;
+  white-space: nowrap;
   cursor: pointer;
-}
-
-/*
- * Поле «Кто» занимает всю ширину: имена длинные, обрезанный список не
- * читается, а места рядом в узкой колонке всё равно нет.
- */
-.cal-editor .editor-field {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 6px;
-}
-
-.cal-editor .editor-field select {
-  width: 100%;
-}
-
-/* Два поля времени в ряд: по отдельности они занимали бы две строки
-   ради пары цифр. */
-.cal-editor .time-row .input.time {
-  flex: 1 1 0;
-  min-width: 0;
-  width: auto;
 }
 
 /*
  * Готовые окна прайма.
  *
- * Своим рядом под полями, а не вместо них: поля остаются на месте — их
- * правят руками, когда нужно нестандартное, — а кнопки лишь подставляют
- * частые значения одним нажатием.
+ * В строке с полями, а не под ними: кнопки ставят ровно то, что ставят
+ * поля, и держать их рядом с тем, чем они заменяются, естественнее всего.
+ * Поля при этом никуда не делись — нестандартное дописывается руками.
  */
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.presets .chip.pick {
+  padding: 2px 7px;
+  font-size: 11px;
+}
+
 /*
- * Подсказка про выделение — под легендой, у самого края колонки.
+ * «Назначить выходной» отодвинут вправо: это не ещё одно назначение, а
+ * противоположное ему, и вплотную к «Назначить прайм» оно читалось как
+ * часть того же действия — тем более что оба про прайм.
+ */
+.aside-btn {
+  margin-left: auto;
+}
+
+/* Пометка о том, где уже стоит отметка, — справа от кнопок: это ответ на
+   вопрос «с чего начинать», а не действие. */
+.editor-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted-dim);
+}
+
+/* Поля времени не растягиваются: в половине колонки они стали бы шире
+   всей подписи «Прайм». */
+.cal-editor .input.time {
+  flex: 0 0 auto;
+  width: 100px;
+}
+
+.input.time {
+  width: 96px;
+  padding: 5px 7px;
+}
+
+/*
+ * Подсказка про выделение — под легендой, над редактором.
  *
  * Держится на месте всегда, а не только когда ничего не выбрано: она
  * короткая, а без неё забывают про второй способ выделить дни — зажать и
@@ -1021,35 +1076,6 @@ body {
   margin: 9px 0 0;
   color: var(--muted-dim);
 }
-
-/*
- * Блоки редактора (прайм, отсутствие) — через линию сверху, кроме первого.
- * Подписи-разделители нужны, потому что блоков два, и без них не видно, где
- * кончается одно и начинается другое.
- */
-.cal-editor .editor-block + .editor-block {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--line);
-}
-
-.presets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 7px;
-}
-
-.presets .chip.pick {
-  padding: 2px 7px;
-  font-size: 11px;
-}
-
-.input.time {
-  width: 96px;
-  padding: 5px 7px;
-}
-
 
 
 
