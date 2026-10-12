@@ -2637,16 +2637,9 @@ body {
     flex-wrap: wrap;
   }
 }
-
-
-/* ------------------------------------------- расписание: раскладка */
-
 /*
- * Раскладка раздела: календарь слева, список отсутствий справа.
- *
- * Список справа — не украшение: по клеткам календаря видно лишь число
- * отсутствующих, а решать, кого звать на этот вечер, приходится по именам.
- * Без списка пришлось бы наводиться на каждый день по очереди.
+ * Раскладка правой колонки раздела «Расписание»: сводка по дню, чеклист и
+ * месячный список отсутствий.
  */
 .cal-layout {
   display: flex;
@@ -2660,7 +2653,9 @@ body {
 }
 
 .cal-side {
-  flex: 0 0 230px;
+  flex: 0 0 300px;
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -2671,6 +2666,137 @@ body {
   margin: 0 0 6px;
   font-size: 13px;
   color: var(--muted);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+/*
+ * Сводка по дню.
+ *
+ * Время прайма вынесено крупно: это то, ради чего сводку и открывают, а
+ * «кто придёт» читается уже следом, мелким.
+ */
+.day-sum {
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.sum-date {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.sum-prime {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent-2);
+  margin-bottom: 8px;
+}
+
+.sum-prime.off {
+  color: var(--muted);
+}
+
+.sum-block {
+  margin-bottom: 8px;
+}
+
+.sum-title {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+
+.sum-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sum-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  padding: 1px 0;
+}
+
+/* Время отсутствия прижато вправо: имена читаются столбиком, а времена
+   сравниваются между собой — так их видно глазом. */
+.sum-when {
+  color: var(--muted-dim);
+  white-space: nowrap;
+}
+
+.checklist {
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.checklist-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted-dim);
+}
+
+.checklist-items {
+  list-style: none;
+  margin: 0 0 6px;
+  padding: 0;
+}
+
+.checklist-items li {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 0;
+}
+
+.checklist-items li.done .checklist-text {
+  color: var(--muted-dim);
+  text-decoration: line-through;
+}
+
+/*
+ * Текст пункта — поле ввода, а не надпись: править чеклист нужно прямо
+ * здесь, а не в отдельном режиме правки, куда надо ещё войти.
+ */
+.checklist-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  padding: 2px 4px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.checklist-text:hover {
+  border-color: var(--line);
+}
+
+.checklist-text:focus {
+  outline: none;
+  background: var(--bg-2);
+  border-color: var(--line-2);
+}
+
+.checklist-add {
+  display: flex;
+  gap: 5px;
+}
+
+.checklist-add .input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 4px 7px;
+  font-size: 12px;
 }
 
 .side-char {
@@ -2719,48 +2845,25 @@ body {
 /* Отсутствие на часть дня — заметнее, чем на весь: весь день и так
    видно сразу, а окно надо рассмотреть. */
 .side-day.whole {
-  background: color-mix(in srgb, var(--danger-bg, #5a2a2a) 60%, transparent);
+  background: color-mix(in srgb, #5a2a2a 60%, transparent);
   color: #ffb3b3;
   border-color: #5a2a2a;
 }
 
-/* Две колонки в редакторе: прайм и отсутствие — разные суть, и смешивать
-   их в одну строку кнопок значило бы метаться взглядом по месту. */
-.editor-blocks {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.editor-block {
-  flex: 1 1 260px;
-  min-width: 0;
-}
-
-.editor-block h4 {
-  margin: 0 0 5px;
-  font-size: 12px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.editor-block .row {
-  margin-bottom: 5px;
-}
-
-.editor-block label.check {
-  flex-direction: row;
-  align-items: center;
-  gap: 5px;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
 /*
- * День-выходной не гасится: он ничем не отличается от буднего, просто в
- * нём написано «выходной» вместо времени.
+ * Сегодняшний день — рамкой по всей клетке. Раньше было подчёркивание под
+ * номером, а номер терялся среди звёздочек праздников и точек сокращённых
+ * дней: их в клетке может быть и то и другое.
  */
+.cal-day.today {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.cal-day.today .cal-num {
+  color: var(--accent-2);
+  font-weight: 700;
+}
+
 .cal-away {
   position: absolute;
   top: 3px;

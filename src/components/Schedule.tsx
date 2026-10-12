@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import type { Absence, PrimeWindow } from '@/types'
+import type { Absence, Char, PrimeWindow, Schedule } from '@/types'
 import { dayInfo, holidayName } from '@/lib/holidays'
 import {
   ДНИ_НЕДЕЛИ,
@@ -18,12 +18,15 @@ import {
   type DayCell,
 } from '@/lib/schedule'
 import {
+  addChecklistItem,
   assignPrime,
   clearAway,
   clearPrime,
   markOffs,
+  removeChecklistItem,
   setAway,
   unmarkOffs,
+  updateChecklistItem,
   useDb,
 } from '@/lib/store'
 import { IconClose } from './Icons'
@@ -223,11 +226,16 @@ export function ScheduleView() {
             </div>
           </div>
 
+          {/*
+           * Легенда идёт в порядке «рабочий — выходной — праздник»: чем ближе к
+           * началу, тем реже день встречается и тем он обычнее.
+           */}
           <div className="cal-legend">
+            <span className="legend workday" title="Рабочий день, объявленный на выходном, и сокращённый предпраздничный день">
+              рабочий
+            </span>
             <span className="legend weekend">выходной</span>
             <span className="legend holiday">праздник</span>
-            <span className="legend workday">рабочий среди выходных</span>
-            <span className="legend short">сокращённый</span>
             <span className="legend off">выходной пати</span>
             <span className="legend away">кто-то отсутствует</span>
           </div>
@@ -375,6 +383,15 @@ export function ScheduleView() {
         </div>
 
         <aside className="cal-side">
+          <DaySummary
+            день={выбор.length > 0 ? выбор[0] : сегодня}
+            выбрано={выбор.length}
+            chars={db.chars}
+            schedule={db.schedule}
+          />
+
+          <Checklist />
+
           <h4>Отсутствия в {formatMonth(месяц)}</h4>
           {сводка.length === 0 ? (
             <p className="hint">Никто ничего не отметил.</p>
@@ -430,8 +447,12 @@ function DayBox({
   if (клетка.чужой) классы.push('other')
   if (инфо.выходной) классы.push('weekend')
   if (инфо.праздник) классы.push('holiday')
-  if (инфо.рабочий) классы.push('workday')
-  if (инфо.сокращённый) классы.push('short')
+  /*
+   * Рабочий среди выходных и сокращённый день — одно и то же для плана:
+   * работать всё равно придётся. Различие остаётся только в подсказке и в
+   * точке у номера, и в легенде они теперь тоже одним пунктом.
+   */
+  if (инфо.рабочий || инфо.сокращённый) классы.push('workday')
   if (клетка.сегодня) классы.push('today')
   if (взят) классы.push('picked')
   if (прайм.kind === 'выходной') классы.push('off')
@@ -467,7 +488,7 @@ function DayBox({
         </span>
       )}
       {инфо.сокращённый && (
-        <span className="cal-mark short" title="Сокращённый день">
+        <span className="cal-mark short" title="Сокращённый предпраздничный день">
           •
         </span>
       )}
@@ -483,6 +504,163 @@ function DayBox({
       )}
       {прайм.kind === 'выходной' && <span className="cal-prime off">выходной</span>}
     </button>
+  )
+}
+
+/**
+ * Сводка по дню: когда прайм, кто не придёт и кто пойдёт из состава.
+ *
+ * Считается по выбранному дню, а если ничего не выбрано — по сегодняшнему.
+ * Отдельный список «кто пойдёт» нужен, потому что отсутствия отмечены у
+ * немногих, а вопрос «кого я жду вечером» — это про всех остальных.
+ */
+function DaySummary({
+  день,
+  выбрано,
+  chars,
+  schedule,
+}: {
+  день: string
+  выбрано: number
+  chars: Char[]
+  schedule: Schedule
+}) {
+  const прайм = primeOf(schedule, день)
+  const уходят = chars.filter((c) => c.away?.[день])
+  const пойдут = chars.filter((c) => c.affil === 'roster' && !c.away?.[день])
+
+  return (
+    <div className="day-sum">
+      <h4>Сводка по дню</h4>
+      <div className="sum-date">
+        {выбрано > 1 ? `выбранные дни · ${выбрано} шт.` : деньПодпись(день, true)}
+      </div>
+
+      <div className={`sum-prime${прайм.kind === 'выходной' ? ' off' : ''}`}>
+        {прайм.kind === 'окно'
+          ? `${formatMinutes(прайм.window.from)}–${formatMinutes(прайм.window.to)}`
+          : прайм.kind === 'выходной'
+            ? 'выходной'
+            : 'время не назначено'}
+      </div>
+
+      <div className="sum-block">
+        <div className="sum-title">Не придут: {уходят.length}</div>
+        {уходят.length === 0 ? (
+          <p className="hint">все на месте</p>
+        ) : (
+          <ul className="sum-list">
+            {уходят.map((c) => (
+              <li key={c.id}>
+                <span>{c.name || 'Без имени'}</span>
+                <span className="sum-when">
+                  {описаниеОтсутствия(c.away![день])}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="sum-block">
+        <div className="sum-title">Пойдут из состава: {пойдут.length}</div>
+        {пойдут.length === 0 ? (
+          <p className="hint">в составе никого не осталось</p>
+        ) : (
+          <ul className="sum-list">
+            {пойдут.map((c) => (
+              <li key={c.id}>
+                <span>{c.name || 'Без имени'}</span>
+                <span className="sum-when">ур. {c.level || '—'}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function описаниеОтсутствия(a: Absence): string {
+  if (a.whole) return 'весь день'
+  return `${formatMinutes(a.window!.from)}–${formatMinutes(a.window!.to)}`
+}
+
+/**
+ * Чеклист готовности к прайму.
+ *
+ * Пункты общие для пати: список «что проверить перед входом» у всех один, и
+ * отметки видно другим — видно, что уже собираются. Текст правится прямо
+ * в строке, без отдельного режима правки.
+ */
+function Checklist() {
+  const db = useDb()
+  const [новый, setНовый] = useState('')
+  const пункты = db.schedule.checklist
+  const готово = пункты.filter((i) => i.done).length
+
+  const добавить = () => {
+    if (!новый.trim()) return
+    addChecklistItem(новый)
+    setНовый('')
+  }
+
+  return (
+    <div className="checklist">
+      <h4>
+        Чеклист к прайму
+        {пункты.length > 0 && (
+          <span className="checklist-count">
+            {готово} из {пункты.length}
+          </span>
+        )}
+      </h4>
+
+      {пункты.length === 0 ? (
+        <p className="hint">Пусто. Добавьте, что нужно проверить перед праймом.</p>
+      ) : (
+        <ul className="checklist-items">
+          {пункты.map((i) => (
+            <li key={i.id} className={i.done ? 'done' : ''}>
+              <input
+                type="checkbox"
+                checked={i.done}
+                onChange={(e) => updateChecklistItem(i.id, { done: e.target.checked })}
+              />
+              <input
+                className="checklist-text"
+                value={i.text}
+                placeholder="что проверить"
+                onChange={(e) => updateChecklistItem(i.id, { text: e.target.value })}
+              />
+              <button
+                className="icon-btn tiny"
+                title="Убрать пункт"
+                onClick={() => removeChecklistItem(i.id)}
+              >
+                <IconClose />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="checklist-add">
+        <input
+          className="input"
+          value={новый}
+          placeholder="Добавить пункт"
+          onChange={(e) => setНовый(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') добавить()
+            e.stopPropagation()
+          }}
+        />
+        <button className="btn tiny" onClick={добавить} disabled={!новый.trim()}>
+          +
+        </button>
+      </div>
+    </div>
   )
 }
 

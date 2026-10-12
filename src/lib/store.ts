@@ -10,6 +10,7 @@ import {
   type Absence,
   type CatalogItem,
   type Char,
+  type ChecklistItem,
   type Contacts,
   type Db,
   type MoveLog,
@@ -96,7 +97,7 @@ export function emptyDb(): Db {
 
 /** Расписание без праймов — чтобы правила создания не расходились. */
 export function emptySchedule(): Schedule {
-  return { prime: {}, offs: [] }
+  return { prime: {}, offs: [], checklist: [] }
 }
 
 function normalizeDb(raw: unknown): Db {
@@ -207,6 +208,23 @@ function normalizeSchedule(сырое: unknown): Schedule {
     out.offs = [
       ...new Set(offs.filter((k): k is string => typeof k === 'string' && isDateKey(k))),
     ].sort()
+  }
+
+  /*
+   * Чеклист приводится к списку: пустые пункты выбрасываем, иначе в списке
+   * появляются невидимые строки, между которыми нельзя встать курсором, а
+   * удалить их нечем.
+   */
+  const checklist = s.checklist
+  if (Array.isArray(checklist)) {
+    out.checklist = checklist
+      .filter((i): i is ChecklistItem => !!i && typeof i === 'object')
+      .map((i) => ({
+        id: typeof i.id === 'string' && i.id ? i.id : uid('c'),
+        text: typeof i.text === 'string' ? i.text.trim() : '',
+        done: i.done === true,
+      }))
+      .filter((i) => i.text.length > 0)
   }
 
   return out
@@ -617,13 +635,22 @@ export function setSlotMod(
 /**
  * Прайм на выбранные дни.
  *
- * Выходной при этом не снимается: день под ним время сохраняет, и снятие
- * выходного вернёт прайм на место. Иначе пришлось бы вводить две отметки на
- * одну дату, и одна из них молча затирала бы другую.
+ * Выходной при этом снимается. Раньше он оставался, и тогда прайм писался в
+ * базу, но календарь всё равно показывал «выходной»: выходной проверялся
+ * первым, и время под ним было не видно. Выглядело это как «изменения не
+ * записываются», хотя запись была. Сказать «в этот день играем с 20:00» и
+ * оставить рядом «выходной» — противоречие, и лучше снимать тот, кто слабее.
  */
 export function assignPrime(days: string[], window: PrimeWindow): void {
   const s = db.schedule
-  commit({ ...db, schedule: { ...s, prime: setPrime(s.prime, days, window) } })
+  commit({
+    ...db,
+    schedule: {
+      ...s,
+      prime: setPrime(s.prime, days, window),
+      offs: removeOffs(s.offs, days),
+    },
+  })
 }
 
 /**
@@ -674,6 +701,43 @@ export function clearAway(charId: string, days: string[]): void {
   const away = { ...char.away }
   for (const d of days) delete away[d]
   commitChar(charId, { ...char, away })
+}
+
+/* -------------------------------------------------------------- чеклист */
+
+/** Добавляет пункт в конец — в том порядке, в котором проверяют. */
+export function addChecklistItem(text: string): void {
+  const t = text.trim()
+  if (!t) return
+  const s = db.schedule
+  const пункт: ChecklistItem = { id: uid('ck'), text: t, done: false }
+  commit({ ...db, schedule: { ...s, checklist: [...s.checklist, пункт] } })
+}
+
+/** Правка пункта: текст или отметка готовности. */
+export function updateChecklistItem(id: string, patch: Partial<ChecklistItem>): void {
+  const s = db.schedule
+  if (!s.checklist.some((i) => i.id === id)) return
+  commit({
+    ...db,
+    schedule: {
+      ...s,
+      checklist: s.checklist.map((i) => {
+        if (i.id !== id) return i
+        const текст = typeof patch.text === 'string' ? patch.text.trim() : i.text
+        return {
+          ...i,
+          done: typeof patch.done === 'boolean' ? patch.done : i.done,
+          text: текст,
+        }
+      }),
+    },
+  })
+}
+
+export function removeChecklistItem(id: string): void {
+  const s = db.schedule
+  commit({ ...db, schedule: { ...s, checklist: s.checklist.filter((i) => i.id !== id) } })
 }
 
 /* -------------------------------------------------------------------- казна */

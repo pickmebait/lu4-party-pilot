@@ -376,6 +376,16 @@ export interface Schedule {
    * не назначается прайм, и видно их сразу, а не по отсутствию записи.
    */
   offs: string[]
+  /** Чеклист готовности: что проверить перед праймом. Общий для пати. */
+  checklist: ChecklistItem[]
+}
+
+/** Пункт чеклиста. */
+export interface ChecklistItem {
+  id: string
+  text: string
+  /** Отмечен ли. Общий: видно, что уже собираются. */
+  done: boolean
 }
 
 export interface WarehouseStack {
