@@ -476,7 +476,7 @@ function DayBox({
           {formatMinutes(прайм.window.from)}–{formatMinutes(прайм.window.to)}
         </span>
       )}
-      {прайм.kind === 'отменён' && <span className="cal-prime off">отмена</span>}
+      {прайм.kind === 'отменён' && <span className="cal-prime cancel">отмена</span>}
       {прайм.kind === 'выходной' && <span className="cal-prime off">выходной</span>}
     </button>
   )

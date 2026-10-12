@@ -838,9 +838,24 @@ body {
   text-overflow: ellipsis;
 }
 
-.cal-prime.off {
+/*
+ * Отмена прайма на день: назначение было, но в этот день не идём. Гасим и
+ * зачёркиваем — это отсутствие времени, а не другое время.
+ */
+.cal-prime.cancel {
   color: var(--muted-dim);
   text-decoration: line-through;
+}
+
+/*
+ * Выходной пати — это значение на месте времени, а не пустое место, поэтому
+ * стоит тем же шрифтом и на том же месте, что и «20:00–23:00». Раньше день
+ * гасился целиком и слово зачёркивалось — читалось как «сломанная запись»,
+ * а не как «в этот день не собираемся».
+ */
+.cal-prime.off {
+  color: var(--accent-2);
+  font-weight: 600;
 }
 
 .cal-legend {
@@ -2751,17 +2766,10 @@ body {
   cursor: pointer;
 }
 
-/* Выходной пати — гасим день целиком: ни прайма, ни работы. */
-.cal-day.off {
-  background: var(--surface-deep);
-  border-left-color: var(--muted);
-}
-
-.cal-day.off .cal-num {
-  color: var(--muted-dim);
-}
-
-/* Отсутствующие: метка в углу клетки, чтобы время прайма осталось читаемым. */
+/*
+ * День-выходной не гасится: он ничем не отличается от буднего, просто в
+ * нём написано «выходной» вместо времени.
+ */
 .cal-away {
   position: absolute;
   top: 3px;
@@ -2779,8 +2787,8 @@ body {
 }
 
 .cal-legend .off::before {
-  background: var(--surface-deep);
-  border-color: var(--muted);
+  background: var(--accent-deep);
+  border-color: var(--accent);
 }
 
 .cal-legend .away::before {
