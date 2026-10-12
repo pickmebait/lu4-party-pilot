@@ -1050,13 +1050,42 @@ body {
 /*
  * Кто уже отмечен на выделенных днях.
  *
- * Строка, а не метка рядом с кнопками: это сведения о выборе, а не
- * действие, и она должна читаться раньше, чем человек начнёт жать кнопки.
+ * Список, а не строка через запятую: с пятью отмеченными строка не помещалась
+ * в половину экрана и переносилась так, что обрывалась на нике — сколько дней
+ * не придётся ждать, было не видно.
  */
 .editor-note {
-  margin: 7px 0 0;
+  margin-top: 8px;
   font-size: 11px;
   color: var(--muted-dim);
+}
+
+.note-list {
+  list-style: none;
+  margin: 3px 0 0;
+  padding: 0;
+}
+
+.note-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 1px 0;
+}
+
+.note-list li > span:first-child {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.note-char {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.note-days {
+  margin-left: auto;
+  white-space: nowrap;
 }
 
 /*
@@ -2892,9 +2921,26 @@ body {
 .sum-list li {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
   gap: 8px;
   font-size: 12px;
-  padding: 1px 0;
+  padding: 2px 0;
+}
+
+/* Ник и подпись под ним одной группой: без группы «профессия · уровень»
+   растягивалось бы на всю ширину и время уходило бы в угол. */
+.sum-who {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.sum-char {
+  font-size: 11px;
+  color: var(--muted-dim);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 
 /* Время отсутствия прижато вправо: имена читаются столбиком, а времена
@@ -2902,6 +2948,7 @@ body {
 .sum-when {
   color: var(--muted-dim);
   white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 /*
