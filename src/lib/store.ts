@@ -706,6 +706,27 @@ export function clearAway(charId: string, days: string[]): void {
   commitChar(charId, { ...char, away })
 }
 
+/**
+ * Снимает отметки об отсутствии со всех, кого они есть на этих днях.
+ *
+ * Отдельное действие от clearAway: снять своё легко, а разобрать диапазон
+ * на праздник, где отметились четверо, приходилось вручную по каждому.
+ * Пустой список дней означает, что снимать нечего, и база не трогается.
+ */
+export function clearAwayAll(days: string[]): void {
+  if (!days.length) return
+  const убрать = new Set(days)
+  let затронуто = 0
+  const chars = db.chars.map((c) => {
+    const away = Object.fromEntries(Object.entries(c.away ?? {}).filter(([d]) => !убрать.has(d)))
+    if (Object.keys(away).length === Object.keys(c.away ?? {}).length) return c
+    затронуто++
+    return { ...c, away }
+  })
+  if (!затронуто) return
+  commit({ ...db, chars })
+}
+
 /* -------------------------------------------------------------- чеклист */
 
 /** Добавляет пункт в конец — в том порядке, в котором проверяют. */

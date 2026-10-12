@@ -997,7 +997,7 @@ body {
 
 /* Подпись над полем, а не сбоку: в строке кнопок места сбоку нет, и
    подпись уезжала под поле, обрезаясь по краю. */
-.cal-editor label:not(.check) {
+.cal-editor label {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -1005,52 +1005,75 @@ body {
   color: var(--muted);
 }
 
-/* Флажок — в строку, а не подпись над полем: это переключатель, а не ввод. */
-.cal-editor label.check {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--text);
-  white-space: nowrap;
+/*
+ * Переключатель из двух вариантов — «весь день» или «окно».
+ *
+ * Собственные кнопки, а не флажок: у флажка включённое состояние — это
+ * галочка, и второе состояние приходилось выводить из того, что галочки нет.
+ * Здесь вариантов ровно два, оба написаны словами, и выбранный подсвечен.
+ */
+.segment {
+  display: inline-flex;
+  margin-top: 7px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.cal-editor .seg {
+  padding: 5px 12px;
+  border: none;
+  border-right: 1px solid var(--line-2);
+  border-radius: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--muted);
   cursor: pointer;
 }
 
+.cal-editor .seg:last-child {
+  border-right: none;
+}
+
+.cal-editor .seg:hover {
+  background: var(--surface-deep);
+  color: var(--text);
+}
+
+.cal-editor .seg.on {
+  background: var(--accent-deep);
+  color: var(--accent-2);
+  font-weight: 600;
+}
+
 /*
- * Готовые окна прайма.
+ * Кто уже отмечен на выделенных днях.
  *
- * В строке с полями, а не под ними: кнопки ставят ровно то, что ставят
- * поля, и держать их рядом с тем, чем они заменяются, естественнее всего.
- * Поля при этом никуда не делись — нестандартное дописывается руками.
+ * Строка, а не метка рядом с кнопками: это сведения о выборе, а не
+ * действие, и она должна читаться раньше, чем человек начнёт жать кнопки.
  */
-.presets {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-}
-
-.presets .chip.pick {
-  padding: 2px 7px;
-  font-size: 11px;
-}
-
-/*
- * «Назначить выходной» отодвинут вправо: это не ещё одно назначение, а
- * противоположное ему, и вплотную к «Назначить прайм» оно читалось как
- * часть того же действия — тем более что оба про прайм.
- */
-.aside-btn {
-  margin-left: auto;
-}
-
-/* Пометка о том, где уже стоит отметка, — справа от кнопок: это ответ на
-   вопрос «с чего начинать», а не действие. */
 .editor-note {
-  margin-left: auto;
+  margin: 7px 0 0;
   font-size: 11px;
   color: var(--muted-dim);
+}
+
+/*
+ * Поле «Кто» занимает всю ширину: имена длинные, обрезанный список
+ * не читается, а ниже переключателя места всё равно нет.
+ */
+.cal-editor .editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.cal-editor .editor-field select {
+  width: 100%;
+  margin-top: 7px;
 }
 
 /* Поля времени не растягиваются: в половине колонки они стали бы шире
