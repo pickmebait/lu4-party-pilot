@@ -6,15 +6,11 @@
  * на востоке сдвигает дату на день назад. Ключ дня в базе обязан быть тем
  * самым, который человек видит в календаре.
  */
-import type { DayPrime, PrimeRange, PrimeWindow, Schedule } from '@/types'
+import type { Absence, PrimeWindow, Schedule } from '@/types'
 
 const МЕСЯЦЫ = [
   'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
   'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь',
-]
-const МЕСЯЦЫ_РОД = [
-  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
 ]
 
 /** Понедельник первым — так календарь и привычен. */
@@ -98,12 +94,6 @@ export function monthGrid(месяц: Date): DayCell[] {
   return всеЧужие ? клетки.slice(0, 35) : клетки.slice(0, 42)
 }
 
-/** «5 марта», «29 февраля 2028» — с годом только когда он отличается. */
-export function formatDate(дата: Date, сГодом = false): string {
-  const база = `${дата.getDate()} ${МЕСЯЦЫ_РОД[дата.getMonth()]}`
-  return сГодом ? `${база} ${дата.getFullYear()}` : база
-}
-
 /** Название месяца с годом для заголовка календаря. */
 export function formatMonth(дата: Date): string {
   return `${МЕСЯЦЫ[дата.getMonth()]} ${дата.getFullYear()}`
@@ -131,71 +121,76 @@ export function parseMinutes(текст: string): number {
  */
 export type PrimeState =
   | { kind: 'нет'; source: null }
-  | { kind: 'окно'; window: PrimeWindow; source: 'диапазон' | 'день' }
-  | { kind: 'отменён'; source: 'день' }
+  | { kind: 'окно'; window: PrimeWindow }
+  | { kind: 'отменён' }
+  | { kind: 'выходной' }
 
-/** Ключ лежит в days: день решает сам, иначе ищем диапазон. */
+/** Ключ лежит в prime: день решает сам. */
 export function primeOf(schedule: Schedule, key: string): PrimeState {
-  if (Object.prototype.hasOwnProperty.call(schedule.days, key)) {
-    const своё = schedule.days[key]
-    if (своё === null) return { kind: 'отменён', source: 'день' }
-    return { kind: 'окно', window: своё, source: 'день' }
+  if (schedule.offs.includes(key)) return { kind: 'выходной' }
+  if (!Object.prototype.hasOwnProperty.call(schedule.prime, key)) {
+    return { kind: 'нет', source: null }
   }
-  const диапазон = rangeOf(schedule.ranges, key)
-  if (диапазон) return { kind: 'окно', window: диапазон.window, source: 'диапазон' }
-  return { kind: 'нет', source: null }
+  const своё = schedule.prime[key]
+  if (своё === null) return { kind: 'отменён' }
+  return { kind: 'окно', window: своё }
 }
 
-/** Первый диапазон, накрывающий дату. Диапазоны не пересекаются. */
-export function rangeOf(ranges: PrimeRange[], key: string): PrimeRange | null {
-  for (const r of ranges) {
-    if (key >= r.from && key <= r.to) return r
-  }
-  return null
-}
-
-/**
- * Назначение окна на диапазон дат.
- *
- * Пересекающиеся диапазоны не остаются: иначе два прайма на один день
- * решались бы порядком в массиве, и человек получил бы не тот, который
- * ставил последним. Старые накрытые диапазоны убираются, а новый занимает
- * их место — так видно, что время занято, и не остаётся тайных правил.
- */
-export function setRange(
-  ranges: PrimeRange[],
-  заменитьId: string,
-  from: string,
-  to: string,
-  window: PrimeWindow,
-  новыйId: string,
-): PrimeRange[] {
-  const пересекается = (r: PrimeRange) => r.from <= to && r.to >= from
-  const остальные = ranges.filter((r) => r.id !== заменитьId && !пересекается(r))
-  const новый: PrimeRange = { id: новыйId, from, to, window }
-  return [...остальные, новый].sort((a, b) => a.from.localeCompare(b.from))
-}
-
-/** Убирает диапазон. Дни, что он держал, остаются как есть. */
-export function removeRange(ranges: PrimeRange[], id: string): PrimeRange[] {
-  return ranges.filter((r) => r.id !== id)
-}
-
-/** Переопределения для набора дней; ключ сохраняется и для отмены. */
-export function setDays(
-  days: Record<string, DayPrime>,
+/** Назначение окна на дни. null — отменить. */
+export function setPrime(
+  prime: Record<string, PrimeWindow | null>,
   keys: string[],
-  значение: DayPrime,
-): Record<string, DayPrime> {
-  const out = { ...days }
+  значение: PrimeWindow | null,
+): Record<string, PrimeWindow | null> {
+  const out = { ...prime }
   for (const k of keys) out[k] = значение
   return out
 }
 
-/** Снимает переопределение: день снова берёт прайм из диапазона. */
-export function resetDays(days: Record<string, DayPrime>, keys: string[]): Record<string, DayPrime> {
-  const out = { ...days }
+/** Снимает назначение: день снова «ничего не решено». */
+export function clearPrime(
+  prime: Record<string, PrimeWindow | null>,
+  keys: string[],
+): Record<string, PrimeWindow | null> {
+  const out = { ...prime }
   for (const k of keys) delete out[k]
+  return out
+}
+
+export function addOffs(offs: string[], keys: string[]): string[] {
+  return [...new Set([...offs, ...keys])].sort()
+}
+
+export function removeOffs(offs: string[], keys: string[]): string[] {
+  const убрать = new Set(keys)
+  return offs.filter((k) => !убрать.has(k))
+}
+
+/**
+ * Свод по дням: сколько народу отсутствует и кто.
+ *
+ * Считается заранее для всех клеток месяца: в самой клетке места мало,
+ * а подсказка должна говорить не «2», а кого именно.
+ */
+export interface DayAbsent {
+  charId: string
+  имя: string
+  absence: Absence
+}
+
+export function absencesByDay(
+  chars: { id: string; name: string; away: Record<string, Absence> }[],
+  keys: string[],
+): Map<string, DayAbsent[]> {
+  const out = new Map<string, DayAbsent[]>()
+  for (const key of keys) {
+    const список: DayAbsent[] = []
+    for (const c of chars) {
+      const a = c.away?.[key]
+      if (a) список.push({ charId: c.id, имя: c.name || 'Без имени', absence: a })
+    }
+    if (список.length) out.set(key, список)
+  }
   return out
 }
 

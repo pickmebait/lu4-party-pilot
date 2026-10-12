@@ -42,10 +42,12 @@ function заметка(ключ: Tab, s: Summary, db: Db): string {
   switch (ключ) {
     case 'chars':
       return `${s.gearSlots.filled}/${s.gearSlots.total} слотов`
-    case 'schedule':
-      return db.schedule.ranges.length === 0
-        ? 'пусто'
-        : `${db.schedule.ranges.length} ${plural(db.schedule.ranges.length, 'диапазон', 'диапазона', 'диапазонов')}`
+    case 'schedule': {
+      const дней = Object.keys(db.schedule.prime).length + db.schedule.offs.length
+      if (дней === 0) return 'пусто'
+      const ушли = db.chars.reduce((a, c) => a + Object.keys(c.away ?? {}).length, 0)
+      return `${дней} ${plural(дней, 'день', 'дня', 'дней')}${ушли ? `, нет ${ушли}` : ''}`
+    }
     case 'warehouse':
       return s.warehouseKinds === 0
         ? 'пусто'

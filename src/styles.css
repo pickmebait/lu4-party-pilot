@@ -838,16 +838,6 @@ body {
   text-overflow: ellipsis;
 }
 
-.cal-prime.own {
-  color: var(--accent-2);
-  font-weight: 600;
-}
-
-.cal-prime.own::before {
-  content: '• ';
-  color: var(--accent);
-}
-
 .cal-prime.off {
   color: var(--muted-dim);
   text-decoration: line-through;
@@ -891,11 +881,6 @@ body {
   background: var(--bg-2);
 }
 
-.cal-legend .own::before {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-
 .cal-editor {
   margin-top: 10px;
   padding: 9px 11px;
@@ -935,37 +920,11 @@ body {
   padding: 5px 7px;
 }
 
-.cal-ranges {
-  margin-top: 10px;
-}
 
-.cal-ranges h4 {
-  margin: 0 0 5px;
-  font-size: 13px;
-  color: var(--muted);
-}
 
-.cal-range {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 5px 8px;
-  margin-bottom: 4px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  font-size: 13px;
-}
 
-.cal-range .range-dates {
-  flex: 1 1 auto;
-  min-width: 0;
-}
 
-.cal-range .range-time {
-  color: var(--accent-2);
-  white-space: nowrap;
-}
+
 
 /* -------------------------------------------- персонажи: вид «колонка» */
 
@@ -2671,4 +2630,160 @@ body {
   .wish {
     flex-wrap: wrap;
   }
+}
+
+
+/* ------------------------------------------- расписание: раскладка */
+
+/*
+ * Раскладка раздела: календарь слева, список отсутствий справа.
+ *
+ * Список справа — не украшение: по клеткам календаря видно лишь число
+ * отсутствующих, а решать, кого звать на этот вечер, приходится по именам.
+ * Без списка пришлось бы наводиться на каждый день по очереди.
+ */
+.cal-layout {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.cal-layout > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cal-side {
+  flex: 0 0 230px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 9px 10px;
+}
+
+.cal-side h4 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.side-char {
+  padding: 5px 0;
+  border-top: 1px solid var(--line);
+}
+
+.side-char:first-of-type {
+  border-top: none;
+}
+
+.side-char-name {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.side-char-name:hover {
+  color: var(--accent-2);
+}
+
+.side-days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 3px;
+}
+
+.side-day {
+  min-width: 20px;
+  padding: 0 4px;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+  border-radius: 4px;
+  background: var(--surface-deep);
+  color: var(--muted);
+  border: 1px solid var(--line-2);
+}
+
+/* Отсутствие на часть дня — заметнее, чем на весь: весь день и так
+   видно сразу, а окно надо рассмотреть. */
+.side-day.whole {
+  background: color-mix(in srgb, var(--danger-bg, #5a2a2a) 60%, transparent);
+  color: #ffb3b3;
+  border-color: #5a2a2a;
+}
+
+/* Две колонки в редакторе: прайм и отсутствие — разные суть, и смешивать
+   их в одну строку кнопок значило бы метаться взглядом по месту. */
+.editor-blocks {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.editor-block {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.editor-block h4 {
+  margin: 0 0 5px;
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.editor-block .row {
+  margin-bottom: 5px;
+}
+
+.editor-block label.check {
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* Выходной пати — гасим день целиком: ни прайма, ни работы. */
+.cal-day.off {
+  background: var(--surface-deep);
+  border-left-color: var(--muted);
+}
+
+.cal-day.off .cal-num {
+  color: var(--muted-dim);
+}
+
+/* Отсутствующие: метка в углу клетки, чтобы время прайма осталось читаемым. */
+.cal-away {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  font-size: 10px;
+  line-height: 1;
+  padding: 1px 3px;
+  border-radius: 4px;
+  background: #5a2a2a;
+  color: #ffb3b3;
+}
+
+.cal-day {
+  position: relative;
+}
+
+.cal-legend .off::before {
+  background: var(--surface-deep);
+  border-color: var(--muted);
+}
+
+.cal-legend .away::before {
+  background: #5a2a2a;
+  border-color: #5a2a2a;
 }
