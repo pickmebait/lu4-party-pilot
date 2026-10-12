@@ -761,21 +761,22 @@ body {
 /*
  * Отметка о квесте на саб-класс и переключатель веток.
  *
- * Всё это — одна строка. Раньше вкладки тянулись на всю ширину, и кнопка
- * удаления падала на третью строку: переключатель занимал 92px вместо
- * 28 и съедал высоту почти двух ячеек экипировки. Поэтому вкладки
- * сжимаются (flex: 0 1 auto), а не забирают свободное место.
- *
- * Перенос остаётся как запасной случай: пять вкладок на узкой карточке
- * всё-таки могут не поместиться, и обрезать их нельзя — пропавший саб
- * не найти.
+ * Две строки по отдельности, а не одна общая: на общей вкладки упирались
+ * в кнопки шапки, съезжали на вторую строку, а кнопки действий — на третью.
+ * Теперь сверху отметка и действия, под ними вкладки на всю ширину
+ * карточки, и панель растёт не больше чем на две строки.
  */
 .sub-bar {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 5px;
+  flex-direction: column;
+  gap: 4px;
   margin-bottom: 8px;
+}
+
+.sub-bar-top {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .sub-flag {
@@ -804,22 +805,6 @@ body {
   background: var(--accent-deep);
 }
 
-.sub-tabs {
-  flex: 0 1 auto;
-  min-width: 0;
-}
-
-.sub-tabs button {
-  padding: 4px 7px;
-  font-size: 12px;
-  /* Подпись профессии длинная, а вкладок три: без обрезки переключатель
-     выдавил бы соседей на вторую строку. */
-  max-width: 88px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .sub-add {
   background: none;
   border: 1px dashed var(--line-2);
@@ -838,10 +823,41 @@ body {
   border-color: var(--line-2);
 }
 
+/* Убрать саба — действие с потерями, поэтому цвет опасности тот же, что у
+   .btn.danger: опасные действия во всём приложении одного цвета, и глаз
+   привыкает к одному предупреждению. */
 .sub-del {
+  background: none;
+  border: 1px solid #5a2a2a;
+  border-radius: 7px;
+  color: #ffb3b3;
+  padding: 4px 7px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
   flex: none;
-  width: 24px;
-  height: 24px;
+}
+
+.sub-del:hover {
+  background: #3a1d1d;
+}
+
+/* Вкладки занимают естественную ширину, а не равные доли: короткая «Осн.»
+   иначе отбирала бы место у длинной профессии и обрезала её зря. Сжимаются
+   только когда общее не влезает. */
+.sub-tabs {
+  width: 100%;
+}
+
+.sub-tabs button {
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 4px 7px;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .edit-sub {

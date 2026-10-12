@@ -13,13 +13,21 @@ import { useDb } from '@/lib/store'
  * же люди, только в другой профессии, и список должен показывать их наравне:
  * иначе профессию, которой нет в справочнике, в сабе выбрать было нельзя, и
  * правка молча сбрасывала бы её в пустоту.
+ *
+ * exclude — профессии, которые выбирать нельзя. Им одним персонаж не может
+ * быть занят дважды: основная профессия и уже занятые сабы. Убрать их из
+ * списка надёжнее, чем ругаться после сохранения: человек в списке видит
+ * сразу, что свободно.
  */
 export function ClassSelect({
   value,
   onChange,
+  exclude,
 }: {
   value: string
   onChange: (v: string) => void
+  /** Профессии, недоступные для выбора. */
+  exclude?: string[]
 }) {
   const db = useDb()
   const used = useMemo(
@@ -31,7 +39,19 @@ export function ClassSelect({
     [db.chars],
   )
   const extra = useMemo(() => extraClasses(used), [used])
-  const options = extra.length > 0 ? [...CLASSES, ...extra] : CLASSES
+  const все = extra.length > 0 ? [...CLASSES, ...extra] : CLASSES
+
+  /*
+   * Текущее значение из исключений убираем: иначе в старой базе, где у саба
+   * могла стоять профессия основной, список оказался бы пустым и правка
+   * молча сбрасывала бы профессию.
+   */
+  const занято = useMemo(() => {
+    const s = new Set((exclude ?? []).map((c) => c.trim()).filter(Boolean))
+    s.delete(value.trim())
+    return s
+  }, [exclude, value])
+  const options = useMemo(() => все.filter((c) => !занято.has(c)), [все, занято])
 
   return (
     <select className="input" value={value} onChange={(e) => onChange(e.target.value)}>

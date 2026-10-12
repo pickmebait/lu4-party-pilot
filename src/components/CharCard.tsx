@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { SLOTS, SLOT_GROUPS, MAX_MOD, MAX_SUBS, affiliationLabel, gradeCode, gradeLabel, type Char, type SlotKey, type Sub } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
 import { addSub, removeChar, removeSub, setSlotMod, setSubUnlocked, unequipItem, updateChar, updateSub, type Branch } from '@/lib/store'
@@ -379,81 +379,94 @@ function SubBar({
 
   return (
     <div className="sub-bar">
-      <button
-        type="button"
-        className={`sub-flag${char.subUnlocked ? ' on' : ''}`}
-        title={
-          char.subUnlocked
-            ? 'Квест на саб-класс пройден. Нажмите, чтобы убрать сабов'
-            : 'Квест на саб-класс ещё не пройден. Отметить, что пройден'
-        }
-        onClick={() => {
-          // Снятие отметки возвращает показ основной профессии: выбранного
-          // саба через мгновение не станет, и пустые слоты снятого саба
-          // смотрелись бы как потерянная экипировка основной профессии.
-          setSubUnlocked(char.id, !char.subUnlocked)
-          if (char.subUnlocked) onSelect(null)
-        }}
-      >
-        {char.subUnlocked ? '✓ Саб' : '○ Саб'}
-      </button>
+      {/*
+        Полоса сверху: отметка о квесте и действия. Вкладки перенесены под
+        них — на общей строке вкладки упирались в кнопки шапки и ложились
+        на три строки, а так им достаётся вся ширина карточки.
+      */}
+      <div className="sub-bar-top">
+        <button
+          type="button"
+          className={`sub-flag${char.subUnlocked ? ' on' : ''}`}
+          title={
+            char.subUnlocked
+              ? 'Квест на саб-класс пройден. Нажмите, чтобы убрать сабов'
+              : 'Квест на саб-класс ещё не пройден. Отметить, что пройден'
+          }
+          onClick={() => {
+            // Снятие отметки возвращает показ основной профессии: выбранного
+            // саба через мгновение не станет, и пустые слоты снятого саба
+            // смотрелись бы как потерянная экипировка основной профессии.
+            setSubUnlocked(char.id, !char.subUnlocked)
+            if (char.subUnlocked) onSelect(null)
+          }}
+        >
+          {char.subUnlocked ? '✓ Саб' : '✕ Саб'}
+        </button>
 
-      {char.subUnlocked && (
-        <>
-          <div className="segmented sub-tabs">
-            <button
-              type="button"
-              className={активный === null ? 'on' : ''}
-              title="Основная профессия"
-              onClick={() => onSelect(null)}
-            >
-              Осн.
-            </button>
-            {сабы.map((s, i) => (
-              <button
-                key={s.id}
-                type="button"
-                className={активный === s.id ? 'on' : ''}
-                title={s.cls ? `Саб-класс: ${s.cls}` : `Саб-класс ${i + 1}, профессия не указана`}
-                onClick={() => onSelect(s.id)}
-              >
-                {s.cls || `Саб ${i + 1}`}
-              </button>
-            ))}
-          </div>
+        {/*
+          Кнопка одна, а не две: пока показан саб, она убирает его, иначе
+          добавляет. Две кнопки рядом с вкладками не помещались, и панель
+          вырастала на лишнюю строку. Добавить саба можно и с выбранным
+          сабом — для этого достаточно нажать «Осн.», а искать переключатель
+          незачем.
 
-          {/*
-            Обе кнопки живут рядом и появляются независимо: добавить саба
-            можно и когда выбран другой (чтобы не искать, куда переключаться),
-            а убрать — только когда выбран саб, а не основная профессия.
-          */}
-          {!полный && (
+          Пока отметки о квесте нет, действий нет вовсе: добавление всё
+          равно отклонится, и висящая кнопка, которая ничего не делает,
+          только обещает возможность, которой на сервере нет.
+        */}
+        {char.subUnlocked &&
+          (активный ? (
             <button
               type="button"
-              className="sub-add"
-              title={`Добавить саб-класс (${сабы.length} из ${MAX_SUBS})`}
-              onClick={() => {
-                const id = addSub(char.id)
-                if (id) onSelect(id)
-              }}
-            >
-              + саб
-            </button>
-          )}
-          {активный && (
-            <button
-              type="button"
-              className="icon-btn tiny danger sub-del"
+              className="sub-del"
               title="Убрать выбранный саб-класс вместе с его экипировкой"
               onClick={() => {
                 removeSub(char.id, активный)
                 onSelect(null)
               }}
             >
-              <IconClose />
+              Убрать саб
             </button>
-          )}
-        </>
+          ) : (
+            !полный && (
+              <button
+                type="button"
+                className="sub-add"
+                title={`Добавить саб-класс (${сабы.length} из ${MAX_SUBS})`}
+                onClick={() => {
+                  const id = addSub(char.id)
+                  if (id) onSelect(id)
+                }}
+              >
+                + саб
+              </button>
+            )
+          ))}
+      </div>
+
+      {char.subUnlocked && (
+        <div className="segmented sub-tabs">
+          <button
+            type="button"
+            className={активный === null ? 'on' : ''}
+            title="Основная профессия"
+            onClick={() => onSelect(null)}
+          >
+            Осн.
+          </button>
+          {сабы.map((s, i) => (
+            <button
+              key={s.id}
+              type="button"
+              className={активный === s.id ? 'on' : ''}
+              title={s.cls ? `Саб-класс: ${s.cls}` : `Саб-класс ${i + 1}, профессия не указана`}
+              onClick={() => onSelect(s.id)}
+            >
+              {s.cls || `Саб ${i + 1}`}
+            </button>
+          ))}
+        </div>
       )}
     </div>
   )
@@ -599,6 +612,10 @@ function SlotCells({
  * персонажу. Поэтому форма отдаёт два патча, а не один: иначе правка саба
  * переписала бы профессию основной профессии — или наоборот, и человек
  * обнаружил бы это через месяц.
+ *
+ * занятые — профессии, которые персонажу уже нельзя занять: своя основная
+ * и профессии остальных сабов. Список их не показывает, чтобы не предлагать
+ * выбор, который всё равно запрещён.
  */
 function EditForm({
   char,
@@ -616,6 +633,11 @@ function EditForm({
   const [level, setLevel] = useState((саб ? саб.level : char.level) > 0 ? String(саб ? саб.level : char.level) : '')
   const [affil, setAffil] = useState(char.affil)
 
+  const занятые = useMemo(
+    () => [char.cls, ...char.subs.filter((s) => s.id !== саб?.id).map((s) => s.cls)],
+    [char.cls, char.subs, саб],
+  )
+
   const save = () => {
     const ур = clampLevel(level)
     const пара = { cls, level: ур === '' ? 0 : Number(ур) }
@@ -629,7 +651,7 @@ function EditForm({
       <input className="input" autoFocus value={name} onChange={(e) => setName(e.target.value)} />
       <div className="row">
         <div className="grow">
-          <ClassSelect value={cls} onChange={setCls} />
+          <ClassSelect value={cls} onChange={setCls} exclude={саб ? занятые : undefined} />
         </div>
         <LevelInput value={level} onChange={setLevel} />
       </div>
