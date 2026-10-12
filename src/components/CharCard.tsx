@@ -199,7 +199,7 @@ export function CharCard({
 
               {/*
                 Контакты вне игры.
-                
+
                 Раньше они были плашками — и выглядели ровно как плашки
                 профессии и уровня прямо над ними, поэтому читались как
                 ещё одна строчка метаданных, а не как способ связаться с
@@ -209,28 +209,35 @@ export function CharCard({
                 Свёрнутое состояние тоже несёт информацию — показывает
                 имя, потому что в игре ники ничего не говорят, и именно
                 по имени человека ищут.
-              */}
-              {контактные.length > 0 && (
-                <div className={`char-contacts${contactsOpen ? ' open' : ''}`}>
-                  <button
-                    className="contacts-toggle"
-                    title={contactsOpen ? 'Свернуть контакты' : 'Показать контакты'}
-                    aria-expanded={contactsOpen}
-                    onClick={() => setContactsOpen((v) => !v)}
-                  >
-                    <IconUser />
-                    <span className="contacts-brief">
-                      {char.contacts?.realName?.trim() || 'Контакты'}
-                    </span>
-                    {контактные.length > 1 && (
-                      <span className="contacts-more" title="Заполнено полей">
-                        {контактные.length}
-                      </span>
-                    )}
-                    <span className="chevron">{contactsOpen ? '▾' : '▸'}</span>
-                  </button>
 
-                  {contactsOpen && (
+                Блок показан всегда, даже когда заполнять нечего. Раньше
+                он просто исчезал, и по карточке было не видно, что поле
+                для связи есть и осталось пустым: пустота молчаливого
+                блока читалась как «контактов не предусмотрено».
+              */}
+              <div className={`char-contacts${contactsOpen ? ' open' : ''}`}>
+                <button
+                  className="contacts-toggle"
+                  title={contactsOpen ? 'Свернуть контакты' : 'Показать контакты'}
+                  aria-expanded={contactsOpen}
+                  onClick={() => setContactsOpen((v) => !v)}
+                >
+                  <IconUser />
+                  <span className="contacts-brief">
+                    {контактные.length > 0
+                      ? char.contacts?.realName?.trim() || 'Контакты'
+                      : 'Контакты не заполнены'}
+                  </span>
+                  {контактные.length > 1 && (
+                    <span className="contacts-more" title="Заполнено полей">
+                      {контактные.length}
+                    </span>
+                  )}
+                  <span className="chevron">{contactsOpen ? '▾' : '▸'}</span>
+                </button>
+
+                {contactsOpen &&
+                  (контактные.length > 0 ? (
                     <div className="contacts-list">
                       {контактные.map((строка) => (
                         <div className="contacts-row" key={строка.ключ}>
@@ -257,14 +264,19 @@ export function CharCard({
                         </div>
                       ))}
                     </div>
-                  )}
-                </div>
-              )}
+                  ) : (
+                    <div className="contacts-list">
+                      <p className="contacts-none">
+                        Не заполнены. Заполнить — кнопкой с трубкой справа.
+                      </p>
+                    </div>
+                  ))}
+              </div>
             </>
           )}
         </div>
         <div className="char-tools">
-          <button className="icon-btn" title="Переименовать" onClick={() => setEditing((v) => !v)}>
+          <button className="icon-btn" title="Редактировать персонажа" onClick={() => setEditing((v) => !v)}>
             ✎
           </button>
           <button
