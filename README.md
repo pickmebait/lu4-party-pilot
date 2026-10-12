@@ -1,4 +1,4 @@
-# Party Pilot
+# Const Party Pilot
 
 Трекер экипировки пати, общей казны и хотелок для Lineage 2.
 

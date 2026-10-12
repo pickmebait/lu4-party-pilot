@@ -8,6 +8,7 @@ import {
   type PartyInfo,
 } from '@/lib/api'
 import type { CatalogApi } from '@/lib/catalog'
+import { APP_SLUG } from '@/lib/brand'
 import {
   getDb,
   getSession,
@@ -90,7 +91,7 @@ export function SyncBar({ catalog }: { catalog: CatalogApi }) {
   }
 
   const doExport = () => {
-    downloadJson(`party-pilot-${new Date().toISOString().slice(0, 10)}.json`, getDb())
+    downloadJson(`${APP_SLUG}-${new Date().toISOString().slice(0, 10)}.json`, getDb())
     setState({ kind: 'ok', text: 'Файл с данными сохранён на диск' })
   }
 
@@ -183,7 +184,7 @@ export function SyncBar({ catalog }: { catalog: CatalogApi }) {
           <button
             className="btn tiny"
             onClick={() => {
-              downloadJson(`party-pilot-mine-${new Date().toISOString().slice(0, 10)}.json`, getDb())
+              downloadJson(`${APP_SLUG}-mine-${new Date().toISOString().slice(0, 10)}.json`, getDb())
               setIncoming(null)
               setState({ kind: 'ok', text: 'Твоя версия выгружена в файл, теперь сохраняй поверх' })
             }}

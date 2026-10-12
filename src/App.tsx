@@ -6,6 +6,7 @@ import { SetsView } from './components/Sets'
 import { SyncBar } from './components/SyncBar'
 import { WarehouseView } from './components/Warehouse'
 import { WishesView } from './components/Wishes'
+import { APP_NAME } from './lib/brand'
 import { startCatalogLoad, useCatalog } from './lib/catalog'
 import { computeSummary, usedItemIds, type Summary } from './lib/derived'
 import { useDb, useSession } from './lib/store'
@@ -68,7 +69,7 @@ export default function App() {
         <div className="brand">
           <span className="logo">⚔</span>
           <div>
-            <h1>Party Pilot</h1>
+            <h1>{APP_NAME}</h1>
             <p className="tag">экипировка пати · общая казна · хотелки</p>
           </div>
           <PaletteBar />
