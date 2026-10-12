@@ -156,6 +156,25 @@ export function clearPrime(prime: Record<string, PrimeWindow>, keys: string[]): 
   return out
 }
 
+/**
+ * Все семь дней недели, в которую попал день.
+ *
+ * Заготовка под выделение целой недели: месяц мышью обводить — двадцать с
+ * лишним нажатий, а неделя — одно.
+ */
+export function weekDays(key: string): string[] {
+  const начало = понедельникНедели(parseKey(key))
+  return daysBetween(isoKey(начало), isoKey(addDays(начало, 6)))
+}
+
+/** Субботы и воскресенья среди указанных дней. */
+export function weekendKeys(keys: string[]): string[] {
+  return keys.filter((k) => {
+    const d = parseKey(k).getDay()
+    return d === 0 || d === 6
+  })
+}
+
 /** Есть ли на днях что снимать: прайм или выходной. */
 export function primeOn(schedule: Schedule, keys: string[]): boolean {
   return keys.some((k) => schedule.offs.includes(k) || schedule.prime[k] !== undefined)

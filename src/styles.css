@@ -887,21 +887,66 @@ body {
   background: var(--bg-2);
 }
 
+/*
+ * Заготовки выделения под календарём.
+ *
+ * Отдельная строка, а не кнопки в шапке: в шапке уже месяц, стрелки и
+ * «Сегодня», и ещё три кнопки туда не влезают.
+ */
+.cal-pick {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 9px;
+}
+
+.cal-pick-label {
+  font-size: 12px;
+  color: var(--muted-dim);
+  margin-right: 2px;
+}
+
+/*
+ * Редактор дня.
+ *
+ * Живёт в правой колонке и отделён от сводки линией, а не собственной
+ * карточкой: колонка уже в рамке, и вторая вложенная рамка читалась как
+ * «ещё один раздел в разделе».
+ */
 .cal-editor {
-  margin-top: 10px;
-  padding: 9px 11px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--line);
 }
 
 .editor-what {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 8px;
+  gap: 8px;
   font-size: 14px;
+  line-height: 1.25;
+}
+
+/* Счётчик дней отодвинут вправо, крестик прижат к краю: и то и другое —
+   служебное и не должно спорить с самим диапазоном за внимание. */
+.editor-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted-dim);
+  white-space: nowrap;
+}
+
+/*
+ * Что стоит на выделенных днях сейчас.
+ *
+ * Появилось вместе с тем, что выделение перестало сбрасываться после
+ * назначения: без этой строки результат нажатия не виден.
+ */
+.editor-now {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--muted-dim);
 }
 
 .cal-editor .row {
@@ -909,16 +954,95 @@ body {
   align-items: flex-end;
   gap: 8px;
   flex-wrap: wrap;
+  margin-top: 6px;
 }
 
 /* Подпись над полем, а не сбоку: в строке кнопок места сбоку нет, и
    подпись уезжала под поле, обрезаясь по краю. */
-.cal-editor label {
+.cal-editor label:not(.check) {
   display: flex;
   flex-direction: column;
   gap: 2px;
   font-size: 12px;
   color: var(--muted);
+}
+
+.cal-editor label.check {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text);
+  margin-top: 6px;
+  cursor: pointer;
+}
+
+/*
+ * Поле «Кто» занимает всю ширину: имена длинные, обрезанный список не
+ * читается, а места рядом в узкой колонке всё равно нет.
+ */
+.cal-editor .editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.cal-editor .editor-field select {
+  width: 100%;
+}
+
+/* Два поля времени в ряд: по отдельности они занимали бы две строки
+   ради пары цифр. */
+.cal-editor .time-row .input.time {
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+}
+
+/*
+ * Готовые окна прайма.
+ *
+ * Своим рядом под полями, а не вместо них: поля остаются на месте — их
+ * правят руками, когда нужно нестандартное, — а кнопки лишь подставляют
+ * частые значения одним нажатием.
+ */
+/*
+ * Подсказка про выделение — под легендой, у самого края колонки.
+ *
+ * Держится на месте всегда, а не только когда ничего не выбрано: она
+ * короткая, а без неё забывают про второй способ выделить дни — зажать и
+ * протянуть.
+ */
+.cal-hint {
+  margin: 9px 0 0;
+  color: var(--muted-dim);
+}
+
+/*
+ * Блоки редактора (прайм, отсутствие) — через линию сверху, кроме первого.
+ * Подписи-разделители нужны, потому что блоков два, и без них не видно, где
+ * кончается одно и начинается другое.
+ */
+.cal-editor .editor-block + .editor-block {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 7px;
+}
+
+.presets .chip.pick {
+  padding: 2px 7px;
+  font-size: 11px;
 }
 
 .input.time {
@@ -2734,15 +2858,16 @@ body {
 /*
  * Чеклист к прайму.
  *
- * Отдельный блок под календарём, а не часть сводки по дню: список один на
- * все дни, и рядом со сводкой он читался как относящийся к сегодняшнему.
+ * Отдельный блок под сводкой по дню. Не часть сводки — список один на все
+ * дни, и в общем блоке его не надо искать заново каждый раз: открыл
+ * расписание, проверил, что собраться, и отметил.
+ *
+ * Разделяет их линия под сводкой: своей рамки у чеклиста нет, он и так
+ * внутри общей рамки колонки, и вторая вложенная читалась бы как «ещё
+ * один раздел в разделе».
  */
 .checklist {
-  margin-top: 12px;
-  padding: 9px 11px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  padding-top: 0;
 }
 
 .checklist h4 {
@@ -2752,30 +2877,31 @@ body {
   display: flex;
   align-items: baseline;
   gap: 8px;
+  /* Перенос нужен из-за счётчика: «3 из 3 · только в этой вкладке» в
+     283 пикселя не помещается рядом с заголовком и без него сжимает
+     заголовок в две строки. */
+  flex-wrap: wrap;
 }
 
 .checklist-count {
   margin-left: auto;
   font-size: 11px;
   color: var(--muted-dim);
+  white-space: nowrap;
 }
 
 /*
- * Пункты в ряд по несколько: список короткий, а во всю ширину он тянулся
- * бы на две трети пустого экрана.
+ * Пункты в столбик: колонка узкая, и в две колонки чеклист превращался в
+ * две строки текста с полями, между которыми неудобно встать курсором.
  *
- * Колонка ограничена: иначе поле текста растягивалось до края, крестик
- * прижимался к краю, и следующий пункт начинался сразу за ним — крестик
- * читался как относящийся уже к следующему пункту.
+ * Крестик прижат к своему пункту шагом в несколько пикселей: вплотную он
+ * цепляется за текст, а впереди, на краю колонки, читался бы как относящийся
+ * уже к следующему.
  */
 .checklist-items {
   list-style: none;
   margin: 0 0 7px;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 330px));
-  justify-content: start;
-  gap: 2px 14px;
 }
 
 .checklist-items li {

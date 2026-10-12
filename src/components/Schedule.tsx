@@ -14,6 +14,8 @@ import {
   parseMinutes,
   primeOf,
   primeOn,
+  weekDays,
+  weekendKeys,
   type DayAbsent,
   type DayCell,
 } from '@/lib/schedule'
@@ -48,6 +50,39 @@ import { IconClose } from './Icons'
 /** Стандартное окно прайма — с чего начинаем, когда назначаем заново. */
 const ПО_УМОЛЧАНИЮ: PrimeWindow = { from: 20 * 60, to: 23 * 60 }
 
+/** Окно отсутствия по умолчанию: типичный вечерний прайм без двух крайних часов. */
+const УХОД_ПО_УМОЛЧАНИЮ: PrimeWindow = { from: 21 * 60, to: 23 * 60 }
+
+/*
+ * Готовые окна прайма.
+ *
+ * Одни и те же вечерние часы ставятся изо дня в день, а набирать их каждый
+ * раз в двух полях — работа ради работы. Четыре варианта покрывают всё, чем
+ * пати обычно собирается; что нужно нестандартное, пишется руками.
+ */
+const БЫСТРЫЕ_ОКНА: PrimeWindow[] = [
+  { from: 19 * 60, to: 22 * 60 },
+  ПО_УМОЛЧАНИЮ,
+  { from: 21 * 60, to: 24 * 60 },
+]
+
+/**
+ * Полночь для поля времени.
+ *
+ * Прайм до утра обычен, а `<input type="time">` больше 23:59 не принимает
+ * и показывает пустое поле. Поэтому конец окна в поле — это 00:00, а внутри
+ * остаётся 24:00: «21:00–24:00» читается, «21:00–00:00» выглядит как
+ * нелепость, и сравнить их как числа тоже нельзя.
+ */
+function вПоле(минут: number, конец: boolean): string {
+  return formatMinutes(конец && минут === 24 * 60 ? 0 : минут)
+}
+
+function изПоля(текст: string, конец: boolean): number {
+  const м = parseMinutes(текст)
+  return конец && м === 0 ? 24 * 60 : м
+}
+
 export function ScheduleView() {
   const db = useDb()
   const сегодня = isoToday()
@@ -58,6 +93,15 @@ export function ScheduleView() {
   const [выбор, setВыбор] = useState<string[]>([])
   const [якорь, setЯкорь] = useState<string | null>(null)
   const [окно, setОкно] = useState<PrimeWindow>(ПО_УМОЛЧАНИЮ)
+  /*
+   * Окно отсутствия — отдельное поле, а не то же самое.
+   *
+   * Раньше оба блока писали в одно состояние: выставил время ухода и правь
+   * время прайма — молча едет первое. В момент постановки это почти
+   * гарантированная ошибка, потому что блоки стоят рядом и оба подписаны
+   * «с — по».
+   */
+  const [окноУхода, setОкноУхода] = useState<PrimeWindow>(УХОД_ПО_УМОЛЧАНИЮ)
   const [кто, setКто] = useState('')
   const [весьДень, setВесьДень] = useState(true)
   const тянем = useRef(false)
@@ -80,7 +124,7 @@ export function ScheduleView() {
     const его = персонаж?.away?.[выбор[0]]
     if (его) {
       setВесьДень(его.whole)
-      if (!его.whole && его.window) setОкно(его.window)
+      if (!его.whole && его.window) setОкноУхода(его.window)
     }
   }, [выбор, db.schedule, db.chars, кто])
 
@@ -100,28 +144,32 @@ export function ScheduleView() {
     setЯкорь(null)
   }
 
+  /*
+   * Действия больше не сбрасывают выделение.
+   *
+   * Раньше каждое заканчивалось сбросом, и подряд назначить прайм на
+   * понедельник и вторник было можно только двумя полными обводами мышью.
+   * Оставляем дни выделенными: результат виден по клеткам сам собой, а под
+   * заголовком редактора написано, что там сейчас стоит.
+   */
   const назначитьПрайм = () => {
     if (!выбор.length) return
     assignPrime(выбор, окно)
-    setВыбор([])
   }
 
   const очистить = () => {
     if (!выбор.length) return
     clearPrime(выбор)
-    setВыбор([])
   }
 
   const отметитьВыходной = () => {
     if (!выбор.length) return
     markOffs(выбор)
-    setВыбор([])
   }
 
   const снятьВыходной = () => {
     if (!выбор.length) return
     unmarkOffs(выбор)
-    setВыбор([])
   }
 
   const герой = кто || db.chars[0]?.id || ''
@@ -130,18 +178,32 @@ export function ScheduleView() {
     if (!герой || !выбор.length) return
     const отсутствие: Absence = весьДень
       ? { whole: true }
-      : { whole: false, window: окно }
+      : { whole: false, window: окноУхода }
     setAway(герой, выбор, отсутствие)
-    setВыбор([])
   }
 
   const снятьОтсутствие = () => {
     if (!герой || !выбор.length) return
     clearAway(герой, выбор)
-    setВыбор([])
   }
 
-  // Кто отсутствует в дни показанного месяца.
+  /*
+   * Заготовки выделения.
+   *
+   * Опора — последний выделенный день, иначе сегодняшний, иначе первое
+   * число показанного месяца: кнопка должна выделять что-то осмысленное
+   * всегда, а не молча ничего.
+   */
+  const опора = useMemo(() => {
+    if (выбор.length) return выбор[выбор.length - 1]
+    const свой = клетки.find((к) => к.сегодня)
+    return (свой || клетки.find((к) => !к.чужой))?.key ?? сегодня
+  }, [выбор, клетки, сегодня])
+
+  const выделитьНеделю = () => setВыбор(weekDays(опора))
+  const выделитьВыходные = () => setВыбор(weekendKeys(клетки.filter((к) => !к.чужой).map((к) => к.key)))
+  const выделитьМесяц = () => setВыбор(клетки.filter((к) => !к.чужой).map((к) => к.key))
+
   // Кто отсутствует в дни показанного месяца — для метки в клетке.
   const отсутствия = useMemo(
     () => absencesByDay(db.chars, клетки.map((к) => к.key)),
@@ -159,6 +221,35 @@ export function ScheduleView() {
     () => клетки.filter((к) => !к.чужой && db.schedule.offs.includes(к.key)).length,
     [клетки, db.schedule.offs],
   )
+
+  /*
+   * Что стоит на выделенных днях прямо сейчас.
+   *
+   * Выделение после назначения остаётся, и без этой строки непонятно, что
+   * кнопка только что сделала и что будет если нажать ещё раз. Строка
+   * перечитывает базу и потому всегда говорит правду.
+   */
+  const чтоТам = useMemo(() => {
+    if (!выбор.length) return ''
+    const виды = new Set(выбор.map((k) => primeOf(db.schedule, k).kind))
+    if (виды.size > 1) return 'на выделенных днях разное'
+    const вид = primeOf(db.schedule, выбор[0])
+    if (вид.kind === 'окно') return `сейчас ${formatMinutes(вид.window.from)}–${formatMinutes(вид.window.to)}`
+    if (вид.kind === 'выходной') return 'сейчас выходной пати'
+    return 'сейчас ничего не назначено'
+  }, [выбор, db.schedule])
+
+  /*
+   * На скольких выделенных днях у выбранного персонажа уже стоит отметка
+   * об отсутствии. Без неё «Снять отметку» нажимается вслепую: кнопка обещает
+   * снять то, чего может и не быть.
+   */
+  const уходовНет = useMemo(() => {
+    if (!герой) return 0
+    const c = db.chars.find((x) => x.id === герой)
+    if (!c) return 0
+    return выбор.filter((k) => c.away?.[k]).length
+  }, [герой, выбор, db.chars])
 
   return (
     <section className="view" onMouseUp={закончитьВыбор} onMouseLeave={закончитьВыбор}>
@@ -216,6 +307,39 @@ export function ScheduleView() {
           </div>
 
           {/*
+           * Заготовки выделения.
+           *
+           * Мышь остаётся для произвольных диапазонов, но месяц ею обводить
+           * неудобно: двадцать с лишним нажатий и промах на границе, а прайм
+           * обычно ставят сразу на неделю, на выходные или на месяц.
+           */}
+          <div className="cal-pick">
+            <span className="cal-pick-label">Выделить</span>
+            <button
+              className="chip pick"
+              onClick={выделитьНеделю}
+              title="Неделя вокруг последнего выделенного дня, иначе вокруг сегодняшнего"
+            >
+              неделю
+            </button>
+            <button
+              className="chip pick"
+              onClick={выделитьВыходные}
+              title="Субботы и воскресенья показанного месяца"
+            >
+              выходные
+            </button>
+            <button className="chip pick" onClick={выделитьМесяц} title="Все дни показанного месяца">
+              месяц
+            </button>
+            {выбор.length > 0 && (
+              <button className="chip pick" onClick={() => setВыбор([])} title="Снять выделение">
+                снять
+              </button>
+            )}
+          </div>
+
+          {/*
            * Легенда идёт в порядке «рабочий — выходной — праздник»: чем ближе к
            * началу, тем реже день встречается и тем он обычнее.
            */}
@@ -229,7 +353,26 @@ export function ScheduleView() {
             <span className="legend away">кто-то отсутствует</span>
           </div>
 
-          {границы ? (
+          {/*
+            Подсказка про выделение всегда на месте, а не только когда пусто:
+            она короткая, а без неё забывают про второй способ — зажать и
+            протянуть.
+          */}
+          <p className="hint cal-hint">
+            Выделите дни: зажмите на первом и проведите до последнего. Одиночный клик
+            выбирает один день.
+          </p>
+        </div>
+
+        <aside className="cal-side">
+          {/*
+            Редактор стоит в правой колонке, а не под календарём. Раньше он
+            открывался внизу, и чтобы назначить прайм, надо было увести взгляд
+            от только что выделенных дней куда-то за пределы экрана, а потом
+            вернуть, чтобы проверить результат. Теперь выделение, действия и
+            сводка — в одном месте, куда глаз и так возвращается.
+          */}
+          {границы && (
             <div className="cal-editor">
               {/*
                 Кнопка сброса — крестик сразу рядом с тем, что сброшено,
@@ -240,8 +383,9 @@ export function ScheduleView() {
                 <strong>
                   {выбор.length === 1
                     ? деньПодпись(выбор[0], true)
-                    : `${деньПодпись(границы[0])} — ${деньПодпись(границы[1])} (${выбор.length} дн.)`}
+                    : `${деньПодпись(границы[0])} — ${деньПодпись(границы[1])}`}
                 </strong>
+                <span className="editor-count">{выбор.length} дн.</span>
                 <button
                   className="icon-btn tiny"
                   title="Снять выделение"
@@ -251,17 +395,23 @@ export function ScheduleView() {
                 </button>
               </div>
 
-              <div className="editor-blocks">
-                <div className="editor-block">
-                  <h4>Прайм</h4>
-                  <div className="row">
-                    <label>
-                      С
+              {/*
+                Что стоит на этих днях сейчас. Выделение переживает назначение,
+                и без этой строки не видно, что кнопка только что сделала —
+                результат виден только если знать, куда смотреть.
+              */}
+              <p className="editor-now">{чтоТам}</p>
+
+              <div className="editor-block">
+                <h4>Прайм</h4>
+                <div className="row time-row">
+                  <label>
+                    С
                       <input
                         className="input time"
                         type="time"
-                        value={formatMinutes(окно.from)}
-                        onChange={(e) => setОкно({ ...окно, from: parseMinutes(e.target.value) })}
+                        value={вПоле(окно.from, false)}
+                        onChange={(e) => setОкно({ ...окно, from: изПоля(e.target.value, false) })}
                       />
                     </label>
                     <label>
@@ -269,11 +419,30 @@ export function ScheduleView() {
                       <input
                         className="input time"
                         type="time"
-                        value={formatMinutes(окно.to)}
-                        onChange={(e) => setОкно({ ...окно, to: parseMinutes(e.target.value) })}
+                        value={вПоле(окно.to, true)}
+                        onChange={(e) => setОкно({ ...окно, to: изПоля(e.target.value, true) })}
                       />
                     </label>
                   </div>
+
+                  {/*
+                    Готовые окна. Одни и те же вечерние часы ставятся изо дня
+                    в день, а набирать их каждый раз в двух полях — работа
+                    ради работы. Нестандартное дописывается руками.
+                  */}
+                  <div className="presets">
+                    {БЫСТРЫЕ_ОКНА.map((п) => (
+                      <button
+                        key={`${п.from}-${п.to}`}
+                        className={`chip pick${окно.from === п.from && окно.to === п.to ? ' on' : ''}`}
+                        title={`С ${formatMinutes(п.from)} по ${formatMinutes(п.to)}`}
+                        onClick={() => setОкно({ from: п.from, to: п.to })}
+                      >
+                        {короткоеВремя(п.from)}–{короткоеВремя(п.to)}
+                      </button>
+                    ))}
+                  </div>
+
                   <div className="row">
                     <button className="btn primary" disabled={окно.from >= окно.to} onClick={назначитьПрайм}>
                       Назначить прайм
@@ -308,78 +477,78 @@ export function ScheduleView() {
                 </div>
 
                 <div className="editor-block">
-                  <h4>Отсутствие</h4>
-                  <div className="row">
-                    <label className="grow">
-                      Кто
-                      <select
-                        className="input"
-                        value={герой}
-                        onChange={(e) => setКто(e.target.value)}
-                        disabled={db.chars.length === 0}
-                      >
-                        {db.chars.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name || 'Без имени'}
-                          </option>
-                        ))}
-                      </select>
+                <h4>Отсутствие</h4>
+                <label className="editor-field">
+                  Кто
+                  <select
+                    className="input"
+                    value={герой}
+                    onChange={(e) => setКто(e.target.value)}
+                    disabled={db.chars.length === 0}
+                  >
+                    {db.chars.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name || 'Без имени'}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="check">
+                  <input type="checkbox" checked={весьДень} onChange={(e) => setВесьДень(e.target.checked)} />
+                  Весь день
+                </label>
+
+                {!весьДень && (
+                  <div className="row time-row">
+                    <label>
+                      Не выйдет с
+                      <input
+                        className="input time"
+                        type="time"
+                        value={вПоле(окноУхода.from, false)}
+                        onChange={(e) => setОкноУхода({ ...окноУхода, from: изПоля(e.target.value, false) })}
+                      />
                     </label>
-                    <label className="check">
-                      <input type="checkbox" checked={весьДень} onChange={(e) => setВесьДень(e.target.checked)} />
-                      Весь день
+                    <label>
+                      до
+                      <input
+                        className="input time"
+                        type="time"
+                        value={вПоле(окноУхода.to, true)}
+                        onChange={(e) => setОкноУхода({ ...окноУхода, to: изПоля(e.target.value, true) })}
+                      />
                     </label>
                   </div>
-                  {!весьДень && (
-                    <div className="row">
-                      <label>
-                        Не выйдет с
-                        <input
-                          className="input time"
-                          type="time"
-                          value={formatMinutes(окно.from)}
-                          onChange={(e) => setОкно({ ...окно, from: parseMinutes(e.target.value) })}
-                        />
-                      </label>
-                      <label>
-                        до
-                        <input
-                          className="input time"
-                          type="time"
-                          value={formatMinutes(окно.to)}
-                          onChange={(e) => setОкно({ ...окно, to: parseMinutes(e.target.value) })}
-                        />
-                      </label>
-                    </div>
-                  )}
-                  <div className="row">
-                    <button className="btn primary" disabled={!герой} onClick={отметитьОтсутствие}>
-                      Отметить
-                    </button>
-                    <button className="btn" disabled={!герой} onClick={снятьОтсутствие}>
-                      Снять отметку
-                    </button>
-                  </div>
+                )}
+
+                <div className="row">
+                  <button className="btn primary" disabled={!герой} onClick={отметитьОтсутствие}>
+                    Отметить
+                  </button>
+                  <button
+                    className="btn"
+                    disabled={!герой || уходовНет === 0}
+                    title={уходовНет ? 'На выбранных днях отметки об отсутствии нет' : undefined}
+                    onClick={снятьОтсутствие}
+                  >
+                    Снять отметку
+                  </button>
                 </div>
+                {уходовНет > 0 && <p className="editor-now">отмечено на {уходовНет} дн. выделения</p>}
               </div>
             </div>
-          ) : (
-            <p className="hint">
-              Выделите дни: зажмите на первом и проведите до последнего. Одиночный клик
-              выбирает один день.
-            </p>
           )}
 
-          <Checklist />
-        </div>
 
-        <aside className="cal-side">
           <DaySummary
             день={выбор.length > 0 ? выбор[0] : сегодня}
             выбрано={выбор.length}
             chars={db.chars}
             schedule={db.schedule}
           />
+
+          <Checklist />
         </aside>
       </div>
     </section>
@@ -550,7 +719,7 @@ function описаниеОтсутствия(a: Absence): string {
 /*
  * Чеклист к прайму.
  *
- * Стоит под календар��ем, а не рядом со сводкой по дню, потому что он не
+ * Стоит под календарйем, а не рядом со сводкой по дню, потому что он не
  * про конкретный день: список «что проверить перед входом» один на всех и
  * каждый день, а рядом со сводкой он читался как часть того дня.
  *
@@ -628,6 +797,19 @@ function Checklist() {
       </div>
     </div>
   )
+}
+
+/**
+ * «20:00» → «20», но «20:30» → «20:30».
+ *
+ * На кнопке готового окна минуты лишние: «19–22» читается сразу, а
+ * «19:00–22:00» приходится разбирать. Ведущий ноль у часов тоже мешает —
+ * «09–23» выглядит набором цифр.
+ */
+function короткоеВремя(минут: number): string {
+  const [ч, мин] = formatMinutes(минут).split(':')
+  const часы = ч.replace(/^0(?=\d$)/, '')
+  return мин === '00' ? часы : `${часы}:${мин}`
 }
 
 function деньПодпись(key: string, сГодом = false): string {
