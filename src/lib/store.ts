@@ -25,7 +25,7 @@ import {
 import { emptySlots, equip, partnerOf, unequip, type GearHolder } from './slots'
 import {
   addOffs,
-  clearPrime,
+  clearPrime as clearPrimeRule,
   daysBetween,
   isoKey,
   removeOffs,
@@ -170,11 +170,12 @@ function normalizeSchedule(сырое: unknown): Schedule {
 
   const положить = (key: string, value: unknown) => {
     if (!isDateKey(key) || key in out.prime) return
-    // null — отмена дня, законное значение, а не мусор.
-    if (value === null) {
-      out.prime[key] = null
-      return
-    }
+    /*
+     * null — это отмена из прежней версии базы. Отмены больше нет, и
+     * такой день становится просто неназначенным: отличать его от «решения
+     * не принято» было незачем.
+     */
+    if (value === null) return
     const w = windowOf(value)
     if (w) out.prime[key] = w
   }
@@ -614,23 +615,32 @@ export function setSlotMod(
 /* --------------------------------------------------------------- расписание */
 
 /**
- * Прайм на выбранные дни. null — отменить.
+ * Прайм на выбранные дни.
  *
- * Выходные не трогаем: на них прайм не назначается, и стирать его оттуда
- * незачем — вернём, когда выходной сним��ют.
+ * Выходной при этом не снимается: день под ним время сохраняет, и снятие
+ * выходного вернёт прайм на место. Иначе пришлось бы вводить две отметки на
+ * одну дату, и одна из них молча затирала бы другую.
  */
-export function assignPrime(days: string[], window: PrimeWindow | null): void {
+export function assignPrime(days: string[], window: PrimeWindow): void {
   const s = db.schedule
   commit({ ...db, schedule: { ...s, prime: setPrime(s.prime, days, window) } })
 }
 
-/** Снимает назначение: день снова «ничего не решено». */
-export function unassignPrime(days: string[]): void {
+/**
+ * Очищает дни: снимает и прайм, и выходной.
+ *
+ * Одной кнопкой потому, что это одно и то же «здесь ничего не решено»:
+ * оставлять после очистки выходной было бы странно — человек снял всё
+ * назначение, а часть его осталась бы висеть.
+ */
+export function clearPrime(days: string[]): void {
   const s = db.schedule
-  commit({ ...db, schedule: { ...s, prime: clearPrime(s.prime, days) } })
+  commit({
+    ...db,
+    schedule: { ...s, prime: clearPrimeRule(s.prime, days), offs: removeOffs(s.offs, days) },
+  })
 }
 
-/** Отмечает дни выходными для всей пати. */
 export function markOffs(days: string[]): void {
   const s = db.schedule
   commit({ ...db, schedule: { ...s, offs: addOffs(s.offs, days) } })

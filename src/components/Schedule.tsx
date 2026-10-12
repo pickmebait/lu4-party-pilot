@@ -13,15 +13,16 @@ import {
   parseKey,
   parseMinutes,
   primeOf,
+  primeOn,
   type DayAbsent,
   type DayCell,
 } from '@/lib/schedule'
 import {
   assignPrime,
   clearAway,
+  clearPrime,
   markOffs,
   setAway,
-  unassignPrime,
   unmarkOffs,
   useDb,
 } from '@/lib/store'
@@ -101,15 +102,9 @@ export function ScheduleView() {
     setВыбор([])
   }
 
-  const отменитьПрайм = () => {
+  const очистить = () => {
     if (!выбор.length) return
-    assignPrime(выбор, null)
-    setВыбор([])
-  }
-
-  const снятьПрайм = () => {
-    if (!выбор.length) return
-    unassignPrime(выбор)
+    clearPrime(выбор)
     setВыбор([])
   }
 
@@ -162,6 +157,12 @@ export function ScheduleView() {
   }, [db.chars, клетки])
 
   const выходныхВВыборе = выбор.filter((k) => db.schedule.offs.includes(k)).length
+  /*
+   * «Очистить» доступна только когда на выбранных днях что-то есть. Иначе
+   * кнопка обещает снять то, чего нет, и привыкает, что она всегда жмётся:
+   * человек перестаёт смотреть и однажды нажмёт не туда.
+   */
+  const естьЧтоОчистить = primeOn(db.schedule, выбор)
   const выходныхВМесяце = useMemo(
     () => клетки.filter((к) => !к.чужой && db.schedule.offs.includes(к.key)).length,
     [клетки, db.schedule.offs],
@@ -280,11 +281,17 @@ export function ScheduleView() {
                     <button className="btn primary" disabled={окно.from >= окно.to} onClick={назначитьПрайм}>
                       Назначить прайм
                     </button>
-                    <button className="btn" onClick={отменитьПрайм} title="Прайм назначен, но в этот день не идём">
-                      Отмена прайма
-                    </button>
-                    <button className="btn" onClick={снятьПрайм} title="Убрать назначение совсем">
-                      Снять прайм
+                    <button
+                      className="btn"
+                      onClick={очистить}
+                      disabled={!естьЧтоОчистить}
+                      title={
+                        естьЧтоОчистить
+                          ? 'Снять с выбранных дней и время прайма, и отметку о выходном'
+                          : 'На выбранных днях ничего не назначено'
+                      }
+                    >
+                      Очистить
                     </button>
                   </div>
                   <div className="row">
@@ -439,11 +446,9 @@ function DayBox({
         инфо.сокращённый ? 'сокращённый рабочий день' : '',
         прайм.kind === 'окно'
           ? `прайм ${formatMinutes(прайм.window.from)}–${formatMinutes(прайм.window.to)}`
-          : прайм.kind === 'отменён'
-            ? 'прайм отменён'
-            : прайм.kind === 'выходной'
-              ? 'выходной пати'
-              : 'прайм не назначен',
+          : прайм.kind === 'выходной'
+            ? 'выходной пати'
+            : 'прайм не назначен',
         отсутствуют.length > 0
           ? `нет: ${отсутствуют
               .map((a) => `${a.имя}${a.absence.whole ? '' : ` (${formatMinutes(a.absence.window!.from)}–${formatMinutes(a.absence.window!.to)})`}`)
@@ -476,7 +481,6 @@ function DayBox({
           {formatMinutes(прайм.window.from)}–{formatMinutes(прайм.window.to)}
         </span>
       )}
-      {прайм.kind === 'отменён' && <span className="cal-prime cancel">отмена</span>}
       {прайм.kind === 'выходной' && <span className="cal-prime off">выходной</span>}
     </button>
   )

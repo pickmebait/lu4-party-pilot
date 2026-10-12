@@ -115,46 +115,50 @@ export function parseMinutes(текст: string): number {
 /**
  * Что показывать на день.
  *
- * null — отменён, окно — назначено. Отличить «отменён» от «не назначено»
- * приходится потому, что это разные вещи: на отменённый день прайм не
- * собираются, а на неназначенный просто ещё не решили.
+ * Три состояния: прайм назначен, выходной пати или ничего не решено.
+ * Отдельной отмены нет — она отличалась от «не назначено» только зачёркиванием
+ * в календаре, а читалось это как сломанная запись.
  */
 export type PrimeState =
-  | { kind: 'нет'; source: null }
+  | { kind: 'нет' }
   | { kind: 'окно'; window: PrimeWindow }
-  | { kind: 'отменён' }
   | { kind: 'выходной' }
 
 /** Ключ лежит в prime: день решает сам. */
 export function primeOf(schedule: Schedule, key: string): PrimeState {
   if (schedule.offs.includes(key)) return { kind: 'выходной' }
-  if (!Object.prototype.hasOwnProperty.call(schedule.prime, key)) {
-    return { kind: 'нет', source: null }
-  }
   const своё = schedule.prime[key]
-  if (своё === null) return { kind: 'отменён' }
-  return { kind: 'окно', window: своё }
+  if (своё) return { kind: 'окно', window: своё }
+  return { kind: 'нет' }
 }
 
-/** Назначение окна на дни. null — отменить. */
+/**
+ * Назначение окна на дни.
+ *
+ * День, помеченный выходным, время под собой сохраняет: снимем выходной —
+ * и прайм вернётся. Иначе пришлось бы вводить две отметки на одну дату,
+ * и одна из них молча затирала бы другую.
+ */
 export function setPrime(
-  prime: Record<string, PrimeWindow | null>,
+  prime: Record<string, PrimeWindow>,
   keys: string[],
-  значение: PrimeWindow | null,
-): Record<string, PrimeWindow | null> {
+  значение: PrimeWindow,
+): Record<string, PrimeWindow> {
   const out = { ...prime }
   for (const k of keys) out[k] = значение
   return out
 }
 
 /** Снимает назначение: день снова «ничего не решено». */
-export function clearPrime(
-  prime: Record<string, PrimeWindow | null>,
-  keys: string[],
-): Record<string, PrimeWindow | null> {
+export function clearPrime(prime: Record<string, PrimeWindow>, keys: string[]): Record<string, PrimeWindow> {
   const out = { ...prime }
   for (const k of keys) delete out[k]
   return out
+}
+
+/** Есть ли на днях что снимать: прайм или выходной. */
+export function primeOn(schedule: Schedule, keys: string[]): boolean {
+  return keys.some((k) => schedule.offs.includes(k) || schedule.prime[k] !== undefined)
 }
 
 export function addOffs(offs: string[], keys: string[]): string[] {
