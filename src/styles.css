@@ -689,18 +689,37 @@ body {
   border-bottom: 1px solid var(--line);
 }
 
-/* Блок слева от кнопок в шапке. min-width: 0 нужен, чтобы длинные плашки
-   ужимались, а не распирали карточку. */
-.char-id {
+/* Имя и принадлежность в одну строку: принадлежность определяет, к какой
+   группе относится персонаж, и стоит рядом с именем, а не в ряду плашек
+   профессии, где для неё уже нет места. */
+.char-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   min-width: 0;
+  margin-bottom: 5px;
 }
 
-.char-id h3 {
-  margin: 0 0 5px;
+.char-name-row h3 {
+  margin: 0;
   font-size: 16px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
+}
+
+.chip.affil {
+  flex: none;
+  color: var(--accent-2);
+  background: var(--accent-deep);
+  border-color: var(--accent-line);
+}
+
+/* Блок слева от кнопок в шапке. min-width: 0 нужен, чтобы длинные плашки
+   ужимались, а не распирали карточку. */
+.char-id {
+  min-width: 0;
 }
 
 /*

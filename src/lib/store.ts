@@ -1,8 +1,11 @@
 import { useSyncExternalStore } from 'react'
 import {
+  AFFILIATIONS,
+  DEFAULT_AFFILIATION,
   MAX_MOD,
   SLOT_KEYS,
   SLOT_MAX,
+  type Affiliation,
   type CatalogItem,
   type Char,
   type Contacts,
@@ -18,13 +21,14 @@ import { emptySlots, equip, partnerOf, unequip } from './slots'
 import { uid } from './util'
 
 /**
+ * Версия 5: у персонажа появилась принадлежность.
+ *
+ * Версия 4: контакты вне игры.
  * Версия 3: заточка в слоте стала числом от 0 до 16 (была произвольной
  * строкой). Старые значения переносятся функцией modOf, поэтому поднимать
  * версию для миграции не нужно — она и так вызывается при любой загрузке.
- *
- * Версия 4: у персонажа появились контакты вне игры.
  */
-export const DB_VERSION = 4
+export const DB_VERSION = 5
 const DB_KEY = 'pp:db'
 const SETTINGS_KEY = 'pp:settings'
 
@@ -38,7 +42,14 @@ const DEFAULT_SETTINGS: Settings = {
 }
 
 export function emptyChar(): Char {
-  return { id: uid('c'), name: '', cls: '', level: 0, slots: emptySlots() }
+  return {
+    id: uid('c'),
+    name: '',
+    cls: '',
+    level: 0,
+    affil: DEFAULT_AFFILIATION,
+    slots: emptySlots(),
+  }
 }
 
 export function emptyDb(): Db {
@@ -106,10 +117,22 @@ function normalizeChar(c: Partial<Char>): Char {
     name: typeof c.name === 'string' ? c.name : '',
     cls: typeof c.cls === 'string' ? c.cls : '',
     level: Math.max(0, Math.trunc(Number(c.level)) || 0),
+    // У персонажей, созданных до появления поля, стоит состав: он подходит
+    // большинству, и человек поправит, если нужно.
+    affil: affilOf(c.affil),
     slots,
     contacts: contactsOf(c.contacts),
   }
 }
+
+/** Принадлежность приводится к одному из трёх значений, остальное — состав. */
+function affilOf(сырое: unknown): Affiliation {
+  return typeof сырое === 'string' && сырое in AFFIL_LABELS ? (сырое as Affiliation) : DEFAULT_AFFILIATION
+}
+
+const AFFIL_LABELS: Record<string, true> = Object.fromEntries(
+  AFFILIATIONS.map((a) => [a.key, true]),
+)
 
 /**
  * Контакты приводятся к строке, а пустой результат убирается целиком.

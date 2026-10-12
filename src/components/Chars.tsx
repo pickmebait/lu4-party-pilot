@@ -1,9 +1,16 @@
 ﻿import { useState } from 'react'
-import { SLOTS, type SlotKey } from '@/types'
+import {
+  DEFAULT_AFFILIATION,
+  SLOTS,
+  type Affiliation,
+  type SlotKey,
+} from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
 import { addChar, emptyChar, equipItem, useDb } from '@/lib/store'
+import { sortedChars } from '@/lib/derived'
 import { ItemPicker } from './ItemPicker'
 import { CharCard } from './CharCard'
+import { AffiliationSelect } from './AffiliationSelect'
 import { ClassSelect, LevelInput } from './ClassLevel'
 import { clampLevel } from '@/lib/classes'
 
@@ -37,8 +44,8 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
           <div className="modal small" onClick={(e) => e.stopPropagation()}>
             <h3>Новый персонаж</h3>
             <QuickAddForm
-              onDone={(name, cls, level) => {
-                addChar({ ...emptyChar(), name, cls, level })
+              onDone={(name, cls, level, affil) => {
+                addChar({ ...emptyChar(), name, cls, level, affil })
                 setQuickAdd(false)
               }}
               onCancel={() => setQuickAdd(false)}
@@ -76,7 +83,7 @@ function DbChars({
 
   return (
     <>
-      {db.chars.map((c) => (
+      {sortedChars(db.chars).map((c) => (
         <CharCard key={c.id} char={c} catalog={catalog} onPick={onPick} />
       ))}
     </>
@@ -116,18 +123,21 @@ function QuickAddForm({
   onDone,
   onCancel,
 }: {
-  onDone: (name: string, cls: string, level: number) => void
+  onDone: (name: string, cls: string, level: number, affil: Affiliation) => void
   onCancel: () => void
 }) {
   const [name, setName] = useState('')
   const [cls, setCls] = useState('')
   const [level, setLevel] = useState('')
+  // Принадлежность всегда задана: по умолчанию состав, его подходит
+  // большинству, и он же первый в порядке показа.
+  const [affil, setAffil] = useState<Affiliation>(DEFAULT_AFFILIATION)
   const ok = name.trim().length > 0
 
   const submit = () => {
     if (!ok) return
     const l = clampLevel(level)
-    onDone(name.trim(), cls, l === '' ? 0 : Number(l))
+    onDone(name.trim(), cls, l === '' ? 0 : Number(l), affil)
   }
 
   return (
@@ -154,6 +164,8 @@ function QuickAddForm({
         </label>
       </div>
 
+      <AffiliationSelect value={affil} onChange={setAffil} />
+
       <div className="form-actions">
         <button className="btn" onClick={onCancel}>
           Отмена
@@ -165,3 +177,5 @@ function QuickAddForm({
     </div>
   )
 }
+
+

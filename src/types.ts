@@ -249,12 +249,48 @@ export interface Contacts {
   discord?: string
 }
 
+/**
+ * Принадлежность персонажа: в какие локации он ходит.
+ *
+ * Задаёт и порядок в списке — состав, потом десятка, потом окно, — поэтому
+ * порядок в массиве AFFILIATIONS важен, и менять его нельзя молча.
+ */
+export const AFFILIATIONS = [
+  { key: 'roster', label: 'Состав' },
+  { key: 'decade', label: 'Десятка' },
+  { key: 'window', label: 'Окно' },
+] as const
+
+export type Affiliation = (typeof AFFILIATIONS)[number]['key']
+
+/** Состав — обычный участник пати, подходит большинству. */
+export const DEFAULT_AFFILIATION: Affiliation = 'roster'
+
+const МЕТКИ: Record<Affiliation, string> = Object.fromEntries(
+  AFFILIATIONS.map((a) => [a.key, a.label]),
+) as Record<Affiliation, string>
+
+export function affiliationLabel(key: string | undefined): string {
+  return key && key in МЕТКИ ? МЕТКИ[key as Affiliation] : МЕТКИ[DEFAULT_AFFILIATION]
+}
+
+/** Меньше — выше в списке. */
+export function affiliationOrder(key: string | undefined): number {
+  const i = AFFILIATIONS.findIndex((a) => a.key === key)
+  return i === -1 ? AFFILIATIONS.length : i
+}
+
 export interface Char {
   id: string
   name: string
   /** Класс: "SM", "Sword E", "Oracle"… — просто текст для удобства. */
   cls: string
   level: number
+  /**
+   * Принадлежность. В базе всегда заполнена: у персонажей, созданных до
+   * появления поля, проставляется состав.
+   */
+  affil: Affiliation
   /** Ключи слотов массивом, где null = пустой слот. */
   slots: Partial<Record<SlotKey, (SlotEntry | null)[]>>
   /** Контакты вне игры. Отсутствует, если их не заполняли. */

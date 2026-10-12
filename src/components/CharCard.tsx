@@ -1,9 +1,10 @@
 import { useState, type ReactNode } from 'react'
-import { SLOTS, SLOT_GROUPS, MAX_MOD, gradeCode, gradeLabel, type Char, type SlotKey } from '@/types'
+import { SLOTS, SLOT_GROUPS, MAX_MOD, affiliationLabel, gradeCode, gradeLabel, type Char, type SlotKey } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
 import { removeChar, setSlotMod, unequipItem, updateChar } from '@/lib/store'
 import { ItemIcon } from './ItemIcon'
 import { ClassSelect, LevelInput } from './ClassLevel'
+import { AffiliationSelect } from './AffiliationSelect'
 import { ContactsModal } from './ContactsModal'
 import { IconCheck, IconClose, IconDiscord, IconPhone, IconTelegram, IconUser } from './Icons'
 import { discordLabel, discordLink, phoneLink, telegramLabel, telegramLink } from '@/lib/contacts'
@@ -140,7 +141,12 @@ export function CharCard({
             />
           ) : (
             <>
-              <h3>{char.name || 'Без имени'}</h3>
+              <div className="char-name-row">
+                <h3>{char.name || 'Без имени'}</h3>
+                <span className="chip affil" title="Принадлежность">
+                  {affiliationLabel(char.affil)}
+                </span>
+              </div>
               {/*
                 Профессия, уровень и состояние слотов всегда в одну строку.
                 Раньше плашки переносились на вторую и третью, и шапка
@@ -461,12 +467,14 @@ function EditForm({
   const [name, setName] = useState(char.name)
   const [cls, setCls] = useState(char.cls)
   const [level, setLevel] = useState(char.level > 0 ? String(char.level) : '')
+  const [affil, setAffil] = useState(char.affil)
 
   const save = () =>
     onDone({
       name: name.trim(),
       cls,
       level: clampLevel(level) === '' ? 0 : Number(clampLevel(level)),
+      affil,
     })
 
   return (
@@ -478,6 +486,7 @@ function EditForm({
         </div>
         <LevelInput value={level} onChange={setLevel} />
       </div>
+      <AffiliationSelect value={affil} onChange={setAffil} />
       <div className="row">
         <button className="btn tiny primary" onClick={save}>
           Сохранить

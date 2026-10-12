@@ -1,5 +1,15 @@
-import type { Db, SetDef, SlotEntry, SlotKey } from '@/types'
-import { SLOT_KEYS } from '@/types'
+import type { Char, Db, SetDef, SlotEntry, SlotKey } from '@/types'
+import { SLOT_KEYS, affiliationOrder } from '@/types'
+
+/**
+ * Персонажи в порядке показа: состав, потом десятка, потом окно.
+ *
+ * Сортировка устойчивая — внутри принадлежности порядок добавления не
+ * меняется, поэтому пересортировка не таскает людей по карточкам.
+ */
+export function sortedChars(chars: readonly Char[]): Char[] {
+  return [...chars].sort((a, b) => affiliationOrder(a.affil) - affiliationOrder(b.affil))
+}
 
 export interface SetProgress {
   set: SetDef
