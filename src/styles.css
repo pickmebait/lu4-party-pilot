@@ -688,6 +688,169 @@ body {
   border-radius: 6px;
 }
 
+/* -------------------------------------------- персонажи: вид «колонка» */
+
+/*
+ * Второй вид раздела: персонажи друг под другом, по строке на человека.
+ *
+ * Задача другая, чем у карточек: не рассмотреть персонажа целиком, а
+ * сравнить пати между собой — у кого что надето и где дыры. Поэтому строка
+ * плоская и широкая, предмет сведён к иконке с заточкой, а контактов нет:
+ * они не про снаряжение, и в этом виде только отнимали бы ширину.
+ */
+.chars-col {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.char-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+}
+
+.char-row:hover {
+  border-color: var(--line-2);
+}
+
+/*
+ * Левая часть — кто это. Фиксированная ширина: иначе имя длинного
+ * персонажа отжимало бы иконки снаряжения, ради которых строка и нужна.
+ */
+.row-id {
+  width: 230px;
+  flex: none;
+  min-width: 0;
+}
+
+.row-name {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  font-size: 14px;
+}
+
+.row-name svg {
+  flex: none;
+  color: var(--accent);
+}
+
+.row-name strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row-meta {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.row-tabs {
+  flex: none;
+  max-width: 190px;
+}
+
+.row-tabs button {
+  padding: 3px 7px;
+  font-size: 12px;
+  max-width: 92px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Снаряжение: иконки в ряд, у каждой своё число заточки. */
+.row-gear {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px;
+  min-width: 0;
+}
+
+.row-gear-group {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Тонкая перегородка между оружием, бронёй и бижутерией: без неё двенадцать
+   подряд идущих иконок читаются как одна куча. */
+.row-gear-gap {
+  width: 1px;
+  height: 22px;
+  margin: 0 4px;
+  background: var(--line-2);
+  flex: none;
+}
+
+.slot-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  padding: 0;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+  color: var(--muted);
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.slot-icon:hover {
+  background: var(--surface-lit);
+  border-color: var(--line-2);
+}
+
+.slot-icon.void {
+  border-style: dashed;
+  font-size: 13px;
+}
+
+/* Заточка в углу иконки, а не строкой под ней: иначе иконку пришлось бы
+   делать вдвое выше и вся строка распухла. */
+.slot-mod {
+  position: absolute;
+  right: 1px;
+  bottom: 0;
+  font-size: 9px;
+  line-height: 1.1;
+  padding: 0 2px;
+  border-radius: 3px;
+  background: var(--surface-deep);
+  color: var(--accent-2);
+}
+
+.row-tail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+/* Подтверждение удаления — в строке оно появляется справа, а не под шапкой,
+   как в карточке, иначе прыгала бы вся высота строки. */
+.char-row .confirm {
+  margin-left: auto;
+  flex: none;
+}
+
 .char-card {
   flex: 0 0 var(--card-w);
   width: var(--card-w);

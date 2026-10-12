@@ -1,14 +1,12 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { SLOTS, SLOT_GROUPS, MAX_MOD, MAX_SUBS, affiliationLabel, gradeCode, gradeLabel, type Char, type SlotKey, type Sub } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
 import { addSub, removeChar, removeSub, setSlotMod, setSubUnlocked, unequipItem, updateChar, updateSub, type Branch } from '@/lib/store'
 import { ItemIcon } from './ItemIcon'
-import { ClassSelect, LevelInput } from './ClassLevel'
-import { AffiliationSelect } from './AffiliationSelect'
+import { CharEditForm } from './CharEditForm'
 import { ContactsModal } from './ContactsModal'
 import { IconCheck, IconClose, IconDiscord, IconPhone, IconTelegram, IconUser } from './Icons'
 import { discordLabel, discordLink, phoneLink, telegramLabel, telegramLink } from '@/lib/contacts'
-import { clampLevel } from '@/lib/classes'
 
 /**
  * Карточка персонажа: шапка с контактами и три блока экипировки.
@@ -150,7 +148,7 @@ export function CharCard({
       <header className="char-head">
         <div className="char-id">
           {editing ? (
-            <EditForm
+            <CharEditForm
               char={char}
               саб={саб}
               onDone={(патч, патчСаба) => {
@@ -617,65 +615,4 @@ function SlotCells({
   )
 }
 
-/**
- * Форма правки персонажа.
- *
- * Профессия и уровень принадлежат ветке, а имя и принадлежность — самому
- * персонажу. Поэтому форма отдаёт два патча, а не один: иначе правка саба
- * переписала бы профессию основной профессии — или наоборот, и человек
- * обнаружил бы это через месяц.
- *
- * занятые — профессии, которые персонажу уже нельзя занять: своя основная
- * и профессии остальных сабов. Список их не показывает, чтобы не предлагать
- * выбор, который всё равно запрещён.
- */
-function EditForm({
-  char,
-  саб,
-  onDone,
-  onCancel,
-}: {
-  char: Char
-  саб: Sub | null
-  onDone: (патч: Partial<Char>, патчСаба?: Partial<Sub>) => void
-  onCancel: () => void
-}) {
-  const [name, setName] = useState(char.name)
-  const [cls, setCls] = useState(саб ? саб.cls : char.cls)
-  const [level, setLevel] = useState((саб ? саб.level : char.level) > 0 ? String(саб ? саб.level : char.level) : '')
-  const [affil, setAffil] = useState(char.affil)
 
-  const занятые = useMemo(
-    () => [char.cls, ...char.subs.filter((s) => s.id !== саб?.id).map((s) => s.cls)],
-    [char.cls, char.subs, саб],
-  )
-
-  const save = () => {
-    const ур = clampLevel(level)
-    const пара = { cls, level: ур === '' ? 0 : Number(ур) }
-    if (саб) onDone({ name: name.trim(), affil }, пара)
-    else onDone({ name: name.trim(), affil, ...пара })
-  }
-
-  return (
-    <div className="edit-form">
-      {саб && <div className="edit-sub">Саб-класс</div>}
-      <input className="input" autoFocus value={name} onChange={(e) => setName(e.target.value)} />
-      <div className="row">
-        <div className="grow">
-          <ClassSelect value={cls} onChange={setCls} exclude={саб ? занятые : undefined} />
-        </div>
-        <LevelInput value={level} onChange={setLevel} />
-      </div>
-      {!саб && <AffiliationSelect value={affil} onChange={setAffil} />}
-      <div className="row">
-        <button className="btn tiny primary" onClick={save}>
-          Сохранить
-        </button>
-        <button className="btn tiny" onClick={onCancel}>
-          Отмена
-        </button>
-      </div>
-    </div>
-  )
-}

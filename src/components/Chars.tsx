@@ -13,6 +13,7 @@ import { addChar, emptyChar, equipItem, useDb, type Branch } from '@/lib/store'
 import { sortedChars } from '@/lib/derived'
 import { ItemPicker } from './ItemPicker'
 import { CharCard } from './CharCard'
+import { CharRow } from './CharRow'
 import { AffiliationSelect } from './AffiliationSelect'
 import { ClassSelect, LevelInput } from './ClassLevel'
 import { clampLevel } from '@/lib/classes'
@@ -32,10 +33,28 @@ interface PickerTarget extends Branch {
 /** Фильтр по принадлежности: любая из трёх либо показывать всех. */
 type Фильтр = Affiliation | 'все'
 
+/**
+ * Вид раздела: карточки в строку или персонажи в столбец.
+ *
+ * Строка — привычный вид, где персонажа видно целиком. Колонка — для
+ * сравнения: вся пати по вертикали, по одной строке на человека, и
+ * видно сразу, у кого что надето.
+ *
+ * Выбор живёт в состоянии вкладки, а не в базе: это способ посмотреть,
+ * а не данные пати.
+ */
+type Вид = 'строка' | 'колонка'
+
+const ВИДЫ: { key: Вид; label: string; подсказка: string }[] = [
+  { key: 'строка', label: 'Строка', подсказка: 'Персонажи в строку, карточка целиком' },
+  { key: 'колонка', label: 'Колонка', подсказка: 'Персонажи в столбец, компактно' },
+]
+
 export function CharsView({ catalog }: { catalog: CatalogApi }) {
   const [target, setTarget] = useState<PickerTarget | null>(null)
   const [quickAdd, setQuickAdd] = useState(false)
   const [фильтр, setФильтр] = useState<Фильтр>('все')
+  const [вид, setВид] = useState<Вид>('строка')
 
   const db = useDb()
   const все = sortedChars(db.chars)
@@ -76,14 +95,28 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
               </button>
             ))}
           </div>
+          <div className="segmented" role="group" aria-label="Вид раздела">
+            {ВИДЫ.map((в) => (
+              <button
+                key={в.key}
+                type="button"
+                className={вид === в.key ? 'on' : ''}
+                title={в.подсказка}
+                onClick={() => setВид(в.key)}
+              >
+                {в.label}
+              </button>
+            ))}
+          </div>
           <button className="btn add-char" onClick={() => setQuickAdd(true)}>
             + Персонаж
           </button>
         </div>
       </div>
 
-      <div className="chars-grid">
+      <div className={вид === 'строка' ? 'chars-grid' : 'chars-col'}>
         <DbChars
+          вид={вид}
           chars={показанные}
           всего={все.length}
           фильтр={фильтр}
@@ -115,6 +148,7 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
 
 /** Список персонажей: вынесен, чтобы пустое состояние не мешало вёрстке. */
 function DbChars({
+  вид,
   chars,
   всего,
   фильтр,
@@ -122,6 +156,7 @@ function DbChars({
   catalog,
   onPick,
 }: {
+  вид: Вид
   chars: Char[]
   всего: number
   фильтр: Фильтр
@@ -161,9 +196,13 @@ function DbChars({
 
   return (
     <>
-      {chars.map((c) => (
-        <CharCard key={c.id} char={c} catalog={catalog} onPick={onPick} />
-      ))}
+      {chars.map((c) =>
+        вид === 'строка' ? (
+          <CharCard key={c.id} char={c} catalog={catalog} onPick={onPick} />
+        ) : (
+          <CharRow key={c.id} char={c} catalog={catalog} onPick={onPick} />
+        ),
+      )}
     </>
   )
 }
