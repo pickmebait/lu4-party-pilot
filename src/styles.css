@@ -688,6 +688,287 @@ body {
   border-radius: 6px;
 }
 
+/* ------------------------------------------------------------- расписание */
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cal-title {
+  min-width: 120px;
+  text-align: center;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.cal {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.cal-head {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  background: var(--bg-3);
+  border-bottom: 1px solid var(--line);
+}
+
+.cal-head div {
+  padding: 6px 8px;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.cal-head div.weekend {
+  color: var(--accent);
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+}
+
+/*
+ * День в сетке.
+ *
+ * Каждый день — кнопка: за год их триста шестьдесят пять, и наводиться
+ * приходится часто, а на <div> не повесишь ни выделение мышью, ни
+ * подсказку.
+ */
+.cal-day {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  min-height: 62px;
+  padding: 4px 5px;
+  background: var(--bg-2);
+  border: none;
+  border-left: 2px solid transparent;
+  font: inherit;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.cal-day:hover {
+  background: var(--surface-lit);
+}
+
+.cal-num {
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+/* Соседний месяц — гасим, но оставляем нажимаемым: диапазон, начавшийся
+   в прошлом месяце, выбрать надо дать. */
+.cal-day.other .cal-num {
+  color: var(--muted-dim);
+}
+
+.cal-day.weekend {
+  background: var(--surface-deep);
+}
+
+.cal-day.weekend .cal-num {
+  color: var(--muted);
+}
+
+.cal-day.holiday {
+  background: var(--accent-deep);
+  border-left-color: var(--accent);
+}
+
+.cal-day.holiday .cal-num {
+  color: var(--accent-2);
+  font-weight: 600;
+}
+
+/* Выходной, объявленный рабочим: заходить придётся, и выглядеть он должен
+   как рабочий, а не как праздник. */
+.cal-day.workday {
+  background: var(--bg-2);
+  border-left-color: var(--line-2);
+}
+
+.cal-day.short {
+  border-left-color: var(--line-2);
+}
+
+.cal-day.today .cal-num {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cal-day.picked {
+  background: color-mix(in srgb, var(--accent) 22%, var(--bg-2));
+  border-left-color: var(--accent);
+}
+
+.cal-mark {
+  font-size: 10px;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.cal-mark.short {
+  color: var(--muted);
+}
+
+/*
+ * Время прайма в клетке. Своё время на день помечено точкой: отличить
+ * «перенесли этот вечер» от «общего диапазона» по подсказке пришлось бы
+ * наводиться на каждый день по очереди.
+ */
+.cal-prime {
+  margin-top: auto;
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cal-prime.own {
+  color: var(--accent-2);
+  font-weight: 600;
+}
+
+.cal-prime.own::before {
+  content: '• ';
+  color: var(--accent);
+}
+
+.cal-prime.off {
+  color: var(--muted-dim);
+  text-decoration: line-through;
+}
+
+.cal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.cal-legend .legend::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-radius: 3px;
+  border: 1px solid var(--line-2);
+  vertical-align: -1px;
+}
+
+.cal-legend .weekend::before {
+  background: var(--surface-deep);
+}
+
+.cal-legend .holiday::before {
+  background: var(--accent-deep);
+  border-color: var(--accent);
+}
+
+.cal-legend .workday::before {
+  background: var(--bg-2);
+  border-color: var(--line-2);
+}
+
+.cal-legend .short::before {
+  background: var(--bg-2);
+}
+
+.cal-legend .own::before {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.cal-editor {
+  margin-top: 10px;
+  padding: 9px 11px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.editor-what {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.cal-editor .row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Подпись над полем, а не сбоку: в строке кнопок места сбоку нет, и
+   подпись уезжала под поле, обрезаясь по краю. */
+.cal-editor label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.input.time {
+  width: 96px;
+  padding: 5px 7px;
+}
+
+.cal-ranges {
+  margin-top: 10px;
+}
+
+.cal-ranges h4 {
+  margin: 0 0 5px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.cal-range {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 8px;
+  margin-bottom: 4px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 13px;
+}
+
+.cal-range .range-dates {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cal-range .range-time {
+  color: var(--accent-2);
+  white-space: nowrap;
+}
+
+/* -------------------------------------------- персонажи: вид «колонка» */
+
 /* -------------------------------------------- персонажи: вид «колонка» */
 
 /*

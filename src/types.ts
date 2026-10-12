@@ -322,6 +322,43 @@ export interface Char {
   subs: Sub[]
 }
 
+/* --------------------------------------------------------------- расписание */
+
+/**
+ * Окно прайма в минутах от полуночи.
+ *
+ * Минуты, а не «20:00»: сетка календаря рисуется в минутах, и сравнивать
+ * окна между собой и с диапазонами удобнее числами, а не строками, —
+ * «23:00» и «9:00» из строк не сравнить, из чисел сравнится.
+ */
+export interface PrimeWindow {
+  from: number
+  to: number
+}
+
+/** Прайм на диапазон дат — общее назначение для пати. */
+export interface PrimeRange {
+  id: string
+  /** Границы включительно, YYYY-MM-DD. */
+  from: string
+  to: string
+  window: PrimeWindow
+}
+
+/**
+ * Что назначено на конкретный день поверх общего прайма.
+ *
+ * Окно — свой прайм на этот день, null — отменён. Отсутствие ключа вовсе
+ * означает «ничего особенного»: день берёт прайм из диапазона.
+ */
+export type DayPrime = PrimeWindow | null
+
+export interface Schedule {
+  ranges: PrimeRange[]
+  /** Переопределения по дням: YYYY-MM-DD → окно или отмена. */
+  days: Record<string, DayPrime>
+}
+
 export interface WarehouseStack {
   itemId: number
   count: number
@@ -395,6 +432,8 @@ export interface Db {
    * Хранится в базе, поэтому названия видны всей пати.
    */
   customNames: Record<string, string>
+  /** Расписание прайма: общие диапазоны и отступления по дням. */
+  schedule: Schedule
 }
 
 /** Запись справочника предметов. */

@@ -10,8 +10,12 @@ import {
   type CatalogItem,
   type Char,
   type Contacts,
+  type DayPrime,
   type Db,
   type MoveLog,
+  type PrimeRange,
+  type PrimeWindow,
+  type Schedule,
   type SetDef,
   type SlotEntry,
   type SlotKey,
@@ -20,22 +24,25 @@ import {
   type Wish,
 } from '@/types'
 import { emptySlots, equip, partnerOf, unequip, type GearHolder } from './slots'
+import { isoKey, rangeOf, removeRange, resetDays, setDays, setRange } from './schedule'
 import { uid } from './util'
 
 /**
- * Версия 6: у персонажа появились саб-классы.
+ * Версия 7: у базы появилось расписание прайма.
  *
+ * Версия 6: саб-классы.
  * Версия 5: принадлежность.
  * Версия 4: контакты вне игры.
  * Версия 3: заточка в слоте стала числом от 0 до 16 (была произвольной
  * строкой). Старые значения переносятся функцией modOf, поэтому поднимать
  * версию для миграции не нужно — она и так вызывается при любой загрузке.
  *
- * Сабы приводятся normalizeChar при каждой загрузке, поэтому поднимать
- * версию ради них необязательно — но её рост виден в базе, и по нему
- * понятно, какие данные приложение уже умеет читать.
+ * Сабы, принадлежность и расписание приводятся normalizeChar при каждой
+ * загрузке, поэтому поднимать версию ради них необязательно — но её рост
+ * виден в базе, и по нему понятно, какие данные приложение уже умеет
+ * читать.
  */
-export const DB_VERSION = 6
+export const DB_VERSION = 7
 const DB_KEY = 'pp:db'
 const SETTINGS_KEY = 'pp:settings'
 
@@ -76,7 +83,13 @@ export function emptyDb(): Db {
     wishes: [],
     sets: [],
     customNames: {},
+    schedule: emptySchedule(),
   }
+}
+
+/** Расписание без праймов — чтобы правила создания не расходились. */
+export function emptySchedule(): Schedule {
+  return { ranges: [], days: {} }
 }
 
 function normalizeDb(raw: unknown): Db {
@@ -109,6 +122,7 @@ function normalizeDb(raw: unknown): Db {
       d.customNames && typeof d.customNames === 'object' && !Array.isArray(d.customNames)
         ? (d.customNames as Record<string, string>)
         : {},
+    schedule: normalizeSchedule(d.schedule),
   }
 }
 
@@ -132,6 +146,63 @@ function normalizeSlots(сырое: unknown): Char['slots'] {
     slots[k] = arr
   }
   return slots
+}
+
+/**
+ * Расписание приводится к виду, в котором на него можно опереться.
+ *
+ * Из сети приходит что угодно: без расписания, с диапазоном без окна, с
+ * границами в обратном порядке. Окно с from >= to отбрасываем — прайм,
+ * который заканчивается раньше, чем начинается, не значит ничего, а
+ * показать его в календаре значит запутать человека.
+ */
+function normalizeSchedule(сырое: unknown): Schedule {
+  if (!сырое || typeof сырое !== 'object') return emptySchedule()
+  const s = сырое as Partial<Schedule>
+
+  const окно = (w: unknown): PrimeWindow | null => {
+    if (!w || typeof w !== 'object') return null
+    const { from, to } = w as { from?: unknown; to?: unknown }
+    if (typeof from !== 'number' || typeof to !== 'number') return null
+    if (!Number.isFinite(from) || !Number.isFinite(to) || from >= to) return null
+    return { from, to }
+  }
+
+  const ranges: PrimeRange[] = (Array.isArray(s.ranges) ? s.ranges : [])
+    .map((r): PrimeRange | null => {
+      if (!r || typeof r !== 'object') return null
+      const w = окно((r as PrimeRange).window)
+      if (!w) return null
+      const from = typeof r.from === 'string' ? r.from : ''
+      const to = typeof r.to === 'string' ? r.to : ''
+      if (!isDateKey(from) || !isDateKey(to)) return null
+      return { id: typeof r.id === 'string' && r.id ? r.id : uid('p'), from, to: to >= from ? to : from, window: w }
+    })
+    .filter((r): r is PrimeRange => r !== null)
+    .sort((a, b) => a.from.localeCompare(b.from))
+
+  const days: Record<string, DayPrime> = {}
+  const сырыеДни = (s.days ?? {}) as Record<string, unknown>
+  if (сырыеДни && typeof сырыеДни === 'object' && !Array.isArray(сырыеДни)) {
+    for (const [key, value] of Object.entries(сырыеДни)) {
+      if (!isDateKey(key)) continue
+      // null — отмена дня, и это законное значение, а не мусор.
+      if (value === null) days[key] = null
+      else {
+        const w = окно(value)
+        if (w) days[key] = w
+      }
+    }
+  }
+
+  return { ranges, days }
+}
+
+/** Строка вида YYYY-MM-DD и настоящая дата, а не «не в February». */
+function isDateKey(key: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return false
+  const d = new Date(key + 'T00:00:00')
+  return !Number.isNaN(d.getTime()) && isoKey(d) === key
 }
 
 function normalizeChar(c: Partial<Char>): Char {
@@ -498,6 +569,50 @@ export function setSlotMod(
   })
 
   commitChar(target.charId, copy)
+}
+
+/* --------------------------------------------------------------- расписание */
+
+/**
+ * Прайм на диапазон дат.
+ *
+ * Новый диапазон получает свой id. Без этого два назначения подряд
+ * получили бы один и тот же пустой id, и «Убрать» снёс бы не тот
+ * диапазон, который человек выбрал.
+ *
+ * Пересечения с уже существующими снимаются правилом setRange: два прайма
+ * на один день решились бы порядком в массиве, и это тот случай, когда
+ * человек неделю ходит не на тот прайм.
+ */
+export function setPrimeRange(from: string, to: string, window: PrimeWindow, id?: string): void {
+  const s = db.schedule
+  // Если правим существующий диапазон, берём его id; иначе — тот, что уже
+  // лежит на этих днях, чтобы правка не разрезала его надвое.
+  const свойId = id ?? rangeOf(s.ranges, from)?.id
+  const новыйId = свойId ?? uid('p')
+  commit({ ...db, schedule: { ...s, ranges: setRange(s.ranges, свойId ?? '', from, to, window, новыйId) } })
+}
+
+/** Убирает диапазон целиком. */
+export function removePrimeRange(id: string): void {
+  const s = db.schedule
+  commit({ ...db, schedule: { ...s, ranges: removeRange(s.ranges, id) } })
+}
+
+/**
+ * Что назначено на выбранные дни.
+ *
+ * null — отменить. Окно — свой прайм на каждый из дней.
+ */
+export function setDayPrime(keys: string[], value: DayPrime): void {
+  const s = db.schedule
+  commit({ ...db, schedule: { ...s, days: setDays(s.days, keys, value) } })
+}
+
+/** Снимает отступления: дни снова берут прайм из своего диапазона. */
+export function resetDayPrime(keys: string[]): void {
+  const s = db.schedule
+  commit({ ...db, schedule: { ...s, days: resetDays(s.days, keys) } })
 }
 
 /* -------------------------------------------------------------------- казна */
