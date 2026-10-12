@@ -1520,6 +1520,98 @@ body {
 }
 
 /*
+ * Платный аккаунт в шапке.
+ *
+ * Строка под метаданными. Она всегда есть, даже когда ПА не заполнено: пустая
+ * строка ничего не занимает, а карточка не «прыгает» по высоте, когда
+ * платёжку проставили. Рядом с профессией и счётчиком слотов места нет,
+ * поэтому и не там.
+ */
+.char-pa {
+  display: flex;
+  justify-content: flex-end;
+  min-height: 16px;
+  margin-bottom: 5px;
+}
+
+/*
+ * Остаток ПА — по цвету.
+ *
+ * Три состояния, а не одно с числом: «2 дн.» и «97 дн.» читаются одинаково
+ * спокойно, а продлевать надо именно в первом случае. Срочное подсвечено
+ * жёлтым, истёкшее — красным; оба цвета закреплены за смыслом и не
+ * перекрашиваются палитрой.
+ */
+.chip.pa {
+  flex: none;
+  font-size: 10px;
+  padding: 0 7px;
+}
+
+.chip.pa.soon {
+  color: #ffdb8a;
+  background: #3a2f10;
+  border-color: #6b551b;
+}
+
+.chip.pa.over {
+  color: #ffb3b3;
+  background: color-mix(in srgb, #5a2a2a 60%, transparent);
+  border-color: #5a2a2a;
+}
+
+/*
+ * Правка ПА в форме персонажа.
+ *
+ * Отдельным блоком под принадлежностью: полей два, в строку с профессией
+ * они не влезают, а в общий ряд плашек формы попали бы как ещё одна
+ * строчка метаданных среди имени и уровня.
+ */
+.pa-edit {
+  margin-top: 8px;
+  padding: 7px 9px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-deep);
+}
+
+.pa-edit-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pa-edit-left {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted-dim);
+}
+
+.pa-edit .row {
+  align-items: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.pa-edit label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pa-edit .input {
+  font-size: 12px;
+}
+
+.pa-edit .hint {
+  margin: 6px 0 0;
+}
+
+/*
  * Контакты вне игры.
  *
  * Раньше это были плашки — и выглядели ровно как плашки профессии и уровня

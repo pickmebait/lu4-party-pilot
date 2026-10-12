@@ -31,6 +31,18 @@ export function parseKey(key: string): Date {
   return new Date(y, (m ?? 1) - 1, d ?? 1)
 }
 
+/**
+ * Строка вида YYYY-MM-DD и настоящая дата.
+ *
+ * Проверяется и разряд, и само число: «2026-02-30» разбирается в первый март
+ * молча, и такая запись прошла бы в базу как дата, которой не бывает.
+ */
+export function isDateKey(key: unknown): key is string {
+  if (typeof key !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(key)) return false
+  const d = new Date(key + 'T00:00:00')
+  return !Number.isNaN(d.getTime()) && isoKey(d) === key
+}
+
 /** Сдвиг на n дней. */
 export function addDays(дата: Date, n: number): Date {
   const копия = new Date(дата.getTime())

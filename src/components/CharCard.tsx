@@ -7,6 +7,7 @@ import { CharEditForm } from './CharEditForm'
 import { ContactsModal } from './ContactsModal'
 import { IconCheck, IconClose, IconDiscord, IconPhone, IconTelegram, IconUser } from './Icons'
 import { discordLabel, discordLink, phoneLink, telegramLabel, telegramLink } from '@/lib/contacts'
+import { PaChip } from './PaChip'
 
 /**
  * Карточка персонажа: шапка с контактами и три блока экипировки.
@@ -193,6 +194,19 @@ export function CharCard({
                     {filled} из {total}
                   </span>
                 )}
+              </div>
+
+              {/*
+                Платный аккаунт — своей строкой под метаданными.
+
+                В ряду плашек для него места нет: там профессия, уровень и
+                счётчик слотов, и запас по ширине кончается на профессии —
+                ещё одна плашка выдавила бы счётчик за карточку. Отдельной
+                строкой она и читается отдельно от «снаряжение занято», к чему
+                относиться не хочется.
+              */}
+              <div className="char-pa">
+                <PaChip pa={char.pa} />
               </div>
 
               {/*

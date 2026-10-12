@@ -20,6 +20,7 @@ import { ItemIcon } from './ItemIcon'
 import { CharEditForm } from './CharEditForm'
 import { ContactsModal } from './ContactsModal'
 import { IconPhone, IconUser } from './Icons'
+import { PaChip } from './PaChip'
 
 /**
  * Персонаж строкой — второй вид раздела.
@@ -89,6 +90,10 @@ export function CharRow({
             <div className="row-meta">
               {cls && <span className="chip cls">{cls}</span>}
               {level > 0 && <span className="chip lvl">ур. {level}</span>}
+              {/* Платный аккаунт в этом виде идёт в ряду с профессией: в строке
+                  для плашек есть место, а шапка карточки отдаёт ему отдельную
+                  строку из-за тесноты. */}
+              <PaChip pa={char.pa} />
             </div>
           </>
         )}

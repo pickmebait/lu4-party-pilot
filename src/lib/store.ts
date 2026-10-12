@@ -14,6 +14,7 @@ import {
   type Contacts,
   type Db,
   type MoveLog,
+  type Pa,
   type PrimeWindow,
   type Schedule,
   type SetDef,
@@ -28,13 +29,15 @@ import {
   addOffs,
   clearPrime as clearPrimeRule,
   daysBetween,
-  isoKey,
+  isDateKey,
   removeOffs,
   setPrime,
 } from './schedule'
 import { uid } from './util'
 
 /**
+ * Версия 8: у персонажа появился платный аккаунт.
+ *
  * Версия 7: у базы появилось расписание прайма.
  *
  * Версия 6: саб-классы.
@@ -44,12 +47,12 @@ import { uid } from './util'
  * строкой). Старые значения переносятся функцией modOf, поэтому поднимать
  * версию для миграции не нужно — она и так вызывается при любой загрузке.
  *
- * Сабы, принадлежность и расписание приводятся normalizeChar при каждой
- * загрузке, поэтому поднимать версию ради них необязательно — но её рост
- * виден в базе, и по нему понятно, какие данные приложение уже умеет
- * читать.
+ * Сабы, принадлежность, расписание и платный аккаунт приводятся
+ * normalizeChar при каждой загрузке, поэтому поднимать версию ради них
+ * необязательно — но её рост виден в базе, и по нему понятно, какие данные
+ * приложение уже умеет читать.
  */
-export const DB_VERSION = 7
+export const DB_VERSION = 8
 const DB_KEY = 'pp:db'
 const SETTINGS_KEY = 'pp:settings'
 
@@ -259,13 +262,6 @@ function normalizeAway(сырое: unknown): Record<string, Absence> {
   return out
 }
 
-/** Строка вида YYYY-MM-DD и настоящая дата, а не «не в February». */
-function isDateKey(key: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return false
-  const d = new Date(key + 'T00:00:00')
-  return !Number.isNaN(d.getTime()) && isoKey(d) === key
-}
-
 function normalizeChar(c: Partial<Char>): Char {
   const сабы = Array.isArray(c.subs) ? c.subs : []
   const subUnlocked = c.subUnlocked === true || сабы.length > 0
@@ -287,7 +283,29 @@ function normalizeChar(c: Partial<Char>): Char {
     // переключателе появились бы вкладки, которые нельзя увидеть.
     subs: (subUnlocked ? сабы : []).slice(0, MAX_SUBS).map(normalizeSub),
     away: normalizeAway(c.away),
+    pa: paOf(c.pa),
   }
+}
+
+/**
+ * Платный аккаунт приводится к паре «дата покупки + срок».
+ *
+ * Половинные сведения отбрасываются: дата без срока и срок без даты — это не
+ * ПА, а половина ПА, и в шапке такая запись читалась бы как «осталось 0 дней»
+ * или «осталось неизвестно сколько». Молчаливая пустота честнее.
+ *
+ * Срок принимается любым целым до года, а не только из списка PA_DAYS: список
+ * — это то, что предлагает форма, а привести базу к нему значило бы выбросить
+ * запись, если вариант добавят в игре.
+ */
+function paOf(сырое: unknown): Pa | undefined {
+  if (!сырое || typeof сырое !== 'object') return undefined
+  const src = сырое as Record<string, unknown>
+  const from = typeof src.from === 'string' ? src.from.trim() : ''
+  const days = Math.trunc(Number(src.days))
+  if (!isDateKey(from)) return undefined
+  if (!Number.isFinite(days) || days < 1 || days > 365) return undefined
+  return { from, days }
 }
 
 function normalizeSub(s: Partial<Sub>): Sub {

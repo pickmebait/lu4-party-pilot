@@ -3,6 +3,7 @@ import type { Char, Sub } from '@/types'
 import { clampLevel } from '@/lib/classes'
 import { AffiliationSelect } from './AffiliationSelect'
 import { ClassSelect, LevelInput } from './ClassLevel'
+import { PaEdit, paFromFields } from './PaEdit'
 
 /**
  * Форма правки персонажа.
@@ -36,6 +37,8 @@ export function CharEditForm({
   const [cls, setCls] = useState(саб ? саб.cls : char.cls)
   const [level, setLevel] = useState((саб ? саб.level : char.level) > 0 ? String(саб ? саб.level : char.level) : '')
   const [affil, setAffil] = useState(char.affil)
+  const [paFrom, setPaFrom] = useState(char.pa?.from ?? '')
+  const [paDays, setPaDays] = useState(char.pa?.days ?? 30)
 
   const занятые = useMemo(
     () => [char.cls, ...char.subs.filter((s) => s.id !== саб?.id).map((s) => s.cls)],
@@ -45,8 +48,10 @@ export function CharEditForm({
   const save = () => {
     const ур = clampLevel(level)
     const пара = { cls, level: ур === '' ? 0 : Number(ур) }
+    // Платный аккаунт — свойство аккаунта, а не ветки: у саба своего нет, так
+    // же как принадлежности.
     if (саб) onDone({ name: name.trim(), affil }, пара)
-    else onDone({ name: name.trim(), affil, ...пара })
+    else onDone({ name: name.trim(), affil, ...пара, pa: paFromFields(paFrom, paDays) })
   }
 
   return (
@@ -61,6 +66,16 @@ export function CharEditForm({
       </div>
       {/* У саба своей принадлежности нет: она принадлежит персонажу целиком. */}
       {!саб && <AffiliationSelect value={affil} onChange={setAffil} />}
+      {!саб && (
+        <PaEdit
+          from={paFrom}
+          days={paDays}
+          onFrom={setPaFrom}
+          onDays={setPaDays}
+          onClear={() => setPaFrom('')}
+          заполнено={!!char.pa}
+        />
+      )}
       <div className="row">
         <button className="btn tiny primary" onClick={save}>
           Сохранить
