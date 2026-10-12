@@ -214,6 +214,10 @@ function normalizeSchedule(сырое: unknown): Schedule {
    * Чеклист приводится к списку: пустые пункты выбрасываем, иначе в списке
    * появляются невидимые строки, между которыми нельзя встать курсором, а
    * удалить их нечем.
+   *
+   * Отметки готовности в базе не хранятся: они личные, живут в текущей
+   * вкладке и сбрасываются обновлением страницы. Поле done, если оно
+   * осталось от прежней версии, просто игнорируется.
    */
   const checklist = s.checklist
   if (Array.isArray(checklist)) {
@@ -222,7 +226,6 @@ function normalizeSchedule(сырое: unknown): Schedule {
       .map((i) => ({
         id: typeof i.id === 'string' && i.id ? i.id : uid('c'),
         text: typeof i.text === 'string' ? i.text.trim() : '',
-        done: i.done === true,
       }))
       .filter((i) => i.text.length > 0)
   }
@@ -710,11 +713,11 @@ export function addChecklistItem(text: string): void {
   const t = text.trim()
   if (!t) return
   const s = db.schedule
-  const пункт: ChecklistItem = { id: uid('ck'), text: t, done: false }
+  const пункт: ChecklistItem = { id: uid('ck'), text: t }
   commit({ ...db, schedule: { ...s, checklist: [...s.checklist, пункт] } })
 }
 
-/** Правка пункта: текст или отметка готовности. */
+/** Правка пункта: пока только текст — отметки живут в текущей вкладке. */
 export function updateChecklistItem(id: string, patch: Partial<ChecklistItem>): void {
   const s = db.schedule
   if (!s.checklist.some((i) => i.id === id)) return
@@ -725,11 +728,7 @@ export function updateChecklistItem(id: string, patch: Partial<ChecklistItem>): 
       checklist: s.checklist.map((i) => {
         if (i.id !== id) return i
         const текст = typeof patch.text === 'string' ? patch.text.trim() : i.text
-        return {
-          ...i,
-          done: typeof patch.done === 'boolean' ? patch.done : i.done,
-          text: текст,
-        }
+        return { ...i, text: текст }
       }),
     },
   })

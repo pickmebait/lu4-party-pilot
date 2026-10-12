@@ -29,6 +29,7 @@ import {
   updateChecklistItem,
   useDb,
 } from '@/lib/store'
+import { isMarked, toggleChecklist, useChecklistMarks } from '@/lib/checklistSession'
 import { IconClose } from './Icons'
 
 /**
@@ -141,23 +142,11 @@ export function ScheduleView() {
   }
 
   // Кто отсутствует в дни показанного месяца.
+  // Кто отсутствует в дни показанного месяца — для метки в клетке.
   const отсутствия = useMemo(
     () => absencesByDay(db.chars, клетки.map((к) => к.key)),
     [db.chars, клетки],
   )
-
-  // И сводка по месяцу: кому и когда, списком.
-  const сводка = useMemo(() => {
-    const ключи = new Set(клетки.filter((к) => !к.чужой).map((к) => к.key))
-    return db.chars
-      .map((c) => ({
-        герой: c,
-        дни: Object.entries(c.away ?? {})
-          .filter(([key]) => ключи.has(key))
-          .sort((a, b) => a[0].localeCompare(b[0])),
-      }))
-      .filter((с) => с.дни.length > 0)
-  }, [db.chars, клетки])
 
   const выходныхВВыборе = выбор.filter((k) => db.schedule.offs.includes(k)).length
   /*
@@ -380,6 +369,8 @@ export function ScheduleView() {
               выбирает один день.
             </p>
           )}
+
+          <Checklist />
         </div>
 
         <aside className="cal-side">
@@ -389,36 +380,6 @@ export function ScheduleView() {
             chars={db.chars}
             schedule={db.schedule}
           />
-
-          <Checklist />
-
-          <h4>Отсутствия в {formatMonth(месяц)}</h4>
-          {сводка.length === 0 ? (
-            <p className="hint">Никто ничего не отметил.</p>
-          ) : (
-            сводка.map(({ герой: c, дни }) => (
-              <div key={c.id} className="side-char">
-                <button
-                  className="side-char-name"
-                  title="Выбрать в выпадающем списке отметки об отсутствии"
-                  onClick={() => setКто(c.id)}
-                >
-                  {c.name || 'Без имени'}
-                </button>
-                <div className="side-days">
-                  {дни.map(([key, a]) => (
-                    <span
-                      key={key}
-                      className={`side-day${a.whole ? ' whole' : ''}`}
-                      title={`${key}: ${a.whole ? 'весь день' : `${formatMinutes(a.window!.from)}–${formatMinutes(a.window!.to)}`}`}
-                    >
-                      {parseKey(key).getDate()}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))
-          )}
         </aside>
       </div>
     </section>
@@ -586,18 +547,22 @@ function описаниеОтсутствия(a: Absence): string {
   return `${formatMinutes(a.window!.from)}–${formatMinutes(a.window!.to)}`
 }
 
-/**
- * Чеклист готовности к прайму.
+/*
+ * Чеклист к прайму.
  *
- * Пункты общие для пати: список «что проверить перед входом» у всех один, и
- * отметки видно другим — видно, что уже собираются. Текст правится прямо
- * в строке, без отдельного режима правки.
+ * Стоит под календар��ем, а не рядом со сводкой по дню, потому что он не
+ * про конкретный день: список «что проверить перед входом» один на всех и
+ * каждый день, а рядом со сводкой он читался как часть того дня.
+ *
+ * Пункты общие для пати, отметки — только в этой вкладке. Иначе выходит,
+ * что один человек отметил всё и остальным показалось, что уже готово.
  */
 function Checklist() {
   const db = useDb()
   const [новый, setНовый] = useState('')
   const пункты = db.schedule.checklist
-  const готово = пункты.filter((i) => i.done).length
+  useChecklistMarks()
+  const готово = пункты.filter((i) => isMarked(i.id)).length
 
   const добавить = () => {
     if (!новый.trim()) return
@@ -611,7 +576,7 @@ function Checklist() {
         Чеклист к прайму
         {пункты.length > 0 && (
           <span className="checklist-count">
-            {готово} из {пункты.length}
+            {готово} из {пункты.length} · только в этой вкладке
           </span>
         )}
       </h4>
@@ -621,11 +586,12 @@ function Checklist() {
       ) : (
         <ul className="checklist-items">
           {пункты.map((i) => (
-            <li key={i.id} className={i.done ? 'done' : ''}>
+            <li key={i.id} className={isMarked(i.id) ? 'done' : ''}>
               <input
                 type="checkbox"
-                checked={i.done}
-                onChange={(e) => updateChecklistItem(i.id, { done: e.target.checked })}
+                checked={isMarked(i.id)}
+                title="Отметка держится только до обновления страницы"
+                onChange={() => toggleChecklist(i.id)}
               />
               <input
                 className="checklist-text"

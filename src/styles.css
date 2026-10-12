@@ -2731,10 +2731,27 @@ body {
   white-space: nowrap;
 }
 
+/*
+ * Чеклист к прайму.
+ *
+ * Отдельный блок под календарём, а не часть сводки по дню: список один на
+ * все дни, и рядом со сводкой он читался как относящийся к сегодняшнему.
+ */
 .checklist {
-  padding-bottom: 10px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid var(--line);
+  margin-top: 12px;
+  padding: 9px 11px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.checklist h4 {
+  margin: 0 0 7px;
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .checklist-count {
@@ -2743,10 +2760,22 @@ body {
   color: var(--muted-dim);
 }
 
+/*
+ * Пункты в ряд по несколько: список короткий, а во всю ширину он тянулся
+ * бы на две трети пустого экрана.
+ *
+ * Колонка ограничена: иначе поле текста растягивалось до края, крестик
+ * прижимался к краю, и следующий пункт начинался сразу за ним — крестик
+ * читался как относящийся уже к следующему пункту.
+ */
 .checklist-items {
   list-style: none;
-  margin: 0 0 6px;
+  margin: 0 0 7px;
   padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 330px));
+  justify-content: start;
+  gap: 2px 14px;
 }
 
 .checklist-items li {
@@ -2799,56 +2828,6 @@ body {
   font-size: 12px;
 }
 
-.side-char {
-  padding: 5px 0;
-  border-top: 1px solid var(--line);
-}
-
-.side-char:first-of-type {
-  border-top: none;
-}
-
-.side-char-name {
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  font-size: 13px;
-  color: var(--text);
-  cursor: pointer;
-  text-align: left;
-}
-
-.side-char-name:hover {
-  color: var(--accent-2);
-}
-
-.side-days {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-  margin-top: 3px;
-}
-
-.side-day {
-  min-width: 20px;
-  padding: 0 4px;
-  font-size: 11px;
-  line-height: 16px;
-  text-align: center;
-  border-radius: 4px;
-  background: var(--surface-deep);
-  color: var(--muted);
-  border: 1px solid var(--line-2);
-}
-
-/* Отсутствие на часть дня — заметнее, чем на весь: весь день и так
-   видно сразу, а окно надо рассмотреть. */
-.side-day.whole {
-  background: color-mix(in srgb, #5a2a2a 60%, transparent);
-  color: #ffb3b3;
-  border-color: #5a2a2a;
-}
 
 /*
  * Сегодняшний день — рамкой по всей клетке. Раньше было подчёркивание под

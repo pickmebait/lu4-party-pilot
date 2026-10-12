@@ -380,12 +380,16 @@ export interface Schedule {
   checklist: ChecklistItem[]
 }
 
-/** Пункт чеклиста. */
+/**
+ * Пункт чеклиста.
+ *
+ * Без отметки готовности: она личная и держится только в текущей вкладке
+ * (см. checklistSession), потому что «я уже проверил» — не сведение о пати.
+ * Общее у пункта только то, что он есть.
+ */
 export interface ChecklistItem {
   id: string
   text: string
-  /** Отмечен ли. Общий: видно, что уже собираются. */
-  done: boolean
 }
 
 export interface WarehouseStack {
