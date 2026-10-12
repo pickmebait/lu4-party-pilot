@@ -1,8 +1,11 @@
 ﻿import { useState } from 'react'
 import {
+  AFFILIATIONS,
   DEFAULT_AFFILIATION,
   SLOTS,
+  affiliationLabel,
   type Affiliation,
+  type Char,
   type SlotKey,
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
@@ -20,23 +23,68 @@ interface PickerTarget {
   index: number
 }
 
+/** Фильтр по принадлежности: любая из трёх либо показывать всех. */
+type Фильтр = Affiliation | 'все'
+
 export function CharsView({ catalog }: { catalog: CatalogApi }) {
   const [target, setTarget] = useState<PickerTarget | null>(null)
   const [quickAdd, setQuickAdd] = useState(false)
+  const [фильтр, setФильтр] = useState<Фильтр>('все')
+
+  const db = useDb()
+  const все = sortedChars(db.chars)
+  const показанные = фильтр === 'все' ? все : все.filter((c) => c.affil === фильтр)
 
   return (
     <section className="view">
       <div className="view-head">
-        <h2>Персонажи</h2>
-        <div className="view-actions">
-          <button className="btn" onClick={() => setQuickAdd(true)}>
+        <h2>
+          Персонажи
+          {фильтр !== 'все' && (
+            <span className="head-note">
+              показано {показанные.length} из {все.length}
+            </span>
+          )}
+        </h2>
+        <div className="view-actions affil">
+          {/*
+           * Фильтр и кнопка стоят рядом и растягиваются по общей высоте:
+           * кнопка ниже — шапка перестаёт занимать две строки.
+           */}
+          <div className="segmented" role="group" aria-label="Фильтр по принадлежности">
+            <button
+              type="button"
+              className={фильтр === 'все' ? 'on' : ''}
+              onClick={() => setФильтр('все')}
+            >
+              Все
+            </button>
+            {AFFILIATIONS.map((a) => (
+              <button
+                key={a.key}
+                type="button"
+                className={фильтр === a.key ? 'on' : ''}
+                onClick={() => setФильтр(a.key)}
+              >
+                {a.label}
+              </button>
+            ))}
+          </div>
+          <button className="btn add-char" onClick={() => setQuickAdd(true)}>
             + Персонаж
           </button>
         </div>
       </div>
 
       <div className="chars-grid">
-        <DbChars catalog={catalog} onPick={(charId, slot, index) => setTarget({ charId, slot, index })} />
+        <DbChars
+          chars={показанные}
+          всего={все.length}
+          фильтр={фильтр}
+          сбросить={() => setФильтр('все')}
+          catalog={catalog}
+          onPick={(charId, slot, index) => setTarget({ charId, slot, index })}
+        />
       </div>
 
       {quickAdd && (
@@ -61,15 +109,21 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
 
 /** Список персонажей: вынесен, чтобы пустое состояние не мешало вёрстке. */
 function DbChars({
+  chars,
+  всего,
+  фильтр,
+  сбросить,
   catalog,
   onPick,
 }: {
+  chars: Char[]
+  всего: number
+  фильтр: Фильтр
+  сбросить: () => void
   catalog: CatalogApi
   onPick: (charId: string, slot: SlotKey, index: number) => void
 }) {
-  const db = useDb()
-
-  if (db.chars.length === 0) {
+  if (всего === 0) {
     return (
       <div className="empty">
         <p>Персонажей пока нет.</p>
@@ -81,9 +135,27 @@ function DbChars({
     )
   }
 
+  /*
+   * Пати пустое не бывает, а выбранная группа — бывает: без отдельного
+   * случая фильтр просто гасил бы экран, и человек решил бы, что
+   * персонажи пропали.
+   */
+  if (chars.length === 0) {
+    return (
+      <div className="empty">
+        <p>В группе «{affiliationLabel(фильтр)}» никого нет.</p>
+        <p className="hint">
+          <button className="link-btn" onClick={сбросить}>
+            Показать всех
+          </button>
+        </p>
+      </div>
+    )
+  }
+
   return (
     <>
-      {sortedChars(db.chars).map((c) => (
+      {chars.map((c) => (
         <CharCard key={c.id} char={c} catalog={catalog} onPick={onPick} />
       ))}
     </>
