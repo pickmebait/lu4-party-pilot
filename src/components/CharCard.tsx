@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
-import { SLOTS, SLOT_GROUPS, MAX_MOD, affiliationLabel, gradeCode, gradeLabel, type Char, type SlotKey } from '@/types'
+import { SLOTS, SLOT_GROUPS, MAX_MOD, MAX_SUBS, affiliationLabel, gradeCode, gradeLabel, type Char, type SlotKey, type Sub } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
-import { removeChar, setSlotMod, unequipItem, updateChar } from '@/lib/store'
+import { addSub, removeChar, removeSub, setSlotMod, setSubUnlocked, unequipItem, updateChar, updateSub, type Branch } from '@/lib/store'
 import { ItemIcon } from './ItemIcon'
 import { ClassSelect, LevelInput } from './ClassLevel'
 import { AffiliationSelect } from './AffiliationSelect'
@@ -103,19 +103,38 @@ export function CharCard({
 }: {
   char: Char
   catalog: CatalogApi
-  onPick: (charId: string, slot: SlotKey, index: number) => void
+  onPick: (target: Branch, slot: SlotKey, index: number) => void
 }) {
   const [editing, setEditing] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [contactsOpen, setContactsOpen] = useState(false)
   const [editContacts, setEditContacts] = useState(false)
+  /*
+   * Какая ветка экипировки показана: null — основная профессия, иначе id
+   * саб-класса. Выбор живёт в карточке, а не в базе: это то, что смотрит
+   * конкретный человек, и делиться им с пати незачем.
+   *
+   * Если саб удалили или отметку о квесте сняли, выбранного саба больше нет.
+   * Подстановка ниже схлопывает такой выбор на основную профессию — иначе
+   * карточка осталась бы с чужими слотами на экране.
+   */
+  const [выбранный, setВыбранный] = useState<string | null>(null)
+
+  const сабы = char.subUnlocked ? char.subs : []
+  const саб = выбранный ? (сабы.find((s) => s.id === выбранный) ?? null) : null
+  const ветка: Branch = { charId: char.id, subId: саб?.id ?? null }
+
+  // Всё, что ниже, смотрит на выбранную ветку, а не всегда на персонажа.
+  const cls = саб ? саб.cls : char.cls
+  const level = саб ? саб.level : char.level
+  const слоты = саб ? саб.slots : char.slots
 
   let filled = 0
   let total = 0
   for (const g of SLOT_GROUPS) {
     for (const key of g.slots) {
       total += SLOTS[key].max
-      filled += (char.slots[key] ?? []).filter(Boolean).length
+      filled += (слоты[key] ?? []).filter(Boolean).length
     }
   }
 
@@ -133,8 +152,12 @@ export function CharCard({
           {editing ? (
             <EditForm
               char={char}
-              onDone={(patch) => {
-                updateChar(char.id, patch)
+              саб={саб}
+              onDone={(патч, патчСаба) => {
+                // Профессия и уровень принадлежат ветке: у саба свои. Имя и
+                // принадлежность — самому персонажу, и правятся вместе с ним.
+                updateChar(char.id, патч)
+                if (патчСаба) updateSub(char.id, саб!.id, патчСаба)
                 setEditing(false)
               }}
               onCancel={() => setEditing(false)}
@@ -156,8 +179,9 @@ export function CharCard({
                 остаются читаемыми целиком.
               */}
               <div className="char-meta">
-                {char.cls && <span className="chip cls">{char.cls}</span>}
-                {char.level > 0 && <span className="chip lvl">ур. {char.level}</span>}
+                {саб && <span className="chip branch" title="Показан саб-класс">саб</span>}
+                {cls && <span className="chip cls">{cls}</span>}
+                {level > 0 && <span className="chip lvl">ур. {level}</span>}
                 {filled === total ? (
                   <span className="chip slots full" title={`Все ${total} слотов заняты`}>
                     <IconCheck />
@@ -256,6 +280,12 @@ export function CharCard({
         </div>
       </header>
 
+      {/* Переключатель веток — на всю ширину карточки, а не в блоке шапки:
+          справа от него живут три кнопки инструментов, и на пять вкладок
+          с отметкой места там не оставалось — переключатель ложился на
+          три строки. */}
+      <SubBar char={char} сабы={сабы} активный={саб?.id ?? null} onSelect={setВыбранный} />
+
       {editContacts && (
         <ContactsModal
           char={char}
@@ -309,34 +339,141 @@ export function CharCard({
               {group.slots.map((key) => (
                 <SlotCells
                   key={key}
-                  char={char}
+                  ветка={ветка}
+                  слоты={слоты}
                   catalog={catalog}
                   slot={key}
-                  onPick={(index) => onPick(char.id, key, index)}
+                  onPick={(index) => onPick(ветка, key, index)}
                 />
               ))}
             </div>
           </section>
         ))}
       </div>
-
     </article>
   )
 }
 
-function SlotCells({
+/**
+ * Отметка о квесте на саб-класс и переключатель веток.
+ *
+ * Отметка стоит впереди и всегда на виду: пока квест не пройден, сабов
+ * быть не может, и прятать это под настройку значило бы искать кнопку.
+ *
+ * Сабы перечислены профессией, а не «саб 1/2/3»: узнать, где какой, по
+ * подписи можно, по номеру — нельзя. Пустой саб подписан «Саб N», чтобы
+ * вкладки не слипались одинаковыми заглушками.
+ */
+function SubBar({
   char,
+  сабы,
+  активный,
+  onSelect,
+}: {
+  char: Char
+  сабы: Sub[]
+  активный: string | null
+  onSelect: (subId: string | null) => void
+}) {
+  const полный = сабы.length >= MAX_SUBS
+
+  return (
+    <div className="sub-bar">
+      <button
+        type="button"
+        className={`sub-flag${char.subUnlocked ? ' on' : ''}`}
+        title={
+          char.subUnlocked
+            ? 'Квест на саб-класс пройден. Нажмите, чтобы убрать сабов'
+            : 'Квест на саб-класс ещё не пройден. Отметить, что пройден'
+        }
+        onClick={() => {
+          // Снятие отметки возвращает показ основной профессии: выбранного
+          // саба через мгновение не станет, и пустые слоты снятого саба
+          // смотрелись бы как потерянная экипировка основной профессии.
+          setSubUnlocked(char.id, !char.subUnlocked)
+          if (char.subUnlocked) onSelect(null)
+        }}
+      >
+        {char.subUnlocked ? '✓ Саб' : '○ Саб'}
+      </button>
+
+      {char.subUnlocked && (
+        <>
+          <div className="segmented sub-tabs">
+            <button
+              type="button"
+              className={активный === null ? 'on' : ''}
+              title="Основная профессия"
+              onClick={() => onSelect(null)}
+            >
+              Осн.
+            </button>
+            {сабы.map((s, i) => (
+              <button
+                key={s.id}
+                type="button"
+                className={активный === s.id ? 'on' : ''}
+                title={s.cls ? `Саб-класс: ${s.cls}` : `Саб-класс ${i + 1}, профессия не указана`}
+                onClick={() => onSelect(s.id)}
+              >
+                {s.cls || `Саб ${i + 1}`}
+              </button>
+            ))}
+          </div>
+
+          {/*
+            Обе кнопки живут рядом и появляются независимо: добавить саба
+            можно и когда выбран другой (чтобы не искать, куда переключаться),
+            а убрать — только когда выбран саб, а не основная профессия.
+          */}
+          {!полный && (
+            <button
+              type="button"
+              className="sub-add"
+              title={`Добавить саб-класс (${сабы.length} из ${MAX_SUBS})`}
+              onClick={() => {
+                const id = addSub(char.id)
+                if (id) onSelect(id)
+              }}
+            >
+              + саб
+            </button>
+          )}
+          {активный && (
+            <button
+              type="button"
+              className="icon-btn tiny danger sub-del"
+              title="Убрать выбранный саб-класс вместе с его экипировкой"
+              onClick={() => {
+                removeSub(char.id, активный)
+                onSelect(null)
+              }}
+            >
+              <IconClose />
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+function SlotCells({
+  ветка,
+  слоты,
   catalog,
   slot,
   onPick,
 }: {
-  char: Char
+  ветка: Branch
+  слоты: Char['slots']
   catalog: CatalogApi
   slot: SlotKey
   onPick: (index: number) => void
 }) {
   const def = SLOTS[slot]
-  const arr = char.slots[slot] ?? []
+  const arr = слоты[slot] ?? []
 
   return (
     <div className="gear-slot">
@@ -412,7 +549,7 @@ function SlotCells({
                 <button
                   className="mod-btn"
                   disabled={mod <= 0}
-                  onClick={() => setSlotMod(char.id, slot, i, mod - 1)}
+                  onClick={() => setSlotMod(ветка, slot, i, mod - 1)}
                   title="Убавить заточку на 1"
                 >
                   −
@@ -421,7 +558,7 @@ function SlotCells({
                 <button
                   className="mod-btn"
                   disabled={mod >= MAX_MOD}
-                  onClick={() => setSlotMod(char.id, slot, i, mod + 1)}
+                  onClick={() => setSlotMod(ветка, slot, i, mod + 1)}
                   title="Добавить заточку на 1"
                 >
                   +
@@ -442,7 +579,7 @@ function SlotCells({
                 <button
                   className="icon-btn tiny danger"
                   title={entry.spans ? 'Снять с обоих слотов' : 'Снять'}
-                  onClick={() => unequipItem(char.id, slot, i)}
+                  onClick={() => unequipItem(ветка, slot, i)}
                 >
                   <IconClose />
                 </button>
@@ -455,30 +592,40 @@ function SlotCells({
   )
 }
 
+/**
+ * Форма правки персонажа.
+ *
+ * Профессия и уровень принадлежат ветке, а имя и принадлежность — самому
+ * персонажу. Поэтому форма отдаёт два патча, а не один: иначе правка саба
+ * переписала бы профессию основной профессии — или наоборот, и человек
+ * обнаружил бы это через месяц.
+ */
 function EditForm({
   char,
+  саб,
   onDone,
   onCancel,
 }: {
   char: Char
-  onDone: (patch: Partial<Char>) => void
+  саб: Sub | null
+  onDone: (патч: Partial<Char>, патчСаба?: Partial<Sub>) => void
   onCancel: () => void
 }) {
   const [name, setName] = useState(char.name)
-  const [cls, setCls] = useState(char.cls)
-  const [level, setLevel] = useState(char.level > 0 ? String(char.level) : '')
+  const [cls, setCls] = useState(саб ? саб.cls : char.cls)
+  const [level, setLevel] = useState((саб ? саб.level : char.level) > 0 ? String(саб ? саб.level : char.level) : '')
   const [affil, setAffil] = useState(char.affil)
 
-  const save = () =>
-    onDone({
-      name: name.trim(),
-      cls,
-      level: clampLevel(level) === '' ? 0 : Number(clampLevel(level)),
-      affil,
-    })
+  const save = () => {
+    const ур = clampLevel(level)
+    const пара = { cls, level: ур === '' ? 0 : Number(ур) }
+    if (саб) onDone({ name: name.trim(), affil }, пара)
+    else onDone({ name: name.trim(), affil, ...пара })
+  }
 
   return (
     <div className="edit-form">
+      {саб && <div className="edit-sub">Саб-класс</div>}
       <input className="input" autoFocus value={name} onChange={(e) => setName(e.target.value)} />
       <div className="row">
         <div className="grow">
@@ -486,7 +633,7 @@ function EditForm({
         </div>
         <LevelInput value={level} onChange={setLevel} />
       </div>
-      <AffiliationSelect value={affil} onChange={setAffil} />
+      {!саб && <AffiliationSelect value={affil} onChange={setAffil} />}
       <div className="row">
         <button className="btn tiny primary" onClick={save}>
           Сохранить

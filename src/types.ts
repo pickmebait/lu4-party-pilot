@@ -280,6 +280,22 @@ export function affiliationOrder(key: string | undefined): number {
   return i === -1 ? AFFILIATIONS.length : i
 }
 
+/**
+ * Саб-класс: та же персонажка, но другая профессия, свой уровень и своя
+ * экипировка. В игре их три на персонажа — столько и здесь.
+ */
+export interface Sub {
+  id: string
+  /** Профессия саб-класса — тот же список, что и у основной. */
+  cls: string
+  level: number
+  /** Экипировка саб-класса — свои слоты, основная от этого не страдает. */
+  slots: Partial<Record<SlotKey, (SlotEntry | null)[]>>
+}
+
+/** Сколько сабов можно добавить на персонажа. */
+export const MAX_SUBS = 3
+
 export interface Char {
   id: string
   name: string
@@ -295,6 +311,15 @@ export interface Char {
   slots: Partial<Record<SlotKey, (SlotEntry | null)[]>>
   /** Контакты вне игры. Отсутствует, если их не заполняли. */
   contacts?: Contacts
+  /**
+   * Пройден ли квест на саб-класс.
+   *
+   * Пока нет, сабы не добавляются: в игре без квеста их и не бывает.
+   * Снятие отметки прячет сабов, но не стирает — вдруг отметили по ошибке.
+   */
+  subUnlocked: boolean
+  /** Саб-классы, до MAX_SUBS штук. */
+  subs: Sub[]
 }
 
 export interface WarehouseStack {

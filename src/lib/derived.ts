@@ -28,14 +28,27 @@ export interface SetProgress {
   complete: boolean
 }
 
-/** Все id предметов, которые сейчас надеты. */
+/**
+ * Наборы слотов персонажа: своя профессия и каждый саб-класс.
+ *
+ * Набор, а не персонаж: правила надевания работают с любым набором слотов
+ * одинаково — двуручный меч занимает обе руки и у основной профессии, и у
+ * саба, — и переписывать их для сабов значило бы держать две копии.
+ */
+export function branchesOf(char: Char): Char['slots'][] {
+  return [char.slots, ...char.subs.map((s) => s.slots)]
+}
+
+/** Все id предметов, которые сейчас надеты — на ком угодно и в какой ветке. */
 export function equippedItemIds(db: Db): Set<number> {
   const out = new Set<number>()
   for (const c of db.chars) {
-    for (const k of SLOT_KEYS) {
-      for (const e of c.slots[k] ?? []) {
-        const entry = e as SlotEntry | null
-        if (entry) out.add(entry.itemId)
+    for (const слоты of branchesOf(c)) {
+      for (const k of SLOT_KEYS) {
+        for (const e of слоты[k] ?? []) {
+          const entry = e as SlotEntry | null
+          if (entry) out.add(entry.itemId)
+        }
       }
     }
   }
@@ -98,10 +111,14 @@ export function computeSummary(db: Db): Summary {
   let total = 0
   let filled = 0
   for (const c of db.chars) {
-    for (const k of SLOT_KEYS as readonly SlotKey[]) {
-      const arr = c.slots[k] ?? []
-      total += arr.length
-      for (const e of arr) if (e) filled += 1
+    // Сабы считаются наравне с основной профессией: надето оно на том
+    // же персонаже, и в комплекте эта вещь тоже засчитывается.
+    for (const слоты of branchesOf(c)) {
+      for (const k of SLOT_KEYS as readonly SlotKey[]) {
+        const arr = слоты[k] ?? []
+        total += arr.length
+        for (const e of arr) if (e) filled += 1
+      }
     }
   }
   const sets = computeSets(db)

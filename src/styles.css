@@ -743,10 +743,111 @@ body {
   border-color: var(--accent-line);
 }
 
+/* Отметка «саб» в строке метаданных: видно, какая ветка на экране, даже
+   если вкладка переключателя уехала на вторую строку. */
+.chip.branch {
+  flex: none;
+  color: var(--accent-2);
+  background: var(--accent-deep);
+  border-color: var(--accent-line);
+}
+
 /* Блок слева от кнопок в шапке. min-width: 0 нужен, чтобы длинные плашки
    ужимались, а не распирали карточку. */
 .char-id {
   min-width: 0;
+}
+
+/*
+ * Отметка о квесте на саб-класс и переключатель веток.
+ *
+ * Всё это — одна строка. Раньше вкладки тянулись на всю ширину, и кнопка
+ * удаления падала на третью строку: переключатель занимал 92px вместо
+ * 28 и съедал высоту почти двух ячеек экипировки. Поэтому вкладки
+ * сжимаются (flex: 0 1 auto), а не забирают свободное место.
+ *
+ * Перенос остаётся как запасной случай: пять вкладок на узкой карточке
+ * всё-таки могут не поместиться, и обрезать их нельзя — пропавший саб
+ * не найти.
+ */
+.sub-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.sub-flag {
+  background: var(--bg-2);
+  border: 1px solid var(--line-2);
+  border-radius: 7px;
+  color: var(--muted);
+  padding: 4px 7px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex: none;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+}
+
+.sub-flag:hover {
+  background: var(--surface-lit);
+}
+
+/* Отметка снята — спокойная, надета — в акцентном цвете. Разница должна
+   читаться без наведения, иначе состояние не видно до клика. */
+.sub-flag.on {
+  color: var(--accent-2);
+  border-color: var(--accent-line);
+  background: var(--accent-deep);
+}
+
+.sub-tabs {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.sub-tabs button {
+  padding: 4px 7px;
+  font-size: 12px;
+  /* Подпись профессии длинная, а вкладок три: без обрезки переключатель
+     выдавил бы соседей на вторую строку. */
+  max-width: 88px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sub-add {
+  background: none;
+  border: 1px dashed var(--line-2);
+  border-radius: 7px;
+  color: var(--muted);
+  padding: 4px 7px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex: none;
+}
+
+.sub-add:hover {
+  color: var(--text);
+  border-color: var(--line-2);
+}
+
+.sub-del {
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+
+.edit-sub {
+  font-size: 12px;
+  color: var(--accent-2);
+  margin-bottom: 4px;
 }
 
 /*

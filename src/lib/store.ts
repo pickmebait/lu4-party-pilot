@@ -3,6 +3,7 @@ import {
   AFFILIATIONS,
   DEFAULT_AFFILIATION,
   MAX_MOD,
+  MAX_SUBS,
   SLOT_KEYS,
   SLOT_MAX,
   type Affiliation,
@@ -14,21 +15,27 @@ import {
   type SetDef,
   type SlotEntry,
   type SlotKey,
+  type Sub,
   type WarehouseStack,
   type Wish,
 } from '@/types'
-import { emptySlots, equip, partnerOf, unequip } from './slots'
+import { emptySlots, equip, partnerOf, unequip, type GearHolder } from './slots'
 import { uid } from './util'
 
 /**
- * Версия 5: у персонажа появилась принадлежность.
+ * Версия 6: у персонажа появились саб-классы.
  *
+ * Версия 5: принадлежность.
  * Версия 4: контакты вне игры.
  * Версия 3: заточка в слоте стала числом от 0 до 16 (была произвольной
  * строкой). Старые значения переносятся функцией modOf, поэтому поднимать
  * версию для миграции не нужно — она и так вызывается при любой загрузке.
+ *
+ * Сабы приводятся normalizeChar при каждой загрузке, поэтому поднимать
+ * версию ради них необязательно — но её рост виден в базе, и по нему
+ * понятно, какие данные приложение уже умеет читать.
  */
-export const DB_VERSION = 5
+export const DB_VERSION = 6
 const DB_KEY = 'pp:db'
 const SETTINGS_KEY = 'pp:settings'
 
@@ -49,7 +56,14 @@ export function emptyChar(): Char {
     level: 0,
     affil: DEFAULT_AFFILIATION,
     slots: emptySlots(),
+    subUnlocked: false,
+    subs: [],
   }
+}
+
+/** Пустой саб-класс — чтобы не расходилось правило создания в двух местах. */
+export function emptySub(): Sub {
+  return { id: uid('s'), cls: '', level: 0, slots: emptySlots() }
 }
 
 export function emptyDb(): Db {
@@ -98,9 +112,14 @@ function normalizeDb(raw: unknown): Db {
   }
 }
 
-function normalizeChar(c: Partial<Char>): Char {
+/**
+ * Слоты приводятся к полному набору: сколько бы ячеек ни пришло, в базе
+ * их столько, сколько в игре. Иначе добавление слота в справочнике тихо
+ * ломало бы старые базы — ячейка была бы, а слота под неё нет.
+ */
+function normalizeSlots(сырое: unknown): Char['slots'] {
   const slots = emptySlots()
-  const old = (c.slots ?? {}) as Record<string, unknown>
+  const old = (сырое ?? {}) as Record<string, unknown>
   for (const k of SLOT_KEYS) {
     const src = Array.isArray(old[k]) ? (old[k] as SlotEntry[]) : []
     const arr: (SlotEntry | null)[] = new Array(SLOT_MAX[k]).fill(null)
@@ -112,6 +131,12 @@ function normalizeChar(c: Partial<Char>): Char {
     }
     slots[k] = arr
   }
+  return slots
+}
+
+function normalizeChar(c: Partial<Char>): Char {
+  const сабы = Array.isArray(c.subs) ? c.subs : []
+  const subUnlocked = c.subUnlocked === true || сабы.length > 0
   return {
     id: c.id || uid('c'),
     name: typeof c.name === 'string' ? c.name : '',
@@ -120,8 +145,24 @@ function normalizeChar(c: Partial<Char>): Char {
     // У персонажей, созданных до появления поля, стоит состав: он подходит
     // большинству, и человек поправит, если нужно.
     affil: affilOf(c.affil),
-    slots,
+    slots: normalizeSlots(c.slots),
     contacts: contactsOf(c.contacts),
+    // Сабы есть только у тех, кто прошёл квест. Отметка ставится, когда
+    // добавлен первый саб: иначе в старой базе с сабами отметка была бы
+    // выключена, и они остались бы невидимыми вместе с квестом.
+    subUnlocked,
+    // Больше MAX_SUBS в игре не бывает, лишнее отбрасываем — иначе в
+    // переключателе появились бы вкладки, которые нельзя увидеть.
+    subs: (subUnlocked ? сабы : []).slice(0, MAX_SUBS).map(normalizeSub),
+  }
+}
+
+function normalizeSub(s: Partial<Sub>): Sub {
+  return {
+    id: s.id || uid('s'),
+    cls: typeof s.cls === 'string' ? s.cls : '',
+    level: Math.max(0, Math.trunc(Number(s.level)) || 0),
+    slots: normalizeSlots(s.slots),
   }
 }
 
@@ -271,33 +312,127 @@ export function removeChar(id: string): void {
   commit({ ...db, chars: db.chars.filter((c) => c.id !== id) })
 }
 
+/* ---------------------------------------------------------- основная и сабы */
+
+/**
+ * Какая ветка экипировки правится.
+ *
+ * null — основная профессия, иначе id саб-класса. Всё, что трогает слоты,
+ * принимает её: без неё надеть меч на саб и снять с основной профессии было
+ * бы не отличить.
+ */
+export type Branch = { charId: string; subId: string | null }
+
+function findChar(charId: string): Char | undefined {
+  return db.chars.find((c) => c.id === charId)
+}
+
+/** Слоты ветки. Для отсутствующего саба — пустые, а не чужие. */
+function slotsOf(char: Char, subId: string | null): Char['slots'] {
+  if (!subId) return char.slots
+  return char.subs.find((s) => s.id === subId)?.slots ?? emptySlots()
+}
+
+/**
+ * Копия персонажа с изменёнными слотами ветки.
+ *
+ * Правила надевания работают с GearHolder — любым набором слотов, — и
+ * правят его на месте. Осталось разложить результат обратно: в основную
+ * профессию или в нужного саба.
+ */
+function withGear(char: Char, subId: string | null, mutate: (h: GearHolder) => void): Char {
+  const holder: GearHolder = { slots: { ...slotsOf(char, subId) } }
+  mutate(holder)
+  if (!subId) return { ...char, slots: holder.slots }
+  return {
+    ...char,
+    subs: char.subs.map((s) => (s.id === subId ? { ...s, slots: holder.slots } : s)),
+  }
+}
+
+/** Есть ли у персонажа такой саб. Иначе правка ушла бы в никуда. */
+function hasSub(char: Char, subId: string | null): boolean {
+  return subId === null || char.subs.some((s) => s.id === subId)
+}
+
+function commitChar(charId: string, next: Char): void {
+  commit({ ...db, chars: db.chars.map((c) => (c.id === charId ? next : c)) })
+}
+
+/**
+ * Отметка «квест на саб-класс пройден».
+ *
+ * Снимание отметки прячет сабов, но не стирает: отметили по ошибке —
+ * вернули и ничего не потеряли. Проверку на MAX_SUBS держит addSub, здесь
+ * она тоже нужна: в базе могло прийти четвёртый.
+ */
+export function setSubUnlocked(charId: string, on: boolean): void {
+  const char = findChar(charId)
+  if (!char) return
+  commitChar(charId, {
+    ...char,
+    subUnlocked: on,
+    subs: on ? char.subs.slice(0, MAX_SUBS) : char.subs,
+  })
+}
+
+/**
+ * Добавляет саб-класс и возвращает его id, либо null, если добавлять нельзя.
+ *
+ * Отказ здесь, а не в интерфейсе: кнопка может остаться на экране после
+ * того, как данные обновились с сервера, где сабов уже три.
+ */
+export function addSub(charId: string): string | null {
+  const char = findChar(charId)
+  if (!char || !char.subUnlocked || char.subs.length >= MAX_SUBS) return null
+  const sub = emptySub()
+  commitChar(charId, { ...char, subs: [...char.subs, sub] })
+  return sub.id
+}
+
+/** Правка профессии и уровня саб-класса. */
+export function updateSub(charId: string, subId: string, patch: Partial<Sub>): void {
+  const char = findChar(charId)
+  if (!char || !hasSub(char, subId)) return
+  commitChar(charId, {
+    ...char,
+    subs: char.subs.map((s) => (s.id === subId ? { ...s, ...patch } : s)),
+  })
+}
+
+/** Удаляет саб-класс вместе с его экипировкой. */
+export function removeSub(charId: string, subId: string): void {
+  const char = findChar(charId)
+  if (!char) return
+  commitChar(charId, { ...char, subs: char.subs.filter((s) => s.id !== subId) })
+}
+
 /**
  * Надевает предмет с учётом правил занятости слотов.
  * Возвращает подписи слотов, которые пришлось занять заново.
  */
 export function equipItem(
-  charId: string,
+  target: Branch,
   slot: SlotKey,
   index: number,
   item: CatalogItem,
 ): string[] {
-  const char = db.chars.find((c) => c.id === charId)
-  if (!char) return []
+  const char = findChar(target.charId)
+  if (!char || !hasSub(char, target.subId)) return []
 
-  const copy: Char = { ...char, slots: { ...char.slots } }
-  const displaced = equip(copy, slot, index, item)
-  commit({ ...db, chars: db.chars.map((c) => (c.id === charId ? copy : c)) })
+  let displaced: string[] = []
+  const copy = withGear(char, target.subId, (h) => {
+    displaced = equip(h, slot, index, item)
+  })
+  commitChar(target.charId, copy)
   return displaced
 }
 
 /** Снимает предмет. Двуручное оружие и цельная броня освобождают оба слота. */
-export function unequipItem(charId: string, slot: SlotKey, index: number): void {
-  const char = db.chars.find((c) => c.id === charId)
-  if (!char) return
-
-  const copy: Char = { ...char, slots: { ...char.slots } }
-  unequip(copy, slot, index)
-  commit({ ...db, chars: db.chars.map((c) => (c.id === charId ? copy : c)) })
+export function unequipItem(target: Branch, slot: SlotKey, index: number): void {
+  const char = findChar(target.charId)
+  if (!char || !hasSub(char, target.subId)) return
+  commitChar(target.charId, withGear(char, target.subId, (h) => unequip(h, slot, index)))
 }
 
 /**
@@ -313,17 +448,17 @@ export function unequipItem(charId: string, slot: SlotKey, index: number): void 
  * одно из правил поправили, а другое нет.
  */
 function partnerEntry(
-  char: Char,
+  holder: GearHolder,
   slot: SlotKey,
   index: number,
 ): { slot: SlotKey; index: number } | null {
-  const entry = char.slots[slot]?.[index]
+  const entry = holder.slots[slot]?.[index]
   if (!entry) return null
 
-  const другой = partnerOf(char, slot, entry.itemId, entry.spans === true)
+  const другой = partnerOf(holder, slot, entry.itemId, entry.spans === true)
   if (!другой) return null
 
-  const позиция = (char.slots[другой] ?? []).findIndex(
+  const позиция = (holder.slots[другой] ?? []).findIndex(
     (e) => e?.itemId === entry.itemId && (e?.spans === true || entry.spans === true),
   )
   return позиция === -1 ? null : { slot: другой, index: позиция }
@@ -335,27 +470,34 @@ function partnerEntry(
  * Это не отдельный предмет, а свойство вещи в слоте: при снятии и
  * надевании заново она сбрасывается, как и заточка в игре.
  */
-export function setSlotMod(charId: string, slot: SlotKey, index: number, mod: number): void {
-  const char = db.chars.find((c) => c.id === charId)
-  const cur = char?.slots[slot]?.[index]
-  if (!char || !cur) return
+export function setSlotMod(
+  target: Branch,
+  slot: SlotKey,
+  index: number,
+  mod: number,
+): void {
+  const char = findChar(target.charId)
+  if (!char || !hasSub(char, target.subId)) return
+  const cur = slotsOf(char, target.subId)[slot]?.[index]
+  if (!cur) return
 
   const значение = Math.min(MAX_MOD, Math.max(0, Math.trunc(mod) || 0))
-  const copy: Char = { ...char, slots: { ...char.slots } }
-  const arr = [...(copy.slots[slot] ?? [])]
-  arr[index] = { ...cur, mod: значение || undefined }
-  copy.slots[slot] = arr
+  const copy = withGear(char, target.subId, (h) => {
+    const arr = [...(h.slots[slot] ?? [])]
+    arr[index] = { ...cur, mod: значение || undefined }
+    h.slots[slot] = arr
 
-  // У многослотного предмета вторая клетка показывает то же самое.
-  const пара = partnerEntry(char, slot, index)
-  const второй = пара ? copy.slots[пара.slot]?.[пара.index] : null
-  if (пара && второй) {
-    const arr2 = [...(copy.slots[пара.slot] ?? [])]
-    arr2[пара.index] = { ...второй, mod: значение || undefined }
-    copy.slots[пара.slot] = arr2
-  }
+    // У многослотного предмета вторая клетка показывает то же самое.
+    const пара = partnerEntry(h, slot, index)
+    const второй = пара ? h.slots[пара.slot]?.[пара.index] : null
+    if (пара && второй) {
+      const arr2 = [...(h.slots[пара.slot] ?? [])]
+      arr2[пара.index] = { ...второй, mod: значение || undefined }
+      h.slots[пара.slot] = arr2
+    }
+  })
 
-  commit({ ...db, chars: db.chars.map((c) => (c.id === charId ? copy : c)) })
+  commitChar(target.charId, copy)
 }
 
 /* -------------------------------------------------------------------- казна */

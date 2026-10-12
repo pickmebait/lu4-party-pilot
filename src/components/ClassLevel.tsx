@@ -8,6 +8,11 @@ import { useDb } from '@/lib/store'
  * Кроме справочника показываем профессии, которые уже есть в базе, но которых
  * в справочнике нет: иначе сохранение чужого персонажа молча сбросило бы его
  * профессию в пустоту.
+ *
+ * Из базы берёмся и основные профессии, и профессии саб-классов. Сабы — те
+ * же люди, только в другой профессии, и список должен показывать их наравне:
+ * иначе профессию, которой нет в справочнике, в сабе выбрать было нельзя, и
+ * правка молча сбрасывала бы её в пустоту.
  */
 export function ClassSelect({
   value,
@@ -17,7 +22,14 @@ export function ClassSelect({
   onChange: (v: string) => void
 }) {
   const db = useDb()
-  const used = useMemo(() => db.chars.map((c) => (c.cls ?? '').trim()).filter(Boolean), [db.chars])
+  const used = useMemo(
+    () =>
+      db.chars
+        .flatMap((c) => [c.cls ?? '', ...c.subs.map((s) => s.cls ?? '')])
+        .map((c) => c.trim())
+        .filter(Boolean),
+    [db.chars],
+  )
   const extra = useMemo(() => extraClasses(used), [used])
   const options = extra.length > 0 ? [...CLASSES, ...extra] : CLASSES
 

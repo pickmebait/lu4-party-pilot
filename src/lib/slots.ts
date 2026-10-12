@@ -15,7 +15,15 @@ import {
  *
  * Второй слот помечается spans: в базе предмет лежит один раз, а видно
  * его в обоих местах. Так при подсчёте комплектов вещь не считается дважды.
+ *
+ * Правила работают не с персонажем, а с любым набором слотов: правило
+ * двуручного меча одинаково и для основной профессии, и для саб-класса.
  */
+
+/** Всё, у чего есть слоты: персонаж или его саб-класс. */
+export interface GearHolder {
+  slots: Char['slots']
+}
 
 export function emptySlots(): Char['slots'] {
   const slots: Char['slots'] = {}
@@ -45,12 +53,12 @@ const SPAN_PAIRS: [SlotKey, SlotKey][] = [
  * Что нужно освободить перед надеванием.
  * Возвращает слоты, которые придётся занять другим предметом.
  */
-export function conflictsFor(char: Char, slot: SlotKey, item: CatalogItem): SlotKey[] {
+export function conflictsFor(holder: GearHolder, slot: SlotKey, item: CatalogItem): SlotKey[] {
   const out: SlotKey[] = []
 
   // Новый предмет занимает два слота — второй должен освободиться.
   const partner = partnerSlot(slot, item)
-  if (partner && (char.slots[partner] ?? []).some(Boolean)) out.push(partner)
+  if (partner && (holder.slots[partner] ?? []).some(Boolean)) out.push(partner)
 
   // Обратный случай: надеваем обычный предмет в один из слотов пары,
   // а второй сейчас занят многослотным. Проверяем обе стороны, иначе
@@ -59,7 +67,7 @@ export function conflictsFor(char: Char, slot: SlotKey, item: CatalogItem): Slot
   if (!newItemSpans) {
     for (const [a, b] of SPAN_PAIRS) {
       if (slot !== a && slot !== b) continue
-      if (!spansTogether(char, a, b)) continue
+      if (!spansTogether(holder, a, b)) continue
       out.push(slot === a ? b : a)
     }
   }
@@ -74,9 +82,9 @@ export function conflictsFor(char: Char, slot: SlotKey, item: CatalogItem): Slot
  * видно, но не задают. Поэтому проверяем флаг с обеих сторон, иначе правило
  * не срабатывало никогда.
  */
-function spansTogether(char: Char, a: SlotKey, b: SlotKey): boolean {
-  const first = char.slots[a]?.find(Boolean)
-  const second = char.slots[b]?.find(Boolean)
+function spansTogether(holder: GearHolder, a: SlotKey, b: SlotKey): boolean {
+  const first = holder.slots[a]?.find(Boolean)
+  const second = holder.slots[b]?.find(Boolean)
   if (!first || !second) return false
   if (first.itemId !== second.itemId) return false
   return first.spans === true || second.spans === true
@@ -86,26 +94,26 @@ function spansTogether(char: Char, a: SlotKey, b: SlotKey): boolean {
  * Надевает предмет. Возвращает подписи слотов, которые пришлось занять
  * заново, чтобы интерфейс мог об этом сказать.
  */
-export function equip(char: Char, slot: SlotKey, index: number, item: CatalogItem): string[] {
+export function equip(holder: GearHolder, slot: SlotKey, index: number, item: CatalogItem): string[] {
   const displaced: string[] = []
 
-  for (const key of conflictsFor(char, slot, item)) {
-    if ((char.slots[key] ?? []).some(Boolean)) displaced.push(SLOTS[key].label)
-    char.slots[key] = (char.slots[key] ?? blank(SLOTS[key].max)).map(() => null)
+  for (const key of conflictsFor(holder, slot, item)) {
+    if ((holder.slots[key] ?? []).some(Boolean)) displaced.push(SLOTS[key].label)
+    holder.slots[key] = (holder.slots[key] ?? blank(SLOTS[key].max)).map(() => null)
   }
 
   const entry: SlotEntry = { itemId: item.id }
-  const own = [...(char.slots[slot] ?? blank(SLOTS[slot].max))]
+  const own = [...(holder.slots[slot] ?? blank(SLOTS[slot].max))]
   const previous = own[index]
   if (previous && !previous.spans) displaced.push(SLOTS[slot].label)
   own[index] = entry
-  char.slots[slot] = own
+  holder.slots[slot] = own
 
   // Второй слот: предмет лежит в базе один раз, а виден в обоих местах.
   const partner = partnerSlot(slot, item)
   if (partner) {
-    if ((char.slots[partner] ?? []).some(Boolean)) displaced.push(SLOTS[partner].label)
-    char.slots[partner] = blank(SLOTS[partner].max).map(() => ({ ...entry, spans: true }))
+    if ((holder.slots[partner] ?? []).some(Boolean)) displaced.push(SLOTS[partner].label)
+    holder.slots[partner] = blank(SLOTS[partner].max).map(() => ({ ...entry, spans: true }))
   }
 
   return [...new Set(displaced)]
@@ -129,7 +137,7 @@ function blank(n: number): (SlotEntry | null)[] {
  * разные вещи, и снимать надо один.
  */
 export function partnerOf(
-  char: Char,
+  holder: GearHolder,
   slot: SlotKey,
   itemId: number,
   снятыйПомечен: boolean,
@@ -137,7 +145,7 @@ export function partnerOf(
   for (const [a, b] of SPAN_PAIRS) {
     if (slot !== a && slot !== b) continue
     const другой = slot === a ? b : a
-    const сосед = (char.slots[другой] ?? []).some(
+    const сосед = (holder.slots[другой] ?? []).some(
       (e) => e?.itemId === itemId && (e?.spans === true || снятыйПомечен),
     )
     if (сосед) return другой
@@ -148,13 +156,13 @@ export function partnerOf(
 /**
  * Снимает предмет. Если он занимал два слота, освобождаются оба.
  */
-export function unequip(char: Char, slot: SlotKey, index: number): void {
-  const arr = [...(char.slots[slot] ?? [])]
+export function unequip(holder: GearHolder, slot: SlotKey, index: number): void {
+  const arr = [...(holder.slots[slot] ?? [])]
   const entry = arr[index]
   arr[index] = null
-  char.slots[slot] = arr
+  holder.slots[slot] = arr
   if (!entry) return
 
-  const другой = partnerOf(char, slot, entry.itemId, entry.spans === true)
-  if (другой) char.slots[другой] = char.slots[другой]!.map(() => null)
+  const другой = partnerOf(holder, slot, entry.itemId, entry.spans === true)
+  if (другой) holder.slots[другой] = holder.slots[другой]!.map(() => null)
 }

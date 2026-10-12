@@ -9,7 +9,7 @@ import {
   type SlotKey,
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
-import { addChar, emptyChar, equipItem, useDb } from '@/lib/store'
+import { addChar, emptyChar, equipItem, useDb, type Branch } from '@/lib/store'
 import { sortedChars } from '@/lib/derived'
 import { ItemPicker } from './ItemPicker'
 import { CharCard } from './CharCard'
@@ -17,8 +17,14 @@ import { AffiliationSelect } from './AffiliationSelect'
 import { ClassSelect, LevelInput } from './ClassLevel'
 import { clampLevel } from '@/lib/classes'
 
-interface PickerTarget {
-  charId: string
+/**
+ * Куда надевается предмет: ветка (персонаж целиком или его саб-класс),
+ * слот и номер ячейки.
+ *
+ * Ветка хранится целиком, а не разобранными charId и subId: пикер живёт
+ * отдельно от карточки и не должен знать, что такое саб-класс.
+ */
+interface PickerTarget extends Branch {
   slot: SlotKey
   index: number
 }
@@ -83,7 +89,7 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
           фильтр={фильтр}
           сбросить={() => setФильтр('все')}
           catalog={catalog}
-          onPick={(charId, slot, index) => setTarget({ charId, slot, index })}
+          onPick={(ветка, slot, index) => setTarget({ ...ветка, slot, index })}
         />
       </div>
 
@@ -121,7 +127,7 @@ function DbChars({
   фильтр: Фильтр
   сбросить: () => void
   catalog: CatalogApi
-  onPick: (charId: string, slot: SlotKey, index: number) => void
+  onPick: (ветка: Branch, slot: SlotKey, index: number) => void
 }) {
   if (всего === 0) {
     return (
@@ -177,7 +183,7 @@ function SlotPicker({
     if (!chosen) return
     // Правила занятости живут в store: двуручное оружие освобождает
     // левую руку, цельная броня — низ.
-    equipItem(target.charId, target.slot, target.index, chosen)
+    equipItem(target, target.slot, target.index, chosen)
     onClose()
   }
 
