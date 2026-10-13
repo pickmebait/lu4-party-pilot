@@ -1,0 +1,20 @@
+{
+  "partyId": "s9d27jwiyz",
+  "name": "Проверка доступа 135639",
+  "createdAt": "2026-10-13T13:56:40.047Z",
+  "masterHash": "72e23b72eaf60442ee56d75186c69baf6c9c32f67fa7be0cdffc347b2257c7f2",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-13T13:56:40.047Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
