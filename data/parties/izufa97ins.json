@@ -1,0 +1,20 @@
+{
+  "partyId": "izufa97ins",
+  "name": "Свинки",
+  "createdAt": "2026-10-13T15:29:31.592Z",
+  "masterHash": "aaf275816c865e4db61f44dd4b3e3a0876f38c326665a65a71e68339e78bb32a",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-13T15:29:31.592Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
