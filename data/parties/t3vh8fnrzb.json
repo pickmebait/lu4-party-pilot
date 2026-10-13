@@ -14,14 +14,14 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-13T15:15:18.620Z",
+    "updatedAt": "2026-10-13T15:19:53.028Z",
     "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cOne",
-        "name": "Конарх",
+        "name": "Конарх-новый",
         "cls": "Paladin",
-        "level": 69,
+        "level": 66,
         "affil": "состав",
         "slots": {},
         "subs": [],
