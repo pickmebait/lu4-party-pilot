@@ -1,0 +1,20 @@
+{
+  "partyId": "bufftinaq8",
+  "name": "Замер",
+  "createdAt": "2026-10-13T14:17:21.304Z",
+  "masterHash": "e5e12bb6d29be85f9c37dbdc6f64a866309ddb30fc677c7e28cfa3e55fe3ab9f",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-13T14:17:21.304Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
