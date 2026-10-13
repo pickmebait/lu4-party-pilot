@@ -1,0 +1,20 @@
+{
+  "partyId": "bqwk2xjhbs",
+  "name": "Проверка доступа 141316",
+  "createdAt": "2026-10-13T14:13:16.663Z",
+  "masterHash": "e91bf11e90bd4231975ab3b11bf0d2f09f44db6e8bbd5c623db6a73731baf733",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-13T14:13:16.663Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
