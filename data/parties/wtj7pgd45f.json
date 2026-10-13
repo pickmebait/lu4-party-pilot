@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-13T14:02:09.259Z",
+    "updatedAt": "2026-10-13T14:02:16.072Z",
     "updatedBy": "Разбор",
     "chars": [
       {
@@ -26,7 +26,7 @@
         "id": "p2",
         "name": "Второй",
         "cls": "Knight",
-        "level": 80,
+        "level": 81,
         "affil": "состав",
         "slots": {},
         "subs": [],
