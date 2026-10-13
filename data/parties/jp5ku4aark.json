@@ -10,6 +10,13 @@
       "charId": "cOne",
       "charName": "Первый",
       "createdAt": "2026-10-13T15:02:56.546Z"
+    },
+    {
+      "id": "y3rqxxvjti",
+      "hash": "45abe47bfa2fcd924a13a2699909aba221df229ac4b120b555c907d3f1d131c5",
+      "charId": "cTwo",
+      "charName": "Второй",
+      "createdAt": "2026-10-13T15:02:58.394Z"
     }
   ],
   "db": {
