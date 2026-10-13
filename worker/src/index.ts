@@ -322,12 +322,29 @@ function makeToken(partyId: string, kind: 'M' | 'C', charId = ''): string {
   return `p2p_${partyId}_${хвост}_${randToken(SECRET_BYTES)}`
 }
 
+/**
+ * Разбор токена.
+ *
+ * Кроме двух нынешних форм принимается прежняя — p2p_<id>_<секрет>. Так был
+ * единственный токен на пати, и он у людей уже в телефонах и в переписке.
+ * Форма прежняя мастерская: хеш секрета лежит в том же поле, что и раньше,
+ * поэтому такой токен продолжает работать и после перехода.
+ *
+ * Сначала проверяются новые формы, потом прежняя: секрет нового токена
+ * всегда длиннее, чем в прежнем формате, и формы не пересекаются.
+ */
 function parseToken(token: string): (ParsedToken & { secret: string }) | null {
   const s = token.trim()
+
   const m = s.match(/^p2p_([a-z0-9]{4,24})_M_([a-z0-9]{20,40})$/i)
   if (m) return { partyId: m[1], kind: 'M', secret: m[2] }
+
   const c = s.match(/^p2p_([a-z0-9]{4,24})_C_([a-z0-9]{4,32})_([a-z0-9]{20,40})$/i)
   if (c) return { partyId: c[1], kind: 'C', charId: c[2], secret: c[3] }
+
+  const старый = s.match(/^p2p_([a-z0-9]{4,24})_([a-z0-9]{20,32})$/i)
+  if (старый) return { partyId: старый[1], kind: 'M', secret: старый[2] }
+
   return null
 }
 

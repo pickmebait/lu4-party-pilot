@@ -123,32 +123,88 @@ const файл = () =>
 шаг(!JSON.stringify(файл()).includes(мастер), 'сам мастер-токен в репозиторий не попал')
 шаг(Array.isArray(файл().tokens) && файл().tokens.length === 0, 'список токенов персонажей создан пустым')
 
-// Старые базы: прежнее поле tokenHash становится мастерским без миграции.
-репозиторий.set('data/parties/стар00000000.json', {
+/*
+ * База, созданная до разделения на мастер-токен и токены персонажей.
+ *
+ * Прежний токен был один на пати и лежит у людей в телефонах и в переписке.
+ * Если бы перестал работать, все существующие пати остались бы без доступа
+ * вместе со всей базой, поэтому проверяем, что он входит и что его хеш,
+ * лежавший в поле tokenHash, продолжает работать как мастерский.
+ */
+const СТАРЫЙ_ПАРТY = 'stara1234567'
+const СТАРЫЙ_СЕКРЕТ = 'k3m9x2q7v5b8n1z4c6d0f3h7j2l5r8t1'
+const СТАРЫЙ_ТОКЕН = `p2p_${СТАРЫЙ_ПАРТY}_${СТАРЫЙ_СЕКРЕТ}`
+const хеш = async (значение) => {
+  const данные = new TextEncoder().encode(значение)
+  const дайджест = await crypto.subtle.digest('SHA-256', данные)
+  return [...new Uint8Array(дайджест)].map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+
+репозиторий.set(`data/parties/${СТАРЫЙ_ПАРТY}.json`, {
   sha: 's1',
   content: b64(
     JSON.stringify({
-      partyId: 'стар00000000',
+      partyId: СТАРЫЙ_ПАРТY,
       name: 'Старая пати',
       createdAt: '2025-01-01T00:00:00.000Z',
-      tokenHash: 'oldsha',
+      tokenHash: await хеш(СТАРЫЙ_СЕКРЕТ),
       tokensIssued: 3,
       db: {
         version: 8,
-        updatedAt: 'x',
-        updatedBy: '',
-        chars: [],
+        updatedAt: '2025-02-02T00:00:00.000Z',
+        updatedBy: 'Старый мастер',
+        chars: [НОВЫЙ_СТАРЫЙ('old1', 'Древний')],
         warehouse: { stacks: [], log: [] },
         wishes: [],
+        sets: [],
+        schedule: { prime: {}, offs: [], checklist: [] },
+        customNames: {},
       },
     }),
   ),
 })
+
+function НОВЫЙ_СТАРЫЙ(id, имя) {
+  return {
+    id, name: имя, cls: 'Knight', level: 80, affil: 'состав',
+    slots: {}, subs: [], subUnlocked: false, contacts: {}, away: {}, pa: null,
+  }
+}
+
 const стараяСессия = await call('/api/session', {
   method: 'POST',
-  body: { token: 'p2p_стар00000000_M_abcdefghij234567' },
+  body: { token: СТАРЫЙ_ТОКЕН },
 })
-шаг(стараяСессия.status === 401, 'чужой токен к старой базе не подходит', стараяСессия.json?.error)
+шаг(
+  стараяСессия.status === 200 && стараяСессия.json?.role === 'master',
+  'прежний токен продолжает работать и считается мастерским',
+  стараяСессия.json?.error ?? стараяСессия.json?.role,
+)
+
+const стараяМета = await call('/api/party/meta', { token: СТАРЫЙ_ТОКЕН })
+шаг(
+  стараяМета.status === 200 && Array.isArray(стараяМета.json.tokens) &&
+    стараяМета.json.tokens.length === 0,
+  'прежняя база читается, список токенов для неё пуст',
+  стараяМета.status,
+)
+
+const стараяПрава = await call('/api/party/tokens', {
+  method: 'POST',
+  token: СТАРЫЙ_ТОКЕН,
+  body: { charId: 'old1' },
+})
+шаг(
+  стараяПрава.status === 200 && стараяПрава.json.token.includes('_C_old1_'),
+  'прежним токеном можно выпустить токен персонажа',
+  стараяПрава.json?.error,
+)
+
+const чужаяСекретная = await call('/api/session', {
+  method: 'POST',
+  body: { token: `p2p_${СТАРЫЙ_ПАРТY}_${СТАРЫЙ_СЕКРЕТ.slice(0, -1)}w` },
+})
+шаг(чужаяСекретная.status === 401, 'похожий, но не тот прежний токен не подходит', чужаяСекретная.status)
 
 /* --------------------------------------------------------------- персонажи */
 
