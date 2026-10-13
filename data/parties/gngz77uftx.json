@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-13T14:15:49.039Z",
+    "updatedAt": "2026-10-13T14:15:53.598Z",
     "updatedBy": "Проверка",
     "chars": [
       {
@@ -34,7 +34,7 @@
         "id": "checkTwo",
         "name": "Проверяемый",
         "cls": "Knight",
-        "level": 80,
+        "level": 81,
         "affil": "состав",
         "slots": {},
         "subs": [],
