@@ -3,7 +3,15 @@
   "name": "Проверка доступа 140351",
   "createdAt": "2026-10-13T14:03:52.505Z",
   "masterHash": "370de60e4a96f42a11017f09eaef27be2f0c639e94feb27cf03ac44a2cff12ce",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "sm75uwymtn",
+      "hash": "2e36b1a1e9ad63ba8f23180e9d20a6fcb8f2359da39f9b7e4c0023825acf0901",
+      "charId": "checkTwo",
+      "charName": "Проверяемый",
+      "createdAt": "2026-10-13T14:03:55.621Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-13T14:03:54.087Z",
