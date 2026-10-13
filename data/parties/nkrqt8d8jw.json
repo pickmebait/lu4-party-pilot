@@ -10,6 +10,13 @@
       "charId": "cmv2sc5eh123ls8",
       "charName": "Никнейм",
       "createdAt": "2026-10-13T16:30:40.299Z"
+    },
+    {
+      "id": "t9yih4qu8w",
+      "hash": "c840bfbd4588306e2e7a1f8bc815cf513d5a5abd7975891b7fc2e06d12f84718",
+      "charId": "cmv57aj281j0pya",
+      "charName": "Другой",
+      "createdAt": "2026-10-13T16:30:48.258Z"
     }
   ],
   "db": {
