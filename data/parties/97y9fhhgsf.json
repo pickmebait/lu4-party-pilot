@@ -10,6 +10,13 @@
       "charId": "cOne",
       "charName": "Первый",
       "createdAt": "2026-10-13T14:36:22.052Z"
+    },
+    {
+      "id": "gmna4tekqw",
+      "hash": "4207b5e17ca70473c230ee48aed33de2e952e0b44c86bee44855db031e1ef2c0",
+      "charId": "cTwo",
+      "charName": "Второй",
+      "createdAt": "2026-10-13T14:36:23.699Z"
     }
   ],
   "db": {
