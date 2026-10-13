@@ -2,23 +2,8 @@
   "partyId": "nkrqt8d8jw",
   "name": "Тестовая",
   "createdAt": "2026-10-13T16:29:54.724Z",
-  "masterHash": "0406f726b6ea445dafa0b75c667254632d3266f2437311d1ce40497b01423f58",
-  "tokens": [
-    {
-      "id": "us6vjnu29a",
-      "hash": "abedc7c280ea3f68f23386fc4fbe0fc441f211dda36ad3de88c87c2eff0e715b",
-      "charId": "cmv2sc5eh123ls8",
-      "charName": "Никнейм",
-      "createdAt": "2026-10-13T16:30:40.299Z"
-    },
-    {
-      "id": "mgrky2gz8a",
-      "hash": "6ce18050b51a491420eb457be350c7674e17cc91861bccbe1f6ce59874b1e17c",
-      "charId": "cmv57aj281j0pya",
-      "charName": "Другой",
-      "createdAt": "2026-10-13T16:30:51.095Z"
-    }
-  ],
+  "masterHash": "f60edbf31bd8bd21e089b6492c3d38ed848d13d4d97ec764a556485fc5adb67d",
+  "tokens": [],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-13T16:29:59.807Z",
