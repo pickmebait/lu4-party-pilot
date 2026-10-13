@@ -5,16 +5,53 @@
   "masterHash": "4bb36491dfb158e2d47ed74597fb3fac11331b40eedbc02b76ea3f7e9aa35214",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-13T15:09:02.078Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 8,
+    "updatedAt": "2026-10-13T15:09:03.972Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "cOne",
+        "name": "Конарх",
+        "cls": "Paladin",
+        "level": 80,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      },
+      {
+        "id": "cTwo",
+        "name": "Танк",
+        "cls": "Destroyer",
+        "level": 78,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      }
+    ],
     "warehouse": {
-      "stacks": [],
+      "stacks": [
+        {
+          "itemId": 40301,
+          "count": 4
+        }
+      ],
       "log": []
     },
     "wishes": [],
     "sets": [],
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    },
     "customNames": {}
   }
 }
