@@ -5,16 +5,58 @@
   "masterHash": "b753f57d973fb6e433f828a83b80661d7227693ba93ab344112c690b6acf4318",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-13T14:49:56.746Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 8,
+    "updatedAt": "2026-10-13T14:50:00.039Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "cOne",
+        "name": "Первый",
+        "level": 80,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      },
+      {
+        "id": "cTwo",
+        "name": "Второй",
+        "level": 80,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      },
+      {
+        "id": "cThree",
+        "name": "Третий",
+        "level": 80,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
     "wishes": [],
     "sets": [],
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    },
     "customNames": {}
   }
 }
