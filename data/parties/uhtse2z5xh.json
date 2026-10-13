@@ -1,0 +1,20 @@
+{
+  "partyId": "uhtse2z5xh",
+  "name": "Проверка доступа 140654",
+  "createdAt": "2026-10-13T14:06:55.079Z",
+  "masterHash": "edc4b982a96f894c2179622bbdbe6d76e0f9b9e48c646f7eb86fcb758f5fba00",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-13T14:06:55.079Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
