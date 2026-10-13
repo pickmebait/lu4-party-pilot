@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-13T14:03:38.027Z",
+    "updatedAt": "2026-10-13T14:03:40.999Z",
     "updatedBy": "Разбор",
     "chars": [
       {
@@ -34,7 +34,7 @@
         "id": "p2",
         "name": "Второй",
         "cls": "Knight",
-        "level": 81,
+        "level": 82,
         "affil": "состав",
         "slots": {},
         "subs": [],
