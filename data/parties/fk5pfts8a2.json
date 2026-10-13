@@ -1,0 +1,20 @@
+{
+  "partyId": "fk5pfts8a2",
+  "name": "Проверка доступа 140831",
+  "createdAt": "2026-10-13T14:08:32.514Z",
+  "masterHash": "3fbb9a6490acb9e88a886514da3b1514b3bde94577c477ce2788835d9ba5e71d",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-13T14:08:32.514Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
