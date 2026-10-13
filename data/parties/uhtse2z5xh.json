@@ -5,11 +5,11 @@
   "masterHash": "edc4b982a96f894c2179622bbdbe6d76e0f9b9e48c646f7eb86fcb758f5fba00",
   "tokens": [
     {
-      "id": "24uubmnd2n",
-      "hash": "050003402160e8060c35c3e172075ce465f11644ed3a30aa0101e364c33f3c19",
+      "id": "5qj3z37za6",
+      "hash": "9a103e9f506570c9c0bdf155f02f39b748c659dc43313a9062a81b916f18b0ab",
       "charId": "checkTwo",
       "charName": "Проверяемый",
-      "createdAt": "2026-10-13T14:06:58.620Z"
+      "createdAt": "2026-10-13T14:08:13.313Z"
     }
   ],
   "db": {
