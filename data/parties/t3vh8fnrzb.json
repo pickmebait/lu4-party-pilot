@@ -14,14 +14,14 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-13T15:15:07.874Z",
-    "updatedBy": "Танк",
+    "updatedAt": "2026-10-13T15:15:18.620Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cOne",
         "name": "Конарх",
         "cls": "Paladin",
-        "level": 80,
+        "level": 69,
         "affil": "состав",
         "slots": {},
         "subs": [],
@@ -80,6 +80,10 @@
         {
           "itemId": 40301,
           "count": 4
+        },
+        {
+          "itemId": 30000,
+          "count": 2
         }
       ],
       "log": []
