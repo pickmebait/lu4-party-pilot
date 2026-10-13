@@ -3,7 +3,15 @@
   "name": "Тестовая",
   "createdAt": "2026-10-13T16:29:54.724Z",
   "masterHash": "0406f726b6ea445dafa0b75c667254632d3266f2437311d1ce40497b01423f58",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "xsjdar3xdw",
+      "hash": "7077fc87be974f1687a34754ae232057265537ebea6ad77a2c17e50d29b148f1",
+      "charId": "cmv2sc5eh123ls8",
+      "charName": "Никнейм",
+      "createdAt": "2026-10-13T16:30:26.266Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-13T16:29:59.807Z",
