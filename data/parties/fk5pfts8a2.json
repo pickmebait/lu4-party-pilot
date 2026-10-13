@@ -3,7 +3,15 @@
   "name": "Проверка доступа 140831",
   "createdAt": "2026-10-13T14:08:32.514Z",
   "masterHash": "3fbb9a6490acb9e88a886514da3b1514b3bde94577c477ce2788835d9ba5e71d",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "dtsw2c9dz2",
+      "hash": "fc1ff67023d46f78e43f1f7832c226b2080f81a32364a5902f07a983c5e6179f",
+      "charId": "checkTwo",
+      "charName": "Проверяемый",
+      "createdAt": "2026-10-13T14:08:36.484Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-13T14:08:34.443Z",
