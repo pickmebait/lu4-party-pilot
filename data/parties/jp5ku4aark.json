@@ -17,6 +17,13 @@
       "charId": "cTwo",
       "charName": "Второй",
       "createdAt": "2026-10-13T15:02:58.394Z"
+    },
+    {
+      "id": "q5ziyiw7y2",
+      "hash": "520070d108c9710387afcc19cbf4efcec80c6e7a633aa3ba4baadd0e82a68e65",
+      "charId": "cThree",
+      "charName": "Третий",
+      "createdAt": "2026-10-13T15:03:00.121Z"
     }
   ],
   "db": {
