@@ -14,14 +14,14 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-13T15:19:53.028Z",
+    "updatedAt": "2026-10-13T15:23:20.087Z",
     "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cOne",
         "name": "Конарх-новый",
         "cls": "Paladin",
-        "level": 66,
+        "level": 64,
         "affil": "состав",
         "slots": {},
         "subs": [],
@@ -79,11 +79,7 @@
       "stacks": [
         {
           "itemId": 40301,
-          "count": 4
-        },
-        {
-          "itemId": 30000,
-          "count": 2
+          "count": 9
         }
       ],
       "log": []
@@ -92,7 +88,9 @@
     "sets": [],
     "schedule": {
       "prime": {},
-      "offs": [],
+      "offs": [
+        "2026-10-25"
+      ],
       "checklist": []
     },
     "customNames": {}
