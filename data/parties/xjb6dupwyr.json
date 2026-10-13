@@ -1,0 +1,20 @@
+{
+  "partyId": "xjb6dupwyr",
+  "name": "Замер",
+  "createdAt": "2026-10-13T14:24:13.881Z",
+  "masterHash": "95b802b1586f00060390759f593459f1212be0b512c0e63049e08accc56426be",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-13T14:24:13.881Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
