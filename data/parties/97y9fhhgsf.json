@@ -3,7 +3,15 @@
   "name": "Совместная работа 143618",
   "createdAt": "2026-10-13T14:36:18.735Z",
   "masterHash": "b6f2e40c0f1f6212304acbcd708729ffd5246007ba2654bb85588bf567e60ccb",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "sa5iwffdyi",
+      "hash": "68b9d1911542cf7e0002a15fb1e68ed3d2bfe444b0c4c008f2912cdfaa9128ae",
+      "charId": "cOne",
+      "charName": "Первый",
+      "createdAt": "2026-10-13T14:36:22.052Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-13T14:36:20.616Z",
