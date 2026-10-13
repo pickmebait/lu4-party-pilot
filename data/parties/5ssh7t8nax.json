@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-13T14:29:54.587Z",
+    "updatedAt": "2026-10-13T14:31:44.419Z",
     "updatedBy": "",
     "chars": [
       {
@@ -65,7 +65,7 @@
         "id": "cmv6s1r4i3re3rl",
         "name": "Валькирия",
         "cls": "Elemental Summoner",
-        "level": 75,
+        "level": 74,
         "affil": "roster",
         "slots": {
           "rhand": [
