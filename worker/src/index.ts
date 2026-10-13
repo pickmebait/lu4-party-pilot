@@ -143,11 +143,32 @@ function filePath(env: Env, partyId: string): string {
   return `${dir(env)}/${partyId}.json`
 }
 
-/** Читает файл пати из репозитория. Отсутствие файла — это не ошибка. */
-async function readFile(env: Env, partyId: string): Promise<RepoFile | { error: string }> {
+/** Пауза перед повторной попыткой. */
+function пауза(мс: number): Promise<void> {
+  return new Promise((окончить) => setTimeout(окончить, мс))
+}
+
+/** Сколько ждём раздачи записанного, не дольше. */
+const ЖДАТЬ_СВЕЖЕСТИ_МС = 4000
+
+/** Чем прерывать запрос к GitHub, если он завис. */
+const ТАЙМАУТ_GITHUB_МС = 8000
+
+/**
+ * Читает файл пати из репозитория. Отсутствие файла — это не ошибка.
+ *
+ * Содержимое приходит как base64 вместе с sha блоба. Именно sha и служит
+ * признаком свежести: если чтение отдало прежнее содержимое, sha будет от
+ * прежней записи.
+ */
+async function readFile(
+  env: Env,
+  partyId: string,
+  таймаут = ТАЙМАУТ_GITHUB_МС,
+): Promise<RepoFile | { error: string }> {
   const r = repo(env)
   const url = `${apiBase(env)}/${filePath(env, partyId)}?ref=${encodeURIComponent(r.branch)}`
-  const res = await githubFetch(env, url)
+  const res = await githubFetch(env, url, {}, таймаут)
 
   if (res.status === 404) return { sha: '', data: null }
   if (!res.ok) return { error: await describe(res) }
@@ -160,6 +181,39 @@ async function readFile(env: Env, partyId: string): Promise<RepoFile | { error: 
     return { sha: json.sha, data: normalizeParty(raw, partyId) }
   } catch {
     return { error: 'Файл пати в репозитории повреждён: не читается JSON' }
+  }
+}
+
+/**
+ * Ждёт, пока репозиторий начнёт отдавать только что записанное содержимое.
+ *
+ * GitHub раздаёт ветку не мгновенно: сразу после записи чтение возвращает
+ * прежний файл. На этом ломалось всё, что связано с выпуском токена, — на
+ * выданный токен тут же отвечали «недействителен», и следующая же правка
+ * упиралась в «в базе есть более свежая версия».
+ *
+ * Ждать дольше нескольких секунд нельзя: запись уже ушла на GitHub и не
+ * сорвётся, а вот ответ клиенту, который висит, обрывает связь и заставляет
+ * повторять — и повтор получает конфликт про собственную правку. Поэтому у
+ * ожидания есть предел, а у каждого чтения — свой короткий таймаут.
+ */
+async function дождатьсяСвежести(env: Env, partyId: string, sha: string): Promise<void> {
+  if (!sha) return
+  const конец = Date.now() + ЖДАТЬ_СВЕЖЕСТИ_МС
+  while (Date.now() < конец) {
+    const чтение = await readFile(env, partyId, 2000)
+    if (!('error' in чтение) && чтение.sha === sha) return
+    await пауза(250)
+  }
+}
+
+/** Ждёт, пока файл действительно исчез. Тот же лаг, что и после записи. */
+async function дождатьсяИсчезновения(env: Env, partyId: string): Promise<void> {
+  const конец = Date.now() + ЖДАТЬ_СВЕЖЕСТИ_МС
+  while (Date.now() < конец) {
+    const чтение = await readFile(env, partyId, 2000)
+    if (!('error' in чтение) && чтение.data === null) return
+    await пауза(250)
   }
 }
 
@@ -224,7 +278,18 @@ async function writeFile(
   if (!res.ok) return { error: await describe(res) }
 
   const json = (await res.json()) as { content?: { sha?: string } }
-  return { ok: true, sha: json.content?.sha ?? '' }
+  const shaОтвет = json.content?.sha ?? ''
+
+  /*
+   * Пока репозиторий не начал отдавать новое содержимое, читать базу рано:
+   * всё, что спрашивают сразу после записи — право по только что выпущенному
+   * токену, версия для проверки конфликта, — получит прежнее и откажет по
+   * ошибке. Поэтому запись не считается законченной, пока чтение не
+   * совпадёт с записанным.
+   */
+  await дождатьсяСвежести(env, partyId, shaОтвет)
+
+  return { ok: true, sha: shaОтвет }
 }
 
 /** Удаляет файл пати. Файла нет — считаем, что уже удалён. */
@@ -240,8 +305,12 @@ async function deleteFile(
     body: JSON.stringify({ message, sha, branch: r.branch }),
     headers: { 'Content-Type': 'application/json' },
   })
-  if (res.status === 404) return { ok: true }
+  if (res.status === 404) {
+    // Файла нет: удалять уже нечего, но и ждать нечего — он и так отсутствует.
+    return { ok: true }
+  }
   if (!res.ok) return { error: await describe(res) }
+  await дождатьсяИсчезновения(env, partyId)
   return { ok: true }
 }
 
@@ -249,17 +318,53 @@ async function githubFetch(
   env: Env,
   url: string,
   init: RequestInit = {},
+  таймаут = ТАЙМАУТ_GITHUB_МС,
 ): Promise<Response> {
   if (!env.GITHUB_TOKEN?.trim()) throw new Error('На сервере не задан GITHUB_TOKEN')
+
+  /*
+   * Запрос к GitHub прерывается по своему времени.
+   *
+   * Без этого один зависший запрос держал запись открытой: замер показал
+   * семьдесят секунд и оборванную связь вместо ответа. Связь рвётся у клиента,
+   * он повторяет запрос и получает «в базе более свежая версия» про правку,
+   * которую только что успешно сохранил.
+   */
+  const отмена = new AbortController()
+  const будильник = setTimeout(() => отмена.abort(), таймаут)
 
   const headers: Record<string, string> = {
     Authorization: `Bearer ${env.GITHUB_TOKEN}`,
     Accept: 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-02',
+    /*
+     * Версия API зашита, а не берётся из заголовка по дате: GitHub отзывает
+     * неподдерживаемые версии, и на 2022-11-02 перестал отвечать весь
+     * сервер — ошибка приходила при любой записи в пати.
+     *
+     * Поддерживаются сейчас две: эта и 2026-03-10. Поддержка прежней
+     * закончится, и напишем сюда новую, когда отключат и её.
+     */
+    'X-GitHub-Api-Version': '2022-11-28',
+    /*
+     * Просим GitHub не отдавать кэшированное содержимое: файл базы меняется
+     * на каждой правке, и кэш по ветке здесь означает чтение не того, что
+     * только что записали.
+     */
+    'Cache-Control': 'no-cache',
     'User-Agent': 'lu4-party-pilot',
     ...((init.headers as Record<string, string>) ?? {}),
   }
-  return fetch(url, { ...init, headers })
+
+  try {
+    return await fetch(url, { ...init, headers, signal: отмена.signal })
+  } catch (e) {
+    // Обрыв по таймауту — это тоже сетевая ошибка, и о ней честнее сказать
+    // прямо: «не дождались ответа», а не «GitHub ответил 500».
+    if (отмена.signal.aborted) throw new Error('GitHub не ответил вовремя')
+    throw e
+  } finally {
+    clearTimeout(будильник)
+  }
 }
 
 async function describe(res: Response): Promise<string> {
@@ -332,6 +437,11 @@ function makeToken(partyId: string, kind: 'M' | 'C', charId = ''): string {
  *
  * Сначала проверяются новые формы, потом прежняя: секрет нового токена
  * всегда длиннее, чем в прежнем формате, и формы не пересекаются.
+ *
+ * Идентификатор персонажа допускается от двух символов. Настоящие id длиннее
+ * (время создания плюс случайная часть), но ограничение снизу нужно ровно
+ * настолько, чтобы отсечь мусор, и не больше: токен, выпущенный на честный
+ * короткий id, обязан работать.
  */
 function parseToken(token: string): (ParsedToken & { secret: string }) | null {
   const s = token.trim()
@@ -339,7 +449,7 @@ function parseToken(token: string): (ParsedToken & { secret: string }) | null {
   const m = s.match(/^p2p_([a-z0-9]{4,24})_M_([a-z0-9]{20,40})$/i)
   if (m) return { partyId: m[1], kind: 'M', secret: m[2] }
 
-  const c = s.match(/^p2p_([a-z0-9]{4,24})_C_([a-z0-9]{4,32})_([a-z0-9]{20,40})$/i)
+  const c = s.match(/^p2p_([a-z0-9]{4,24})_C_([a-z0-9]{2,32})_([a-z0-9]{20,40})$/i)
   if (c) return { partyId: c[1], kind: 'C', charId: c[2], secret: c[3] }
 
   const старый = s.match(/^p2p_([a-z0-9]{4,24})_([a-z0-9]{20,32})$/i)
@@ -460,7 +570,7 @@ async function createParty(request: Request, env: Env, cors: Cors): Promise<Resp
  */
 async function deleteParty(request: Request, env: Env, cors: Cors): Promise<Response> {
   const access = await authorize(env, request)
-  if (!access.ok) return json(access, access.status, cors)
+  if (!access.ok) return json({ error: access.error }, access.status, cors)
   if (!требуетсяМастер(access)) {
     return json({ error: 'Удалить пати может только тот, у кого мастер-токен.' }, 403, cors)
   }
@@ -530,13 +640,13 @@ async function openSession(request: Request, env: Env, cors: Cors): Promise<Resp
 
 async function readData(request: Request, env: Env, cors: Cors): Promise<Response> {
   const access = await authorize(env, request)
-  if (!access.ok) return json(access, access.status, cors)
+  if (!access.ok) return json({ error: access.error }, access.status, cors)
   return json(access.file.db ?? emptyDb(new Date().toISOString()), 200, cors)
 }
 
 async function readMeta(request: Request, env: Env, cors: Cors): Promise<Response> {
   const access = await authorize(env, request)
-  if (!access.ok) return json(access, access.status, cors)
+  if (!access.ok) return json({ error: access.error }, access.status, cors)
 
   const db = access.file.db as { updatedAt?: string; updatedBy?: string }
   const тело: Record<string, unknown> = {
@@ -565,7 +675,7 @@ async function readMeta(request: Request, env: Env, cors: Cors): Promise<Respons
 
 async function writeData(request: Request, env: Env, cors: Cors): Promise<Response> {
   const access = await authorize(env, request)
-  if (!access.ok) return json(access, access.status, cors)
+  if (!access.ok) return json({ error: access.error }, access.status, cors)
 
   const body = await readJson(request)
   const incoming = body?.db
@@ -600,6 +710,23 @@ async function writeData(request: Request, env: Env, cors: Cors): Promise<Respon
   // молча затирать чужое изменение нельзя.
   const base = body?.baseUpdatedAt
   if (typeof base === 'string' && current.updatedAt && current.updatedAt !== base) {
+    /*
+     * Повтор после обрыва связи.
+     *
+     * Связь с сервером рвётся уже после того, как запись сделана, и клиент
+     * повторяет запрос. Без этой оговорки человек, нажавший «Сохранить» и
+     * увидевший обрыв, получал бы «в базе более свежая версия» про собственное
+     * только что сохранённое — и выбирал бы, какую из двух версий своих правок
+     * оставить.
+     *
+     * Отличить повтор от настоящего спора можно только сравнением: если в базе
+     * уже ровно то, что просят записать, запись состоялась, и повтор должен
+     * её подтвердить, а не отвергнуть.
+     */
+    if (одноИТоЖе(incoming, access.file.db)) {
+      return json({ ok: true, updatedAt: current.updatedAt }, 200, cors)
+    }
+
     return json(
       {
         error: 'В базе есть более свежая версия. Сначала загрузи данные.',
@@ -651,7 +778,7 @@ async function writeData(request: Request, env: Env, cors: Cors): Promise<Respon
  */
 async function rotateMaster(request: Request, env: Env, cors: Cors): Promise<Response> {
   const access = await authorize(env, request)
-  if (!access.ok) return json(access, access.status, cors)
+  if (!access.ok) return json({ error: access.error }, access.status, cors)
   if (!требуетсяМастер(access)) {
     return json({ error: 'Перевыпустить мастер-токен может только мастер.' }, 403, cors)
   }
@@ -681,7 +808,7 @@ async function rotateMaster(request: Request, env: Env, cors: Cors): Promise<Res
  */
 async function issueToken(request: Request, env: Env, cors: Cors): Promise<Response> {
   const access = await authorize(env, request)
-  if (!access.ok) return json(access, access.status, cors)
+  if (!access.ok) return json({ error: access.error }, access.status, cors)
   if (!требуетсяМастер(access)) {
     return json({ error: 'Выпустить токен может только мастер.' }, 403, cors)
   }
@@ -722,7 +849,7 @@ async function issueToken(request: Request, env: Env, cors: Cors): Promise<Respo
 
 async function revokeToken(request: Request, env: Env, cors: Cors): Promise<Response> {
   const access = await authorize(env, request)
-  if (!access.ok) return json(access, access.status, cors)
+  if (!access.ok) return json({ error: access.error }, access.status, cors)
   if (!требуетсяМастер(access)) {
     return json({ error: 'Отозвать токен может только мастер.' }, 403, cors)
   }
@@ -741,6 +868,27 @@ async function revokeToken(request: Request, env: Env, cors: Cors): Promise<Resp
   if ('error' in saved) return json({ error: saved.error }, 409, cors)
 
   return json({ ok: true }, 200, cors)
+}
+
+/**
+ * Обе базы несут одно и то же содержимое.
+ *
+ * Служебные метки «кто и когда записал» не в счёт: при повторе запроса они
+ * те же, но при «сохранить без изменений» могут отличаться — и это всё равно
+ * одна и та же база.
+ */
+function одноИТоЖе(a: unknown, b: unknown): boolean {
+  const безМеток = (v: unknown) => {
+    const копия = structuredClone(v) as Record<string, unknown>
+    delete копия.updatedAt
+    delete копия.updatedBy
+    return JSON.stringify(копия)
+  }
+  try {
+    return безМеток(a) === безМеток(b)
+  } catch {
+    return false
+  }
 }
 
 /** Следующая миллисекунда после отметки — чтобы версия всегда двигалась вперёд. */

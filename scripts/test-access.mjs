@@ -30,6 +30,11 @@ const { default: worker } = await import(`file://${выход.replace(/\\/g, '/'
 
 /** Репозиторий в памяти: путь → { sha, содержимое в base64 }. */
 const репозиторий = new Map()
+/** Сколько чтений после записи ещё отдадут прежний файл, как это делает GitHub. */
+const ОТСТАВАНИЕ = 2
+/** Что лежало в файле до последней записи. */
+const прежнее = new Map()
+const отставание = new Map()
 const запросы = []
 const b64 = (текст) => Buffer.from(текст, 'utf8').toString('base64')
 const настоящийFetch = globalThis.fetch
@@ -41,10 +46,29 @@ globalThis.fetch = async (url, init = {}) => {
   if (!адрес.startsWith('https://api.github.com/')) return настоящийFetch(url, init)
 
   const путь = decodeURIComponent(адрес.split('/contents/')[1].split('?')[0])
-  const запись = репозиторий.get(путь)
+  const запись = репозиторий.get(путь) ?? null
+
+  /*
+   * Отставание ветки — то, из-за чего ломался выпуск токена.
+   *
+   * GitHub раздаёт ветку не мгновенно: первые чтения после записи
+   * возвращают прежний файл с прежним sha. Подмена повторяет это — иначе
+   * проверки проходят на честном GitHub и падают на живом.
+   */
+  const отсталое = () => {
+    const сколько = отставание.get(путь) ?? 0
+    if (сколько <= 0) return null
+    отставание.set(путь, сколько - 1)
+    const старый = прежнее.get(путь)
+    return старый && сколько > 0
+      ? new Response(JSON.stringify({ sha: старый.sha, content: старый.content }), { status: 200 })
+      : null
+  }
 
   if (init.method === 'DELETE') {
     if (!запись) return new Response('{}', { status: 404 })
+    прежнее.set(путь, запись)
+    отставание.set(путь, ОТСТАВАНИЕ)
     репозиторий.delete(путь)
     return new Response('{}', { status: 200 })
   }
@@ -57,9 +81,14 @@ globalThis.fetch = async (url, init = {}) => {
     }
     const sha = `sha${репозиторий.size + 1}${запись ? 'x' : ''}${Date.now()}`
     // GitHub отдаёт содержимое файла уже в base64 — ещё раз кодировать нельзя.
+    прежнее.set(путь, запись)
+    отставание.set(путь, ОТСТАВАНИЕ)
     репозиторий.set(путь, { sha, content: тело.content })
     return new Response(JSON.stringify({ content: { sha } }), { status: 200 })
   }
+
+  const отсталый = отсталое()
+  if (отсталый) return отсталый
 
   if (!запись) return new Response(JSON.stringify({ message: 'Not Found' }), { status: 404 })
   return new Response(JSON.stringify({ sha: запись.sha, content: запись.content }), { status: 200 })
@@ -407,7 +436,8 @@ await попыткаЧужого((db) => { db.sets.push({ id: 's', name: 'Ком
 
 const гонка = structuredClone(база)
 гонка.chars[0].level = 55
-шаг((await записать(гонка)).status === 200, 'мастер записал новую версию')
+const приняли = await записать(гонка)
+шаг(приняли.status === 200, 'мастер записал новую версию', приняли.json?.error)
 
 const отстал = structuredClone(база)
 отстал.chars[1].level = 50
@@ -421,6 +451,33 @@ const конфликт = await call('/api/party/data', {
   'запись поверх чужой версии отбита и возвращает чужой документ',
   конфликт.status,
 )
+
+/*
+ * Повтор после обрыва связи.
+ *
+ * Связь рвётся уже после того, как запись сделана, и клиент повторяет
+ * запрос с той же старой меткой. Такой повтор должен подтвердить запись, а
+ * не отвечать конфликтом: иначе человек, нажавший «Сохранить» и увидевший
+ * обрыв, выбирал бы между двумя версиями своих правок.
+ */
+const повтор = await call('/api/party/data', {
+  method: 'PUT',
+  token: мастер,
+  body: { db: гонка, baseUpdatedAt: начальная.json.updatedAt },
+})
+шаг(
+  повтор.status === 200 && повтор.json.updatedAt === приняли.json.updatedAt,
+  'повтор той же записи подтверждает её, а не отвечает конфликтом',
+  повтор.json?.error ?? повтор.status,
+)
+
+// Повтор с той же меткой, но другим содержимым — это уже спор, а не повтор.
+const спор = await call('/api/party/data', {
+  method: 'PUT',
+  token: мастер,
+  body: { db: отстал, baseUpdatedAt: начальная.json.updatedAt },
+})
+шаг(спор.status === 409, 'с той же старой меткой, но другими данными — конфликт', спор.status)
 
 шаг((await записать(база)).status === 200, 'база возвращена для дальнейших проверок')
 
