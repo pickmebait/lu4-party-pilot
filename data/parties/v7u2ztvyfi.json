@@ -3,7 +3,15 @@
   "name": "Разбор 135954",
   "createdAt": "2026-10-13T13:59:54.729Z",
   "masterHash": "abb55a6776a6e7d0958cd0bfc92e21ea1a1b0c691b5bf6453ff71b0a304832aa",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "cfq6xnbyia",
+      "hash": "d41df785ae2847adcec02d4fd9546374bc68e44427879831fd408c8553f3855d",
+      "charId": "p2",
+      "charName": "Второй",
+      "createdAt": "2026-10-13T14:00:06.788Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-13T14:00:05.323Z",
