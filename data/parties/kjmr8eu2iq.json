@@ -1,0 +1,20 @@
+{
+  "partyId": "kjmr8eu2iq",
+  "name": "Совместная работа 144956",
+  "createdAt": "2026-10-13T14:49:56.746Z",
+  "masterHash": "b753f57d973fb6e433f828a83b80661d7227693ba93ab344112c690b6acf4318",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-13T14:49:56.746Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
