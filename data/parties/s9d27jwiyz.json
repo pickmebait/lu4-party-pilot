@@ -1,0 +1,60 @@
+{
+  "partyId": "s9d27jwiyz",
+  "name": "Проверка доступа 135639",
+  "createdAt": "2026-10-13T13:56:40.047Z",
+  "masterHash": "72e23b72eaf60442ee56d75186c69baf6c9c32f67fa7be0cdffc347b2257c7f2",
+  "tokens": [
+    {
+      "id": "vt24hx38q2",
+      "hash": "397a26cc6f02510ce4b4c01910a6a55cf0c82829a2a76998d7df10124766c91b",
+      "charId": "checkTwo",
+      "charName": "Проверяемый",
+      "createdAt": "2026-10-13T13:56:43.732Z"
+    }
+  ],
+  "db": {
+    "version": 8,
+    "updatedAt": "2026-10-13T13:56:45.433Z",
+    "updatedBy": "Проверка",
+    "chars": [
+      {
+        "id": "checkOne",
+        "name": "Проверяющий",
+        "cls": "Knight",
+        "level": 80,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      },
+      {
+        "id": "checkTwo",
+        "name": "Проверяемый",
+        "cls": "Knight",
+        "level": 81,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      }
+    ],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    },
+    "customNames": {}
+  }
+}
