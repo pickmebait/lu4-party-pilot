@@ -5,16 +5,48 @@
   "masterHash": "3fbb9a6490acb9e88a886514da3b1514b3bde94577c477ce2788835d9ba5e71d",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-13T14:08:32.514Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 8,
+    "updatedAt": "2026-10-13T14:08:34.443Z",
+    "updatedBy": "Проверка",
+    "chars": [
+      {
+        "id": "checkOne",
+        "name": "Проверяющий",
+        "cls": "Knight",
+        "level": 80,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      },
+      {
+        "id": "checkTwo",
+        "name": "Проверяемый",
+        "cls": "Knight",
+        "level": 80,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
     "wishes": [],
     "sets": [],
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    },
     "customNames": {}
   }
 }
