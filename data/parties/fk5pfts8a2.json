@@ -5,11 +5,11 @@
   "masterHash": "3fbb9a6490acb9e88a886514da3b1514b3bde94577c477ce2788835d9ba5e71d",
   "tokens": [
     {
-      "id": "dtsw2c9dz2",
-      "hash": "fc1ff67023d46f78e43f1f7832c226b2080f81a32364a5902f07a983c5e6179f",
+      "id": "scdh25mvha",
+      "hash": "bd760da44cf2645e029dc39b00fe7a4611f20df370abb9a655b0099a0ca21c01",
       "charId": "checkTwo",
       "charName": "Проверяемый",
-      "createdAt": "2026-10-13T14:08:36.484Z"
+      "createdAt": "2026-10-13T14:09:50.695Z"
     }
   ],
   "db": {
