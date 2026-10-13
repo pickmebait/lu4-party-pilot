@@ -204,6 +204,7 @@ export function CharRow({
       {contactsOpen && (
         <ContactsModal
           char={char}
+          правый={правый}
           onClose={() => {
             setContactsOpen(false)
             setConfirmDelete(false)

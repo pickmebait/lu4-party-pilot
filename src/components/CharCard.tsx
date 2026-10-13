@@ -215,7 +215,7 @@ export function CharCard({
       />
 
       {editContacts && (
-        <ContactsModal char={char} onClose={() => setEditContacts(false)} />
+        <ContactsModal char={char} правый={правый} onClose={() => setEditContacts(false)} />
       )}
 
       {/*
