@@ -28,7 +28,7 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-13T14:51:40.406Z",
+    "updatedAt": "2026-10-13T14:52:54.733Z",
     "updatedBy": "Второй",
     "chars": [
       {
@@ -46,7 +46,7 @@
       {
         "id": "cTwo",
         "name": "Второй",
-        "level": 82,
+        "level": 83,
         "affil": "состав",
         "slots": {},
         "subs": [],
