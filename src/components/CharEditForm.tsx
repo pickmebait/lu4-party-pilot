@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Char, Sub } from '@/types'
 import { clampLevel } from '@/lib/classes'
+import { формаОткрыта } from '@/lib/store'
 import { AffiliationSelect } from './AffiliationSelect'
 import { ClassSelect, LevelInput } from './ClassLevel'
 import { PaEdit, paFromFields } from './PaEdit'
@@ -38,6 +39,18 @@ export function CharEditForm({
   const [level, setLevel] = useState((саб ? саб.level : char.level) > 0 ? String(саб ? саб.level : char.level) : '')
   const [affil, setAffil] = useState(char.affil)
   const [paFrom, setPaFrom] = useState(char.pa?.from ?? '')
+
+  /*
+   * Пока форма открыта, базу извне не подставляют.
+   *
+   * Иначе автозагрузка чужой версии тихо выбросила бы набранное: правка
+   * живёт в форме, а не в базе, и человек узнал бы об этом, лишь заметив,
+   * что его правки нет в сохранённом.
+   */
+  useEffect(() => {
+    формаОткрыта(true)
+    return () => формаОткрыта(false)
+  }, [])
   const [paDays, setPaDays] = useState(char.pa?.days ?? 30)
 
   const занятые = useMemo(

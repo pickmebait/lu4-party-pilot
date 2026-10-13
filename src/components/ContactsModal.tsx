@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { setCharContacts } from '@/lib/store'
+import { useEffect, useState } from 'react'
+import { формаОткрыта, setCharContacts } from '@/lib/store'
 import type { Char, Contacts } from '@/types'
 
 /**
@@ -25,6 +25,12 @@ export function ContactsModal({
 }) {
   const [c, setC] = useState<Contacts>(char.contacts ?? {})
   const [имя] = useState(char.name || 'персонажа')
+
+  // Пока набраны контакты, база извне не подставляется — иначе правка пропала бы.
+  useEffect(() => {
+    формаОткрыта(true)
+    return () => формаОткрыта(false)
+  }, [])
 
   const поле = (ключ: keyof Contacts, подпись: string, пример: string, тип = 'text') => (
     <label>

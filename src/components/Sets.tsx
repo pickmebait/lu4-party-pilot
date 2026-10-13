@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { CatalogApi } from '@/lib/catalog'
 import { useAccess, useOwnCharName } from '@/lib/access'
 import { computeSets } from '@/lib/derived'
-import { addSet, removeSet, updateSet, useDb } from '@/lib/store'
+import { addSet, формаОткрыта, removeSet, updateSet, useDb } from '@/lib/store'
 import { gradeLabel } from '@/types'
 import { ItemPicker } from './ItemPicker'
 import { ItemIcon } from './ItemIcon'
@@ -23,6 +23,14 @@ export function SetsView({ catalog }: { catalog: CatalogApi }) {
   const progress = useMemo(() => computeSets(db), [db])
   const [draft, setDraft] = useState<SetDraft | null>(null)
   const [pickingPiece, setPickingPiece] = useState(false)
+
+  // Черновик комплекта живёт в форме, а не в базе: пока он открыт, подменять
+  // базу извне нельзя, иначе собранный список пропадёт молча.
+  useEffect(() => {
+    if (!draft) return
+    формаОткрыта(true)
+    return () => формаОткрыта(false)
+  }, [!!draft])
 
   return (
     <section className="view">

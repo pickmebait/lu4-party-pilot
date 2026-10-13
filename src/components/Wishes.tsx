@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { PRIORITY_LABEL, type Priority, type Wish } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
 import { useAccess, useOwnCharName } from '@/lib/access'
-import { addToWarehouse, addWish, removeWish, updateWish, useDb } from '@/lib/store'
+import { addToWarehouse, addWish, формаОткрыта, removeWish, updateWish, useDb } from '@/lib/store'
 import { formatAgo } from '@/lib/util'
 import { ItemPicker, matches } from './ItemPicker'
 import { ReadOnlyNote } from './ReadOnlyNote'
@@ -20,6 +20,13 @@ export function WishesView({ catalog }: { catalog: CatalogApi }) {
     null,
   )
   const [checking, setChecking] = useState(false)
+
+  // Черновик хотелки живёт в форме: пока он открыт, база извне не подставляется.
+  useEffect(() => {
+    if (!draft) return
+    формаОткрыта(true)
+    return () => формаОткрыта(false)
+  }, [!!draft])
 
   const open = db.wishes.filter((w) => !w.done).length
 

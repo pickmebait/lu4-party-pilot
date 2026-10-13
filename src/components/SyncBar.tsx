@@ -3,7 +3,15 @@ import type { Db } from '@/types'
 import { fetchDb, saveDb } from '@/lib/api'
 import { useOwnCharName } from '@/lib/access'
 import { ктоЗатронут, слитьСвое } from '@/lib/merge'
-import { getDb, getSession, replaceDb, updateSession, updateSettings, useSettings } from '@/lib/store'
+import {
+  естьОткрытаяФорма,
+  getDb,
+  getSession,
+  replaceDb,
+  updateSession,
+  updateSettings,
+  useSettings,
+} from '@/lib/store'
 import { formatAgo } from '@/lib/util'
 import { PartyMenu } from './PartyMenu'
 
@@ -110,13 +118,13 @@ export function SyncBar() {
 
     const тик = setInterval(() => {
       if (document.visibilityState !== 'visible') return
-      if (естьСвоиПравки()) return
+      if (естьСвоиПравки() || естьОткрытаяФорма()) return
       void загрузить(true, false)
     }, ПАУЗА_ПРОВЕРКИ_МС)
 
     const вернулись = () => {
       if (document.visibilityState !== 'visible') return
-      if (естьСвоиПравки()) return
+      if (естьСвоиПравки() || естьОткрытаяФорма()) return
       void загрузить(true, true)
     }
 
