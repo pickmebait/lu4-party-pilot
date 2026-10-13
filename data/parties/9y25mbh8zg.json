@@ -1,0 +1,20 @@
+{
+  "partyId": "9y25mbh8zg",
+  "name": "Совместная работа 150211",
+  "createdAt": "2026-10-13T15:02:11.867Z",
+  "masterHash": "d724cda6272e16428d4b5b6bfb91d0ab744b69c9d5ba8c7c2b000271f531f49b",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-13T15:02:11.867Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
