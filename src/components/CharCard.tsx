@@ -8,6 +8,7 @@ import { ContactsModal } from './ContactsModal'
 import { IconCheck, IconClose, IconDiscord, IconPhone, IconTelegram, IconUser } from './Icons'
 import { discordLabel, discordLink, phoneLink, telegramLabel, telegramLink } from '@/lib/contacts'
 import { PaChip } from './PaChip'
+import { ConfirmModal } from './ConfirmModal'
 
 /**
  * Карточка персонажа: шапка с контактами и три блока экипировки.
@@ -106,6 +107,9 @@ export function CharCard({
 }) {
   const [editing, setEditing] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  // Саб, который сейчас убирают. Хранится именно он, а не флаг: в подписи
+  // окна нужно назвать, что удаляется, и у флага не было бы что показать.
+  const [убираемыйСаб, setУбираемыйСаб] = useState<Sub | null>(null)
   const [contactsOpen, setContactsOpen] = useState(false)
   const [editContacts, setEditContacts] = useState(false)
   /*
@@ -316,7 +320,13 @@ export function CharCard({
           справа от него живут три кнопки инструментов, и на пять вкладок
           с отметкой места там не оставалось — переключатель ложился на
           три строки. */}
-      <SubBar char={char} сабы={сабы} активный={саб?.id ?? null} onSelect={setВыбранный} />
+      <SubBar
+        char={char}
+        сабы={сабы}
+        активный={саб?.id ?? null}
+        onSelect={setВыбранный}
+        onRemove={(id) => setУбираемыйСаб(сабы.find((s) => s.id === id) ?? null)}
+      />
 
       {editContacts && (
         <ContactsModal
@@ -331,22 +341,36 @@ export function CharCard({
         />
       )}
 
+      {/*
+        Удаление персонажа и саб-класса спрашивает в окне, а не полоской под
+        шапкой: полоска с двумя кнопками «Да» и «Нет» стояла рядом с кнопкой
+        удаления и выглядела частью карточки, а не отдельным решением.
+      */}
       {confirmDelete && (
-        <div className="confirm">
-          <span>Удалить «{char.name || 'персонажа'}»?</span>
-          <button
-            className="btn tiny danger"
-            onClick={() => {
-              removeChar(char.id)
-              setConfirmDelete(false)
-            }}
-          >
-            Да
-          </button>
-          <button className="btn tiny" onClick={() => setConfirmDelete(false)}>
-            Нет
-          </button>
-        </div>
+        <ConfirmModal
+          заголовок={`Удалить «${char.name || 'персонажа'}»?`}
+          текст="Вместе с персонажем пропадёт его снаряжение, отсутствия и контакты. Восстановить это нельзя — придётся собирать заново."
+          кнопка="Удалить"
+          onConfirm={() => {
+            removeChar(char.id)
+            setConfirmDelete(false)
+          }}
+          onCancel={() => setConfirmDelete(false)}
+        />
+      )}
+
+      {убираемыйСаб && (
+        <ConfirmModal
+          заголовок={`Убрать саб-класс${убираемыйСаб.cls ? ` «${убираемыйСаб.cls}»` : ''}?`}
+          текст="Вместе с саб-классом пропадёт его снаряжение. Основная профессия и остальные сабы не пострадают."
+          кнопка="Убрать саб"
+          onConfirm={() => {
+            removeSub(char.id, убираемыйСаб.id)
+            setВыбранный(null)
+            setУбираемыйСаб(null)
+          }}
+          onCancel={() => setУбираемыйСаб(null)}
+        />
       )}
 
       {/*
@@ -401,11 +425,15 @@ function SubBar({
   сабы,
   активный,
   onSelect,
+  onRemove,
 }: {
   char: Char
   сабы: Sub[]
   активный: string | null
   onSelect: (subId: string | null) => void
+  /** Просит об удалении саба — само удаление делает карточка, у которой
+   *  открывается окно подтверждения. */
+  onRemove: (subId: string) => void
 }) {
   const полный = сабы.length >= MAX_SUBS
 
@@ -453,10 +481,7 @@ function SubBar({
               type="button"
               className="sub-del"
               title="Убрать выбранный саб-класс вместе с его экипировкой"
-              onClick={() => {
-                removeSub(char.id, активный)
-                onSelect(null)
-              }}
+              onClick={() => onRemove(активный)}
             >
               Убрать саб
             </button>

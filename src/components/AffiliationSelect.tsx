@@ -9,6 +9,11 @@ import { AFFILIATIONS, type Affiliation } from '@/types'
  *
  * Вариантов ровно три и они не меняются, поэтому список на три строки с
  * галочками был бы многословен: подписью служит сама кнопка.
+ *
+ * Подписи «Принадлежность» перед кнопками нет: варианты говорят сами за
+ * себя («Состав», «Десятка», «Окно»), а слово занимало целую строку формы и
+ * повторялось рядом с именем персонажа, где принадлежность и так стоит
+ * плашкой. Для программ чтения подпись осталась в aria-label.
  */
 export function AffiliationSelect({
   value,
@@ -18,20 +23,17 @@ export function AffiliationSelect({
   onChange: (affil: Affiliation) => void
 }) {
   return (
-    <label>
-      Принадлежность
-      <div className="segmented">
-        {AFFILIATIONS.map((a) => (
-          <button
-            key={a.key}
-            type="button"
-            className={value === a.key ? 'on' : ''}
-            onClick={() => onChange(a.key)}
-          >
-            {a.label}
-          </button>
-        ))}
-      </div>
-    </label>
+    <div className="segmented" role="group" aria-label="Принадлежность">
+      {AFFILIATIONS.map((a) => (
+        <button
+          key={a.key}
+          type="button"
+          className={value === a.key ? 'on' : ''}
+          onClick={() => onChange(a.key)}
+        >
+          {a.label}
+        </button>
+      ))}
+    </div>
   )
 }

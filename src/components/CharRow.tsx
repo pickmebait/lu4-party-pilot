@@ -7,6 +7,7 @@ import {
   affiliationLabel,
   type Char,
   type SlotKey,
+  type Sub,
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
 import {
@@ -21,6 +22,7 @@ import { CharEditForm } from './CharEditForm'
 import { ContactsModal } from './ContactsModal'
 import { IconPhone, IconUser } from './Icons'
 import { PaChip } from './PaChip'
+import { ConfirmModal } from './ConfirmModal'
 
 /**
  * Персонаж строкой — второй вид раздела.
@@ -47,6 +49,9 @@ export function CharRow({
   const [выбранный, setВыбранный] = useState<string | null>(null)
   const [editing, setEditing] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  // Саб, который сейчас убирают. Хранится именно он, а не флаг: в подписи
+  // окна нужно назвать, что удаляется, и у флага не было бы что показать.
+  const [убираемыйСаб, setУбираемыйСаб] = useState<Sub | null>(null)
   const [contactsOpen, setContactsOpen] = useState(false)
 
   /*
@@ -100,32 +105,44 @@ export function CharRow({
       </div>
 
       {/*
-        Переключатель веток. Сабов в этом виде не спрятать: строка показывает
-        одну ветку, и без переключателя экипировка саба стала бы недостижимой.
+        Место под переключатель веток резервируется всегда — и когда сабов
+        нет, и когда их три.
+
+        Раньше переключатель появлялся только при subUnlocked, и блок
+        снаряжения у тех, у кого сабы есть, уезжал вправо на его ширину:
+        один и тот же слот у разных персонажей оказывался в разных местах,
+        и сравнивать пати между собой приходилось глазами по подписям.
+        Теперь разделы стоят на одном месте у всех, а пустое место просто
+        пустое.
+
+        Сами вкладки узкие и делят ширину поровну, иначе три саба плюс
+        «Осн.» переносились на вторую строку и строка уезжала по высоте.
       */}
-      {char.subUnlocked && (
-        <div className="segmented row-tabs">
-          <button
-            type="button"
-            className={саб === null ? 'on' : ''}
-            title="Основная профессия"
-            onClick={() => setВыбранный(null)}
-          >
-            Осн.
-          </button>
-          {сабы.map((s, i) => (
+      <div className="row-tabs-slot">
+        {char.subUnlocked && (
+          <div className="segmented row-tabs">
             <button
-              key={s.id}
               type="button"
-              className={саб?.id === s.id ? 'on' : ''}
-              title={s.cls ? `Саб-класс: ${s.cls}` : `Саб-класс ${i + 1}, профессия не указана`}
-              onClick={() => setВыбранный(s.id)}
+              className={саб === null ? 'on' : ''}
+              title="Основная профессия"
+              onClick={() => setВыбранный(null)}
             >
-              {s.cls || `Саб ${i + 1}`}
+              Осн.
             </button>
-          ))}
-        </div>
-      )}
+            {сабы.map((s, i) => (
+              <button
+                key={s.id}
+                type="button"
+                className={саб?.id === s.id ? 'on' : ''}
+                title={s.cls ? `Саб-класс: ${s.cls}` : `Саб-класс ${i + 1}, профессия не указана`}
+                onClick={() => setВыбранный(s.id)}
+              >
+                {s.cls || `Саб ${i + 1}`}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/*
         Снаряжение идёт теми же тремя группами, что и в карточке: оружие,
@@ -164,10 +181,7 @@ export function CharRow({
             type="button"
             className="btn tiny danger sub-del"
             title="Убрать выбранный саб-класс вместе с его экипировкой"
-            onClick={() => {
-              removeSub(char.id, саб.id)
-              setВыбранный(null)
-            }}
+            onClick={() => setУбираемыйСаб(саб)}
           >
             Убрать саб
           </button>
@@ -207,22 +221,36 @@ export function CharRow({
         />
       )}
 
+      {/*
+        Окно подтверждения вместо полоски «Да / Нет» в строке: полоска стояла
+        вплотную к кнопке удаления и читалась как часть строки, а не как
+        отдельное решение.
+      */}
       {confirmDelete && (
-        <div className="confirm">
-          <span>Удалить «{char.name || 'персонажа'}»?</span>
-          <button
-            className="btn tiny danger"
-            onClick={() => {
-              removeChar(char.id)
-              setConfirmDelete(false)
-            }}
-          >
-            Да
-          </button>
-          <button className="btn tiny" onClick={() => setConfirmDelete(false)}>
-            Нет
-          </button>
-        </div>
+        <ConfirmModal
+          заголовок={`Удалить «${char.name || 'персонажа'}»?`}
+          текст="Вместе с персонажем пропадёт его снаряжение, отсутствия и контакты. Восстановить это нельзя — придётся собирать заново."
+          кнопка="Удалить"
+          onConfirm={() => {
+            removeChar(char.id)
+            setConfirmDelete(false)
+          }}
+          onCancel={() => setConfirmDelete(false)}
+        />
+      )}
+
+      {убираемыйСаб && (
+        <ConfirmModal
+          заголовок={`Убрать саб-класс${убираемыйСаб.cls ? ` «${убираемыйСаб.cls}»` : ''}?`}
+          текст="Вместе с саб-классом пропадёт его снаряжение. Основная профессия и остальные сабы не пострадают."
+          кнопка="Убрать саб"
+          onConfirm={() => {
+            removeSub(char.id, убираемыйСаб.id)
+            setВыбранный(null)
+            setУбираемыйСаб(null)
+          }}
+          onCancel={() => setУбираемыйСаб(null)}
+        />
       )}
     </article>
   )
