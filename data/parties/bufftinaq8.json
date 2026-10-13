@@ -6,14 +6,14 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-13T14:17:24.973Z",
+    "updatedAt": "2026-10-13T14:17:28.452Z",
     "updatedBy": "Замер",
     "chars": [
       {
         "id": "m1",
         "name": "Первый",
         "cls": "Knight",
-        "level": 82,
+        "level": 83,
         "affil": "состав",
         "slots": {},
         "subs": [],
