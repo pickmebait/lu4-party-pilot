@@ -59,7 +59,7 @@ export function SyncBar() {
    * что-то приехало или что-то сломалось.
    */
   const загрузить = useCallback(
-    async (молча: boolean, показыватьПредупреждение: boolean) => {
+    async (молча: boolean) => {
       if (загружается.current) return
       загружается.current = true
       if (!молча) setState({ kind: 'busy', what: 'Загружаю из пати…' })
@@ -77,15 +77,29 @@ export function SyncBar() {
 
         if (свои) {
           /*
-           * Есть несохранённое, и в базе кто-то уже работал — не затираем
-           * молча. Сохранение само разберётся: токен персонажа подставит
-           * свою правку в чужую базу, мастеру покажем выбор.
+           * Есть несохранённое — не затираем молча.
+           *
+           * Если в базе кто-то уже работал, говорим и про это: сохранение
+           * разберётся само, токен персонажа подставит свою правку в чужую
+           * базу, мастеру покажем выбор.
+           *
+           * Сообщение ставится в любом случае. Раньше при выходе отсюда
+           * надпись оставалась «Загружаю из пати…», и полоса зависала: кнопки
+           * не нажимаются, а человек не понимает, чего ждёт.
            */
-          if ((remote.updatedAt ?? '') !== session.lastSyncedAt && показыватьПредупреждение) {
-            setState({
-              kind: 'err',
-              text: `В пати есть более свежая версия (от: ${remote.updatedBy || 'неизвестно'}, ${formatAgo(remote.updatedAt)}), а у тебя есть несохранённые правки. Нажми «Сохранить» — твоё подставится в неё.`,
-            })
+          const вПатиНовее = (remote.updatedAt ?? '') !== session.lastSyncedAt
+          if (!молча || вПатиНовее) {
+            setState(
+              вПатиНовее
+                ? {
+                    kind: 'err',
+                    text: `В пати есть более свежая версия (от: ${remote.updatedBy || 'неизвестно'}, ${formatAgo(remote.updatedAt)}), а у тебя есть несохранённые правки. Нажми «Сохранить» — твоё подставится в неё.`,
+                  }
+                : {
+                    kind: 'err',
+                    text: 'У тебя есть несохранённые правки — загрузка их бы затёрла. Нажми «Сохранить».',
+                  },
+            )
           }
           return
         }
@@ -119,13 +133,13 @@ export function SyncBar() {
     const тик = setInterval(() => {
       if (document.visibilityState !== 'visible') return
       if (естьСвоиПравки() || естьОткрытаяФорма()) return
-      void загрузить(true, false)
+      void загрузить(true)
     }, ПАУЗА_ПРОВЕРКИ_МС)
 
     const вернулись = () => {
       if (document.visibilityState !== 'visible') return
       if (естьСвоиПравки() || естьОткрытаяФорма()) return
-      void загрузить(true, true)
+      void загрузить(true)
     }
 
     window.addEventListener('focus', вернулись)
@@ -230,7 +244,7 @@ export function SyncBar() {
           onChange={(e) => updateSettings({ playerName: e.target.value })}
           title="Пишется в историю операций в казне"
         />
-        <button className="btn" disabled={busy} onClick={() => загрузить(false, false)}>
+        <button className="btn" disabled={busy} onClick={() => загрузить(false)}>
           Загрузить
         </button>
         <button className="btn primary" disabled={busy} onClick={doPush} title="Записать в общую базу пати">
