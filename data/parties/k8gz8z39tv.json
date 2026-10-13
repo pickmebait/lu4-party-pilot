@@ -28,7 +28,7 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-13T14:58:56.301Z",
+    "updatedAt": "2026-10-13T15:00:11.405Z",
     "updatedBy": "Первый",
     "chars": [
       {
@@ -47,18 +47,6 @@
         "id": "cTwo",
         "name": "Второй",
         "level": 83,
-        "affil": "состав",
-        "slots": {},
-        "subs": [],
-        "subUnlocked": false,
-        "contacts": {},
-        "away": {},
-        "pa": null
-      },
-      {
-        "id": "cThree",
-        "name": "Третий",
-        "level": 80,
         "affil": "состав",
         "slots": {},
         "subs": [],
