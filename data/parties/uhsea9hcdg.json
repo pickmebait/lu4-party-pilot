@@ -3,7 +3,15 @@
   "name": "Проверка доступа 142616",
   "createdAt": "2026-10-13T14:26:17.127Z",
   "masterHash": "01f0e8c676f56a88eb07c92c53a168c5b9ab327c19731e9c3fc743a04d88a699",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "n9mdb5pipe",
+      "hash": "e07bd8af67fdc54bcd5a31e339ac02c39dc15e1fb939b3c09417f0c5dbc0425b",
+      "charId": "checkTwo",
+      "charName": "Проверяемый",
+      "createdAt": "2026-10-13T14:26:20.531Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-13T14:26:18.943Z",
