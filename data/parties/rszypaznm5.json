@@ -1,0 +1,20 @@
+{
+  "partyId": "rszypaznm5",
+  "name": "Совместная работа 144334",
+  "createdAt": "2026-10-13T14:43:35.631Z",
+  "masterHash": "63531d9399be511f9209aa6a28a6c3e2b5863f9de88ab852f8ec2dac0dc95c15",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-13T14:43:35.631Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
