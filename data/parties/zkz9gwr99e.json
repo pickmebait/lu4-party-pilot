@@ -3,7 +3,15 @@
   "name": "Разбор 140327",
   "createdAt": "2026-10-13T14:03:28.546Z",
   "masterHash": "cbcb2e8c915423c2bc7ae9b1bac47109447e926887ec9d8239ad2772125bceb2",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "m79vk5pies",
+      "hash": "ac14517e06e70fc3b3cc0163c2f785794de5fbe68783bb9bfa00ed962e15bc04",
+      "charId": "p2",
+      "charName": "Второй",
+      "createdAt": "2026-10-13T14:03:39.556Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-13T14:03:38.027Z",
