@@ -14,8 +14,8 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-13T15:09:03.972Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-13T15:11:34.156Z",
+    "updatedBy": "Танк",
     "chars": [
       {
         "id": "cOne",
@@ -34,14 +34,45 @@
         "id": "cTwo",
         "name": "Танк",
         "cls": "Destroyer",
-        "level": 78,
-        "affil": "состав",
-        "slots": {},
-        "subs": [],
+        "level": 72,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
         "subUnlocked": false,
-        "contacts": {},
-        "away": {},
-        "pa": null
+        "subs": [],
+        "away": {}
       }
     ],
     "warehouse": {
