@@ -21,8 +21,8 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-13T14:47:56.603Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-13T14:48:00.388Z",
+    "updatedBy": "Второй",
     "chars": [
       {
         "id": "cOne",
@@ -39,7 +39,7 @@
       {
         "id": "cTwo",
         "name": "Второй",
-        "level": 80,
+        "level": 82,
         "affil": "состав",
         "slots": {},
         "subs": [],
