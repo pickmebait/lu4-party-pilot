@@ -21,7 +21,7 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-13T14:44:58.709Z",
+    "updatedAt": "2026-10-13T14:46:11.304Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -62,7 +62,12 @@
       }
     ],
     "warehouse": {
-      "stacks": [],
+      "stacks": [
+        {
+          "itemId": 40301,
+          "count": 7
+        }
+      ],
       "log": []
     },
     "wishes": [],
