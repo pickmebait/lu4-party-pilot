@@ -1,0 +1,20 @@
+{
+  "partyId": "5j29t8gngg",
+  "name": "Проверка доступа 141000",
+  "createdAt": "2026-10-13T14:10:00.856Z",
+  "masterHash": "266472837633fa5c72ad4cb67b439694e8d9efeeb8bf52481c5452a40dd194d4",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-13T14:10:00.856Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
