@@ -39,7 +39,20 @@ export interface PartyMeta extends PartyInfo {
   tokens?: TokenInfo[]
 }
 
-export type ApiResult<T> = { ok: true; value: T } | { ok: false; error: string; conflict?: Db }
+export type ApiResult<T> =
+  | { ok: true; value: T }
+  | {
+      ok: false
+      error: string
+      /** Пришло при 409: в базе лежит более свежая версия. */
+      conflict?: Db
+      /**
+       * Пришло при 403: токену персонажа нельзя писать чужое, но правка
+       * своего персонажа в сливании допустима. Пришедшая база — то, что
+       * сейчас лежит на сервере.
+       */
+      forbidden?: { db: Db }
+    }
 
 /** Не выкидываем текст ошибки от сервера в пользовательский интерфейс как есть. */
 function msg(e: unknown): string {
@@ -74,7 +87,11 @@ async function call<T>(
       return { ok: false, error: 'Токен не подходит. Проверь его или запроси новый у мастера пати.' }
     }
     if (res.status === 403) {
-      return { ok: false, error: json?.error ?? 'Недостаточно прав' }
+      return {
+        ok: false,
+        error: json?.error ?? 'Недостаточно прав',
+        forbidden: json?.db ? { db: json.db as Db } : undefined,
+      }
     }
     if (res.status === 404) {
       return { ok: false, error: json?.error ?? 'Не найдено' }
