@@ -1,0 +1,20 @@
+{
+  "partyId": "ev42n42n3f",
+  "name": "Свинки",
+  "createdAt": "2026-10-13T15:29:23.676Z",
+  "masterHash": "766d2e414595b53c65fb3d32cec42e1ad5a3ff2ef36a48ddcc8c0db8bf1fb9e1",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-13T15:29:23.676Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
