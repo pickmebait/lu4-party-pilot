@@ -60,6 +60,17 @@ function msg(e: unknown): string {
   return 'неизвестная ошибка'
 }
 
+/**
+ * Сколько ждём ответа сервера, прежде чем считать связь пропавшей.
+ *
+ * Ответ до workers.dev теряется примерно в одном запросе из пяти: Worker
+ * отвечает за две секунды, а браузер так и не получает ничего и ждёт вечно.
+ * Без предела приложение навсегда остаётся с надписью «Сохраняю…» и
+ * заблокированными кнопками — выглядит как зависшее, а правка при этом
+ * давно в базе.
+ */
+const ОЖИДАНИЕ_ОТВЕТА_МС = 25_000
+
 async function call<T>(
   base: string,
   path: string,
@@ -74,8 +85,11 @@ async function call<T>(
   if (init.body !== undefined) headers['Content-Type'] = 'application/json'
   if (init.token) headers.Authorization = `Bearer ${init.token}`
 
+  const отмена = new AbortController()
+  const будильник = setTimeout(() => отмена.abort(), ОЖИДАНИЕ_ОТВЕТА_МС)
+
   try {
-    const res = await fetch(url, { ...init, headers })
+    const res = await fetch(url, { ...init, headers, signal: отмена.signal })
     let json: any = null
     try {
       json = await res.json()
@@ -128,8 +142,12 @@ async function call<T>(
     }
     return {
       ok: false,
-      error: `Не удалось связаться с сервером. Проверь адрес и интернет. (${msg(e)})`,
+      error: отмена.signal.aborted
+        ? 'Сервер не ответил вовремя. Правка, возможно, уже записана — попробуй «Загрузить».'
+        : `Не удалось связаться с сервером. Проверь адрес и интернет. (${msg(e)})`,
     }
+  } finally {
+    clearTimeout(будильник)
   }
 }
 
