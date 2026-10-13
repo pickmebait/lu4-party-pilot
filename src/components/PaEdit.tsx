@@ -16,7 +16,7 @@
 import { useMemo } from 'react'
 import type { Pa } from '@/types'
 import { PA_DAYS } from '@/types'
-import { paLeft } from '@/lib/pa'
+import { paLeft, paUrgency } from '@/lib/pa'
 
 export function PaEdit({
   from,
@@ -53,7 +53,10 @@ export function PaEdit({
       <div className="pa-edit-title">
         Премиум аккаунт
         {осталось !== null && (
-          <span className={`pa-edit-left${осталось < 3 ? ' low' : ''}`}>
+          // Порог берётся из paUrgency, а не пишется здесь заново: он один на
+          // плашку в шапке и на подпись здесь, и две копии числа разъедутся
+          // при первой же правке одного из них.
+          <span className={`pa-edit-left${paUrgency(осталось) === 'low' ? ' low' : ''}`}>
             {осталось > 0 ? `осталось ${осталось} дн.` : осталось === 0 ? 'истекает сегодня' : 'истёк'}
           </span>
         )}
