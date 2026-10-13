@@ -28,7 +28,7 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-13T15:04:37.444Z",
+    "updatedAt": "2026-10-13T15:04:39.198Z",
     "updatedBy": "Второй",
     "chars": [
       {
@@ -69,7 +69,12 @@
       }
     ],
     "warehouse": {
-      "stacks": [],
+      "stacks": [
+        {
+          "itemId": 40301,
+          "count": 7
+        }
+      ],
       "log": []
     },
     "wishes": [],
