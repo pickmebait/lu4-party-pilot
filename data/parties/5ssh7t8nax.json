@@ -3,7 +3,15 @@
   "name": "Проверка живой базы",
   "createdAt": "2026-10-13T14:28:23.423Z",
   "masterHash": "0a74eafb27d45e80527f835ad22f1c3224c1fb1adfe086fd2f9b1ae81b7562e0",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "6tq8sca9e2",
+      "hash": "14241837fb8545841be6c5ee86e6d9b4dc50b9b1d9fe7536c1d4be78e078f1a6",
+      "charId": "cmv6s1r4i3re3rl",
+      "charName": "Валькирия",
+      "createdAt": "2026-10-13T14:30:12.267Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-13T14:29:54.587Z",
