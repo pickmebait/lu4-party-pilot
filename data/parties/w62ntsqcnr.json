@@ -21,13 +21,13 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-13T14:38:33.517Z",
+    "updatedAt": "2026-10-13T14:39:51.034Z",
     "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cOne",
         "name": "Первый",
-        "level": 80,
+        "level": 81,
         "affil": "состав",
         "slots": {},
         "subs": [],
