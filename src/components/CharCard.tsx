@@ -1,101 +1,34 @@
-import { useState, type ReactNode } from 'react'
-import { SLOTS, SLOT_GROUPS, MAX_MOD, MAX_SUBS, affiliationLabel, gradeCode, gradeLabel, type Char, type SlotKey, type Sub } from '@/types'
+import { useState } from 'react'
+import {
+  SLOTS,
+  SLOT_GROUPS,
+  affiliationLabel,
+  type Char,
+  type SlotKey,
+  type Sub,
+} from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
-import { addSub, removeChar, removeSub, setSlotMod, setSubUnlocked, unequipItem, updateChar, updateSub, type Branch } from '@/lib/store'
-import { ItemIcon } from './ItemIcon'
+import { removeChar, removeSub, updateChar, updateSub, type Branch } from '@/lib/store'
 import { CharEditForm } from './CharEditForm'
 import { ContactsModal } from './ContactsModal'
-import { IconCheck, IconClose, IconDiscord, IconPhone, IconTelegram, IconUser } from './Icons'
-import { discordLabel, discordLink, phoneLink, telegramLabel, telegramLink } from '@/lib/contacts'
+import { ContactsBlock } from './ContactsBlock'
+import { GearStack } from './GearStack'
+import { SubBar } from './SubBar'
 import { PaChip } from './PaChip'
 import { ConfirmModal } from './ConfirmModal'
+import { IconCheck, IconPhone } from './Icons'
 
 /**
- * Карточка персонажа: шапка с контактами и три блока экипировки.
+ * Карточка персонажа: шапка, переключатель веток и снаряжение.
  *
- * Живёт отдельно от Chars.tsx, где лежит оболочка вкладки. Файл разросся
- * до семи компонентов и шестисот строк, и правка шапки задевала пикер
+ * Живёт отдельно от Chars.tsx, где лежит оболочка вкладки. Файл вырос до
+ * семи компонентов и шестисот строк, и правка шапки задевала пикер
  * предметов, который к шапке отношения не имеет.
- */
-
-/** Одна строка списка контактов. */
-interface КонтактСтрока {
-  ключ: string
-  подпись: string
-  значение: string
-  /** Куда ведёт строка. У имени ссылки нет: его некуда открывать. */
-  ссылка?: string
-  подсказка: string
-  иконка: ReactNode
-}
-
-/**
- * Контакты персонажа в виде строк «подпись — значение».
  *
- * Значения читаются в локальные переменные и проверяются на пустоту до
- * того, как из них строится ссылка. Раньше здесь стояли непустые
- * утверждения: проверка шла по результату phoneLink, а значение бралось
- * из char.contacts, который к тому моменту мог уже оказаться пустым —
- * TypeScript соглашался на !, и поле менялось бы без всякой ошибки.
+ * Здесь осталась только сборка: что где стоит и в каком порядке. Снаряжение,
+ * контакты и полосу сабов вынесены в отдельные файлы — им по одному
+ * владельцу, а здесь они просто ставятся на место.
  */
-function строкиКонтактов(контакты: Char['contacts']): КонтактСтрока[] {
-  const строки: КонтактСтрока[] = []
-  if (!контакты) return строки
-
-  const имя = контакты.realName?.trim() ?? ''
-  const телефон = контакты.phone?.trim() ?? ''
-  const телеграм = контакты.telegram?.trim() ?? ''
-  const дискорд = контакты.discord?.trim() ?? ''
-
-  if (имя) {
-    строки.push({
-      ключ: 'realName',
-      подпись: 'Имя',
-      значение: имя,
-      подсказка: 'Имя в реальной жизни',
-      иконка: <IconUser size={12} />,
-    })
-  }
-
-  const ссылкаТелефона = телефон ? phoneLink(телефон) : null
-  if (телефон && ссылкаТелефона) {
-    строки.push({
-      ключ: 'phone',
-      подпись: 'Телефон',
-      значение: телефон,
-      ссылка: ссылкаТелефона,
-      подсказка: 'Позвонить',
-      иконка: <IconPhone size={12} />,
-    })
-  }
-
-  const ссылкаТелеграма = телеграм ? telegramLink(телеграм) : null
-  if (телеграм && ссылкаТелеграма) {
-    строки.push({
-      ключ: 'telegram',
-      подпись: 'Телеграм',
-      значение: telegramLabel(телеграм),
-      ссылка: ссылкаТелеграма,
-      подсказка: 'Открыть профиль в телеграме',
-      иконка: <IconTelegram size={12} />,
-    })
-  }
-
-  const ссылкаДискорда = дискорд ? discordLink(дискорд) : null
-  if (дискорд && ссылкаДискорда) {
-    строки.push({
-      ключ: 'discord',
-      подпись: 'Дискорд',
-      значение: discordLabel(дискорд),
-      ссылка: ссылкаДискорда,
-      подсказка: 'Открыть профиль в дискорде',
-      иконка: <IconDiscord size={12} />,
-    })
-  }
-
-  return строки
-}
-
 export function CharCard({
   char,
   catalog,
@@ -110,8 +43,8 @@ export function CharCard({
   // Саб, который сейчас убирают. Хранится именно он, а не флаг: в подписи
   // окна нужно назвать, что удаляется, и у флага не было бы что показать.
   const [убираемыйСаб, setУбираемыйСаб] = useState<Sub | null>(null)
-  const [contactsOpen, setContactsOpen] = useState(false)
   const [editContacts, setEditContacts] = useState(false)
+
   /*
    * Какая ветка экипировки показана: null — основная профессия, иначе id
    * саб-класса. Выбор живёт в карточке, а не в базе: это то, что смотрит
@@ -141,18 +74,13 @@ export function CharCard({
     }
   }
 
-  /*
-   * Контакты собираются списком, а не набором плашек: строки с подписью
-   * читаются сами, и добавить пятое поле — одна строка здесь, а не новая
-   * разметка в трёх местах.
-   */
-  const контактные = строкиКонтактов(char.contacts)
+  const контактов = Object.keys(char.contacts ?? {}).length
 
   return (
     <article className="char-card">
       <header className="char-head">
-        <div className="char-id">
-          {editing ? (
+        {editing ? (
+          <div className="char-id">
             <CharEditForm
               char={char}
               саб={саб}
@@ -165,161 +93,89 @@ export function CharCard({
               }}
               onCancel={() => setEditing(false)}
             />
-          ) : (
-            <>
+          </div>
+        ) : (
+          <>
+            {/*
+              Имя, премиум и кнопки — в одну строку, а плашки метаданных —
+              под ними, на всю ширину карточки.
+
+              Раньше всё это делило одну шапку, и на плашки оставалось 125
+              пикселей из нужных 234: строка с профессией и уровнем
+              обрезалась у каждого, у кого в шапке есть премиум. Отдельная
+              строка даёт плашкам всю ширину — 312 пикселей, — и «Elemental
+              Summoner · ур. 75 · 11 из 12» помещается целиком вместе с
+              любым премиумом.
+            */}
+            <div className="char-head-top">
               <div className="char-name-row">
                 <h3>{char.name || 'Без имени'}</h3>
                 <span className="chip affil" title="Принадлежность">
                   {affiliationLabel(char.affil)}
                 </span>
               </div>
-              {/*
-                Профессия, уровень и состояние слотов всегда в одну строку.
-                Раньше плашки переносились на вторую и третью, и шапка
-                персонажа съедала по высоте целую ячейку экипировки.
 
-                Длиннее всех профессия — пусть ужимается первой, числа
-                остаются читаемыми целиком.
-              */}
-              <div className="char-meta">
-                {саб && <span className="chip branch" title="Показан саб-класс">саб</span>}
-                {cls && <span className="chip cls">{cls}</span>}
-                {level > 0 && <span className="chip lvl">ур. {level}</span>}
-                {filled === total ? (
-                  <span className="chip slots full" title={`Все ${total} слотов заняты`}>
-                    <IconCheck />
-                    Заполнено
-                  </span>
-                ) : (
-                  // Без слова «слотов»: в строке уже есть профессия и
-                  // уровень, и на «Elemental Summoner · ур. 75 · 11 из 12»
-                  // всё умещается, а с «слотов» профессия не влезала.
-                  <span className="chip slots" title={`${filled} из ${total} слотов занято`}>
-                    {filled} из {total}
-                  </span>
-                )}
-              </div>
+              {/* Премиум аккаунт — перед кнопками: это не свойство снаряжения,
+                  его тут и продлевают. */}
+              <PaChip pa={char.pa} />
 
-              {/*
-                Контакты вне игры.
-
-                Раньше они были плашками — и выглядели ровно как плашки
-                профессии и уровня прямо над ними, поэтому читались как
-                ещё одна строчка метаданных, а не как способ связаться с
-                человеком. Теперь это подписанный список: видно, что
-                именно написано, без угадывания по значку.
-
-                Свёрнутое состояние тоже несёт информацию — показывает
-                имя, потому что в игре ники ничего не говорят, и именно
-                по имени человека ищут.
-
-                Блок показан всегда, даже когда заполнять нечего. Раньше
-                он просто исчезал, и по карточке было не видно, что поле
-                для связи есть и осталось пустым: пустота молчаливого
-                блока читалась как «контактов не предусмотрено».
-              */}
-              <div className={`char-contacts${contactsOpen ? ' open' : ''}`}>
+              <div className="char-tools">
                 <button
-                  className="contacts-toggle"
-                  title={contactsOpen ? 'Свернуть контакты' : 'Показать контакты'}
-                  aria-expanded={contactsOpen}
-                  onClick={() => setContactsOpen((v) => !v)}
+                  className="icon-btn"
+                  title="Редактировать персонажа"
+                  onClick={() => setEditing(true)}
                 >
-                  <IconUser />
-                  <span className="contacts-brief">
-                    {контактные.length > 0
-                      ? char.contacts?.realName?.trim() || 'Контакты'
-                      : 'Контакты не заполнены'}
-                  </span>
-                  {контактные.length > 1 && (
-                    <span className="contacts-more" title="Заполнено полей">
-                      {контактные.length}
-                    </span>
-                  )}
-                  <span className="chevron">{contactsOpen ? '▾' : '▸'}</span>
+                  ✎
                 </button>
-
-                {contactsOpen &&
-                  (контактные.length > 0 ? (
-                    <div className="contacts-list">
-                      {контактные.map((строка) => (
-                        <div className="contacts-row" key={строка.ключ}>
-                          <span className="contacts-key">
-                            {строка.иконка}
-                            {строка.подпись}
-                          </span>
-                          {строка.ссылка ? (
-                            <a
-                              className="contacts-val link"
-                              href={строка.ссылка}
-                              target={строка.ссылка.startsWith('http') ? '_blank' : undefined}
-                              rel={строка.ссылка.startsWith('http') ? 'noreferrer' : undefined}
-                              title={строка.подсказка}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {строка.значение}
-                            </a>
-                          ) : (
-                            <span className="contacts-val" title={строка.подсказка}>
-                              {строка.значение}
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="contacts-list">
-                      <p className="contacts-none">
-                        Не заполнены. Заполнить — кнопкой с трубкой справа.
-                      </p>
-                    </div>
-                  ))}
+                <button
+                  className={`icon-btn${контактов === 0 ? ' suggest' : ''}`}
+                  title={контактов > 0 ? 'Изменить контакты' : 'Указать контакты'}
+                  onClick={() => setEditContacts(true)}
+                >
+                  <IconPhone size={14} />
+                </button>
+                <button
+                  className="icon-btn danger"
+                  title="Удалить персонажа"
+                  onClick={() => setConfirmDelete(true)}
+                >
+                  🗑
+                </button>
               </div>
-            </>
-          )}
-        </div>
+            </div>
 
-        {/*
-          Премиум аккаунт — слева от кнопок, а не в ряду плашек с
-          профессией.
+            {/*
+              Профессия, уровень и состояние слотов всегда в одну строку.
+              Раньше плашки переносились на вторую и третью, и шапка
+              персонажа съедала по высоте целую ячейку экипировки.
 
-          В ряду метаданных для него места нет: там профессия, уровень и
-          счётчик слотов, и запас по ширине кончается на профессии — ещё
-          одна плашка выдавила бы счётчик за карточку. А рядом с кнопками
-          место есть, и там он читается как «это можно продлить здесь», а не
-          как ещё одно свойство снаряжения.
+              Длиннее всех профессия — пусть ужимается первой, числа
+              остаются читаемыми целиком.
+            */}
+            <div className="char-meta">
+              {саб && <span className="chip branch" title="Показан саб-класс">саб</span>}
+              {cls && <span className="chip cls">{cls}</span>}
+              {level > 0 && <span className="chip lvl">ур. {level}</span>}
+              {filled === total ? (
+                <span className="chip slots full" title={`Все ${total} слотов заняты`}>
+                  <IconCheck />
+                  Заполнено
+                </span>
+              ) : (
+                // Без слова «слотов»: в строке уже есть профессия и
+                // уровень, и на «Elemental Summoner · ур. 75 · 11 из 12»
+                // всё умещается, а с «слотов» профессия не влезала.
+                <span className="chip slots" title={`${filled} из ${total} слотов занято`}>
+                  {filled} из {total}
+                </span>
+              )}
+            </div>
 
-          Пока открыта форма правки, плашки нет: остаток и так написан в её
-          собственной шапке, а сама плашка отбирала у формы 89 пикселей и
-          поля премиума сжимались до нечитаемых.
-        */}
-        {!editing && (
-          <div className="char-pa">
-            <PaChip pa={char.pa} />
-          </div>
+            <ContactsBlock char={char} onEdit={() => setEditContacts(true)} />
+          </>
         )}
-
-        <div className="char-tools">
-          <button className="icon-btn" title="Редактировать персонажа" onClick={() => setEditing((v) => !v)}>
-            ✎
-          </button>
-          <button
-            className="icon-btn"
-            title={контактные.length > 0 ? 'Изменить контакты' : 'Указать контакты'}
-            onClick={() => setEditContacts(true)}
-          >
-            <IconPhone size={14} />
-          </button>
-          <button className="icon-btn danger" title="Удалить персонажа" onClick={() => setConfirmDelete(true)}>
-            🗑
-          </button>
-        </div>
       </header>
 
-      {/* Переключатель веток — на всю ширину карточки, а не в блоке шапки:
-          справа от него живут три кнопки инструментов, и на пять вкладок
-          с отметкой места там не оставалось — переключатель ложился на
-          три строки. */}
       <SubBar
         char={char}
         сабы={сабы}
@@ -328,17 +184,10 @@ export function CharCard({
         onRemove={(id) => setУбираемыйСаб(сабы.find((s) => s.id === id) ?? null)}
       />
 
+      <GearStack ветка={ветка} слоты={слоты} catalog={catalog} onPick={onPick} />
+
       {editContacts && (
-        <ContactsModal
-          char={char}
-          onClose={() => {
-            setEditContacts(false)
-            // Только что открытые контакты показываем сразу, иначе после
-            // сохранения ничего не изменилось бы и человек решил бы, что
-            // правка не прошла.
-            setContactsOpen(true)
-          }}
-        />
+        <ContactsModal char={char} onClose={() => setEditContacts(false)} />
       )}
 
       {/*
@@ -372,294 +221,6 @@ export function CharCard({
           onCancel={() => setУбираемыйСаб(null)}
         />
       )}
-
-      {/*
-        Блоки идут друг под другом, а не справа друг от друга: каждый блок
-        занимает всю ширину карточки, поэтому ячейка может быть шире и
-        название предмета помещается целиком.
-
-        Внутри блока ячейки тоже стоят друг под другом — так выглядит
-        персонаж целиком, и карточка получается узкой: в экран влезает вся
-        пати, а не один с половиной герой.
-
-        Слоты разворачиваются в ячейки через display: contents — обёртки
-        .gear-slot и .gear-cells не нужны, когда раскладку задаёт сетка.
-        Благодаря этому ячейки разных слотов становятся соседями сетки: у
-        брони пять ячеек в столбик, у бижутерии тоже пять, и пары не рвутся.
-      */}
-      <div className="gear-stack">
-        {SLOT_GROUPS.map((group) => (
-          <section key={group.key} className={`stack-row stack-${group.key}`}>
-            <h4>{group.label}</h4>
-            <div className="stack-slots">
-              {group.slots.map((key) => (
-                <SlotCells
-                  key={key}
-                  ветка={ветка}
-                  слоты={слоты}
-                  catalog={catalog}
-                  slot={key}
-                  onPick={(index) => onPick(ветка, key, index)}
-                />
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
     </article>
   )
 }
-
-/**
- * Отметка о квесте на саб-класс и переключатель веток.
- *
- * Отметка стоит впереди и всегда на виду: пока квест не пройден, сабов
- * быть не может, и прятать это под настройку значило бы искать кнопку.
- *
- * Сабы перечислены профессией, а не «саб 1/2/3»: узнать, где какой, по
- * подписи можно, по номеру — нельзя. Пустой саб подписан «Саб N», чтобы
- * вкладки не слипались одинаковыми заглушками.
- */
-function SubBar({
-  char,
-  сабы,
-  активный,
-  onSelect,
-  onRemove,
-}: {
-  char: Char
-  сабы: Sub[]
-  активный: string | null
-  onSelect: (subId: string | null) => void
-  /** Просит об удалении саба — само удаление делает карточка, у которой
-   *  открывается окно подтверждения. */
-  onRemove: (subId: string) => void
-}) {
-  const полный = сабы.length >= MAX_SUBS
-
-  return (
-    <div className="sub-bar">
-      {/*
-        Полоса сверху: отметка о квесте и действия. Вкладки перенесены под
-        них — на общей строке вкладки упирались в кнопки шапки и ложились
-        на три строки, а так им достаётся вся ширина карточки.
-      */}
-      <div className="sub-bar-top">
-        <button
-          type="button"
-          className={`sub-flag${char.subUnlocked ? ' on' : ''}`}
-          title={
-            char.subUnlocked
-              ? 'Квест на саб-класс пройден. Нажмите, чтобы убрать сабов'
-              : 'Квест на саб-класс ещё не пройден. Отметить, что пройден'
-          }
-          onClick={() => {
-            // Снятие отметки возвращает показ основной профессии: выбранного
-            // саба через мгновение не станет, и пустые слоты снятого саба
-            // смотрелись бы как потерянная экипировка основной профессии.
-            setSubUnlocked(char.id, !char.subUnlocked)
-            if (char.subUnlocked) onSelect(null)
-          }}
-        >
-          {char.subUnlocked ? '✓ Саб' : '✕ Саб'}
-        </button>
-
-        {/*
-          Кнопка одна, а не две: пока показан саб, она убирает его, иначе
-          добавляет. Две кнопки рядом с вкладками не помещались, и панель
-          вырастала на лишнюю строку. Добавить саба можно и с выбранным
-          сабом — для этого достаточно нажать «Осн.», а искать переключатель
-          незачем.
-
-          Пока отметки о квесте нет, действий нет вовсе: добавление всё
-          равно отклонится, и висящая кнопка, которая ничего не делает,
-          только обещает возможность, которой на сервере нет.
-        */}
-        {char.subUnlocked &&
-          (активный ? (
-            <button
-              type="button"
-              className="sub-del"
-              title="Убрать выбранный саб-класс вместе с его экипировкой"
-              onClick={() => onRemove(активный)}
-            >
-              Убрать саб
-            </button>
-          ) : (
-            !полный && (
-              <button
-                type="button"
-                className="sub-add"
-                title={`Добавить саб-класс (${сабы.length} из ${MAX_SUBS})`}
-                onClick={() => {
-                  const id = addSub(char.id)
-                  if (id) onSelect(id)
-                }}
-              >
-                + саб
-              </button>
-            )
-          ))}
-      </div>
-
-      {char.subUnlocked && (
-        <div className="segmented sub-tabs">
-          <button
-            type="button"
-            className={активный === null ? 'on' : ''}
-            title="Основная профессия"
-            onClick={() => onSelect(null)}
-          >
-            Осн.
-          </button>
-          {сабы.map((s, i) => (
-            <button
-              key={s.id}
-              type="button"
-              className={активный === s.id ? 'on' : ''}
-              title={s.cls ? `Саб-класс: ${s.cls}` : `Саб-класс ${i + 1}, профессия не указана`}
-              onClick={() => onSelect(s.id)}
-            >
-              {s.cls || `Саб ${i + 1}`}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function SlotCells({
-  ветка,
-  слоты,
-  catalog,
-  slot,
-  onPick,
-}: {
-  ветка: Branch
-  слоты: Char['slots']
-  catalog: CatalogApi
-  slot: SlotKey
-  onPick: (index: number) => void
-}) {
-  const def = SLOTS[slot]
-  const arr = слоты[slot] ?? []
-
-  return (
-    <div className="gear-slot">
-      <div className="gear-cells">
-        {arr.map((entry, i) => {
-          const name = entry ? catalog.nameOf(entry.itemId) : ''
-
-          if (!entry) {
-            return (
-              <button
-                key={i}
-                className="gear-cell void"
-                title={`${def.label}: пусто`}
-                onClick={() => onPick(i)}
-              >
-                +
-              </button>
-            )
-          }
-
-          const item = catalog.byId(entry.itemId)
-          const grade = item?.gradeName
-          const gradeCss = gradeCode(grade)
-          const mod = entry.mod ?? 0
-
-          return (
-            <div
-              key={i}
-              className={`gear-cell filled ${
-                gradeCss !== null ? `g${gradeCss}` : ''
-              } ${entry.spans ? 'spans' : ''}`}
-              title={[
-                `${def.label}: ${name}`,
-                grade ? `ранг ${grade}` : '',
-                `№${entry.itemId}`,
-                entry.mod ? `заточка +${entry.mod}` : '',
-                entry.spans ? 'занимает два слота' : '',
-                item?.twoHanded ? 'двуручное' : '',
-                item?.dual ? 'дуальное' : '',
-                item?.fullbody ? 'цельная броня' : '',
-                item?.weaponClass,
-                typeof item?.atkPhys === 'number' ? `физ. АТК ${item.atkPhys}` : '',
-                typeof item?.atkMag === 'number' ? `маг. АТК ${item.atkMag}` : '',
-                typeof item?.physDef === 'number' ? `физ. ЗАЩ ${item.physDef}` : '',
-                typeof item?.mDef === 'number' ? `маг. ЗАЩ ${item.mDef}` : '',
-                item?.set,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            >
-              {/*
-                Всё в одну строку: иконка, ранг, название, счётчик заточки.
-                Раньше ранг и заточка стояли под названием, и ячейка была
-                вдвое выше — карточка не помещалась в экран по высоте.
-              */}
-              <button className="cell-main" onClick={() => onPick(i)}>
-                <span className="cell-icon">
-                  <ItemIcon item={item} name={name} size={24} />
-                </span>
-                {grade && <span className="chip grade">{gradeLabel(grade)}</span>}
-                {entry.spans && <span className="chip span">2</span>}
-                <span className="cell-name">{name}</span>
-              </button>
-
-              {/*
-                Заточка всегда на виду: в ячейке двенадцать вещей, спрятать
-                её под наведение — значит забыть про неё и упустить
-                перезаточку перед походом. Кнопки стоят отдельными элементами
-                от .cell-main, потому что кнопка внутри кнопки браузером не
-                разбирается, а нажатие на + открывало бы пикер предмета.
-              */}
-              <div className="cell-mod" title={`Заточка от 0 до ${MAX_MOD}`}>
-                <button
-                  className="mod-btn"
-                  disabled={mod <= 0}
-                  onClick={() => setSlotMod(ветка, slot, i, mod - 1)}
-                  title="Убавить заточку на 1"
-                >
-                  −
-                </button>
-                <span className={`mod-value${mod > 0 ? ' on' : ''}`}>+{mod}</span>
-                <button
-                  className="mod-btn"
-                  disabled={mod >= MAX_MOD}
-                  onClick={() => setSlotMod(ветка, slot, i, mod + 1)}
-                  title="Добавить заточку на 1"
-                >
-                  +
-                </button>
-              </div>
-
-              {/*
-                Снять вещь. Кнопка в правом верхнем углу, по наведению и
-                только на заполненной ячейке: у пустой и так понятно, что
-                снимать нечего.
-
-                Место под неё зарезервировано в .cell-main постоянно, а не
-                только при наведении: иначе наведение сдвигало бы счётчик
-                заточки и накрывало его — а нажать на + нужно как раз для
-                того, ради чего ячейку и наводят.
-              */}
-              <div className="cell-tools">
-                <button
-                  className="icon-btn tiny danger"
-                  title={entry.spans ? 'Снять с обоих слотов' : 'Снять'}
-                  onClick={() => unequipItem(ветка, slot, i)}
-                >
-                  <IconClose />
-                </button>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-

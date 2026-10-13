@@ -17,6 +17,7 @@ import { useMemo } from 'react'
 import type { Pa } from '@/types'
 import { PA_DAYS } from '@/types'
 import { paLeft, paUrgency } from '@/lib/pa'
+import { IconClose } from './Icons'
 
 export function PaEdit({
   from,
@@ -81,7 +82,7 @@ export function PaEdit({
 
         {заполнено && (
           <button className="btn pa-edit-clear" onClick={onClear} title="Убрать дату и срок">
-            Снять
+            <IconClose />
           </button>
         )}
       </div>

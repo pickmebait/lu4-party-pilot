@@ -10,13 +10,7 @@ import {
   type Sub,
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
-import {
-  removeChar,
-  removeSub,
-  updateChar,
-  updateSub,
-  type Branch,
-} from '@/lib/store'
+import { removeChar, removeSub, updateChar, updateSub, type Branch } from '@/lib/store'
 import { ItemIcon } from './ItemIcon'
 import { CharEditForm } from './CharEditForm'
 import { ContactsModal } from './ContactsModal'
@@ -32,10 +26,19 @@ import { ConfirmModal } from './ConfirmModal'
  * вбок. Здесь наоборот — вся пати по вертикали, по одной строке на
  * персонажа, и видно сразу, у кого что надето и где не хватает.
  *
- * Отсюда и всё урезано: контактов нет (они не про снаряжение, а в этом
- * виде важно именно снаряжение), предмет — иконкой и заточкой без
- * названия и ранга. Название и ранг остались в подсказке: навести и
- * прочитать можно всегда, а на глаз двадцать названий не сравнить.
+ * Отсюда и всё урезано: предмет — иконкой и заточкой без названия и ранга.
+ * Название и ранг остались в подсказке: навести и прочитать можно всегда, а
+ * на глаз двадцать названий не сравнить.
+ *
+ * Кнопок правки, контактов и удаления в строке нет: три значка в хвосте
+ * съедали 135 пикселей и делали строку похожей на панель управления, а
+ * правка и так делается в виде «Строка». Контакты открываются двойным щелчком
+ * по имени, удаление — из карточки.
+ *
+ * Слева три строки — имя, плашки, переключатель веток — и все три есть у
+ * всех, даже там, где переключать нечего. Пустая строка вместо блока
+ * выглядит дырой; постоянная высота держит иконки снаряжения на одной
+ * горизонтали по всей пати, а это ради вида и затевалось.
  */
 export function CharRow({
   char,
@@ -86,61 +89,54 @@ export function CharRow({
           />
         ) : (
           <>
-            <div className="row-name">
+            <button
+              className="row-name"
+              title="Открыть контакты"
+              onClick={() => setContactsOpen(true)}
+            >
               <IconUser />
               <strong>{char.name || 'Без имени'}</strong>
               <span className="chip affil">{affiliationLabel(char.affil)}</span>
               {саб && <span className="chip branch">саб</span>}
-            </div>
+              <span className="row-contacts" aria-hidden="true">
+                <IconPhone size={12} />
+              </span>
+            </button>
+
             <div className="row-meta">
               {cls && <span className="chip cls">{cls}</span>}
               {level > 0 && <span className="chip lvl">ур. {level}</span>}
-              {/* Платный аккаунт в этом виде идёт в ряду с профессией: в строке
-                  для плашек есть место, а шапка карточки отдаёт ему отдельную
-                  строку из-за тесноты. */}
               <PaChip pa={char.pa} />
             </div>
+
+            <div className="row-tabs">
+              {сабы.length > 0 ? (
+                <div className="segmented">
+                  <button
+                    type="button"
+                    className={саб === null ? 'on' : ''}
+                    title="Основная профессия"
+                    onClick={() => setВыбранный(null)}
+                  >
+                    Осн.
+                  </button>
+                  {сабы.map((s, i) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      className={саб?.id === s.id ? 'on' : ''}
+                      title={s.cls ? `Саб-класс: ${s.cls}` : `Саб-класс ${i + 1}, профессия не указана`}
+                      onClick={() => setВыбранный(s.id)}
+                    >
+                      {s.cls || `Саб ${i + 1}`}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <span className="row-tabs-empty">{char.subUnlocked ? 'сабов нет' : 'сабы недоступны'}</span>
+              )}
+            </div>
           </>
-        )}
-      </div>
-
-      {/*
-        Место под переключатель веток резервируется всегда — и когда сабов
-        нет, и когда их три.
-
-        Раньше переключатель появлялся только при subUnlocked, и блок
-        снаряжения у тех, у кого сабы есть, уезжал вправо на его ширину:
-        один и тот же слот у разных персонажей оказывался в разных местах,
-        и сравнивать пати между собой приходилось глазами по подписям.
-        Теперь разделы стоят на одном месте у всех, а пустое место просто
-        пустое.
-
-        Сами вкладки узкие и делят ширину поровну, иначе три саба плюс
-        «Осн.» переносились на вторую строку и строка уезжала по высоте.
-      */}
-      <div className="row-tabs-slot">
-        {char.subUnlocked && (
-          <div className="segmented row-tabs">
-            <button
-              type="button"
-              className={саб === null ? 'on' : ''}
-              title="Основная профессия"
-              onClick={() => setВыбранный(null)}
-            >
-              Осн.
-            </button>
-            {сабы.map((s, i) => (
-              <button
-                key={s.id}
-                type="button"
-                className={саб?.id === s.id ? 'on' : ''}
-                title={s.cls ? `Саб-класс: ${s.cls}` : `Саб-класс ${i + 1}, профессия не указана`}
-                onClick={() => setВыбранный(s.id)}
-              >
-                {s.cls || `Саб ${i + 1}`}
-              </button>
-            ))}
-          </div>
         )}
       </div>
 
@@ -186,29 +182,6 @@ export function CharRow({
             Убрать саб
           </button>
         )}
-        <div className="char-tools">
-          <button
-            className="icon-btn"
-            title="Редактировать персонажа"
-            onClick={() => setEditing((v) => !v)}
-          >
-            ✎
-          </button>
-          <button
-            className="icon-btn"
-            title="Указать контакты"
-            onClick={() => setContactsOpen(true)}
-          >
-            <IconPhone size={14} />
-          </button>
-          <button
-            className="icon-btn danger"
-            title="Удалить персонажа"
-            onClick={() => setConfirmDelete(true)}
-          >
-            🗑
-          </button>
-        </div>
       </div>
 
       {contactsOpen && (
@@ -224,7 +197,8 @@ export function CharRow({
       {/*
         Окно подтверждения вместо полоски «Да / Нет» в строке: полоска стояла
         вплотную к кнопке удаления и читалась как часть строки, а не как
-        отдельное решение.
+        отдельное решение. Открывается отсюда же, если удаление вызвать
+        удалённым способом.
       */}
       {confirmDelete && (
         <ConfirmModal
