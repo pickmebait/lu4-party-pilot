@@ -3,7 +3,15 @@
   "name": "Совместная работа 144956",
   "createdAt": "2026-10-13T14:49:56.746Z",
   "masterHash": "b753f57d973fb6e433f828a83b80661d7227693ba93ab344112c690b6acf4318",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "axr8f58sew",
+      "hash": "31388e6b85c69afc0105696fd6dba7413132d5d459d507eeb660dd20b6796279",
+      "charId": "cOne",
+      "charName": "Первый",
+      "createdAt": "2026-10-13T14:50:01.654Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-13T14:50:00.039Z",
