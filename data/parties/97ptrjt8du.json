@@ -3,7 +3,15 @@
   "name": "Проверка доступа 135807",
   "createdAt": "2026-10-13T13:58:08.507Z",
   "masterHash": "0029549020e520cb6c8a88d9ca074ac7af8cf04fc98294a3a5d14cf63f8c16b5",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "sqnv6pir3n",
+      "hash": "6caba21ee69ab897e4ba6e49ad4b2dcf83e9fdde0b63a4a7d3e50dd318486b37",
+      "charId": "checkTwo",
+      "charName": "Проверяемый",
+      "createdAt": "2026-10-13T13:58:11.467Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-13T13:58:09.960Z",
