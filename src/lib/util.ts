@@ -48,15 +48,3 @@ export function plural(n: number, one: string, few: string, many: string): strin
 export function normalize(s: string): string {
   return s.toLowerCase().replace(/ё/g, 'е').trim()
 }
-
-export function downloadJson(filename: string, data: unknown): void {
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
-    type: 'application/json;charset=utf-8',
-  })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
-}

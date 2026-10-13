@@ -26,7 +26,6 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
     token: string
     name: string
     partyId: string
-    role: 'owner' | 'member'
   } | null>(null)
 
   const enter = async () => {
@@ -64,6 +63,7 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
       partyId: info.partyId,
       name: info.name,
       role: info.role,
+      charId: info.charId ?? null,
       apiUrl: API_URL,
       lastSyncedAt: loaded.ok ? loaded.value.updatedAt : '',
     })
@@ -86,7 +86,6 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
       token: res.value.token,
       name: res.value.name,
       partyId: res.value.partyId,
-      role: res.value.role,
     })
   }
 
@@ -118,7 +117,8 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
             token: issued.token,
             partyId: issued.partyId,
             name: issued.name,
-            role: issued.role,
+            role: 'master',
+            charId: null,
             apiUrl: API_URL,
             lastSyncedAt,
           })
@@ -135,7 +135,7 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
           <span className="logo">⚔</span>
           <div>
             <h1>{APP_NAME}</h1>
-            <p className="tag">экипировки пати · общая казна · хотелки</p>
+            <p className="tag">экипировка расписание взаимодействие</p>
           </div>
           {/* Палитра действует на всё приложение, значит её можно выбрать и
               не заходя внутрь — тем более, что цвет страницы тут и виден. */}
@@ -154,8 +154,8 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
         {mode === 'enter' ? (
           <div className="form">
             <p className="hint">
-              Токен даёт лидер пати — он в Дискорде, в чате или в личке. Токен хранится
-              только в этом браузере.
+              Токен выдаёт тот, у кого мастер-токен, — он в Дискорде, в чате или в личке.
+              Токен хранится только в этом браузере.
             </p>
             <label>
               Токен пати
@@ -175,8 +175,9 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
         ) : (
           <div className="form">
             <p className="hint">
-              Создай пати и получи токен. Раздай его игрокам — по нему они получат
-              доступ к общей базе. Токен никак не связан с GitHub.
+              Создай пати и получи мастер-токен: он остаётся у тебя, а игрокам ты
+              выпускаешь отдельный токен на каждого — по нему они видят всю пати, но
+              правят только своего персонажа. Токены никак не связаны с GitHub.
             </p>
             <label>
               Название пати
@@ -189,7 +190,7 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
               />
             </label>
             <button className="btn primary wide" disabled={busy} onClick={create}>
-              {busy ? 'Создаю…' : 'Создать пати и получить токен'}
+              {busy ? 'Создаю…' : 'Создать пати и получить мастер-токен'}
             </button>
           </div>
         )}
@@ -233,13 +234,15 @@ function TokenIssued({ token, name, onDone }: { token: string; name: string; onD
         </div>
 
         <div className="sync-msg err">
-          Токен показывается один раз. Если потеряешь — новый можно выпустить в
-          настройках внутри приложения, старый сразу перестанет работать.
+          Мастер-токен показывается один раз. Если потеряешь — перевыпусти в меню
+          доступа справа вверху; прежний сразу перестанет работать вместе со всеми
+          токенами игроков.
         </div>
 
         <p className="hint">
-          Кидай этот токен игрокам в Дискорд или в чат. Они вставят его на экране
-          входа и получат доступ к общей казне, хотелкам и комплектам пати.
+          Этот токен остаётся у тебя. Игрокам выпускай отдельные токены — по одному
+          на персонажа, из меню «{name}» в правом верхнем углу. Там же видно, кому
+          какой выдан, и можно перевыпустить или отозвать любой.
         </p>
 
         <button className="btn primary wide" onClick={onDone}>

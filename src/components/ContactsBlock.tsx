@@ -97,7 +97,7 @@ function строкиКонтактов(контакты: Char['contacts']): К�
  * пустым: пустота молчаливого блока читалась как «контактов не
  * предусмотрено».
  */
-export function ContactsBlock({ char, onEdit }: { char: Char; onEdit: () => void }) {
+export function ContactsBlock({ char, onEdit }: { char: Char; onEdit?: () => void }) {
   const [open, setOpen] = useState(false)
   const строки = useMemo(() => строкиКонтактов(char.contacts), [char.contacts])
 
@@ -167,15 +167,18 @@ export function ContactsBlock({ char, onEdit }: { char: Char; onEdit: () => void
             ))}
             <div className="contacts-row">
               <span className="contacts-key" />
-              <button className="btn tiny" onClick={onEdit}>
-                Изменить
-              </button>
+              {onEdit && (
+                <button className="btn tiny" onClick={onEdit}>
+                  Изменить
+                </button>
+              )}
             </div>
           </div>
         ) : (
           <div className="contacts-list">
             <p className="contacts-none">
-              Не заполнены. Заполнить — кнопкой с трубкой справа.
+              Не заполнены.
+              {onEdit ? ' Заполнить — кнопкой с трубкой справа.' : ''}
             </p>
           </div>
         ))}

@@ -882,7 +882,14 @@ export interface PartySession {
   token: string
   partyId: string
   name: string
-  role: 'owner' | 'member'
+  /**
+   * Вид токена: master — полные права, char — только свой персонаж.
+   * Разница проверяется ещё и на сервере, здесь она нужна, чтобы не показывать
+   * кнопки, которые всё равно не сработают.
+   */
+  role: 'master' | 'char'
+  /** Чей это персонаж. Есть только у токена персонажа. */
+  charId: string | null
   /** Адрес Worker'а с базой. */
   apiUrl: string
   /**

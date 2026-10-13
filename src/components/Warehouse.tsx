@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { CatalogApi } from '@/lib/catalog'
+import { useAccess, useOwnCharName } from '@/lib/access'
 import {
   addToWarehouse,
   dropFromWarehouse,
@@ -11,9 +12,13 @@ import { formatAgo, formatStamp, plural } from '@/lib/util'
 import { gradeCode, gradeLabel } from '@/types'
 import { ItemPicker, matches } from './ItemPicker'
 import { ItemIcon } from './ItemIcon'
+import { ReadOnlyNote } from './ReadOnlyNote'
 
 export function WarehouseView({ catalog }: { catalog: CatalogApi }) {
   const db = useDb()
+  // Казна общая: токен персонажа её не правит.
+  const { canEditParty: правый } = useAccess()
+  const имяСвоего = useOwnCharName()
   const [q, setQ] = useState('')
   const [showLog, setShowLog] = useState(false)
   const [picking, setPicking] = useState(false)
@@ -59,11 +64,15 @@ export function WarehouseView({ catalog }: { catalog: CatalogApi }) {
           <button className="btn" onClick={() => setShowLog((v) => !v)}>
             {showLog ? 'Скрыть историю' : `История (${db.warehouse.log.length})`}
           </button>
-          <button className="btn primary" onClick={() => setPicking(true)}>
-            + Положить
-          </button>
+          {правый && (
+            <button className="btn primary" onClick={() => setPicking(true)}>
+              + Положить
+            </button>
+          )}
         </div>
       </div>
+
+      {!правый && <ReadOnlyNote имя={имяСвоего} />}
 
       <input
         className="input filter-wide"
@@ -105,40 +114,50 @@ export function WarehouseView({ catalog }: { catalog: CatalogApi }) {
                     <div className="cell-id">#{s.itemId}</div>
                   </td>
                   <td className="num">
-                    <div className="counter">
-                      <button
-                        className="icon-btn tiny"
-                        title="Забрать одну штуку"
-                        onClick={() => takeFromWarehouse(s.itemId, 1)}
-                      >
-                        −
-                      </button>
-                      <input
-                        className="input tiny-input"
-                        inputMode="numeric"
-                        value={s.count}
-                        onChange={(e) =>
-                          setWarehouseCount(s.itemId, Number(e.target.value.replace(/\D/g, '')))
-                        }
-                      />
-                      <button
-                        className="icon-btn tiny"
-                        title="Положить одну штуку"
-                        onClick={() => addToWarehouse(s.itemId, 1)}
-                      >
-                        +
-                      </button>
-                    </div>
+                    {правый ? (
+                      <div className="counter">
+                        <button
+                          className="icon-btn tiny"
+                          title="Забрать одну штуку"
+                          onClick={() => takeFromWarehouse(s.itemId, 1)}
+                        >
+                          −
+                        </button>
+                        <input
+                          className="input tiny-input"
+                          inputMode="numeric"
+                          value={s.count}
+                          onChange={(e) =>
+                            setWarehouseCount(s.itemId, Number(e.target.value.replace(/\D/g, '')))
+                          }
+                        />
+                        <button
+                          className="icon-btn tiny"
+                          title="Положить одну штуку"
+                          onClick={() => addToWarehouse(s.itemId, 1)}
+                        >
+                          +
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="counter-count">{s.count}</span>
+                    )}
                   </td>
-                  <td className="right">
-                    <button
-                      className="icon-btn danger tiny"
-                      title="Убрать позицию из казны"
-                      onClick={() => dropFromWarehouse(s.itemId)}
-                    >
-                      🗑
-                    </button>
-                  </td>
+                  {правый ? (
+                    <td className="right">
+                      <button
+                        className="icon-btn danger tiny"
+                        title="Убрать позицию из казны"
+                        onClick={() => dropFromWarehouse(s.itemId)}
+                      >
+                        🗑
+                      </button>
+                    </td>
+                  ) : (
+                    /* Пустая ячейка третьего столбца: иначе строки прижало бы
+                       влево и шапка разошлась с ними по числу столбцов. */
+                    <td className="right" />
+                  )}
                 </tr>
               )
             })}

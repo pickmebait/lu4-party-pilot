@@ -33,7 +33,9 @@ import {
   useDb,
 } from '@/lib/store'
 import { isMarked, toggleChecklist, useChecklistMarks } from '@/lib/checklistSession'
+import { useAccess, useOwnCharName } from '@/lib/access'
 import { IconClose } from './Icons'
+import { ReadOnlyNote } from './ReadOnlyNote'
 
 /**
  * Расписание прайма: календарь с праздниками, выходными и отметками
@@ -114,6 +116,9 @@ function Переключатель<T extends string>({
 
 export function ScheduleView() {
   const db = useDb()
+  // Расписание общее: токен персонажа его не правит.
+  const { canEditParty: правый } = useAccess()
+  const имяСвоего = useOwnCharName()
   const сегодня = isoToday()
   const [месяц, setМесяц] = useState(() => {
     const d = parseKey(сегодня)
@@ -342,6 +347,8 @@ export function ScheduleView() {
         </div>
       </div>
 
+      {!правый && <ReadOnlyNote имя={имяСвоего} />}
+
       <div className="cal-layout">
         <div>
           <div className="cal">
@@ -455,7 +462,7 @@ export function ScheduleView() {
         попадает под курсор после выделения дней; справа отсутствие, которым
         пользуются реже и по другому поводу.
       */}
-    {границы && (
+    {правый && границы && (
         <div className="cal-editor">
               <div className="editor-what">
                 <strong>
@@ -893,6 +900,9 @@ function описаниеОтсутствия(a: Absence): string {
  */
 function Checklist() {
   const db = useDb()
+  // Пункты общие: токен персонажа их не правит. Отметки при этом остаются
+  // доступны — они живут только в этой вкладке и в базу не попадают.
+  const { canEditParty: правый } = useAccess()
   const [новый, setНовый] = useState('')
   const пункты = db.schedule.checklist
   useChecklistMarks()
@@ -930,36 +940,41 @@ function Checklist() {
               <input
                 className="checklist-text"
                 value={i.text}
+                readOnly={!правый}
                 placeholder="что проверить"
                 onChange={(e) => updateChecklistItem(i.id, { text: e.target.value })}
               />
-              <button
-                className="icon-btn tiny"
-                title="Убрать пункт"
-                onClick={() => removeChecklistItem(i.id)}
-              >
-                <IconClose />
-              </button>
+              {правый && (
+                <button
+                  className="icon-btn tiny"
+                  title="Убрать пункт"
+                  onClick={() => removeChecklistItem(i.id)}
+                >
+                  <IconClose />
+                </button>
+              )}
             </li>
           ))}
         </ul>
       )}
 
-      <div className="checklist-add">
-        <input
-          className="input"
-          value={новый}
-          placeholder="Добавить пункт"
-          onChange={(e) => setНовый(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') добавить()
-            e.stopPropagation()
-          }}
-        />
-        <button className="btn tiny" onClick={добавить} disabled={!новый.trim()}>
-          +
-        </button>
-      </div>
+      {правый && (
+        <div className="checklist-add">
+          <input
+            className="input"
+            value={новый}
+            placeholder="Добавить пункт"
+            onChange={(e) => setНовый(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') добавить()
+              e.stopPropagation()
+            }}
+          />
+          <button className="btn tiny" onClick={добавить} disabled={!новый.trim()}>
+            +
+          </button>
+        </div>
+      )}
     </div>
   )
 }

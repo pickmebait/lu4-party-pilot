@@ -8,6 +8,7 @@ import {
   type Sub,
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
+import { useAccess } from '@/lib/access'
 import { removeChar, removeSub, updateChar, updateSub, type Branch } from '@/lib/store'
 import { CharEditForm } from './CharEditForm'
 import { ContactsModal } from './ContactsModal'
@@ -56,6 +57,8 @@ export function CharCard({
    */
   const [выбранный, setВыбранный] = useState<string | null>(null)
 
+  const { canEditChar, ownCharId } = useAccess()
+
   const сабы = char.subUnlocked ? char.subs : []
   const саб = выбранный ? (сабы.find((s) => s.id === выбранный) ?? null) : null
   const ветка: Branch = { charId: char.id, subId: саб?.id ?? null }
@@ -75,6 +78,15 @@ export function CharCard({
   }
 
   const контактов = Object.keys(char.contacts ?? {}).length
+
+  /*
+   * Токен персонажа правит ровно одного. Всё, что правит, у чужого
+   * персонажа не показывается вовсе: иначе нажатие приводило бы к отказу
+   * сервера, и выглядело бы как ошибка у человека, который всё сделал
+   * правильно.
+   */
+  const правый = canEditChar(char.id)
+  const свой = правый && ownCharId === char.id
 
   return (
     <article className="char-card">
@@ -113,35 +125,44 @@ export function CharCard({
                 <span className="chip affil" title="Принадлежность">
                   {affiliationLabel(char.affil)}
                 </span>
+                {/* Подсказка, чей это персонаж: без неё непонятно, почему
+                    кнопки есть только у одного. */}
+                {свой && (
+                  <span className="chip own" title="Токен персонажа позволяет править только его">
+                    твой
+                  </span>
+                )}
               </div>
 
               {/* Премиум аккаунт — перед кнопками: это не свойство снаряжения,
                   его тут и продлевают. */}
               <PaChip pa={char.pa} />
 
-              <div className="char-tools">
-                <button
-                  className="icon-btn"
-                  title="Редактировать персонажа"
-                  onClick={() => setEditing(true)}
-                >
-                  ✎
-                </button>
-                <button
-                  className={`icon-btn${контактов === 0 ? ' suggest' : ''}`}
-                  title={контактов > 0 ? 'Изменить контакты' : 'Указать контакты'}
-                  onClick={() => setEditContacts(true)}
-                >
-                  <IconPhone size={14} />
-                </button>
-                <button
-                  className="icon-btn danger"
-                  title="Удалить персонажа"
-                  onClick={() => setConfirmDelete(true)}
-                >
-                  🗑
-                </button>
-              </div>
+              {правый && (
+                <div className="char-tools">
+                  <button
+                    className="icon-btn"
+                    title="Редактировать персонажа"
+                    onClick={() => setEditing(true)}
+                  >
+                    ✎
+                  </button>
+                  <button
+                    className={`icon-btn${контактов === 0 ? ' suggest' : ''}`}
+                    title={контактов > 0 ? 'Изменить контакты' : 'Указать контакты'}
+                    onClick={() => setEditContacts(true)}
+                  >
+                    <IconPhone size={14} />
+                  </button>
+                  <button
+                    className="icon-btn danger"
+                    title="Удалить персонажа"
+                    onClick={() => setConfirmDelete(true)}
+                  >
+                    🗑
+                  </button>
+                </div>
+              )}
             </div>
 
             {/*
@@ -171,7 +192,7 @@ export function CharCard({
               )}
             </div>
 
-            <ContactsBlock char={char} onEdit={() => setEditContacts(true)} />
+            <ContactsBlock char={char} onEdit={правый ? () => setEditContacts(true) : undefined} />
           </>
         )}
       </header>
@@ -180,11 +201,18 @@ export function CharCard({
         char={char}
         сабы={сабы}
         активный={саб?.id ?? null}
+        правый={правый}
         onSelect={setВыбранный}
         onRemove={(id) => setУбираемыйСаб(сабы.find((s) => s.id === id) ?? null)}
       />
 
-      <GearStack ветка={ветка} слоты={слоты} catalog={catalog} onPick={onPick} />
+      <GearStack
+        ветка={ветка}
+        слоты={слоты}
+        catalog={catalog}
+        правый={правый}
+        onPick={onPick}
+      />
 
       {editContacts && (
         <ContactsModal char={char} onClose={() => setEditContacts(false)} />

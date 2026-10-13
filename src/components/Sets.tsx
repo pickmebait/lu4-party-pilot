@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
 import type { CatalogApi } from '@/lib/catalog'
+import { useAccess, useOwnCharName } from '@/lib/access'
 import { computeSets } from '@/lib/derived'
 import { addSet, removeSet, updateSet, useDb } from '@/lib/store'
 import { gradeLabel } from '@/types'
 import { ItemPicker } from './ItemPicker'
 import { ItemIcon } from './ItemIcon'
+import { ReadOnlyNote } from './ReadOnlyNote'
 
 interface SetDraft {
   id: string | null
@@ -15,6 +17,9 @@ interface SetDraft {
 
 export function SetsView({ catalog }: { catalog: CatalogApi }) {
   const db = useDb()
+  // Комплекты общие: токен персонажа их не правит.
+  const { canEditParty: правый } = useAccess()
+  const имяСвоего = useOwnCharName()
   const progress = useMemo(() => computeSets(db), [db])
   const [draft, setDraft] = useState<SetDraft | null>(null)
   const [pickingPiece, setPickingPiece] = useState(false)
@@ -29,14 +34,18 @@ export function SetsView({ catalog }: { catalog: CatalogApi }) {
           </span>
         </h2>
         <div className="view-actions">
-          <button
-            className="btn primary"
-            onClick={() => setDraft({ id: null, name: '', bonus: '', pieces: [] })}
-          >
-            + Комплект
-          </button>
+          {правый && (
+            <button
+              className="btn primary"
+              onClick={() => setDraft({ id: null, name: '', bonus: '', pieces: [] })}
+            >
+              + Комплект
+            </button>
+          )}
         </div>
       </div>
+
+      {!правый && <ReadOnlyNote имя={имяСвоего} />}
 
       {progress.length === 0 && (
         <div className="empty">
@@ -86,24 +95,26 @@ export function SetsView({ catalog }: { catalog: CatalogApi }) {
               })}
             </ul>
 
-            <footer>
-              <button
-                className="btn tiny"
-                onClick={() =>
-                  setDraft({
-                    id: p.set.id,
-                    name: p.set.name,
-                    bonus: p.set.bonus ?? '',
-                    pieces: [...p.set.pieces],
-                  })
-                }
-              >
-                Изменить
-              </button>
-              <button className="btn tiny danger" onClick={() => removeSet(p.set.id)}>
-                Удалить
-              </button>
-            </footer>
+            {правый && (
+              <footer>
+                <button
+                  className="btn tiny"
+                  onClick={() =>
+                    setDraft({
+                      id: p.set.id,
+                      name: p.set.name,
+                      bonus: p.set.bonus ?? '',
+                      pieces: [...p.set.pieces],
+                    })
+                  }
+                >
+                  Изменить
+                </button>
+                <button className="btn tiny danger" onClick={() => removeSet(p.set.id)}>
+                  Удалить
+                </button>
+              </footer>
+            )}
           </article>
         ))}
       </div>

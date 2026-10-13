@@ -6,10 +6,19 @@
  *   data/parties/<partyId>.json
  *
  * Токен GitHub хранится в секрете Worker'а и в браузер не попадает никогда.
- * Токен пати — случайная строка; сервер читает из неё id пати и сверяет
+ * Токены пати — случайные строки; сервер читает из них id пати и сверяет
  * секретную часть с хешем, который лежит в файле. Поэтому искать пати
- * приходится по прямому пути, а не перебором, а сам токен в репозитории
- * не хранится — только его SHA-256.
+ * приходится по прямому пути, а не перебором, а сами токены в репозитории
+ * не хранятся — только их SHA-256.
+ *
+ * Два вида доступа:
+ *
+ *   Мастер-токен — один на пати, выдаётся при создании и при перевыпуске.
+ *   Полные права, правит кого угодно, может выпускать и отзывать токены.
+ *
+ *   Токен персонажа — выпускается мастером на конкретного персонажа.
+ *   Смотрит всё, правит только этого персонажа: проверка идёт на сервере,
+ *   по всему документу целиком, а не по нажатой кнопке.
  */
 export interface Env {
   /** Секрет: fine-grained токен с правом Contents: Read and write. */
@@ -23,14 +32,40 @@ export interface Env {
   ALLOWED_ORIGIN?: string
 }
 
+/** Выпущенный токен персонажа. Сам токен в файле не лежит — только хеш. */
+interface IssuedToken {
+  /** Идентификатор записи в списке: по нему её отзывают. */
+  id: string
+  /** SHA-256 секретной части. */
+  hash: string
+  /** id персонажа, которому этот токен позволяет править. */
+  charId: string
+  /** Имя на момент выпуска: персонажа могли переименовать. */
+  charName: string
+  createdAt: string
+}
+
 interface PartyFile {
   partyId: string
   name: string
   createdAt: string
-  /** SHA-256 секретной части токена. Сам токен не хранится. */
-  tokenHash: string
-  tokensIssued: number
+  /** SHA-256 секрета мастер-токена. */
+  masterHash: string
+  tokens: IssuedToken[]
   db: unknown
+}
+
+/**
+ * Файл пати, прочитанный из репозитория.
+ *
+ * Поле tokenHash в нём больше не пишется, но в базах, созданных до
+ * разделения на мастер-токен и токены персонажей, осталось — и именно в нём
+ * лежит хеш того самого мастер-токена.
+ */
+interface StoredPartyFile extends Omit<PartyFile, 'masterHash'> {
+  masterHash?: string
+  /** Прежнее поле. Читается при миграции и больше не используется. */
+  tokenHash?: string
 }
 
 const DEFAULT_OWNER = 'pickmebait'
@@ -49,22 +84,31 @@ export default {
 
     try {
       const url = new URL(request.url)
-      switch (url.pathname) {
-        case '/api/party':
-          return await createParty(request, env, cors)
-        case '/api/session':
-          return await openSession(request, env, cors)
-        case '/api/party/data':
-          return request.method === 'PUT'
-            ? await writeData(request, env, cors)
-            : await readData(request, env, cors)
-        case '/api/party/meta':
-          return await readMeta(request, env, cors)
-        case '/api/party/rotate':
-          return await rotateToken(request, env, cors)
-        default:
-          return json({ error: 'Неизвестный адрес' }, 404, cors)
+      const путь = url.pathname
+
+      if (путь === '/api/party') {
+        if (request.method === 'POST') return await createParty(request, env, cors)
+        if (request.method === 'DELETE') return await deleteParty(request, env, cors)
+        return json({ error: 'Нужен POST или DELETE' }, 405, cors)
       }
+      if (путь === '/api/session') {
+        if (request.method === 'POST') return await openSession(request, env, cors)
+        return json({ error: 'Нужен POST' }, 405, cors)
+      }
+      if (путь === '/api/party/data') {
+        return request.method === 'PUT'
+          ? await writeData(request, env, cors)
+          : await readData(request, env, cors)
+      }
+      if (путь === '/api/party/meta') return await readMeta(request, env, cors)
+      if (путь === '/api/party/rotate') return await rotateMaster(request, env, cors)
+      if (путь === '/api/party/tokens') {
+        if (request.method === 'POST') return await issueToken(request, env, cors)
+        if (request.method === 'DELETE') return await revokeToken(request, env, cors)
+        return json({ error: 'Нужен POST или DELETE' }, 405, cors)
+      }
+
+      return json({ error: 'Неизвестный адрес' }, 404, cors)
     } catch (e) {
       return json({ error: e instanceof Error ? e.message : 'Внутренняя ошибка' }, 500, cors)
     }
@@ -112,10 +156,44 @@ async function readFile(env: Env, partyId: string): Promise<RepoFile | { error: 
   if (!json.sha || !json.content) return { sha: '', data: null }
 
   try {
-    return { sha: json.sha, data: JSON.parse(decodeBase64(json.content)) as PartyFile }
+    const raw = JSON.parse(decodeBase64(json.content)) as StoredPartyFile
+    return { sha: json.sha, data: normalizeParty(raw, partyId) }
   } catch {
     return { error: 'Файл пати в репозитории повреждён: не читается JSON' }
   }
+}
+
+/**
+ * Приводит файл к нынешнему виду.
+ *
+ * Базы, созданные до появления токенов персонажей, лежат со старым полем
+ * tokenHash — это как раз хеш мастер-токена, он и становится мастерским.
+ * Миграция проходит при каждом чтении и однажды записывается вместе с
+ * ближайшей правкой базы.
+ */
+function normalizeParty(raw: StoredPartyFile, partyId: string): PartyFile {
+  const masterHash = typeof raw.masterHash === 'string' && raw.masterHash
+    ? raw.masterHash
+    : typeof raw.tokenHash === 'string' ? raw.tokenHash : ''
+  return {
+    partyId,
+    name: typeof raw.name === 'string' ? raw.name : 'Моя пати',
+    createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : '',
+    masterHash,
+    tokens: Array.isArray(raw.tokens) ? raw.tokens.filter(isIssuedToken) : [],
+    db: raw.db ?? emptyDb(new Date().toISOString()),
+  }
+}
+
+function isIssuedToken(t: unknown): t is IssuedToken {
+  if (!t || typeof t !== 'object') return false
+  const v = t as Record<string, unknown>
+  return (
+    typeof v.id === 'string' &&
+    typeof v.hash === 'string' &&
+    typeof v.charId === 'string' &&
+    typeof v.createdAt === 'string'
+  )
 }
 
 /** Пишет файл пати. Без sha GitHub отклонит — это защита от гонки. */
@@ -149,6 +227,24 @@ async function writeFile(
   return { ok: true, sha: json.content?.sha ?? '' }
 }
 
+/** Удаляет файл пати. Файла нет — считаем, что уже удалён. */
+async function deleteFile(
+  env: Env,
+  partyId: string,
+  sha: string,
+  message: string,
+): Promise<{ ok: true } | { error: string }> {
+  const r = repo(env)
+  const res = await githubFetch(env, `${apiBase(env)}/${filePath(env, partyId)}`, {
+    method: 'DELETE',
+    body: JSON.stringify({ message, sha, branch: r.branch }),
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (res.status === 404) return { ok: true }
+  if (!res.ok) return { error: await describe(res) }
+  return { ok: true }
+}
+
 async function githubFetch(
   env: Env,
   url: string,
@@ -159,7 +255,7 @@ async function githubFetch(
   const headers: Record<string, string> = {
     Authorization: `Bearer ${env.GITHUB_TOKEN}`,
     Accept: 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28',
+    'X-GitHub-Api-Version': '2022-11-02',
     'User-Agent': 'lu4-party-pilot',
     ...((init.headers as Record<string, string>) ?? {}),
   }
@@ -184,7 +280,7 @@ async function describe(res: Response): Promise<string> {
   return `GitHub ответил ${res.status}${detail ? `: ${detail}` : ''}${hint}`
 }
 
-/* ------------------------------------------------------------------ пати */
+/* ------------------------------------------------------------------ токены */
 
 function randToken(nbytes: number): string {
   const alphabet = 'abcdefghijkmnpqrstuvwxyz23456789'
@@ -208,15 +304,36 @@ function newPartyId(): string {
   return randToken(ID_BYTES).slice(0, 10)
 }
 
-/** Токен вида p2p_<id>_<секрет>. По нему сразу понятно, какой файл читать. */
-function makeToken(partyId: string): string {
-  return `p2p_${partyId}_${randToken(SECRET_BYTES)}`
+type ParsedToken =
+  | { partyId: string; kind: 'M' }
+  | { partyId: string; kind: 'C'; charId: string }
+
+/**
+ * Мастер-токен: p2p_<id>_M_<секрет>
+ * Токен персонажа: p2p_<id>_C_<idПерсонажа>_<секрет>
+ *
+ * Вид токена виден прямо в строке, поэтому приложение может показать, чем
+ * именно вход, ещё до похода на сервер. Секретная часть всегда последняя и
+ * всегда одинаковой длины — разбирать токен можно по фиксированным позициям,
+ * а не гадая, где кончилось поле.
+ */
+function makeToken(partyId: string, kind: 'M' | 'C', charId = ''): string {
+  const хвост = kind === 'C' ? `C_${charId}` : 'M'
+  return `p2p_${partyId}_${хвост}_${randToken(SECRET_BYTES)}`
 }
 
-function parseToken(token: string): { partyId: string; secret: string } | null {
-  const m = token.trim().match(/^p2p_([a-z0-9]{4,24})_([a-z0-9]{20,32})$/i)
-  if (!m) return null
-  return { partyId: m[1], secret: m[2] }
+function parseToken(token: string): (ParsedToken & { secret: string }) | null {
+  const s = token.trim()
+  const m = s.match(/^p2p_([a-z0-9]{4,24})_M_([a-z0-9]{20,40})$/i)
+  if (m) return { partyId: m[1], kind: 'M', secret: m[2] }
+  const c = s.match(/^p2p_([a-z0-9]{4,24})_C_([a-z0-9]{4,32})_([a-z0-9]{20,40})$/i)
+  if (c) return { partyId: c[1], kind: 'C', charId: c[2], secret: c[3] }
+  return null
+}
+
+function tokenSecret(token: string): string {
+  const parts = token.split('_')
+  return parts[parts.length - 1]
 }
 
 async function hashHex(value: string): Promise<string> {
@@ -225,81 +342,123 @@ async function hashHex(value: string): Promise<string> {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
-/**
- * Проверяет токен по файлу пати: сверяется хеш секрета.
- * Токен целиком в репозитории не лежит, поэтому копия базы не даёт доступа.
- */
-async function authorize(
-  env: Env,
-  request: Request,
-): Promise<{ partyId: string; file: PartyFile; sha: string } | { error: string }> {
+/** Проверка доступа по файлу пати. Возвращает, чем именно вход. */
+type Access =
+  | { ok: true; partyId: string; file: PartyFile; sha: string; master: true; charId: null }
+  | { ok: true; partyId: string; file: PartyFile; sha: string; master: false; charId: string }
+  | { ok: false; error: string; status: number }
+
+async function authorize(env: Env, request: Request): Promise<Access> {
+  const denied = (error: string, status = 401): Access => ({ ok: false, error, status })
+
   const header = request.headers.get('Authorization') ?? ''
   const token = header.replace(/^Bearer\s+/i, '').trim()
-  if (!token) return { error: 'Нет токена' }
+  if (!token) return denied('Нет токена')
 
   const parsed = parseToken(token)
-  if (!parsed) return { error: 'Токен недействителен' }
+  if (!parsed) return denied('Токен недействителен')
 
   const file = await readFile(env, parsed.partyId)
-  if ('error' in file) return { error: file.error }
-  if (!file.data) return { error: 'Токен не подходит. Проверь, что скопировал целиком.' }
+  if ('error' in file) return denied(file.error, 502)
+  if (!file.data) return denied('Токен не подходит. Проверь, что скопировал целиком.')
 
   const hash = await hashHex(parsed.secret)
-  if (hash !== file.data.tokenHash) return { error: 'Токен недействителен' }
 
-  return { partyId: parsed.partyId, file: file.data, sha: file.sha }
+  if (parsed.kind === 'M') {
+    if (hash !== file.data.masterHash) return denied('Токен недействителен')
+    return {
+      ok: true,
+      partyId: parsed.partyId,
+      file: file.data,
+      sha: file.sha,
+      master: true,
+      charId: null,
+    }
+  }
+
+  const выпущен = file.data.tokens.find((t) => t.hash === hash)
+  if (!выпущен) return denied('Токен недействителен: его отозвали или мастер выпустил новый.')
+  if (выпущен.charId !== parsed.charId) return denied('Токен недействителен')
+
+  return {
+    ok: true,
+    partyId: parsed.partyId,
+    file: file.data,
+    sha: file.sha,
+    master: false,
+    charId: parsed.charId,
+  }
+}
+
+/** Только мастер. Остальным 403 — молча давать доступ к выдаче токенов нельзя. */
+function требуетсяМастер(access: Access): access is Extract<Access, { ok: true }> {
+  if (!access.ok) return false
+  return access.master
 }
 
 /* -------------------------------------------------------------- обработчики */
 
-/** Создаёт пати: новый файл в репозитории и токен, показываемый один раз. */
+/** Создаёт пати: новый файл в репозитории и мастер-токен, показываемый один раз. */
 async function createParty(request: Request, env: Env, cors: Cors): Promise<Response> {
-  if (request.method !== 'POST') return json({ error: 'Нужен POST' }, 405, cors)
-
   const body = await readJson(request)
   const name = cleanName(body?.name)
 
-  // Пробуем несколько раз: partyId короткий,collision возможен.
+  // Пробуем несколько раз: partyId короткий, collision возможен.
   for (let attempt = 0; attempt < 4; attempt++) {
     const partyId = newPartyId()
     const existing = await readFile(env, partyId)
     if ('error' in existing) return json({ error: existing.error }, 502, cors)
     if (existing.data) continue
 
-    const token = makeToken(partyId)
-    const secret = parseToken(token)!.secret
+    const token = makeToken(partyId, 'M')
     const now = new Date().toISOString()
 
     const party: PartyFile = {
       partyId,
       name,
       createdAt: now,
-      tokenHash: await hashHex(secret),
-      tokensIssued: 1,
+      masterHash: await hashHex(tokenSecret(token)),
+      tokens: [],
       db: emptyDb(now),
     }
 
-    const saved = await writeFile(
-      env,
-      partyId,
-      party,
-      '',
-      `${name}: создана пати (${partyId})`,
-    )
+    const saved = await writeFile(env, partyId, party, '', `${name}: создана пати (${partyId})`)
     if ('error' in saved) {
       if (saved.conflict) continue
       return json({ error: saved.error }, 502, cors)
     }
 
-    return json({ token, partyId, name, role: 'owner' }, 200, cors)
+    return json({ token, partyId, name, role: 'master' }, 200, cors)
   }
 
   return json({ error: 'Не удалось выбрать свободное имя пати, попробуй ещё раз' }, 503, cors)
 }
 
-async function openSession(request: Request, env: Env, cors: Cors): Promise<Response> {
-  if (request.method !== 'POST') return json({ error: 'Нужен POST' }, 405, cors)
+/**
+ * Удаляет пати целиком.
+ *
+ * Отдельная голая кнопка: файл пати удаляется из репозитория безвозвратно, и
+ * вместе с ним уходят все персонажи, казна и расписание. Подтверждение с
+ * тридцатисекундной паузой — на стороне интерфейса.
+ */
+async function deleteParty(request: Request, env: Env, cors: Cors): Promise<Response> {
+  const access = await authorize(env, request)
+  if (!access.ok) return json(access, access.status, cors)
+  if (!требуетсяМастер(access)) {
+    return json({ error: 'Удалить пати может только тот, у кого мастер-токен.' }, 403, cors)
+  }
 
+  const done = await deleteFile(
+    env,
+    access.partyId,
+    access.sha,
+    `${access.file.name}: пати удалена`,
+  )
+  if ('error' in done) return json({ error: done.error }, 502, cors)
+  return json({ ok: true, partyId: access.partyId }, 200, cors)
+}
+
+async function openSession(request: Request, env: Env, cors: Cors): Promise<Response> {
   const body = await readJson(request)
   const token = String(body?.token ?? '').trim()
   if (!token) return json({ error: 'Токен не указан' }, 400, cors)
@@ -311,17 +470,41 @@ async function openSession(request: Request, env: Env, cors: Cors): Promise<Resp
   if ('error' in file) return json({ error: file.error }, 502, cors)
   if (!file.data) return json({ error: 'Токен не подходит. Проверь, что скопировал целиком.' }, 401, cors)
 
-  if ((await hashHex(parsed.secret)) !== file.data.tokenHash) {
-    return json({ error: 'Токен не подходит. Проверь, что скопировал целиком.' }, 401, cors)
+  const hash = await hashHex(parsed.secret)
+
+  if (parsed.kind === 'M') {
+    if (hash !== file.data.masterHash) {
+      return json({ error: 'Токен не подходит. Проверь, что скопировал целиком.' }, 401, cors)
+    }
+    return json(
+      {
+        partyId: file.data.partyId,
+        name: file.data.name,
+        role: 'master',
+        chars: countChars(file.data.db),
+      },
+      200,
+      cors,
+    )
+  }
+
+  const выпущен = file.data.tokens.find((t) => t.hash === hash)
+  if (!выпущен || выпущен.charId !== parsed.charId) {
+    return json(
+      { error: 'Токен не подходит: его отозвали или мастер выпустил новый.' },
+      401,
+      cors,
+    )
   }
 
   return json(
     {
       partyId: file.data.partyId,
       name: file.data.name,
-      role: 'owner',
-      tokens: file.data.tokensIssued,
-      joinedAt: file.data.createdAt,
+      role: 'char',
+      charId: parsed.charId,
+      charName: charName(file.data.db, parsed.charId),
+      chars: countChars(file.data.db),
     },
     200,
     cors,
@@ -329,44 +512,72 @@ async function openSession(request: Request, env: Env, cors: Cors): Promise<Resp
 }
 
 async function readData(request: Request, env: Env, cors: Cors): Promise<Response> {
-  if (request.method !== 'GET') return json({ error: 'Нужен GET' }, 405, cors)
-
-  const auth = await authorize(env, request)
-  if ('error' in auth) return json(auth, 401, cors)
-
-  return json(auth.file.db ?? emptyDb(new Date().toISOString()), 200, cors)
+  const access = await authorize(env, request)
+  if (!access.ok) return json(access, access.status, cors)
+  return json(access.file.db ?? emptyDb(new Date().toISOString()), 200, cors)
 }
 
 async function readMeta(request: Request, env: Env, cors: Cors): Promise<Response> {
-  const auth = await authorize(env, request)
-  if ('error' in auth) return json(auth, 401, cors)
+  const access = await authorize(env, request)
+  if (!access.ok) return json(access, access.status, cors)
 
-  const db = auth.file.db as { updatedAt?: string; updatedBy?: string; chars?: unknown[] }
-  return json(
-    {
-      name: auth.file.name,
-      createdAt: auth.file.createdAt,
-      tokens: auth.file.tokensIssued,
-      updatedAt: db?.updatedAt ?? null,
-      updatedBy: db?.updatedBy ?? null,
-      chars: Array.isArray(db?.chars) ? db.chars.length : 0,
-    },
-    200,
-    cors,
-  )
+  const db = access.file.db as { updatedAt?: string; updatedBy?: string }
+  const тело: Record<string, unknown> = {
+    name: access.file.name,
+    partyId: access.file.partyId,
+    createdAt: access.file.createdAt,
+    role: access.master ? 'master' : 'char',
+    ownCharId: access.charId,
+    updatedAt: db?.updatedAt ?? null,
+    updatedBy: db?.updatedBy ?? null,
+    chars: countChars(access.file.db),
+  }
+
+  // Список выпущенных токенов видит только мастер: он их и выдаёт.
+  if (access.master) {
+    тело.tokens = access.file.tokens.map((t) => ({
+      id: t.id,
+      charId: t.charId,
+      charName: charName(access.file.db, t.charId) ?? t.charName,
+      createdAt: t.createdAt,
+    }))
+  }
+
+  return json(тело, 200, cors)
 }
 
 async function writeData(request: Request, env: Env, cors: Cors): Promise<Response> {
-  if (request.method !== 'PUT') return json({ error: 'Нужен PUT' }, 405, cors)
-
-  const auth = await authorize(env, request)
-  if ('error' in auth) return json(auth, 401, cors)
+  const access = await authorize(env, request)
+  if (!access.ok) return json(access, access.status, cors)
 
   const body = await readJson(request)
   const incoming = body?.db
   if (!isDbLike(incoming)) return json({ error: 'Данные выглядят повреждёнными' }, 400, cors)
 
-  const current = auth.file.db as { updatedAt?: string }
+  const current = access.file.db as { updatedAt?: string }
+
+  /*
+   * Токен персонажа правит только своего персонажа.
+   *
+   * Проверяется весь документ целиком, а не отдельные поля: запретить легко,
+   * пропустить легко, и список запрещённого однажды станет короче списка
+   * добавленного. Сравнивается всё, кроме персонажа, которому токен
+   * принадлежит, и служебных меток «кто и когда записал».
+   *
+   * Порядок персонажей в списке — это вид, а не данные: он меняется от
+   * сортировки и не считается попыткой подменить чужого.
+   */
+  if (!access.master) {
+    const было = неизменяемое(access.file.db, access.charId)
+    const стало = неизменяемое(incoming, access.charId)
+    if (было !== стало) {
+      return json(
+        { error: 'Этим токеном можно править только своего персонажа.' },
+        403,
+        cors,
+      )
+    }
+  }
 
   // Оптимистичная блокировка: если клиент правил поверх старой версии,
   // молча затирать чужое изменение нельзя.
@@ -376,26 +587,37 @@ async function writeData(request: Request, env: Env, cors: Cors): Promise<Respon
       {
         error: 'В базе есть более свежая версия. Сначала загрузи данные.',
         conflict: true,
-        db: auth.file.db,
+        db: access.file.db,
       },
       409,
       cors,
     )
   }
 
-  const updatedAt = typeof incoming.updatedAt === 'string' ? incoming.updatedAt : new Date().toISOString()
+  /*
+   * Метку версии ставит сервер, а не клиент.
+   *
+   * Иначе версию определяет тот, кто её прислал, и две записи подряд из
+   * одного клиента выглядели бы как одна и та же версия: следующая проверка
+   * «не затер ли кто-то моё» прошла бы, хотя база уже другая.
+   *
+   * Метка обязана отличаться от прежней, поэтому при совпадении (две записи
+   * в одну миллисекунду) она сдвигается вперёд.
+   */
+  const now = new Date().toISOString()
+  const updatedAt = now > (current.updatedAt ?? '') ? now : bumpMs(current.updatedAt ?? now)
+
   const party: PartyFile = {
-    ...auth.file,
-    tokensIssued: auth.file.tokensIssued,
+    ...access.file,
     db: { ...(incoming as object), updatedAt },
   }
 
   const who = party.db && typeof party.db === 'object' ? (party.db as { updatedBy?: string }).updatedBy : ''
   const saved = await writeFile(
     env,
-    auth.partyId,
+    access.partyId,
     party,
-    auth.sha,
+    access.sha,
     `${who || 'без ника'}: обновил базу пати (${updatedAt.slice(0, 16).replace('T', ' ')})`,
   )
   if ('error' in saved) {
@@ -405,34 +627,151 @@ async function writeData(request: Request, env: Env, cors: Cors): Promise<Respon
   return json({ ok: true, updatedAt }, 200, cors)
 }
 
-/** Новый токен: старый перестаёт работать сразу. */
-async function rotateToken(request: Request, env: Env, cors: Cors): Promise<Response> {
-  if (request.method !== 'POST') return json({ error: 'Нужен POST' }, 405, cors)
+/**
+ * Новый мастер-токен. Все ранее выпущенные токены персонажей перестают
+ * работать: держать в руках потерянный доступ нельзя, иначе старый мастер,
+ * у которого токен увели, продолжил бы раздавать права.
+ */
+async function rotateMaster(request: Request, env: Env, cors: Cors): Promise<Response> {
+  const access = await authorize(env, request)
+  if (!access.ok) return json(access, access.status, cors)
+  if (!требуетсяМастер(access)) {
+    return json({ error: 'Перевыпустить мастер-токен может только мастер.' }, 403, cors)
+  }
 
-  const auth = await authorize(env, request)
-  if ('error' in auth) return json(auth, 401, cors)
-
-  const token = makeToken(auth.partyId)
-  const secret = parseToken(token)!.secret
+  const token = makeToken(access.partyId, 'M')
   const party: PartyFile = {
-    ...auth.file,
-    tokenHash: await hashHex(secret),
-    tokensIssued: auth.file.tokensIssued + 1,
+    ...access.file,
+    masterHash: await hashHex(tokenSecret(token)),
+    tokens: [],
   }
 
   const saved = await writeFile(
     env,
-    auth.partyId,
+    access.partyId,
     party,
-    auth.sha,
-    `${auth.file.name}: выпущен новый токен доступа`,
+    access.sha,
+    `${access.file.name}: перевыпущен мастер-токен, старые отозваны`,
   )
   if ('error' in saved) return json({ error: saved.error }, 409, cors)
 
-  return json({ token, partyId: auth.partyId, name: auth.file.name }, 200, cors)
+  return json({ token, partyId: access.partyId, name: access.file.name }, 200, cors)
+}
+
+/**
+ * Выпуск токена персонажа. На того же персонажа — перевыпуск: прежний
+ * отзывается, новый показывается один раз.
+ */
+async function issueToken(request: Request, env: Env, cors: Cors): Promise<Response> {
+  const access = await authorize(env, request)
+  if (!access.ok) return json(access, access.status, cors)
+  if (!требуетсяМастер(access)) {
+    return json({ error: 'Выпустить токен может только мастер.' }, 403, cors)
+  }
+
+  const body = await readJson(request)
+  const charId = String(body?.charId ?? '').trim()
+  if (!charId) return json({ error: 'Персонаж не указан' }, 400, cors)
+
+  const имя = charName(access.file.db, charId)
+  if (!имя) return json({ error: 'Персонажа с таким id нет в пати' }, 404, cors)
+
+  const token = makeToken(access.partyId, 'C', charId)
+  const запись: IssuedToken = {
+    id: randToken(6),
+    hash: await hashHex(tokenSecret(token)),
+    charId,
+    charName: имя,
+    createdAt: new Date().toISOString(),
+  }
+
+  const party: PartyFile = {
+    ...access.file,
+    // Перевыпуск на того же персонажа заменяет прежний, а не копится рядом.
+    tokens: [...access.file.tokens.filter((t) => t.charId !== charId), запись],
+  }
+
+  const saved = await writeFile(
+    env,
+    access.partyId,
+    party,
+    access.sha,
+    `${access.file.name}: выпущен токен для «${имя}»`,
+  )
+  if ('error' in saved) return json({ error: saved.error }, 409, cors)
+
+  return json({ token, charId, charName: имя, id: запись.id }, 200, cors)
+}
+
+async function revokeToken(request: Request, env: Env, cors: Cors): Promise<Response> {
+  const access = await authorize(env, request)
+  if (!access.ok) return json(access, access.status, cors)
+  if (!требуетсяМастер(access)) {
+    return json({ error: 'Отозвать токен может только мастер.' }, 403, cors)
+  }
+
+  const id = new URL(request.url).searchParams.get('id') ?? ''
+  if (!id) return json({ error: 'Токен не указан' }, 400, cors)
+  if (!access.file.tokens.some((t) => t.id === id)) {
+    return json({ error: 'Такого токена нет' }, 404, cors)
+  }
+
+  const party: PartyFile = {
+    ...access.file,
+    tokens: access.file.tokens.filter((t) => t.id !== id),
+  }
+  const saved = await writeFile(env, access.partyId, party, access.sha, `${access.file.name}: отозван токен`)
+  if ('error' in saved) return json({ error: saved.error }, 409, cors)
+
+  return json({ ok: true }, 200, cors)
+}
+
+/** Следующая миллисекунда после отметки — чтобы версия всегда двигалась вперёд. */
+function bumpMs(iso: string): string {
+  const t = new Date(iso).getTime()
+  return Number.isNaN(t) ? new Date().toISOString() : new Date(t + 1).toISOString()
 }
 
 /* ------------------------------------------------------------------ помощники */
+
+/**
+ * Всё, что токен персонажа менять не должен, приведённое к строке.
+ *
+ * Свой персонаж вынимается и не сравнивается, служебные метки снимаются,
+ * остальные персонажи сортируются по id — их порядок в списке это вид, а не
+ * данные.
+ *
+ * Остальные персонажи сравниваются целиком, а не по одному идентификатору:
+ * сверять только список id значило бы пропустить любую правку чужого
+ * снаряжения, контактов или отсутствий.
+ */
+function неизменяемое(db: unknown, ownCharId: string): string {
+  const d = structuredClone(db) as Record<string, unknown>
+  delete d.updatedAt
+  delete d.updatedBy
+  if (Array.isArray(d.chars)) {
+    d.chars = (d.chars as { id?: unknown }[])
+      .filter((c) => c?.id !== ownCharId)
+      .sort((a, b) => String(a?.id ?? '').localeCompare(String(b?.id ?? '')))
+  }
+  return JSON.stringify(d)
+}
+
+function charName(db: unknown, charId: string): string | null {
+  if (!db || typeof db !== 'object') return null
+  const chars = (db as { chars?: unknown }).chars
+  if (!Array.isArray(chars)) return null
+  const найден = chars.find((c) => (c as { id?: string })?.id === charId) as
+    | { name?: string }
+    | undefined
+  return найден?.name?.trim() || null
+}
+
+function countChars(db: unknown): number {
+  if (!db || typeof db !== 'object') return 0
+  const chars = (db as { chars?: unknown }).chars
+  return Array.isArray(chars) ? chars.length : 0
+}
 
 function emptyDb(now: string) {
   return {
@@ -488,7 +827,7 @@ function corsHeaders(request: Request, env: Env): Cors {
   const value = allowed ? (origin === allowed ? origin : allowed) : '*'
   return {
     'Access-Control-Allow-Origin': value,
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Max-Age': '86400',
     'Cache-Control': 'no-store',

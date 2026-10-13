@@ -9,6 +9,7 @@ import {
   type SlotKey,
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
+import { useAccess } from '@/lib/access'
 import { addChar, emptyChar, equipItem, useDb, type Branch } from '@/lib/store'
 import { sortedChars } from '@/lib/derived'
 import { ItemPicker } from './ItemPicker'
@@ -57,6 +58,7 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
   const [вид, setВид] = useState<Вид>('строка')
 
   const db = useDb()
+  const { master } = useAccess()
   const все = sortedChars(db.chars)
   const показанные = фильтр === 'все' ? все : все.filter((c) => c.affil === фильтр)
 
@@ -108,9 +110,16 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
               </button>
             ))}
           </div>
-          <button className="btn add-char" onClick={() => setQuickAdd(true)}>
-            + Персонаж
-          </button>
+          {/*
+            Добавление персонажа доступно только мастеру: новый персонаж не
+            может оказаться «своим» у того, кто вошёл по токену персонажа,
+            и сервер такой состав всё равно не примет.
+          */}
+          {master && (
+            <button className="btn add-char" onClick={() => setQuickAdd(true)}>
+              + Персонаж
+            </button>
+          )}
         </div>
       </div>
 

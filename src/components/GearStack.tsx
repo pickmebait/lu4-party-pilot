@@ -21,11 +21,14 @@ export function GearStack({
   ветка,
   слоты,
   catalog,
+  правый,
   onPick,
 }: {
   ветка: Branch
   слоты: Char['slots']
   catalog: CatalogApi
+  /** Можно ли править эту ветку. У чужого персонажа — только смотреть. */
+  правый: boolean
   onPick: (target: Branch, slot: SlotKey, index: number) => void
 }) {
   return (
@@ -41,6 +44,7 @@ export function GearStack({
                 слоты={слоты}
                 catalog={catalog}
                 slot={key}
+                правый={правый}
                 onPick={(index) => onPick(ветка, key, index)}
               />
             ))}
@@ -64,12 +68,14 @@ function SlotCells({
   слоты,
   catalog,
   slot,
+  правый,
   onPick,
 }: {
   ветка: Branch
   слоты: Char['slots']
   catalog: CatalogApi
   slot: SlotKey
+  правый: boolean
   onPick: (index: number) => void
 }) {
   const def = SLOTS[slot]
@@ -82,6 +88,18 @@ function SlotCells({
           const name = entry ? catalog.nameOf(entry.itemId) : ''
 
           if (!entry) {
+            /*
+             * У чужого персонажа пустая ячейка — не кнопка. Иначе она
+             * выглядела бы такой же нажимаемой, как своя, и нажатие
+             * приводило бы к отказу сервера.
+             */
+            if (!правый) {
+              return (
+                <div key={i} className="gear-cell void ro" title={`${def.label}: пусто`}>
+                  +
+                </div>
+              )
+            }
             return (
               <button
                 key={i}
@@ -129,7 +147,12 @@ function SlotCells({
                 Раньше ранг и заточка стояли под названием, и ячейка была
                 вдвое выше — карточка не помещалась в экран по высоте.
               */}
-              <button className="cell-main" onClick={() => onPick(i)}>
+              <button
+                className="cell-main"
+                disabled={!правый}
+                title={правый ? `${def.label}: ${name}` : 'Только просмотр'}
+                onClick={() => onPick(i)}
+              >
                 <span className="cell-icon">
                   <ItemIcon item={item} name={name} size={24} />
                 </span>
@@ -144,26 +167,36 @@ function SlotCells({
                 перезаточку перед походом. Кнопки стоят отдельными элементами
                 от .cell-main, потому что кнопка внутри кнопки браузером не
                 разбирается, а нажатие на + открывало бы пикер предмета.
+
+                У чужого персонажа заточка не меняется, но число остаётся:
+                сравнивать затоску у всей пати нужно, и для этого хватает
+                самой цифры.
               */}
-              <div className="cell-mod" title={`Заточка от 0 до ${MAX_MOD}`}>
-                <button
-                  className="mod-btn"
-                  disabled={mod <= 0}
-                  onClick={() => setSlotMod(ветка, slot, i, mod - 1)}
-                  title="Убавить заточку на 1"
-                >
-                  −
-                </button>
-                <span className={`mod-value${mod > 0 ? ' on' : ''}`}>+{mod}</span>
-                <button
-                  className="mod-btn"
-                  disabled={mod >= MAX_MOD}
-                  onClick={() => setSlotMod(ветка, slot, i, mod + 1)}
-                  title="Добавить заточку на 1"
-                >
-                  +
-                </button>
-              </div>
+              {правый ? (
+                <div className="cell-mod" title={`Заточка от 0 до ${MAX_MOD}`}>
+                  <button
+                    className="mod-btn"
+                    disabled={mod <= 0}
+                    onClick={() => setSlotMod(ветка, slot, i, mod - 1)}
+                    title="Убавить заточку на 1"
+                  >
+                    −
+                  </button>
+                  <span className={`mod-value${mod > 0 ? ' on' : ''}`}>+{mod}</span>
+                  <button
+                    className="mod-btn"
+                    disabled={mod >= MAX_MOD}
+                    onClick={() => setSlotMod(ветка, slot, i, mod + 1)}
+                    title="Добавить заточку на 1"
+                  >
+                    +
+                  </button>
+                </div>
+              ) : (
+                <span className="cell-mod readonly" title="Только просмотр">
+                  <span className={`mod-value${mod > 0 ? ' on' : ''}`}>+{mod}</span>
+                </span>
+              )}
 
               {/*
                 Снять вещь. Кнопка в правом верхнем углу, по наведению и
@@ -175,15 +208,17 @@ function SlotCells({
                 заточки и накрывало его — а нажать на + нужно как раз для
                 того, ради чего ячейку и наводят.
               */}
-              <div className="cell-tools">
-                <button
-                  className="icon-btn tiny danger"
-                  title={entry.spans ? 'Снять с обоих слотов' : 'Снять'}
-                  onClick={() => unequipItem(ветка, slot, i)}
-                >
-                  <IconClose />
-                </button>
-              </div>
+              {правый && (
+                <div className="cell-tools">
+                  <button
+                    className="icon-btn tiny danger"
+                    title={entry.spans ? 'Снять с обоих слотов' : 'Снять'}
+                    onClick={() => unequipItem(ветка, slot, i)}
+                  >
+                    <IconClose />
+                  </button>
+                </div>
+              )}
             </div>
           )
         })}

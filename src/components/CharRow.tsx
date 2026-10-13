@@ -10,6 +10,7 @@ import {
   type Sub,
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
+import { useAccess } from '@/lib/access'
 import { removeChar, removeSub, updateChar, updateSub, type Branch } from '@/lib/store'
 import { ItemIcon } from './ItemIcon'
 import { CharEditForm } from './CharEditForm'
@@ -57,6 +58,8 @@ export function CharRow({
   const [убираемыйСаб, setУбираемыйСаб] = useState<Sub | null>(null)
   const [contactsOpen, setContactsOpen] = useState(false)
 
+  const { canEditChar, ownCharId } = useAccess()
+
   /*
    * Как и в карточке: выбранный саб мог быть удалён или скрыт снятием
    * отметки, и тогда показывать надо основную профессию, а не пустоту.
@@ -73,8 +76,16 @@ export function CharRow({
   for (const key of SLOT_KEYS) занято += (слоты[key] ?? []).filter(Boolean).length
   const всего = Object.values(SLOTS).reduce((a, s) => a + s.max, 0)
 
+  /*
+   * Токен персонажа правит ровно одного: у остальных ячейки просто не
+   * нажимаются, сабы не добавляются и не убираются. Переключать ветку и
+   * смотреть контакты можно всем — это ничего не меняет.
+   */
+  const правый = canEditChar(char.id)
+  const свой = правый && ownCharId === char.id
+
   return (
-    <article className="char-row">
+    <article className={`char-row${свой ? ' own' : ''}`}>
       <div className="row-id">
         {editing ? (
           <CharEditForm
@@ -106,6 +117,11 @@ export function CharRow({
             <div className="row-meta">
               {cls && <span className="chip cls">{cls}</span>}
               {level > 0 && <span className="chip lvl">ур. {level}</span>}
+              {свой && (
+                <span className="chip own" title="Токен персонажа позволяет править только его">
+                  твой
+                </span>
+              )}
               <PaChip pa={char.pa} />
             </div>
 
@@ -157,6 +173,7 @@ export function CharRow({
                   catalog={catalog}
                   slot={key}
                   entry={entry}
+                  правый={правый}
                   onPick={() => onPick(ветка, key, i)}
                 />
               )),
@@ -172,7 +189,7 @@ export function CharRow({
         >
           {занято} из {всего}
         </span>
-        {саб && (
+        {саб && правый && (
           <button
             type="button"
             className="btn tiny danger sub-del"
@@ -243,16 +260,25 @@ function SlotIcon({
   catalog,
   slot,
   entry,
+  правый,
   onPick,
 }: {
   catalog: CatalogApi
   slot: SlotKey
   entry: { itemId: number; mod?: number; spans?: boolean } | null
+  правый: boolean
   onPick: () => void
 }) {
   const def = SLOTS[slot]
 
   if (!entry) {
+    if (!правый) {
+      return (
+        <span className="slot-icon void ro" title={`${def.label}: пусто`}>
+          +
+        </span>
+      )
+    }
     return (
       <button className="slot-icon void" title={`${def.label}: пусто`} onClick={onPick}>
         +
@@ -267,12 +293,14 @@ function SlotIcon({
   return (
     <button
       className="slot-icon filled"
+      disabled={!правый}
       title={[
         `${def.label}: ${name}`,
         item?.gradeName ? `ранг ${item.gradeName}` : '',
         `№${entry.itemId}`,
         `заточка +${mod} из ${MAX_MOD}`,
         entry.spans ? 'занимает два слота' : '',
+        правый ? '' : 'только просмотр',
       ]
         .filter(Boolean)
         .join(' · ')}

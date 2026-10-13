@@ -245,12 +245,6 @@ body {
   align-items: center;
 }
 
-.sync-note {
-  font-size: 11px;
-  margin-top: 4px;
-  text-align: right;
-}
-
 .sync-msg {
   margin-top: 6px;
   font-size: 12px;
@@ -278,12 +272,75 @@ body {
   flex-wrap: wrap;
 }
 
-.sync-panel {
+/* ---------------------------------------------------------- меню доступа к пати */
+
+/*
+ * Кнопка показывает название пати и вид токена прямо в шапке: человек,
+ * вошедший не со своего компьютера, должен видеть, чьим правом он сейчас
+ * работает, не открывая меню.
+ */
+.party {
+  position: relative;
+}
+
+.party-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 4px 10px;
+  min-height: 0;
+  background: var(--bg-3);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  line-height: 1.25;
+}
+
+.party-btn:hover,
+.party-btn.on {
+  border-color: var(--accent);
+}
+
+.party-name {
+  font-size: 12px;
+  font-weight: 600;
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * Вид токена двумя цветами: зелёный — мастер, жёлтый — персонаж. Цвет
+ * здесь смысловой, а не оформленческий: разница между «можно всё» и
+ * «только своего» слишком велика, чтобы держать её на подписи.
+ */
+.party-role {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.party-role.master {
+  background: rgba(60, 190, 120, 0.16);
+  color: #7fe0ab;
+}
+
+.party-role.char {
+  background: rgba(226, 178, 60, 0.16);
+  color: #f0cd7a;
+}
+
+.party-panel {
   position: absolute;
   right: 0;
   top: 100%;
   z-index: 40;
-  width: 460px;
+  width: 420px;
   max-width: 92vw;
   margin-top: 8px;
   background: var(--bg-2);
@@ -293,8 +350,94 @@ body {
   box-shadow: var(--shadow);
 }
 
-.sync-panel h4 {
+.party-panel h4 {
   margin: 0 0 6px;
+}
+
+.party-tokens {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.party-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* Список выпущенных токенов: имя, сколько живёт, две кнопки. */
+.party-token {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.party-token-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.party-token-ago {
+  font-size: 11px;
+  color: var(--muted-dim);
+  white-space: nowrap;
+}
+
+.party-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+/* Токен в окне выдачи: длинная строка, копируется целиком. */
+.token-line {
+  display: block;
+  margin: 12px 0;
+  padding: 10px 12px;
+  background: var(--bg-1);
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  word-break: break-all;
+  user-select: all;
+}
+
+/* ------------------------------------------------------------ только просмотр */
+
+.readonly-note {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--line-2);
+  border-left: 3px solid var(--warn, #e2b23c);
+  border-radius: 8px;
+  background: var(--bg-3);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.readonly-note b {
+  color: var(--text);
+}
+
+/* Число в казне без кнопок: счётчик занимал бы место, которого нет. */
+.counter-count {
+  display: inline-block;
+  min-width: 30px;
+  text-align: center;
+  font-weight: 600;
 }
 
 /* -------------------------------------------------------------------- табы */
@@ -407,20 +550,6 @@ body {
   padding: 4px 9px;
   font-size: 12px;
   border-radius: 6px;
-}
-
-.btn.file {
-  position: relative;
-  overflow: hidden;
-  display: inline-flex;
-  align-items: center;
-}
-
-.btn.file input {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
 }
 
 .icon-btn {
@@ -1174,8 +1303,21 @@ body {
   padding: 6px 10px;
 }
 
+/*
+ * Строка с тем персонажем, которому выдан этот токен: рамка спокойно
+ * зелёная. Искать свою строку в пати вручную не нужно — токен персонажа
+ * правит ровно одного, и он должен находиться взглядом сразу.
+ */
+.char-row.own {
+  border-color: rgba(60, 190, 120, 0.35);
+}
+
 .char-row:hover {
   border-color: var(--line-2);
+}
+
+.char-row.own:hover {
+  border-color: rgba(60, 190, 120, 0.55);
 }
 
 /*
@@ -1348,7 +1490,7 @@ body {
   transition: background 0.12s, border-color 0.12s;
 }
 
-.slot-icon:hover {
+.slot-icon:hover:not(:disabled) {
   background: var(--surface-lit);
   border-color: var(--line-2);
 }
@@ -1378,6 +1520,36 @@ body {
   border-radius: 3px;
   background: var(--surface-deep);
   color: var(--accent-2);
+}
+
+/*
+ * Ячейка чужого персонажа: та же на вид, но без курсора и без подсветки.
+ *
+ * Токен персонажа правит ровно одного, и у остальных ячейки остаются
+ * видимыми — иначе нельзя было бы посмотреть, что надето. Просто они не
+ * нажимаются: нажатие привело бы к отказу сервера, и выглядело бы как
+ * поломка у человека, который всё сделал правильно.
+ */
+.slot-icon:disabled,
+.gear-cell .cell-main:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.slot-icon.ro,
+.gear-cell.ro {
+  cursor: default;
+}
+
+.slot-icon.ro:hover {
+  background: var(--bg-2);
+  border-color: var(--line);
+}
+
+/* Счётчик заточки у чужого персонажа: число остаётся, кнопок нет. */
+.cell-mod.readonly {
+  min-width: 58px;
+  justify-content: center;
 }
 .row-tail {
   display: flex;
@@ -1463,6 +1635,19 @@ body {
 }
 
 /*
+ * Пометка «твой» у персонажа, которому выдан этот токен.
+ *
+ * Смысловой цвет, а не оформленческий: по нему сразу видно, кого вошедший
+ * может править, и не нужно обходить всю пати, чтобы это выяснить.
+ */
+.chip.own {
+  flex: none;
+  color: #7fe0ab;
+  background: rgba(60, 190, 120, 0.16);
+  border-color: rgba(60, 190, 120, 0.4);
+}
+
+/*
  * Блок слева от кнопок в шапке.
  *
  * min-width: 0 нужен, чтобы длинные плашки ужимались, а не распирали
@@ -1494,6 +1679,13 @@ body {
   display: flex;
   align-items: center;
   gap: 5px;
+  /*
+   * Высота зарезервирована, а не задана содержимым: у чужого персонажа
+   * полоса пустая — там нет ни отметки, ни кнопок. Без резерва карточки
+   * разной высоты, а в виде «Колонка» иконки снаряжения встают на разные
+   * горизонтали, и сравнивать пати становится неудобно.
+   */
+  min-height: 27px;
 }
 
 .sub-flag {
@@ -2938,13 +3130,6 @@ body {
   border-radius: 20px;
   padding: 3px 5px 3px 11px;
   font-size: 12px;
-}
-
-.sync-panel label {
-  display: block;
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 10px;
 }
 
 /* ------------------------------------------------------------------- подвал */

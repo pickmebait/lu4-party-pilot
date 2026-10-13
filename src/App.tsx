@@ -79,11 +79,11 @@ export default function App() {
           <span className="logo">⚔</span>
           <div>
             <h1>{APP_NAME}</h1>
-            <p className="tag">экипировка пати · общая казна · хотелки</p>
+            <p className="tag">экипировка расписание взаимодействие</p>
           </div>
           <PaletteBar />
         </div>
-        <SyncBar catalog={catalog} />
+        <SyncBar />
       </header>
 
       <nav className="tabs">

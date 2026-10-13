@@ -1,14 +1,19 @@
 import { useMemo, useState } from 'react'
 import { PRIORITY_LABEL, type Priority, type Wish } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
+import { useAccess, useOwnCharName } from '@/lib/access'
 import { addToWarehouse, addWish, removeWish, updateWish, useDb } from '@/lib/store'
 import { formatAgo } from '@/lib/util'
 import { ItemPicker, matches } from './ItemPicker'
+import { ReadOnlyNote } from './ReadOnlyNote'
 
 type Filter = 'open' | 'all' | 'done'
 
 export function WishesView({ catalog }: { catalog: CatalogApi }) {
   const db = useDb()
+  // Хотелки общие: токен персонажа их не правит.
+  const { canEditParty: правый } = useAccess()
+  const имяСвоего = useOwnCharName()
   const [filter, setFilter] = useState<Filter>('open')
   const [q, setQ] = useState('')
   const [draft, setDraft] = useState<{ itemId: number; count: number; priority: Priority; seeker: string; forCharId: string; note: string } | null>(
@@ -53,11 +58,15 @@ export function WishesView({ catalog }: { catalog: CatalogApi }) {
               </button>
             ))}
           </div>
-          <button className="btn primary" onClick={() => setChecking(true)}>
-            + Хотелка
-          </button>
+          {правый && (
+            <button className="btn primary" onClick={() => setChecking(true)}>
+              + Хотелка
+            </button>
+          )}
         </div>
       </div>
+
+      {!правый && <ReadOnlyNote имя={имяСвоего} />}
 
       <input
         className="input filter-wide"
@@ -86,6 +95,7 @@ export function WishesView({ catalog }: { catalog: CatalogApi }) {
                   className="wish-box"
                   type="checkbox"
                   checked={w.done}
+                  disabled={!правый}
                   onChange={() => (w.done ? undone(w) : done(w))}
                 />
               </label>
@@ -107,35 +117,41 @@ export function WishesView({ catalog }: { catalog: CatalogApi }) {
                 </div>
               </div>
               <div className="wish-tools">
-                {!w.done && (
-                  <>
-                    <button
-                      className="btn tiny"
-                      title="Отметить выполненной и сразу положить в общую казну"
-                      onClick={() => {
-                        addToWarehouse(w.itemId, w.count)
-                        done(w)
-                      }}
-                    >
-                      Нашёл в казну
-                    </button>
-                    <button className="btn tiny" onClick={() => done(w)}>
-                      Готово
-                    </button>
-                  </>
-                )}
-                {w.done && (
-                  <button className="btn tiny" onClick={() => undone(w)}>
-                    Вернуть
+                {!правый
+                  ? null
+                  : !w.done && (
+                      <>
+                        <button
+                          className="btn tiny"
+                          title="Отметить выполненной и сразу положить в общую казну"
+                          onClick={() => {
+                            addToWarehouse(w.itemId, w.count)
+                            done(w)
+                          }}
+                        >
+                          Нашёл в казну
+                        </button>
+                        <button className="btn tiny" onClick={() => done(w)}>
+                          Готово
+                        </button>
+                      </>
+                    )}
+                {!правый
+                  ? null
+                  : w.done && (
+                      <button className="btn tiny" onClick={() => undone(w)}>
+                        Вернуть
+                      </button>
+                    )}
+                {!правый ? null : (
+                  <button
+                    className="icon-btn danger tiny"
+                    title="Удалить"
+                    onClick={() => removeWish(w.id)}
+                  >
+                    🗑
                   </button>
                 )}
-                <button
-                  className="icon-btn danger tiny"
-                  title="Удалить"
-                  onClick={() => removeWish(w.id)}
-                >
-                  🗑
-                </button>
               </div>
             </article>
           )

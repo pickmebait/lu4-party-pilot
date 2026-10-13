@@ -3,17 +3,40 @@
  *
  * Токен пати — единственный способ доступа к общей базе. Он никак не связан
  * с GitHub: код приложения лежит на Pages, база — у Worker'а.
+ *
+ * Два вида токена, и разница между ними проверяется на сервере, а не здесь:
+ * мастер-токен правит всех, токен персонажа — только того, кому выдан.
  */
 import type { Db } from '@/types'
+
+/** Вид доступа, которым открыли пати. */
+export type Role = 'master' | 'char'
+
+export interface TokenInfo {
+  id: string
+  charId: string
+  /** Имя персонажа на момент чтения: могло смениться после выпуска. */
+  charName: string
+  createdAt: string
+}
 
 export interface PartyInfo {
   partyId: string
   name: string
-  role: 'owner' | 'member'
-  tokens: number
-  updatedAt?: string | null
-  updatedBy?: string | null
+  role: Role
+  /** Чей это персонаж. Есть только у токена персонажа. */
+  charId?: string | null
+  charName?: string | null
   chars?: number
+}
+
+export interface PartyMeta extends PartyInfo {
+  createdAt: string
+  ownCharId: string | null
+  updatedAt: string | null
+  updatedBy: string | null
+  /** Выпущенные токены. Приходят только мастеру. */
+  tokens?: TokenInfo[]
 }
 
 export type ApiResult<T> = { ok: true; value: T } | { ok: false; error: string; conflict?: Db }
@@ -47,10 +70,13 @@ async function call<T>(
     }
 
     if (res.status === 401) {
-      return { ok: false, error: 'Токен не подходит. Проверь его или запроси новый у лидера.' }
+      return { ok: false, error: 'Токен не подходит. Проверь его или запроси новый у мастера пати.' }
     }
     if (res.status === 403) {
       return { ok: false, error: json?.error ?? 'Недостаточно прав' }
+    }
+    if (res.status === 404) {
+      return { ok: false, error: json?.error ?? 'Не найдено' }
     }
     if (res.status === 409) {
       return {
@@ -71,7 +97,7 @@ async function call<T>(
   }
 }
 
-/** Создаёт новую пати. Токен приходит один раз и больше не показывается. */
+/** Создаёт новую пати. Мастер-токен приходит один раз и больше не показывается. */
 export async function createParty(apiUrl: string, name: string): Promise<ApiResult<PartyInfo & { token: string }>> {
   return call<PartyInfo & { token: string }>(apiUrl, '/api/party', {
     method: 'POST',
@@ -79,11 +105,8 @@ export async function createParty(apiUrl: string, name: string): Promise<ApiResu
   })
 }
 
-/** Проверяет токен и узнаёт, в какую пати он ведёт. */
-export async function openSession(
-  apiUrl: string,
-  token: string,
-): Promise<ApiResult<PartyInfo>> {
+/** Проверяет токен и узнаёт, в какую пати и с каким правом он ведёт. */
+export async function openSession(apiUrl: string, token: string): Promise<ApiResult<PartyInfo>> {
   return call<PartyInfo>(apiUrl, '/api/session', {
     method: 'POST',
     body: JSON.stringify({ token }),
@@ -112,12 +135,16 @@ export async function saveDb(
   })
 }
 
-export async function fetchMeta(apiUrl: string, token: string): Promise<ApiResult<PartyInfo>> {
-  return call<PartyInfo>(apiUrl, '/api/party/meta', { method: 'GET', token })
+export async function fetchMeta(apiUrl: string, token: string): Promise<ApiResult<PartyMeta>> {
+  return call<PartyMeta>(apiUrl, '/api/party/meta', { method: 'GET', token })
 }
 
-/** Новый токен вместо старого. Старый перестаёт работать сразу. */
-export async function rotateToken(
+/**
+ * Перевыпуск мастер-токена. Прежний перестаёт работать сразу, и вместе с
+ * ним перестают работать все токены персонажей: держать потерянный доступ в
+ * руках того, у кого его увели, нельзя.
+ */
+export async function rotateMaster(
   apiUrl: string,
   token: string,
 ): Promise<ApiResult<{ token: string; partyId: string; name: string }>> {
@@ -127,3 +154,38 @@ export async function rotateToken(
   })
 }
 
+/**
+ * Выпуск токена персонажа. На того же персонажа это перевыпуск: прежний
+ * отзывается, новый приходит один раз и показывается только здесь.
+ */
+export async function issueCharToken(
+  apiUrl: string,
+  token: string,
+  charId: string,
+): Promise<ApiResult<{ token: string; charId: string; charName: string }>> {
+  return call<{ token: string; charId: string; charName: string }>(apiUrl, '/api/party/tokens', {
+    method: 'POST',
+    token,
+    body: JSON.stringify({ charId }),
+  })
+}
+
+/** Отзыв одного токена персонажа. */
+export async function revokeToken(
+  apiUrl: string,
+  token: string,
+  id: string,
+): Promise<ApiResult<{ ok: true }>> {
+  return call<{ ok: true }>(apiUrl, `/api/party/tokens?id=${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    token,
+  })
+}
+
+/** Удаление пати целиком. Восстановить базу после неё нельзя. */
+export async function deleteParty(
+  apiUrl: string,
+  token: string,
+): Promise<ApiResult<{ ok: true; partyId: string }>> {
+  return call<{ ok: true; partyId: string }>(apiUrl, '/api/party', { method: 'DELETE', token })
+}
