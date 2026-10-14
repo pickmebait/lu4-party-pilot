@@ -3,7 +3,15 @@
   "name": "Переименование",
   "createdAt": "2026-10-14T13:20:39.301Z",
   "masterHash": "35d4f5bb315ef5f2d4a85a197dae809710487e73b394cb0e6b55f7f94d16e1a1",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "h5n7fngyw2",
+      "hash": "bfd070e662f4f5c70da3773b4150d82058fbb1a2809ca4511725298d488fcdeb",
+      "charId": "cThree",
+      "charName": "Танк",
+      "createdAt": "2026-10-14T13:20:43.333Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-14T13:20:41.700Z",
