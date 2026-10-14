@@ -3,7 +3,15 @@
   "name": "Виды",
   "createdAt": "2026-10-14T12:59:14.147Z",
   "masterHash": "5b489f81a849feb56d99c5be1fc2db76721a3e6cb8fd7d43d213ed5f52dec42d",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "mz7viqmcen",
+      "hash": "9fac483775724346b9a4789a3591ef036366c8cfff65b8ecb835d52193f4dccc",
+      "charId": "cThree",
+      "charName": "Танк",
+      "createdAt": "2026-10-14T12:59:17.665Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-14T12:59:15.936Z",
