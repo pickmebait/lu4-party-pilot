@@ -3,7 +3,15 @@
   "name": "Старое имя",
   "createdAt": "2026-10-14T14:02:23.366Z",
   "masterHash": "aea260ddca3a3dfe5628452c8f25212f47b53cd307287d2180c4d352bc9cd32f",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "m43v3g9n36",
+      "hash": "9bd2f5269a3a55eb68ba9c20299a977138d050963e5f5b5ca0157d59a421b107",
+      "charId": "cThree",
+      "charName": "Танк",
+      "createdAt": "2026-10-14T14:02:27.481Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-14T14:02:25.783Z",
