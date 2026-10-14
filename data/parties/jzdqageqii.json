@@ -1,0 +1,20 @@
+{
+  "partyId": "jzdqageqii",
+  "name": "Старое имя",
+  "createdAt": "2026-10-14T14:02:23.366Z",
+  "masterHash": "aea260ddca3a3dfe5628452c8f25212f47b53cd307287d2180c4d352bc9cd32f",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-14T14:02:23.366Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
