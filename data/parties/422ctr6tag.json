@@ -3,7 +3,15 @@
   "name": "Свинки",
   "createdAt": "2026-10-14T10:38:27.816Z",
   "masterHash": "af35ef2df905ceba645ac9a38fde14e483e2d76a8f7e2813e3ff296d02f6baf9",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "r42mh6cwns",
+      "hash": "5052b64e5cb3600851eef981e043563dea4595d031e7f2fabed5c47d5d2a4934",
+      "charId": "cmv7z8xwn1289zp",
+      "charName": "PickMeBait",
+      "createdAt": "2026-10-14T10:39:02.502Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-14T10:38:52.566Z",
