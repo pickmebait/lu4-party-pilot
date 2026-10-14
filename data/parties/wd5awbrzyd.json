@@ -14,8 +14,8 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-14T12:46:27.903Z",
-    "updatedBy": "PickMeBait",
+    "updatedAt": "2026-10-14T12:47:36.760Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmv7z8xwn1289zp",
@@ -69,6 +69,50 @@
           "from": "2026-10-14",
           "days": 30
         }
+      },
+      {
+        "id": "cmv83uh441gwkk2",
+        "name": "Zarra",
+        "cls": "Gladiator",
+        "level": 73,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
       }
     ],
     "warehouse": {
