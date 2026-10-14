@@ -14,8 +14,8 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-14T12:59:15.936Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-14T13:00:36.067Z",
+    "updatedBy": "Танк",
     "chars": [
       {
         "id": "cOne",
@@ -51,13 +51,44 @@
         "name": "Танк",
         "cls": "Dark Avenger",
         "level": 74,
-        "affil": "состав",
-        "slots": {},
-        "subs": [],
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
         "subUnlocked": false,
-        "contacts": {},
-        "away": {},
-        "pa": null
+        "subs": [],
+        "away": {}
       },
       {
         "id": "cFour",
