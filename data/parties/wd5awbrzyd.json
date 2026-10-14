@@ -1,0 +1,20 @@
+{
+  "partyId": "wd5awbrzyd",
+  "name": "Свинки",
+  "createdAt": "2026-10-14T12:44:59.507Z",
+  "masterHash": "2f2fd3863d6fffbfa2667b689b3dc2dcfb3bce4fde35b8a3b44a74a045bbb01d",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-14T12:44:59.507Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
