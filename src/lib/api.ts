@@ -44,6 +44,14 @@ export type ApiResult<T> =
   | {
       ok: false
       error: string
+      /**
+       * Код ответа сервера.
+       *
+       * Нужен, чтобы отличить «токен недействителен» от «сервер не
+       * дозвонился». Первое означает, что сохранённую сессию пора выбросить,
+       * второе — что человек просто без связи и выбрасывать его нельзя.
+       */
+      статус?: number
       /** Пришло при 409: в базе лежит более свежая версия. */
       conflict?: Db
       /**
@@ -98,21 +106,23 @@ async function call<T>(
     }
 
     if (res.status === 401) {
-      return { ok: false, error: 'Токен не подходит. Проверь его или запроси новый у мастера пати.' }
+      return { ok: false, статус: res.status, error: 'Токен не подходит. Проверь его или запроси новый у мастера пати.' }
     }
     if (res.status === 403) {
       return {
         ok: false,
+        статус: res.status,
         error: json?.error ?? 'Недостаточно прав',
         forbidden: json?.db ? { db: json.db as Db } : undefined,
       }
     }
     if (res.status === 404) {
-      return { ok: false, error: json?.error ?? 'Не найдено' }
+      return { ok: false, статус: res.status, error: json?.error ?? 'Не найдено' }
     }
     if (res.status === 409) {
       return {
         ok: false,
+        статус: res.status,
         error: json?.error ?? 'В базе есть более свежая версия',
         conflict: json?.db,
       }
@@ -142,6 +152,7 @@ async function call<T>(
     }
     return {
       ok: false,
+      статус: 0,
       error: отмена.signal.aborted
         ? 'Сервер не ответил вовремя. Правка, возможно, уже записана — попробуй «Загрузить».'
         : `Не удалось связаться с сервером. Проверь адрес и интернет. (${msg(e)})`,

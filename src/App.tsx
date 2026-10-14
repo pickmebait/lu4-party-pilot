@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { CharsView } from './components/Chars'
 import { Login } from './components/Login'
 import { PaletteBar } from './components/PaletteBar'
@@ -11,7 +11,8 @@ import { Tagline } from './components/Tagline'
 import { APP_NAME } from './lib/brand'
 import { startCatalogLoad, useCatalog } from './lib/catalog'
 import { computeSummary, usedItemIds, type Summary } from './lib/derived'
-import { useDb, useSession } from './lib/store'
+import { openSession } from './lib/api'
+import { signOut, useDb, useSession } from './lib/store'
 import type { Db } from './types'
 import { applyPalette, loadPalette } from './lib/palette'
 import { plural } from './lib/util'
@@ -69,6 +70,32 @@ export default function App() {
 
   // Считаем сводку до раннего выхода, чтобы порядок хуков не зависел от сессии.
   const sum = computeSummary(db)
+
+  /*
+   * Сохранённая сессия проверяется, а не принимается на веру.
+   *
+   * Токен мог быть перевыпущен, отозван или достаться из другой пати — и
+   * приложение молча открывалось с чужим токеном: все запросы отбивались, а
+   * до экрана входа было не добраться. Теперь отказ по токену выбрасывает
+   * сессию и открывает вход.
+   *
+   * Отказ по связи сессию не трогает: человек просто без интернета, и
+   * выбрасывать его из пати на этом основании нельзя.
+   */
+  useEffect(() => {
+    if (!session) return
+    let отменено = false
+
+    openSession(session.apiUrl, session.token).then((res) => {
+      if (отменено) return
+      if (res.ok || res.статус !== 401) return
+      signOut()
+    })
+
+    return () => {
+      отменено = true
+    }
+  }, [session])
 
   // Без токена пати приложением пользоваться нельзя: вся база живёт на сервере.
   if (!session) return <Login onDone={() => undefined} />

@@ -3,7 +3,7 @@ import type { Db } from '@/types'
 import { createParty, fetchDb, openSession, saveDb, type PartyInfo } from '@/lib/api'
 import { API_URL, CONFIGURED } from '@/lib/config'
 import { APP_NAME } from '@/lib/brand'
-import { getDb, replaceDb, signIn } from '@/lib/store'
+import { getDb, replaceDb, signIn, signOut } from '@/lib/store'
 import { PaletteBar } from './PaletteBar'
 import { Tagline } from './Tagline'
 
@@ -58,6 +58,16 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
     }
 
     setBusy(false)
+    /*
+     * Старая сессия выбрасывается до входа.
+     *
+     * Экран входа бывает не только на пустом месте: вышел из пати, сменил
+     * браузерную папку, вернулся по старой вкладке. Если оставить прошлую
+     * сессию на месте, вход по новому токену может завершиться, а приложение
+     * откроет ту пати, из которой человек только что вышел. Вход идёт
+     * ровно по тому токену, который введён или только что выдан.
+     */
+    signOut()
     signIn({
       token: t,
       partyId: info.partyId,
@@ -113,6 +123,7 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
             const saved = await saveDb(API_URL, issued.token, mine, base.value.updatedAt)
             if (saved.ok) lastSyncedAt = saved.value.updatedAt
           }
+          signOut()
           signIn({
             token: issued.token,
             partyId: issued.partyId,
