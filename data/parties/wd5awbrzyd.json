@@ -14,8 +14,8 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-14T12:45:03.580Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-14T12:46:27.903Z",
+    "updatedBy": "PickMeBait",
     "chars": [
       {
         "id": "cmv7z8xwn1289zp",
@@ -30,7 +30,10 @@
             }
           ],
           "lhand": [
-            null
+            {
+              "itemId": 627,
+              "mod": 3
+            }
           ],
           "head": [
             null
