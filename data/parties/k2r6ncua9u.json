@@ -1,0 +1,20 @@
+{
+  "partyId": "k2r6ncua9u",
+  "name": "Третья пати",
+  "createdAt": "2026-10-14T10:35:03.982Z",
+  "masterHash": "b4cbc259f9ae68b98a6f8315a3ce27d5252c65c10e9dd5c48fc79b13080d2310",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-14T10:35:03.982Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
