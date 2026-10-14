@@ -34,6 +34,7 @@ import {
   setPrime,
 } from './schedule'
 import { uid } from './util'
+import { привестиНик } from './nick'
 
 /**
  * Версия 8: у персонажа появился платный аккаунт.
@@ -257,7 +258,7 @@ function normalizeChar(c: Partial<Char>): Char {
   const subUnlocked = c.subUnlocked === true || сабы.length > 0
   return {
     id: c.id || uid('c'),
-    name: typeof c.name === 'string' ? c.name : '',
+    name: привестиНик(c.name),
     cls: typeof c.cls === 'string' ? c.cls : '',
     level: Math.max(0, Math.trunc(Number(c.level)) || 0),
     // У персонажей, созданных до появления поля, стоит состав: он подходит
@@ -420,7 +421,7 @@ export function addChar(partial: Partial<Char> = {}): string {
 export function updateChar(id: string, patch: Partial<Char>): void {
   commit({
     ...db,
-    chars: db.chars.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    chars: db.chars.map((c) => (c.id === id ? { ...c, ...patch, name: привестиНик(patch.name ?? c.name) } : c)),
   })
 }
 

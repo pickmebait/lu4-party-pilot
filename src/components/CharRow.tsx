@@ -106,7 +106,14 @@ export function CharRow({
               onClick={() => setContactsOpen(true)}
             >
               <IconUser />
-              <strong>{char.name || 'Без имени'}</strong>
+              {/*
+                Свой персонаж выделен ником, а не плашкой «твой»: плашка
+                отнимала место у единственной строки, где профессия, уровень и
+                премиум должны помещаться целиком.
+              */}
+              <strong className={свой ? 'own' : undefined} title={свой ? 'Персонаж, которого правит этот токен' : undefined}>
+                {char.name || 'Без имени'}
+              </strong>
               <span className="chip affil">{affiliationLabel(char.affil)}</span>
               {саб && <span className="chip branch">саб</span>}
               <span className="row-contacts" aria-hidden="true">
@@ -117,11 +124,6 @@ export function CharRow({
             <div className="row-meta">
               {cls && <span className="chip cls">{cls}</span>}
               {level > 0 && <span className="chip lvl">ур. {level}</span>}
-              {свой && (
-                <span className="chip own" title="Токен персонажа позволяет править только его">
-                  твой
-                </span>
-              )}
               <PaChip pa={char.pa} />
             </div>
 

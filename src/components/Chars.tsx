@@ -10,6 +10,7 @@ import {
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
 import { useAccess } from '@/lib/access'
+import { НИК_МАКС, написаноБезПробелов, привестиНик } from '@/lib/nick'
 import { addChar, emptyChar, equipItem, useDb, type Branch } from '@/lib/store'
 import { sortedChars } from '@/lib/derived'
 import { ItemPicker } from './ItemPicker'
@@ -258,12 +259,13 @@ function QuickAddForm({
   // Принадлежность всегда задана: по умолчанию состав, его подходит
   // большинству, и он же первый в порядке показа.
   const [affil, setAffil] = useState<Affiliation>(DEFAULT_AFFILIATION)
-  const ok = name.trim().length > 0
+  const никСлишкомДлинный = написаноБезПробелов(name).length > НИК_МАКС
+  const ok = !никСлишкомДлинный && привестиНик(name).length > 0
 
   const submit = () => {
     if (!ok) return
     const l = clampLevel(level)
-    onDone(name.trim(), cls, l === '' ? 0 : Number(l), affil)
+    onDone(привестиНик(name), cls, l === '' ? 0 : Number(l), affil)
   }
 
   return (
@@ -274,10 +276,16 @@ function QuickAddForm({
           className="input"
           autoFocus
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          maxLength={НИК_МАКС + 4}
+          placeholder={`ник в игре, до ${НИК_МАКС} символов без пробелов`}
+          onChange={(e) => setName([...написаноБезПробелов(e.target.value)].slice(0, НИК_МАКС + 4).join(''))}
+          onBlur={() => setName(привестиНик(name))}
           onKeyDown={(e) => e.key === 'Enter' && submit()}
         />
       </label>
+      {никСлишкомДлинный && (
+        <p className="hint err-hint">Ник в игре — до {НИК_МАКС} символов.</p>
+      )}
 
       <div className="row">
         <label className="grow">
