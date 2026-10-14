@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Db } from '@/types'
 import { fetchDb, saveDb } from '@/lib/api'
-import { useOwnCharName } from '@/lib/access'
 import { ктоЗатронут, слитьСвое } from '@/lib/merge'
 import {
   авторПравки,
@@ -45,7 +44,6 @@ const ПАУЗА_ПРОВЕРКИ_МС = 45_000
 export function SyncBar() {
   const db = useDb()
   const session = getSession()!
-  const имяСвоего = useOwnCharName()
   const формаОткрыта = useОткрытаяФорма()
   const [state, setState] = useState<SyncState>({ kind: 'idle' })
   const [incoming, setIncoming] = useState<Db | null>(null)
@@ -269,7 +267,6 @@ export function SyncBar() {
     <div className="sync">
       <div className="sync-main">
         <PartyMenu />
-        {имяСвоего && <span className="sync-who">ты — {имяСвоего}</span>}
       </div>
 
       {state.kind === 'busy' && <div className="sync-msg">{state.what}</div>}
