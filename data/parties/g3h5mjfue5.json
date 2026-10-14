@@ -6,8 +6,8 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-14T13:15:02.919Z",
-    "updatedBy": "PickMeBait",
+    "updatedAt": "2026-10-14T13:15:10.202Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmv7z8xwn1289zp",
@@ -56,7 +56,8 @@
           ]
         },
         "contacts": {
-          "realName": "Борис"
+          "realName": "Борис",
+          "phone": "+79213925563"
         },
         "subUnlocked": true,
         "subs": [
