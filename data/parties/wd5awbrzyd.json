@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-14T12:49:16.335Z",
+    "updatedAt": "2026-10-14T12:53:07.963Z",
     "updatedBy": "PickMeBait",
     "chars": [
       {
@@ -66,7 +66,7 @@
         "contacts": {
           "realName": "Борис"
         },
-        "subUnlocked": false,
+        "subUnlocked": true,
         "subs": [],
         "away": {},
         "pa": {
