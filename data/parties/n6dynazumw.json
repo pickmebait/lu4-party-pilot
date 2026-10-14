@@ -14,8 +14,8 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-14T13:20:55.398Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-14T13:50:58.794Z",
+    "updatedBy": "Танк",
     "chars": [
       {
         "id": "cOne",
@@ -109,7 +109,7 @@
         "id": "cThree",
         "name": "Танк",
         "cls": "Dark Avenger",
-        "level": 74,
+        "level": 75,
         "affil": "roster",
         "slots": {
           "rhand": [
