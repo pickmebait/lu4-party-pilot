@@ -1,0 +1,20 @@
+{
+  "partyId": "n6dynazumw",
+  "name": "Переименование",
+  "createdAt": "2026-10-14T13:20:39.301Z",
+  "masterHash": "35d4f5bb315ef5f2d4a85a197dae809710487e73b394cb0e6b55f7f94d16e1a1",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-14T13:20:39.301Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
