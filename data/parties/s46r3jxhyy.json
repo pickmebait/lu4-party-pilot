@@ -3,7 +3,15 @@
   "name": "Подпись и автосохранение",
   "createdAt": "2026-10-14T10:23:23.765Z",
   "masterHash": "16e91b4e02ff55edc8b815ceee03b337ae949a1ee7e3711b3d1d61c68c33c8c5",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "9aty697zh6",
+      "hash": "cd6625862aaceabde39df31dc43523fc4ab269710bf86f421c813cddd8238e2e",
+      "charId": "cTwo",
+      "charName": "Танк",
+      "createdAt": "2026-10-14T10:23:27.330Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-14T10:23:25.681Z",
