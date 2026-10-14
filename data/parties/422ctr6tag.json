@@ -5,9 +5,9 @@
   "masterHash": "af35ef2df905ceba645ac9a38fde14e483e2d76a8f7e2813e3ff296d02f6baf9",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-14T10:38:27.816Z",
-    "updatedBy": "",
+    "version": 8,
+    "updatedAt": "2026-10-14T10:38:33.239Z",
+    "updatedBy": "Мастер",
     "chars": [],
     "warehouse": {
       "stacks": [],
@@ -15,6 +15,11 @@
     },
     "wishes": [],
     "sets": [],
-    "customNames": {}
+    "customNames": {},
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    }
   }
 }
