@@ -14,8 +14,8 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-14T12:48:07.205Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-14T12:49:16.335Z",
+    "updatedBy": "PickMeBait",
     "chars": [
       {
         "id": "cmv7z8xwn1289zp",
@@ -62,6 +62,9 @@
             null,
             null
           ]
+        },
+        "contacts": {
+          "realName": "Борис"
         },
         "subUnlocked": false,
         "subs": [],
