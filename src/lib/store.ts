@@ -54,16 +54,6 @@ import { uid } from './util'
  */
 export const DB_VERSION = 8
 const DB_KEY = 'pp:db'
-const SETTINGS_KEY = 'pp:settings'
-
-export interface Settings {
-  /** Ник текущего игрока — пишется в историю операций. */
-  playerName: string
-}
-
-const DEFAULT_SETTINGS: Settings = {
-  playerName: '',
-}
 
 export function emptyChar(): Char {
   return {
@@ -359,31 +349,18 @@ function modOf(e: SlotEntry): number | undefined {
   return Math.min(MAX_MOD, Math.max(0, Math.trunc(n)))
 }
 
-function loadState(): { db: Db; settings: Settings } {
-  if (typeof localStorage === 'undefined') {
-    return { db: emptyDb(), settings: DEFAULT_SETTINGS }
-  }
-  let db = emptyDb()
-  let settings = { ...DEFAULT_SETTINGS }
+function loadState(): Db {
+  if (typeof localStorage === 'undefined') return emptyDb()
   try {
     const rawDb = localStorage.getItem(DB_KEY)
-    if (rawDb) db = normalizeDb(JSON.parse(rawDb))
+    if (rawDb) return normalizeDb(JSON.parse(rawDb))
   } catch {
     /* повреждённые данные не должны ронять приложение */
   }
-  try {
-    const rawSet = localStorage.getItem(SETTINGS_KEY)
-    if (rawSet) settings = { ...DEFAULT_SETTINGS, ...JSON.parse(rawSet) }
-  } catch {
-    /* игнорируем */
-  }
-  return { db, settings }
+  return emptyDb()
 }
 
-const initial = loadState()
-
-let db: Db = initial.db
-let settings: Settings = initial.settings
+let db: Db = loadState()
 const listeners = new Set<() => void>()
 
 function emit() {
@@ -399,13 +376,27 @@ export function useDb(): Db {
   return useSyncExternalStore(subscribe, () => db)
 }
 
-export function useSettings(): Settings {
-  return useSyncExternalStore(subscribe, () => settings)
+/**
+ * Подпись автора правки.
+ *
+ * Раньше здесь было поле, куда человек вписывал свой ник. Оно оказалось
+ * лишним: кто передвигает вещь в казне и кто сохраняет базу и так известен —
+ * это персонаж, ради которого он вошёл по своему токену. Спрашивать то же
+ * самое вторым полем — значит получить два разных ответа и историю, где
+ * один и тот же человек записан по-разному.
+ */
+export function авторПравки(): string {
+  const кто = session
+  if (!кто) return ''
+  if (кто.role === 'char' && кто.charId) {
+    return db.chars.find((c) => c.id === кто.charId)?.name?.trim() ?? ''
+  }
+  return 'Мастер'
 }
 
 /** Любое изменение данных проходит через сюда: метка времени + сохранение. */
 function commit(next: Db): void {
-  db = { ...next, version: DB_VERSION, updatedAt: new Date().toISOString(), updatedBy: settings.playerName }
+  db = { ...next, version: DB_VERSION, updatedAt: new Date().toISOString(), updatedBy: авторПравки() }
   try {
     localStorage.setItem(DB_KEY, JSON.stringify(db))
   } catch {
@@ -416,18 +407,6 @@ function commit(next: Db): void {
 
 export function getDb(): Db {
   return db
-}
-
-export function updateSettings(patch: Partial<Settings>): void {
-  settings = { ...settings, ...patch }
-  try {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
-  } catch {
-    /* игнорируем */
-  }
-  // Имя игрока попадает в updatedAt-поле при следующем изменении, но уже
-  // проставленное updatedBy стоит обновить сразу, чтобы не путать авторство.
-  commit(db)
 }
 
 /* ---------------------------------------------------------------- персонажи */
@@ -805,7 +784,7 @@ export function addToWarehouse(itemId: number, count = 1, who?: string): void {
     ...db,
     warehouse: {
       stacks: stacks.sort((a, b) => a.itemId - b.itemId),
-      log: pushLog('in', itemId, count, who ?? settings.playerName),
+      log: pushLog('in', itemId, count, who ?? авторПравки()),
     },
   })
 }
@@ -822,7 +801,7 @@ export function takeFromWarehouse(itemId: number, count = 1, who?: string): void
     ...db,
     warehouse: {
       stacks: stacks.filter((s) => s.count > 0),
-      log: pushLog('out', itemId, take, who ?? settings.playerName),
+      log: pushLog('out', itemId, take, who ?? авторПравки()),
     },
   })
 }
@@ -973,13 +952,35 @@ export function signOut(): void {
  * открывать подмену под оставшимися.
  */
 let открытыхФорм = 0
+const formListeners = new Set<() => void>()
 
 export function формаОткрыта(открыта: boolean): void {
+  const было = открытыхФорм > 0
   открытыхФорм = Math.max(0, открытыхФорм + (открыта ? 1 : -1))
+  if (было !== открытыхФорм > 0) {
+    for (const l of formListeners) l()
+  }
 }
 
 export function естьОткрытаяФорма(): boolean {
   return открытыхФорм > 0
+}
+
+/**
+ * Открыта ли сейчас хоть одна форма правки.
+ *
+ * Отдельная подписка, а не чтение в цикле: появление и закрытие формы должно
+ * перезапускать отложенное сохранение, иначе правка ждала бы лишние секунды
+ * или, наоборот, не дождалась бы.
+ */
+export function useОткрытаяФорма(): boolean {
+  return useSyncExternalStore(
+    (cb) => {
+      formListeners.add(cb)
+      return () => formListeners.delete(cb)
+    },
+    () => открытыхФорм > 0,
+  )
 }
 
 /* ------------------------------------------------------------- общие операции */

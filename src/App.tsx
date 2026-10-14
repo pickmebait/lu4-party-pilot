@@ -7,6 +7,7 @@ import { SyncBar } from './components/SyncBar'
 import { WarehouseView } from './components/Warehouse'
 import { WishesView } from './components/Wishes'
 import { ScheduleView } from './components/Schedule'
+import { Tagline } from './components/Tagline'
 import { APP_NAME } from './lib/brand'
 import { startCatalogLoad, useCatalog } from './lib/catalog'
 import { computeSummary, usedItemIds, type Summary } from './lib/derived'
@@ -79,7 +80,7 @@ export default function App() {
           <span className="logo">⚔</span>
           <div>
             <h1>{APP_NAME}</h1>
-            <p className="tag">экипировка расписание взаимодействие</p>
+            <Tagline />
           </div>
           <PaletteBar />
         </div>

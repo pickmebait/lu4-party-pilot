@@ -3,8 +3,9 @@ import type { Db } from '@/types'
 import { createParty, fetchDb, openSession, saveDb, type PartyInfo } from '@/lib/api'
 import { API_URL, CONFIGURED } from '@/lib/config'
 import { APP_NAME } from '@/lib/brand'
-import { getDb, replaceDb, signIn, useSettings } from '@/lib/store'
+import { getDb, replaceDb, signIn } from '@/lib/store'
 import { PaletteBar } from './PaletteBar'
+import { Tagline } from './Tagline'
 
 /**
  * Вход в приложение.
@@ -16,7 +17,6 @@ import { PaletteBar } from './PaletteBar'
  * здесь незачем, поэтому и не предлагаем.
  */
 export function Login({ onDone }: { onDone: (name: string) => void }) {
-  const settings = useSettings()
   const [token, setToken] = useState('')
   const [partyName, setPartyName] = useState('')
   const [mode, setMode] = useState<'enter' | 'create'>('enter')
@@ -108,7 +108,7 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
             const mine: Db = {
               ...getDb(),
               updatedAt: new Date().toISOString(),
-              updatedBy: settings.playerName,
+              updatedBy: 'Мастер',
             }
             const saved = await saveDb(API_URL, issued.token, mine, base.value.updatedAt)
             if (saved.ok) lastSyncedAt = saved.value.updatedAt
@@ -135,7 +135,7 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
           <span className="logo">⚔</span>
           <div>
             <h1>{APP_NAME}</h1>
-            <p className="tag">экипировка расписание взаимодействие</p>
+            <Tagline />
           </div>
           {/* Палитра действует на всё приложение, значит её можно выбрать и
               не заходя внутрь — тем более, что цвет страницы тут и виден. */}
