@@ -205,6 +205,24 @@ export async function fetchMeta(apiUrl: string, token: string): Promise<ApiResul
 }
 
 /**
+ * Переименование пати.
+ *
+ * Имя живёт не в базе, а в шапке файла пати: правка базы тянула бы за собой
+ * копию базы у каждого, кто вошёл, из-за одной строки в шапке.
+ */
+export async function renameParty(
+  apiUrl: string,
+  token: string,
+  name: string,
+): Promise<ApiResult<{ ok: true; name: string }>> {
+  return call<{ ok: true; name: string }>(apiUrl, '/api/party/name', {
+    method: 'PATCH',
+    token,
+    body: JSON.stringify({ name }),
+  })
+}
+
+/**
  * Перевыпуск мастер-токена. Прежний перестаёт работать сразу, и вместе с
  * ним перестают работать все токены персонажей: держать потерянный доступ в
  * руках того, у кого его увели, нельзя.

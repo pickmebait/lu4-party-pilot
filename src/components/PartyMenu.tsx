@@ -4,12 +4,13 @@ import {
   deleteParty,
   fetchMeta,
   issueCharToken,
+  renameParty,
   revokeToken,
   rotateMaster,
   type PartyMeta,
   type TokenInfo,
 } from '@/lib/api'
-import { getSession, signIn, signOut, useDb } from '@/lib/store'
+import { getSession, signIn, signOut, updateSession, useDb } from '@/lib/store'
 import { formatAgo } from '@/lib/util'
 import { ConfirmModal, ПАУЗА_ПАТИ_СЕКУНД } from './ConfirmModal'
 import { TokenModal } from './TokenModal'
@@ -39,6 +40,9 @@ export function PartyMenu() {
   const [выдан, setВыдан] = useState<{ token: string; заголовок: string } | null>(null)
   const [выборПерсонажа, setВыборПерсонажа] = useState(false)
   const [подтвердитьУдаление, setПодтвердитьУдаление] = useState(false)
+  /** Правка названия пати: открыта по кнопке, живёт только пока открыта. */
+  const [правкаИмени, setПравкаИмени] = useState(false)
+  const [новоеИмя, setНовоеИмя] = useState('')
   const root = useRef<HTMLDivElement>(null)
 
   const свой = session.role === 'char' ? session.charId : null
@@ -127,6 +131,32 @@ export function PartyMenu() {
     setMeta(null)
   }
 
+  const переименовать = async () => {
+    const имя = новоеИмя.trim()
+    if (!имя) {
+      setError('Название не может быть пустым')
+      return
+    }
+    if (имя.length > 40) {
+      setError('Название длиннее 40 символов')
+      return
+    }
+    setError(null)
+    setBusy('name')
+    const res = await renameParty(session.apiUrl, session.token, имя)
+    setBusy(null)
+    if (!res.ok) {
+      setError(res.error)
+      return
+    }
+    // Название живёт в шапке приложения, поэтому оно меняется в сессии:
+    // без этого кнопка в правом верхнем углу продолжила бы показывать
+    // прежнее имя до перезагрузки.
+    updateSession({ name: res.value.name })
+    setПравкаИмени(false)
+    setMeta(null)
+  }
+
   const перевыпуститьМастер = async () => {
     setError(null)
     setBusy('master')
@@ -207,6 +237,63 @@ export function PartyMenu() {
           )}
 
           {error && <p className="sync-msg err">{error}</p>}
+
+          {/*
+            Название пати правится только мастером: сервер отклонит правку
+            от токена персонажа, а показывать поле, которое не сработает,
+            незачем. Правка живёт на месте — нажали «Переименовать», под
+            именем появилось поле, и оно же уходит по «Отмене» или Escape.
+          */}
+          {мастер && (
+            <section className="party-rename">
+              {правкаИмени ? (
+                <>
+                  <input
+                    className="input"
+                    autoFocus
+                    value={новоеИмя}
+                    maxLength={40}
+                    placeholder="Название пати"
+                    onChange={(e) => setНовоеИмя(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') переименовать()
+                      if (e.key === 'Escape') {
+                        // Ошибку правки закрывать не надо, но и меню вместе
+                        // с ней закрывать нельзя: правка это не всё окно.
+                        e.stopPropagation()
+                        setПравкаИмени(false)
+                      }
+                    }}
+                  />
+                  <div className="party-rename-actions">
+                    <button
+                      className="btn tiny primary"
+                      disabled={busy === 'name'}
+                      onClick={переименовать}
+                    >
+                      Сохранить
+                    </button>
+                    <button className="btn tiny" onClick={() => setПравкаИмени(false)}>
+                      Отмена
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="party-rename-row">
+                  <span className="party-rename-name">{session.name}</span>
+                  <button
+                    className="btn tiny"
+                    onClick={() => {
+                      setНовоеИмя(session.name)
+                      setПравкаИмени(true)
+                    }}
+                  >
+                    Переименовать
+                  </button>
+                </div>
+              )}
+            </section>
+          )}
 
           {мастер && (
             <section className="party-tokens">

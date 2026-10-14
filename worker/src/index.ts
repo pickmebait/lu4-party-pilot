@@ -101,6 +101,7 @@ export default {
           : await readData(request, env, cors)
       }
       if (путь === '/api/party/meta') return await readMeta(request, env, cors)
+      if (путь === '/api/party/name') return await renameParty(request, env, cors)
       if (путь === '/api/party/rotate') return await rotateMaster(request, env, cors)
       if (путь === '/api/party/tokens') {
         if (request.method === 'POST') return await issueToken(request, env, cors)
@@ -591,6 +592,48 @@ async function deleteParty(request: Request, env: Env, cors: Cors): Promise<Resp
   return json({ ok: true, partyId: access.partyId }, 200, cors)
 }
 
+/**
+ * Переименование пати.
+ *
+ * Отдельная запись в файл, а не поле в базе: имя пати живёт в шапке файла и
+ * показывается всем, кто вошёл, — от состава до токена персонажа. Правка
+ * базы переписывала бы всю базу ради одной строки и заставила бы каждого
+ * участника подтягивать копию из-за переименования.
+ *
+ * Имя пати в файле — не украшение: по нему пишется commit пати и ищется пати
+ * в списке правок. Переименование правит и то, и другое, потому что запись
+ * берёт новое имя.
+ */
+async function renameParty(request: Request, env: Env, cors: Cors): Promise<Response> {
+  const access = await authorize(env, request)
+  if (!access.ok) return json({ error: access.error }, access.status, cors)
+  if (!требуетсяМастер(access)) {
+    return json({ error: 'Переименовать пати может только тот, у кого мастер-токен.' }, 403, cors)
+  }
+
+  const body = await readJson(request)
+  const имя = проверкаИмениПати(body?.name)
+  if (!имя.ok) return json({ error: имя.error }, 400, cors)
+
+  // Заодно отсекаем переименование в то же самое: лишняя запись в
+  // репозитории ничего не меняет, а в истории правок выглядит как дело.
+  if (имя.value === access.file.name) {
+    return json({ ok: true, name: access.file.name }, 200, cors)
+  }
+
+  const party: PartyFile = { ...access.file, name: имя.value }
+  const saved = await writeFile(
+    env,
+    access.partyId,
+    party,
+    access.sha,
+    `${access.file.name} → ${имя.value}: переименована пати`,
+  )
+  if ('error' in saved) return json({ error: saved.error, conflict: saved.conflict ?? false }, 409, cors)
+
+  return json({ ok: true, name: имя.value }, 200, cors)
+}
+
 async function openSession(request: Request, env: Env, cors: Cors): Promise<Response> {
   const body = await readJson(request)
   const token = String(body?.token ?? '').trim()
@@ -989,6 +1032,21 @@ function isDbLike(v: unknown): boolean {
 function cleanName(v: unknown): string {
   const s = typeof v === 'string' ? v.trim() : ''
   return s.slice(0, 40) || 'Моя пати'
+}
+
+/**
+ * Имя пати при переименовании.
+ *
+ * Отдельная проверка, а не cleanName: при создании пустое имя тихо
+ * становится «Моя пати», а при переименовании пати в «Моя пати» человек
+ * думает, что назвал её, и потом удивляется, почему в шапке не то.
+ * Пустое имя при переименовании — ошибка, а не замена.
+ */
+function проверкаИмениПати(v: unknown): { ok: true; value: string } | { ok: false; error: string } {
+  const s = typeof v === 'string' ? v.trim() : ''
+  if (!s) return { ok: false, error: 'Название не может быть пустым' }
+  if (s.length > 40) return { ok: false, error: 'Название длиннее 40 символов' }
+  return { ok: true, value: s }
 }
 
 async function readJson(request: Request): Promise<any> {
