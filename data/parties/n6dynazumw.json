@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-14T13:20:41.700Z",
+    "updatedAt": "2026-10-14T13:20:55.398Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -22,52 +22,176 @@
         "name": "Конарх",
         "cls": "Paladin",
         "level": 80,
-        "affil": "состав",
-        "slots": {},
-        "subs": [],
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
         "subUnlocked": false,
-        "contacts": {},
-        "away": {},
-        "pa": null
+        "subs": [],
+        "away": {}
       },
       {
         "id": "cTwo",
         "name": "Валькирия",
         "cls": "Elemental Summoner",
         "level": 75,
-        "affil": "состав",
-        "slots": {},
-        "subs": [],
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
         "subUnlocked": false,
-        "contacts": {},
-        "away": {},
-        "pa": null
+        "subs": [],
+        "away": {}
       },
       {
         "id": "cThree",
         "name": "Танк",
         "cls": "Dark Avenger",
         "level": 74,
-        "affil": "состав",
-        "slots": {},
-        "subs": [],
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
         "subUnlocked": false,
-        "contacts": {},
-        "away": {},
-        "pa": null
+        "subs": [],
+        "away": {}
       },
       {
         "id": "cFour",
         "name": "Лучница",
         "cls": "Shillien Elder",
         "level": 70,
-        "affil": "десятка",
-        "slots": {},
-        "subs": [],
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
         "subUnlocked": false,
-        "contacts": {},
-        "away": {},
-        "pa": null
+        "subs": [],
+        "away": {}
       }
     ],
     "warehouse": {
@@ -76,11 +200,11 @@
     },
     "wishes": [],
     "sets": [],
+    "customNames": {},
     "schedule": {
       "prime": {},
       "offs": [],
       "checklist": []
-    },
-    "customNames": {}
+    }
   }
 }
