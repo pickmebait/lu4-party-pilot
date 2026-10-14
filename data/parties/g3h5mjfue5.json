@@ -5,16 +5,163 @@
   "masterHash": "b76d483f84001971e19e9ef8c9972d96871f115abcd08fa4017fc062d40c9b20",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-14T13:14:11.854Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 8,
+    "updatedAt": "2026-10-14T13:14:39.604Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "cmv7z8xwn1289zp",
+        "name": "PickMeBait",
+        "cls": "Abyss Walker",
+        "level": 75,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            {
+              "itemId": 283,
+              "mod": 1
+            }
+          ],
+          "lhand": [
+            {
+              "itemId": 627,
+              "mod": 3
+            }
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "contacts": {
+          "realName": "Борис"
+        },
+        "subUnlocked": true,
+        "subs": [
+          {
+            "id": "smv841px22bzlip",
+            "cls": "Bounty Hunter",
+            "level": 52,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          }
+        ],
+        "away": {},
+        "pa": {
+          "from": "2026-10-14",
+          "days": 30
+        }
+      },
+      {
+        "id": "cmv83uh441gwkk2",
+        "name": "Zarra",
+        "cls": "Gladiator",
+        "level": 73,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
     "wishes": [],
     "sets": [],
-    "customNames": {}
+    "customNames": {},
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    }
   }
 }
