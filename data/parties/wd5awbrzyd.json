@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-14T12:53:07.963Z",
+    "updatedAt": "2026-10-14T12:53:32.032Z",
     "updatedBy": "PickMeBait",
     "chars": [
       {
@@ -67,7 +67,47 @@
           "realName": "Борис"
         },
         "subUnlocked": true,
-        "subs": [],
+        "subs": [
+          {
+            "id": "smv841px22bzlip",
+            "cls": "Bounty Hunter",
+            "level": 52,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          }
+        ],
         "away": {},
         "pa": {
           "from": "2026-10-14",
