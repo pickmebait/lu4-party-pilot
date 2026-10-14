@@ -1,0 +1,20 @@
+{
+  "partyId": "9jixd2yd7p",
+  "name": "Вторая пати",
+  "createdAt": "2026-10-14T10:32:58.044Z",
+  "masterHash": "01306682bfe30c7c328a2457ae914ed261d3374b78ebb55f99d0ff808b8f03c8",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-14T10:32:58.044Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
