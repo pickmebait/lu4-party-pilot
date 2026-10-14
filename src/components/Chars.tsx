@@ -59,8 +59,10 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
   const [вид, setВид] = useState<Вид>('строка')
 
   const db = useDb()
-  const { master } = useAccess()
-  const все = sortedChars(db.chars)
+  const { master, ownCharId } = useAccess()
+  // Свой персонаж — сверху: его ищут в первую очередь, а найти его в
+  // середине списка приходилось бы перебирать чужие карточки.
+  const все = sortedChars(db.chars, ownCharId)
   const показанные = фильтр === 'все' ? все : все.filter((c) => c.affil === фильтр)
 
   return (

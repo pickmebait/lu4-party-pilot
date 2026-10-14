@@ -96,6 +96,10 @@ function строкиКонтактов(контакты: Char['contacts']): К�
  * исчезал, и по карточке было не видно, что поле для связи есть и осталось
  * пустым: пустота молчаливого блока читалась как «контактов не
  * предусмотрено».
+ *
+ * Кнопки правки внутри блока нет: у карточки над ним стоит трубка, которая
+ * открывает то же самое формой. Вторая кнопка в раскрытом списке вела туда
+ * же и только занимала строку, из-за чего список выглядел обрезанным.
  */
 export function ContactsBlock({ char, onEdit }: { char: Char; onEdit?: () => void }) {
   const [open, setOpen] = useState(false)
@@ -165,14 +169,6 @@ export function ContactsBlock({ char, onEdit }: { char: Char; onEdit?: () => voi
                 )}
               </div>
             ))}
-            <div className="contacts-row">
-              <span className="contacts-key" />
-              {onEdit && (
-                <button className="btn tiny" onClick={onEdit}>
-                  Изменить
-                </button>
-              )}
-            </div>
           </div>
         ) : (
           <div className="contacts-list">

@@ -2,13 +2,25 @@ import type { Char, Db, SetDef, SlotEntry, SlotKey } from '@/types'
 import { SLOT_KEYS, affiliationOrder } from '@/types'
 
 /**
- * Персонажи в порядке показа: состав, потом десятка, потом окно.
+ * Персонажи в порядке показа: свой, потом состав, потом десятка, потом окно.
+ *
+ * Свой — тот, ради которого человек вошёл, и он всегда сверху. Искать свою
+ * карточку среди чужих приходилось бы каждый раз, а это ровно тот, кого
+ * правит именно он. Свой не выпадает из вида: строка «Сводка» и фильтры
+ * отбирают персонажей раньше сортировки, и попадает он туда только если
+ * подходит под них.
  *
  * Сортировка устойчивая — внутри принадлежности порядок добавления не
  * меняется, поэтому пересортировка не таскает людей по карточкам.
  */
-export function sortedChars(chars: readonly Char[]): Char[] {
-  return [...chars].sort((a, b) => affiliationOrder(a.affil) - affiliationOrder(b.affil))
+export function sortedChars(chars: readonly Char[], свойCharId?: string | null): Char[] {
+  const свой = свойCharId ?? ''
+  return [...chars].sort((a, b) => {
+    const свойA = a.id === свой ? 0 : 1
+    const свойB = b.id === свой ? 0 : 1
+    if (свойA !== свойB) return свойA - свойB
+    return affiliationOrder(a.affil) - affiliationOrder(b.affil)
+  })
 }
 
 export interface SetProgress {

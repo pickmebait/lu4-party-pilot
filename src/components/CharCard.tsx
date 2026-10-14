@@ -89,7 +89,7 @@ export function CharCard({
   const свой = правый && ownCharId === char.id
 
   return (
-    <article className="char-card">
+    <article className={`char-card${свой ? ' own' : ''}`}>
       <header className="char-head">
         {editing ? (
           <div className="char-id">

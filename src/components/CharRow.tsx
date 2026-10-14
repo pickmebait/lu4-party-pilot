@@ -15,7 +15,7 @@ import { removeChar, removeSub, updateChar, updateSub, type Branch } from '@/lib
 import { ItemIcon } from './ItemIcon'
 import { CharEditForm } from './CharEditForm'
 import { ContactsModal } from './ContactsModal'
-import { IconPhone, IconUser } from './Icons'
+import { IconUser } from './Icons'
 import { PaChip } from './PaChip'
 import { ConfirmModal } from './ConfirmModal'
 
@@ -116,9 +116,12 @@ export function CharRow({
               </strong>
               <span className="chip affil">{affiliationLabel(char.affil)}</span>
               {саб && <span className="chip branch">саб</span>}
-              <span className="row-contacts" aria-hidden="true">
-                <IconPhone size={12} />
-              </span>
+              {/*
+                Значка с трубкой больше нет. Он стоял подсказкой «здесь
+                открываются контакты», но занимал строку, которая и так
+                отдана имени, а открываются они и так — щелчком по самому
+                имени, оно и есть кнопка.
+              */}
             </button>
 
             <div className="row-meta">
