@@ -1,0 +1,20 @@
+{
+  "partyId": "aac35qdd96",
+  "name": "Старое имя",
+  "createdAt": "2026-10-14T14:00:46.070Z",
+  "masterHash": "44c750b5f2ce1fa0a63cf4dc11d097f757e6515cc50cf0c973cdcc1dd53b685b",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-14T14:00:46.070Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
