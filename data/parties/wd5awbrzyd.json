@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-14T12:47:36.760Z",
+    "updatedAt": "2026-10-14T12:48:07.205Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -26,7 +26,8 @@
         "slots": {
           "rhand": [
             {
-              "itemId": 283
+              "itemId": 283,
+              "mod": 1
             }
           ],
           "lhand": [
