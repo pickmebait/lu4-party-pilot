@@ -14,8 +14,8 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-14T10:38:52.566Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-14T10:44:38.073Z",
+    "updatedBy": "PickMeBait",
     "chars": [
       {
         "id": "cmv7z8xwn1289zp",
@@ -25,7 +25,9 @@
         "affil": "roster",
         "slots": {
           "rhand": [
-            null
+            {
+              "itemId": 283
+            }
           ],
           "lhand": [
             null
