@@ -5,16 +5,35 @@
   "masterHash": "55bf829f1b9c4c1cd70957bce06043b6a74fe197785b12a66a8cf1a61a59bd8e",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-14T10:32:54.847Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 8,
+    "updatedAt": "2026-10-14T10:32:56.619Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "cOne",
+        "name": "Конарх",
+        "cls": "Knight",
+        "level": 80,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
     "wishes": [],
     "sets": [],
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    },
     "customNames": {}
   }
 }
