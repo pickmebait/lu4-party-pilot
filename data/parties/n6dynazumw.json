@@ -5,16 +5,74 @@
   "masterHash": "35d4f5bb315ef5f2d4a85a197dae809710487e73b394cb0e6b55f7f94d16e1a1",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-14T13:20:39.301Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 8,
+    "updatedAt": "2026-10-14T13:20:41.700Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "cOne",
+        "name": "Конарх",
+        "cls": "Paladin",
+        "level": 80,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      },
+      {
+        "id": "cTwo",
+        "name": "Валькирия",
+        "cls": "Elemental Summoner",
+        "level": 75,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      },
+      {
+        "id": "cThree",
+        "name": "Танк",
+        "cls": "Dark Avenger",
+        "level": 74,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      },
+      {
+        "id": "cFour",
+        "name": "Лучница",
+        "cls": "Shillien Elder",
+        "level": 70,
+        "affil": "десятка",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
     "wishes": [],
     "sets": [],
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    },
     "customNames": {}
   }
 }
