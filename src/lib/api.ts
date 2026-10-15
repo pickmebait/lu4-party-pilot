@@ -71,29 +71,45 @@ function msg(e: unknown): string {
 /**
  * Сколько ждём ответа сервера, прежде чем считать связь пропавшей.
  *
- * Ответ до workers.dev теряется примерно в одном запросе из пяти: Worker
- * отвечает за две секунды, а браузер так и не получает ничего и ждёт вечно.
- * Без предела приложение навсегда остаётся с надписью «Сохраняю…» и
- * заблокированными кнопками — выглядит как зависшее, а правка при этом
- * давно в базе.
+ * Замер: из шестидесяти запросов шесть обрываются совсем, а удачные укладываются
+ * в 0,2–1,9 секунды. Связь при этом не просто рвётся, а висит около минуты и
+ * обрывается сама. Ждать своего предела почти бесполезно: вместо ответа человек
+ * получит ошибку, только через минуту.
+ *
+ * Пятнадцать секунд — с запасом на самую долгую удачную запись (Worker ждёт
+ * GitHub пятнадцать секунд) и вчетверо меньше минуты, на которой связи и рвутся.
+ * Повторяемые запросы после обрыва уйдут заново и ответят за доли секунды.
  */
-const ОЖИДАНИЕ_ОТВЕТА_МС = 25_000
+const ОЖИДАНИЕ_ОТВЕТА_МС = 15_000
 
 /**
- * Адреса, запрос к которым можно повторить после обрыва связи.
+ * Запрос, который можно повторить после обрыва связи.
  *
- * Список адресов, а не проверка метода: повторяемость задаёт не глагол, а
- * смысл. Запись базы и переименование кладут значение и повторяются безвредно.
- * А вот удаление пати тоже глагол записи, но повтор после потерянного ответа
- * пришёл бы на уже удалённую пати и вернул бы ошибку там, где всё вышло, —
- * человек увидел бы отказ после того, как пати уже нет.
+ * Повторяемость задаёт не глагол, а смысл запроса, и решается на месте вызова,
+ * а не разбором адреса: адрес общий у выпуска и отзыва токена, и повтор одного
+ * из них безвреден, а другого — нет. По адресу это не различить.
+ *
+ * Не повторяются четыре вызова, и каждый по своей причине:
+ *
+ *   создание пати   — повтор создал бы вторую пати, а первая осталась бы сиротой;
+ *   перевыпуск      — повтор отозвал бы только что выданный мастер-токен и выпустил бы другой;
+ *   отзыв токена    — повтор пришёл бы на уже отозванный и вернул отказ там, где всё вышло;
+ *   удаление пати   — то же: повтор пришёл бы на уже удалённую.
+ *
+ * Выпуск токена персонажа повторяется: токен, ответ о котором потерялся, не
+ * достался никому, и повтор выпускает другой, а этот остаётся отозванным.
  */
-const ПОВТОРЯЕМЫЕ = ['/api/party/data', '/api/party/name']
+
+interface CallInit extends RequestInit {
+  token?: string
+  /** Повторить запрос после обрыва связи. Ставится только там, где это безвредно. */
+  повторяемая?: boolean
+}
 
 async function call<T>(
   base: string,
   path: string,
-  init: RequestInit & { token?: string } = {},
+  init: CallInit = {},
   повтор = 0,
 ): Promise<ApiResult<T>> {
   const url = `${base.replace(/\/+$/, '')}${path}`
@@ -162,7 +178,7 @@ async function call<T>(
      * ничего не меняет, а второй запрос лишь дольше держал бы человека на
      * ожидании.
      */
-    if (ПОВТОРЯЕМЫЕ.includes(path) && повтор === 0) {
+    if (init.повторяемая === true && повтор === 0) {
       await new Promise((окончить) => setTimeout(окончить, 700))
       return call<T>(base, path, init, повтор + 1)
     }
@@ -170,7 +186,7 @@ async function call<T>(
       ok: false,
       статус: 0,
       error: отмена.signal.aborted
-        ? 'Сервер не ответил вовремя. Правка, возможно, уже записана — попробуй «Загрузить».'
+        ? 'Сервер не ответил вовремя. Правка, возможно, уже записана — вернись на вкладку, база подтянется сама.'
         : `Не удалось связаться с сервером. Проверь адрес и интернет. (${msg(e)})`,
     }
   } finally {
@@ -190,12 +206,13 @@ export async function createParty(apiUrl: string, name: string): Promise<ApiResu
 export async function openSession(apiUrl: string, token: string): Promise<ApiResult<PartyInfo>> {
   return call<PartyInfo>(apiUrl, '/api/session', {
     method: 'POST',
+    повторяемая: true,
     body: JSON.stringify({ token }),
   })
 }
 
 export async function fetchDb(apiUrl: string, token: string): Promise<ApiResult<Db>> {
-  return call<Db>(apiUrl, '/api/party/data', { method: 'GET', token })
+  return call<Db>(apiUrl, '/api/party/data', { method: 'GET', token, повторяемая: true })
 }
 
 /**
@@ -212,12 +229,13 @@ export async function saveDb(
   return call<{ updatedAt: string }>(apiUrl, '/api/party/data', {
     method: 'PUT',
     token,
+    повторяемая: true,
     body: JSON.stringify({ db, baseUpdatedAt }),
   })
 }
 
 export async function fetchMeta(apiUrl: string, token: string): Promise<ApiResult<PartyMeta>> {
-  return call<PartyMeta>(apiUrl, '/api/party/meta', { method: 'GET', token })
+  return call<PartyMeta>(apiUrl, '/api/party/meta', { method: 'GET', token, повторяемая: true })
 }
 
 /**
@@ -234,6 +252,7 @@ export async function renameParty(
   return call<{ ok: true; name: string }>(apiUrl, '/api/party/name', {
     method: 'PATCH',
     token,
+    повторяемая: true,
     body: JSON.stringify({ name }),
   })
 }
@@ -265,6 +284,7 @@ export async function issueCharToken(
   return call<{ token: string; charId: string; charName: string }>(apiUrl, '/api/party/tokens', {
     method: 'POST',
     token,
+    повторяемая: true,
     body: JSON.stringify({ charId }),
   })
 }
