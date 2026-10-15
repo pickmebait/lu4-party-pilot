@@ -5,16 +5,66 @@
   "masterHash": "88794873d0510865bdfb7116cdc2997516c38ff6fa07f6a5d8da9aad262661c4",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-15T21:15:46.316Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 8,
+    "updatedAt": "2026-10-15T21:16:17.619Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "cmva1gbem1lxgpc",
+        "name": "Конарх",
+        "cls": "",
+        "level": 0,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
     "wishes": [],
     "sets": [],
-    "customNames": {}
+    "customNames": {},
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    }
   }
 }
