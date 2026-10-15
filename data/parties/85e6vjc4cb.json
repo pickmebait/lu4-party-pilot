@@ -14,14 +14,14 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-15T13:30:34.215Z",
+    "updatedAt": "2026-10-15T13:30:35.732Z",
     "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cOne",
         "name": "Первый",
         "cls": "Knight",
-        "level": 83,
+        "level": 84,
         "affil": "состав",
         "slots": {},
         "subs": [],
