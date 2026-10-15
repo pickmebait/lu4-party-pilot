@@ -16,6 +16,7 @@ import { signOut, updateSession, useDb, useSession } from './lib/store'
 import type { Db } from './types'
 import { applyPalette, loadPalette } from './lib/palette'
 import { plural } from './lib/util'
+import { primeHours } from './lib/schedule'
 
 startCatalogLoad()
 
@@ -45,10 +46,10 @@ function заметка(ключ: Tab, s: Summary, db: Db): string {
     case 'chars':
       return `${s.gearSlots.filled}/${s.gearSlots.total} слотов`
     case 'schedule': {
-      const дней = Object.keys(db.schedule.prime).length + db.schedule.offs.length
-      if (дней === 0) return 'пусто'
+      const часов = primeHours(db.schedule)
       const ушли = db.chars.reduce((a, c) => a + Object.keys(c.away ?? {}).length, 0)
-      return `${дней} ${plural(дней, 'день', 'дня', 'дней')}${ушли ? `, нет ${ушли}` : ''}`
+      if (часов === 0) return ушли ? `нет прайма, нет ${ушли}` : 'пусто'
+      return `${часов} ${plural(часов, 'час', 'часа', 'часов')}${ушли ? `, нет ${ушли}` : ''}`
     }
     case 'warehouse':
       return s.warehouseKinds === 0

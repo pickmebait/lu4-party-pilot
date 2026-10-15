@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import type { Db } from '@/types'
-import { createParty, fetchDb, openSession, saveDb, type PartyInfo } from '@/lib/api'
+import { createParty, fetchDb, openSession, type PartyInfo } from '@/lib/api'
 import { API_URL, CONFIGURED } from '@/lib/config'
 import { APP_NAME } from '@/lib/brand'
-import { getDb, replaceDb, signIn, signOut } from '@/lib/store'
+import { replaceDb, signIn, signOut } from '@/lib/store'
 import { PaletteBar } from './PaletteBar'
 import { Tagline } from './Tagline'
 
@@ -49,13 +48,6 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
     // иначе локальные данные окажутся «от другой версии» и первое же
     // сохранение упрётся в конфликт.
     const loaded = await fetchDb(API_URL, t)
-    if (loaded.ok) {
-      replaceDb(loaded.value)
-    } else if ((info.chars ?? 0) > 0) {
-      // В базе что-то есть, но прочитать не вышло — предупреждаем,
-      // чтобы игрок не подумал, что у пати пусто.
-      setError('Войти удалось, но данные пати не загрузились. Попробуй «Загрузить» в шапке.')
-    }
 
     setBusy(false)
     /*
@@ -66,6 +58,10 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
      * сессию на месте, вход по новому токену может завершиться, а приложение
      * откроет ту пати, из которой человек только что вышел. Вход идёт
      * ровно по тому токену, который введён или только что выдан.
+     *
+     * И вход идёт раньше базы: вход поднимает базу этой пати, а база из
+     * сети кладётся поверх. Наоборот нельзя — тогда вход стёр бы только что
+     * прочитанное.
      */
     signOut()
     signIn({
@@ -77,6 +73,14 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
       apiUrl: API_URL,
       lastSyncedAt: loaded.ok ? loaded.value.updatedAt : '',
     })
+
+    /*
+     * О неудачном чтении здесь предупредить нечем: следующая строка переключает
+     * приложение на основной экраном, и надпись уйдёт вместе с этим экраном.
+     * Про пустую базу скажет полоса синхронизации — она останется на виду и
+     * дотянет данные сама, как только связь вернётся.
+     */
+    if (loaded.ok) replaceDb(loaded.value)
     onDone(info.name)
   }
 
@@ -109,20 +113,20 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
         token={issued.token}
         name={issued.name}
         onDone={async () => {
-          // Только что созданная база пуста, но в браузере уже могут быть
-          // данные. Заливаем их сразу — чтобы пати не начиналась с нуля и
-          // первое сохранение не упиралось в конфликт.
+          /*
+           * Новая пати начинается пустой, и в неё ничего не переносится.
+           *
+           * Раньше сюда заливалась база из браузера — «чтобы не начинать с
+           * нуля». Но в браузере лежала база прошлой пати, и новый мастер-токен
+           * уезжал с чужими персонажами: человек создавал пати, входил, а видел
+           * состав другой. Причина тут не в свежести, а в том, что переносить
+           * было нечего: сервер только что создал пустую базу.
+           *
+           * Если что-то и лежит в браузере незаписанным, оно доживёт своей
+           * очереди: синхронизация выложит его от прежней пати, а этой пати оно
+           * не чужое.
+           */
           const base = await fetchDb(API_URL, issued.token)
-          let lastSyncedAt = base.ok ? base.value.updatedAt : ''
-          if (base.ok) {
-            const mine: Db = {
-              ...getDb(),
-              updatedAt: new Date().toISOString(),
-              updatedBy: 'Мастер',
-            }
-            const saved = await saveDb(API_URL, issued.token, mine, base.value.updatedAt)
-            if (saved.ok) lastSyncedAt = saved.value.updatedAt
-          }
           signOut()
           signIn({
             token: issued.token,
@@ -131,8 +135,9 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
             role: 'master',
             charId: null,
             apiUrl: API_URL,
-            lastSyncedAt,
+            lastSyncedAt: base.ok ? base.value.updatedAt : '',
           })
+          if (base.ok) replaceDb(base.value)
           onDone(issued.name)
         }}
       />

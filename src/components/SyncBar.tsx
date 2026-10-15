@@ -129,7 +129,15 @@ export function SyncBar() {
 
         const remote = res.value
         const local = getDb()
-        const свои = (local.updatedAt ?? '') !== session.lastSyncedAt
+        /*
+         * Метка пустая — базу этой пати ещё ни разу не читали, и на руках
+         * пустая заглушка, а не правки человека. Считать её правками нельзя:
+         * тогда загрузка откажется затирать собственную заглушку и человек
+         * так и увидит пустую пати.
+         */
+        const свои = session.lastSyncedAt
+          ? (local.updatedAt ?? '') !== session.lastSyncedAt
+          : false
 
         if (свои) {
           /*
@@ -307,6 +315,13 @@ export function SyncBar() {
    */
   useEffect(() => {
     if (формаОткрыта) return
+    /*
+     * Пока базу этой пати не прочитали, сохранять нечего и нельзя: на руках
+     * пустая заглушка, и отправка её ушла бы поверх настоящей базы. Сервер
+     * такой запрос отверг бы конфликтом, но человек увидел бы пустую пати и
+     * ошибку вместо своих данных. Правильно — сначала прочитать.
+     */
+    if (!session.lastSyncedAt) return
     if ((db.updatedAt ?? '') === session.lastSyncedAt) return
     if (state.kind === 'err' && incoming) return
 
@@ -335,6 +350,16 @@ export function SyncBar() {
    * репозитория, поэтому лишних обращений к GitHub быть не должно.
    */
   useEffect(() => {
+    /*
+     * База этой пати ещё не прочитана — вход был без сети, и на экране пусто.
+     * Ждать следующей проверки нельзя: человек смотрит на пустую пати и
+     * думает, что она стёрта. Тянем сразу и говорим об этом надписью.
+     */
+    if (!session.lastSyncedAt && !формаОткрыта) {
+      setState({ kind: 'busy', what: 'Загружаю из пати…' })
+      void загрузить(false)
+    }
+
     const тик = setInterval(() => {
       if (document.visibilityState !== 'visible') return
       if (естьСвоиПравки()) return

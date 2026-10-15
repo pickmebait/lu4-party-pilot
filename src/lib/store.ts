@@ -350,18 +350,55 @@ function modOf(e: SlotEntry): number | undefined {
   return Math.min(MAX_MOD, Math.max(0, Math.trunc(n)))
 }
 
-function loadState(): Db {
+/**
+ * Ключ пати, которому принадлежит база в этом браузере.
+ *
+ * Пустой, пока пати не выбрана. С базой хранится и он: без такой пометки
+ * браузер не отличает базу своей пати от базы той, в которой человек был
+ * вчера, и отдаёт первую второй.
+ */
+let dbPartyId = ''
+
+/**
+ * Читает базу из браузера, если она принадлежит этой же пати.
+ *
+ * Чужая база не подходит: вошедшему в другую пати показывать персонажей
+ * предыдущей — значит показать не то, чего он ждёт, и хуже того, отправить
+ * правку не туда. Поэтому чужое и повреждённое одинаково дают пустую базу:
+ * синхронизация подтянет настоящую с сервера.
+ */
+function loadState(partyId = dbPartyId): Db {
   if (typeof localStorage === 'undefined') return emptyDb()
   try {
-    const rawDb = localStorage.getItem(DB_KEY)
-    if (rawDb) return normalizeDb(JSON.parse(rawDb))
+    const raw = localStorage.getItem(DB_KEY)
+    if (!raw) return emptyDb()
+    const сохранённое = JSON.parse(raw) as { partyId?: string; db?: unknown }
+    // База, сохранённая до появления пометки, чужой считается: чей это id,
+    // не узнать, а показать лишнее хуже, чем не показать ничего.
+    if (!сохранённое.partyId || сохранённое.partyId !== partyId) return emptyDb()
+    return normalizeDb(сохранённое.db)
   } catch {
     /* повреждённые данные не должны ронять приложение */
   }
   return emptyDb()
 }
 
-let db: Db = loadState()
+/**
+ * Кладёт базу в браузер вместе с пометкой, чьей она пати.
+ *
+ * Пометка ставится здесь, а не на местах вызова, потому что писать базу будут
+ * ещё: забытый приписочный try в одном из них сделал бы базу, которая при
+ * следующем чтении посчитается чужой.
+ */
+function saveState(next: Db): void {
+  try {
+    localStorage.setItem(DB_KEY, JSON.stringify({ partyId: dbPartyId, db: next }))
+  } catch {
+    /* приватный режим или переполнение — работаем без сохранения */
+  }
+}
+
+let db: Db = loadState(loadSession()?.partyId ?? '')
 const listeners = new Set<() => void>()
 
 function emit() {
@@ -398,11 +435,7 @@ export function авторПравки(): string {
 /** Любое изменение данных проходит через сюда: метка времени + сохранение. */
 function commit(next: Db): void {
   db = { ...next, version: DB_VERSION, updatedAt: new Date().toISOString(), updatedBy: авторПравки() }
-  try {
-    localStorage.setItem(DB_KEY, JSON.stringify(db))
-  } catch {
-    /* приватный режим или переполнение — работаем без сохранения */
-  }
+  saveState(db)
   emit()
 }
 
@@ -926,7 +959,22 @@ function saveSession(next: PartySession | null): void {
   for (const l of sessionListeners) l()
 }
 
+/**
+ * Вход в пати.
+ *
+ * Если это другая пати, база в браузере ей не принадлежит: под неё ищется
+ * своя, а не та, что осталась от прошлой. Иначе человек вошёл в пати, которой
+ * ещё нет, — и увидел бы персонажей той, из которой вышел.
+ *
+ * Порядок важен: вызывающий сначала входит, потом кладёт базу. Обратный
+ * порядок стирал бы только что загруженное с сервера.
+ */
 export function signIn(next: PartySession): void {
+  if (next.partyId !== dbPartyId) {
+    dbPartyId = next.partyId
+    db = loadState(next.partyId)
+    emit()
+  }
   saveSession(next)
 }
 
@@ -997,10 +1045,6 @@ export function useОткрытаяФорма(): boolean {
 export function replaceDb(next: unknown): void {
   const normalized = normalizeDb(next)
   db = { ...normalized, version: DB_VERSION }
-  try {
-    localStorage.setItem(DB_KEY, JSON.stringify(db))
-  } catch {
-    /* приватный режим */
-  }
+  saveState(db)
   emit()
 }
