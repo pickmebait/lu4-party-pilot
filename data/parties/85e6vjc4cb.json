@@ -3,7 +3,15 @@
   "name": "Проверка скорости",
   "createdAt": "2026-10-15T13:25:11.931Z",
   "masterHash": "c37b8120bd7542aece61f8690ade2f735752977d36509e85721c109fd08fa891",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "t49rvi9fcn",
+      "hash": "348fbff8f919fb861cf8cae32b19b5c4233db08f6ced8b48489f3d7b35caa248",
+      "charId": "cOne",
+      "charName": "Первый",
+      "createdAt": "2026-10-15T13:26:46.282Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-15T13:26:12.997Z",
