@@ -1,0 +1,20 @@
+{
+  "partyId": "fi479g3jq8",
+  "name": "Проверка скорости",
+  "createdAt": "2026-10-15T13:24:44.793Z",
+  "masterHash": "42da17aec1a7bf74eb1e1624cd4b6e7c4439562c0fb98ebde3c13aca531ef066",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-15T13:24:44.793Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
