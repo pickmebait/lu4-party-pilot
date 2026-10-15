@@ -40,7 +40,18 @@ export interface PartyMeta extends PartyInfo {
 }
 
 export type ApiResult<T> =
-  | { ok: true; value: T }
+  | {
+      ok: true
+      value: T
+      /**
+       * Сколько запросов дошло до сервера на самом деле.
+       *
+       * Один — всё прошло с первой попытки. Больше одного значит, что связь
+       * оборвалась или зависла и запрос ушёл заново: сервер мог выполнить и
+       * первый, поэтому человек должен знать, что запись была повторена.
+       */
+      попыток: number
+    }
   | {
       ok: false
       error: string
@@ -83,6 +94,20 @@ function msg(e: unknown): string {
 const ОЖИДАНИЕ_ОТВЕТА_МС = 15_000
 
 /**
+ * После скольких секунд тишины отправляем запрос ещё раз, не дожидаясь первого.
+ *
+ * Замер: удачный ответ приходит за 0,25–1,9 секунды, а оборванная связь при
+ * этом не рвётся сразу, а висит. Ждать её — значит смотреть на «Сохраняю…»
+ * полминуты при правке, которая давно в базе. Четыре секунды — заведомо дольше
+ * любого удачного ответа и вдвое меньше худшего случая, который мы сокращаем.
+ *
+ * Дублируется только то, что можно выполнить дважды безвредно. Выпуск токена
+ * дублем нельзя: две одновременные выдачи отзывают друг друга, и человек получил
+ * бы уже отозванный. Создание и удаление пати — по той же причине.
+ */
+const ПОРОГ_ДУБЛЯ_МС = 4000
+
+/**
  * Запрос, который можно повторить после обрыва связи.
  *
  * Повторяемость задаёт не глагол, а смысл запроса, и решается на месте вызова,
@@ -106,23 +131,40 @@ interface CallInit extends RequestInit {
   повторяемая?: boolean
 }
 
-async function call<T>(
-  base: string,
-  path: string,
-  init: CallInit = {},
-  повтор = 0,
-): Promise<ApiResult<T>> {
-  const url = `${base.replace(/\/+$/, '')}${path}`
-  const headers: Record<string, string> = {
-    Accept: 'application/json',
-    ...((init.headers as Record<string, string>) ?? {}),
-  }
-  if (init.body !== undefined) headers['Content-Type'] = 'application/json'
-  if (init.token) headers.Authorization = `Bearer ${init.token}`
+interface CallInit extends RequestInit {
+  token?: string
+  /** Повторить запрос после обрыва связи. Ставится только там, где это безвредно. */
+  повторяемая?: boolean
+  /**
+   * Слать ли второй запрос, если первый не ответил за ПОРОГ_ДУБЛЯ_МС.
+   *
+   * Ставится там же, где и повторяемая: оба свойства про одно и то же — про то,
+   * что запрос можно выполнить дважды и не заметить.
+   */
+  дубль?: boolean
+  /**
+   * Сообщить, что понадобилась ещё одна попытка, пока запрос ещё идёт.
+   *
+   * Нужно интерфейсу, чтобы показать человеку «отправляю заново», а не молчать
+   * двадцать секунд под надписью «Сохраняю…».
+   */
+  onRetry?: (попытка: number) => void
+}
 
+/** Одна попытка: разбор ответа либо отметка, что связи не было. */
+type Попытка<T> =
+  | { ответ: ApiResult<T>; обрыв: false }
+  | { ответ: null; обрыв: true; прерван: boolean; причина: string }
+
+/** Только отрыв связи: у него нет ответа, есть причина. */
+type Обрыв = Extract<Попытка<unknown>, { обрыв: true }>
+
+/** Только отказ сервера: у него есть код и, иногда, пришедшая база. */
+type Отказ<T> = Extract<ApiResult<T>, { ok: false }>
+
+async function однаПопытка<T>(url: string, init: RequestInit, headers: Record<string, string>): Promise<Попытка<T>> {
   const отмена = new AbortController()
   const будильник = setTimeout(() => отмена.abort(), ОЖИДАНИЕ_ОТВЕТА_МС)
-
   try {
     const res = await fetch(url, { ...init, headers, signal: отмена.signal })
     let json: any = null
@@ -133,65 +175,176 @@ async function call<T>(
     }
 
     if (res.status === 401) {
-      return { ok: false, статус: res.status, error: 'Токен не подходит. Проверь его или запроси новый у мастера пати.' }
+      return { обрыв: false, ответ: { ok: false, статус: res.status, error: 'Токен не подходит. Проверь его или запроси новый у мастера пати.' } }
     }
     if (res.status === 403) {
       return {
-        ok: false,
-        статус: res.status,
-        error: json?.error ?? 'Недостаточно прав',
-        forbidden: json?.db ? { db: json.db as Db } : undefined,
+        обрыв: false,
+        ответ: {
+          ok: false,
+          статус: res.status,
+          error: json?.error ?? 'Недостаточно прав',
+          forbidden: json?.db ? { db: json.db as Db } : undefined,
+        },
       }
     }
     if (res.status === 404) {
-      return { ok: false, статус: res.status, error: json?.error ?? 'Не найдено' }
+      return { обрыв: false, ответ: { ok: false, статус: res.status, error: json?.error ?? 'Не найдено' } }
     }
     if (res.status === 409) {
       return {
-        ok: false,
-        статус: res.status,
-        error: json?.error ?? 'В базе есть более свежая версия',
-        conflict: json?.db,
+        обрыв: false,
+        ответ: {
+          ok: false,
+          статус: res.status,
+          error: json?.error ?? 'В базе есть более свежая версия',
+          conflict: json?.db,
+        },
       }
     }
     if (!res.ok) {
-      return { ok: false, error: json?.error ?? `Сервер ответил ${res.status}` }
+      return { обрыв: false, ответ: { ok: false, error: json?.error ?? `Сервер ответил ${res.status}` } }
     }
-    return { ok: true, value: json as T }
+    return { обрыв: false, ответ: { ok: true, value: json as T, попыток: 1 } }
   } catch (e) {
-    /*
-     * Ответ теряется по дороге чаще, чем кажется: замер показал одну такую
-     * запись из пяти — Worker отвечает, а браузер обрывается через минуту и
-     * видит ошибку сети при записанной правке.
-     *
-     * Повторяется только то, что можно повторить безвредно: запись базы и
-     * переименование пати. Оба устроены как «положить значение», а не как
-     * «выдать разовый доступ». Запись базы сервер узнаёт по метке версии и
-     * подтверждает повтор вместо того, чтобы ругаться конфликтом на
-     * собственную правку, а переименование в то же самое имя не пишет в
-     * репозиторий вовсе. Без повтора человек увидел бы ошибку и решил, что
-     * ничего не сохранилось.
-     *
-     * Выпуск токена и перевыпуск мастер-токена повторяться не должны: повтор
-     * выпуска отозвал бы только что выданный и выпустил новый — тот, которым
-     * уже никого не заменить. Чтение при обрыве тоже не повторяется: оно
-     * ничего не меняет, а второй запрос лишь дольше держал бы человека на
-     * ожидании.
-     */
-    if (init.повторяемая === true && повтор === 0) {
-      await new Promise((окончить) => setTimeout(окончить, 700))
-      return call<T>(base, path, init, повтор + 1)
-    }
     return {
-      ok: false,
-      статус: 0,
-      error: отмена.signal.aborted
-        ? 'Сервер не ответил вовремя. Правка, возможно, уже записана — вернись на вкладку, база подтянется сама.'
-        : `Не удалось связаться с сервером. Проверь адрес и интернет. (${msg(e)})`,
+      обрыв: true,
+      прерван: отмена.signal.aborted,
+      причина: msg(e),
+      ответ: null,
     }
   } finally {
     clearTimeout(будильник)
   }
+}
+
+/**
+ * Один запрос к серверу, с дублем и повтором.
+ *
+ * Замер с живого сайта: из тридцати попыток пять обрываются совсем, а удачные
+ * ответы приходят за 0,25–1,9 секунды. Связь при этом не рвётся сразу, а висит
+ * около получаса и обрывается сама. Из этого три следствия.
+ *
+ * Дубль. Если за четыре секунды ответа нет, уходит второй запрос. Первый при
+ * этом не отменяется: он ещё может ответить, и тогда человек получит ответ с
+ * задержкой четыре секунды вместо тридцати.
+ *
+ * Повтор. Если попытка оборвалась, а других в этот момент нет в работе, идёт
+ * ещё одна. Повтор идёт только после обрыва: ответ пришёл — значит, связь была,
+ * и второй запрос просто нагрузит сервер.
+ *
+ * Побеждает успех, а не первый ответ. Это важно для записи базы: два одинаковых
+ * запроса доходят до сервера, первый записывает, второй получает 409 про
+ * собственную же запись. Если взять первый ответ, человек увидит ложный
+ * конфликт. Поэтому отказ ждёт, пока кончатся все попытки, и только тогда
+ * показывается.
+ */
+async function call<T>(base: string, path: string, init: CallInit = {}): Promise<ApiResult<T>> {
+  const url = `${base.replace(/\/+$/, '')}${path}`
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    ...((init.headers as Record<string, string>) ?? {}),
+  }
+  if (init.body !== undefined) headers['Content-Type'] = 'application/json'
+  if (init.token) headers.Authorization = `Bearer ${init.token}`
+
+  // Служебные поля не уходят на сервер: fetch их не знает и бросил бы ошибку.
+  const чистые: RequestInit = {
+    method: init.method,
+    body: init.body,
+    signal: init.signal,
+  }
+
+  let отправлено = 0
+  let решён = false
+  let успех: { ok: true; value: T; попыток: number } | null = null
+  const отказы: Отказ<T>[] = []
+  const обрывы: Обрыв[] = []
+
+  /** Ответили все, кого ждали, — пора показывать отказ. */
+  let закончить: () => void = () => undefined
+  const всеЗакончили = new Promise<void>((окончить) => {
+    закончить = окончить
+  })
+
+  const отказВОбрыв = (): ApiResult<T> => {
+    const былПрерван = обрывы.some((о) => о.прерван)
+    const последний = обрывы[обрывы.length - 1]
+    return {
+      ok: false,
+      статус: 0,
+      error: былПрерван
+        ? 'Сервер не ответил вовремя. Правка, возможно, уже записана — вернись на вкладку, база подтянется сама.'
+        : `Не удалось связаться с сервером. Проверь адрес и интернет. (${последний?.причина ?? 'нет ответа'})`,
+    }
+  }
+
+  let живых = 0
+
+  const отправить = () => {
+    живых++
+    отправлено++
+    const номер = отправлено
+    void однаПопытка<T>(url, чистые, headers).then((итог) => {
+      живых--
+      if (решён) return
+
+      if (итог.обрыв) {
+        обрывы.push(итог)
+      } else if (итог.ответ.ok) {
+        успех = { ...итог.ответ, попыток: отправлено }
+        решён = true
+        закончить()
+        return
+      } else {
+        /*
+         * Отказ не закрывает запрос: другая попытка ещё в работе и может
+         * ответить успехом. Отмены по базе приходят именно так — двумя
+         * одинаковыми запросами, где второй получает 409 на запись первого.
+         */
+        отказы.push(итог.ответ as Отказ<T>)
+      }
+
+      if (живых > 0) return
+
+      // Последняя попытка в работе: можно и повторить после обрыва.
+      if (
+        init.повторяемая === true &&
+        номер === 1 &&
+        отправлено < 2 &&
+        итог.обрыв === true
+      ) {
+        init.onRetry?.(2)
+        отправить()
+        return
+      }
+
+      решён = true
+      закончить()
+    })
+  }
+
+  отправить()
+
+  let таймерДубля: ReturnType<typeof setTimeout> | null = null
+  if (init.дубль === true) {
+    таймерДубля = setTimeout(() => {
+      // Дубль не нужен, если вторая попытка уже ушла: при мгновенном обрыве
+      // повтор успевает начаться раньше, чем дойдёт дело до порога, и два
+      // механизма выпустили бы три запроса вместо двух.
+      if (решён || живых === 0 || отправлено > 1) return
+      init.onRetry?.(отправлено + 1)
+      отправить()
+    }, ПОРОГ_ДУБЛЯ_МС)
+  }
+
+  await всеЗакончили
+  if (таймерДубля !== null) clearTimeout(таймерДубля)
+
+  if (успех) return успех
+  // Из отказов важнее тот, что говорит о деле, а не о связи.
+  const поДелу = отказы.find((о) => о.статус !== 0)
+  return поДелу ?? отказВОбрыв()
 }
 
 /** Создаёт новую пати. Мастер-токен приходит один раз и больше не показывается. */
@@ -207,12 +360,13 @@ export async function openSession(apiUrl: string, token: string): Promise<ApiRes
   return call<PartyInfo>(apiUrl, '/api/session', {
     method: 'POST',
     повторяемая: true,
+    дубль: true,
     body: JSON.stringify({ token }),
   })
 }
 
 export async function fetchDb(apiUrl: string, token: string): Promise<ApiResult<Db>> {
-  return call<Db>(apiUrl, '/api/party/data', { method: 'GET', token, повторяемая: true })
+  return call<Db>(apiUrl, '/api/party/data', { method: 'GET', token, повторяемая: true, дубль: true })
 }
 
 /**
@@ -225,17 +379,20 @@ export async function saveDb(
   token: string,
   db: Db,
   baseUpdatedAt: string,
+  onRetry?: (попытка: number) => void,
 ): Promise<ApiResult<{ updatedAt: string }>> {
   return call<{ updatedAt: string }>(apiUrl, '/api/party/data', {
     method: 'PUT',
     token,
     повторяемая: true,
+    дубль: true,
+    onRetry,
     body: JSON.stringify({ db, baseUpdatedAt }),
   })
 }
 
 export async function fetchMeta(apiUrl: string, token: string): Promise<ApiResult<PartyMeta>> {
-  return call<PartyMeta>(apiUrl, '/api/party/meta', { method: 'GET', token, повторяемая: true })
+  return call<PartyMeta>(apiUrl, '/api/party/meta', { method: 'GET', token, повторяемая: true, дубль: true })
 }
 
 /**
@@ -253,6 +410,7 @@ export async function renameParty(
     method: 'PATCH',
     token,
     повторяемая: true,
+    дубль: true,
     body: JSON.stringify({ name }),
   })
 }
