@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-15T09:56:18.477Z",
+    "updatedAt": "2026-10-15T09:56:27.982Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -14,13 +14,44 @@
         "name": "Первый",
         "cls": "Knight",
         "level": 80,
-        "affil": "состав",
-        "slots": {},
-        "subs": [],
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
         "subUnlocked": false,
-        "contacts": {},
-        "away": {},
-        "pa": null
+        "subs": [],
+        "away": {}
       }
     ],
     "warehouse": {
@@ -29,11 +60,11 @@
     },
     "wishes": [],
     "sets": [],
+    "customNames": {},
     "schedule": {
       "prime": {},
       "offs": [],
       "checklist": []
-    },
-    "customNames": {}
+    }
   }
 }
