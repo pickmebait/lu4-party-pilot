@@ -1,0 +1,20 @@
+{
+  "partyId": "5mtkvbsivp",
+  "name": "Третья пати",
+  "createdAt": "2026-10-15T18:10:21.246Z",
+  "masterHash": "30cc9432bfcf3b214fd2b05aebfdb2e29c9875363c843ff9d313a86235953e77",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-15T18:10:21.246Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
