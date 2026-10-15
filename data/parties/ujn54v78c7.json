@@ -1,0 +1,20 @@
+{
+  "partyId": "ujn54v78c7",
+  "name": "Замер",
+  "createdAt": "2026-10-15T12:38:09.274Z",
+  "masterHash": "ac1c1d6540a260fff0380206fc23564ba917f0757446ad1c59215887e8d9828b",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-15T12:38:09.274Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
