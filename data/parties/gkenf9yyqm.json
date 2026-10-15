@@ -1,0 +1,20 @@
+{
+  "partyId": "gkenf9yyqm",
+  "name": "Первая пати",
+  "createdAt": "2026-10-15T18:09:43.919Z",
+  "masterHash": "04a1ac092cb5d7fef02b2e751806f7d3b0a8c7b52d4bf0b919a0f0fdfbfb0f1f",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-15T18:09:43.919Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
