@@ -621,17 +621,44 @@ async function renameParty(request: Request, env: Env, cors: Cors): Promise<Resp
     return json({ ok: true, name: access.file.name }, 200, cors)
   }
 
-  const party: PartyFile = { ...access.file, name: имя.value }
-  const saved = await writeFile(
-    env,
-    access.partyId,
-    party,
-    access.sha,
-    `${access.file.name} → ${имя.value}: переименована пати`,
-  )
-  if ('error' in saved) return json({ error: saved.error, conflict: saved.conflict ?? false }, 409, cors)
+  /*
+   * Конфликт здесь почти никогда не о названии.
+   *
+   * Проверка идёт по отпечатку файла, а он сдвигается от любой чужой записи:
+   * стоит кому-то из пати в это же время сохранить правку персонажа, и
+   * отпечаток уже не тот. Переименование трогает одну строку в шапке и ничего в
+   * базе, поэтому повтор ничего не теряет — а человек, назвавший пати в разгар
+   * чужой работы, получил бы отказ и решил бы, что правка запрещена.
+   *
+   * Две попытки, а не цикл: третья означала бы, что пишет вся пати сразу, и
+   * тогда верное место для отказа — уже человек.
+   */
+  let свежий = access
+  for (let попытка = 0; попытка < 2; попытка++) {
+    const party: PartyFile = { ...свежий.file, name: имя.value }
+    const saved = await writeFile(
+      env,
+      свежий.partyId,
+      party,
+      свежий.sha,
+      `${свежий.file.name} → ${имя.value}: переименована пати`,
+    )
+    if (!('error' in saved)) return json({ ok: true, name: имя.value }, 200, cors)
+    if (!saved.conflict) return json({ error: saved.error }, 502, cors)
 
-  return json({ ok: true, name: имя.value }, 200, cors)
+    const заново = await authorize(env, request)
+    if (!заново.ok) return json({ error: заново.error }, заново.status, cors)
+    if (!требуетсяМастер(заново)) {
+      return json({ error: 'Права мастер-токена отозваны, пока переименовывали пати.' }, 403, cors)
+    }
+    // Пока шёл повтор, пати уже переименовали в это же имя — дело сделано.
+    if (заново.file.name === имя.value) {
+      return json({ ok: true, name: имя.value }, 200, cors)
+    }
+    свежий = заново
+  }
+
+  return json({ error: 'Файл пати меняют слишком часто, попробуй ещё раз', conflict: true }, 409, cors)
 }
 
 async function openSession(request: Request, env: Env, cors: Cors): Promise<Response> {
