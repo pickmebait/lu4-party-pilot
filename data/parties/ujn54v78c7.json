@@ -3,7 +3,15 @@
   "name": "Замер",
   "createdAt": "2026-10-15T12:38:09.274Z",
   "masterHash": "ac1c1d6540a260fff0380206fc23564ba917f0757446ad1c59215887e8d9828b",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "tpr5rpq2ge",
+      "hash": "0e4492280147d7259a61d9dea7184f50afeaff04a241f2130673cc69e4b71dd7",
+      "charId": "cTwo",
+      "charName": "Второй",
+      "createdAt": "2026-10-15T12:40:48.931Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-15T12:39:34.003Z",
