@@ -3,7 +3,15 @@
   "name": "Замер3",
   "createdAt": "2026-10-15T13:13:27.531Z",
   "masterHash": "57865b28ff21a9d76c6209ece2373ddff9fd52510697241bd23913558734753b",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "ufeep8cbei",
+      "hash": "ecc9801e2eea01c1492061a4c0e7fbeff5169bc41ba99ccfd5092a4483eb7232",
+      "charId": "cOne",
+      "charName": "Первый",
+      "createdAt": "2026-10-15T13:13:31.346Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-15T13:13:29.352Z",
