@@ -5,16 +5,66 @@
   "masterHash": "30cc9432bfcf3b214fd2b05aebfdb2e29c9875363c843ff9d313a86235953e77",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-15T18:10:21.246Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 8,
+    "updatedAt": "2026-10-15T18:10:46.565Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "cmv9uty6k1les5n",
+        "name": "Новичок",
+        "cls": "",
+        "level": 0,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
     "wishes": [],
     "sets": [],
-    "customNames": {}
+    "customNames": {},
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    }
   }
 }
