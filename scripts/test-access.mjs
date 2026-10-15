@@ -644,6 +644,21 @@ const options = await worker.fetch(
   options.headers.get('Access-Control-Allow-Methods'),
 )
 
+/*
+ * PATCH в списке разрешённых методов.
+ *
+ * Забыть его можно незаметно: запрос с телом и нестандартным методом уходит
+ * из браузера через предварительную проверку, и если метода в списке нет, она
+ * не проходит. Ошибка при этом выглядит как обрыв связи («Failed to fetch»),
+ * а не как отказ сервера, и в Node проверка её не увидит вовсе: там нет
+ * предпроверки. Из Node такой запрос проходит с первого раза, из браузера —
+ * никогда.
+ */
+const разрешённые = (options.headers.get('Access-Control-Allow-Methods') ?? '').split(',').map((м) => м.trim())
+for (const метод of ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']) {
+  шаг(разрешённые.includes(метод), `CORS разрешает ${метод}`, разрешённые.join(', '))
+}
+
 const чужойДомен = await worker.fetch(
   new Request(BASE + '/api/party/meta', { method: 'GET', headers: { Origin: 'https://evil.example' } }),
   { ...окружение, ALLOWED_ORIGIN: 'https://x.pages.dev' },

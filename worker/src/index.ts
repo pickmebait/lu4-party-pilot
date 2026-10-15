@@ -1072,7 +1072,7 @@ function corsHeaders(request: Request, env: Env): Cors {
   const value = allowed ? (origin === allowed ? origin : allowed) : '*'
   return {
     'Access-Control-Allow-Origin': value,
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Max-Age': '86400',
     'Cache-Control': 'no-store',

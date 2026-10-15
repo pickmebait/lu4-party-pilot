@@ -12,7 +12,7 @@ import { APP_NAME } from './lib/brand'
 import { startCatalogLoad, useCatalog } from './lib/catalog'
 import { computeSummary, usedItemIds, type Summary } from './lib/derived'
 import { openSession } from './lib/api'
-import { signOut, useDb, useSession } from './lib/store'
+import { signOut, updateSession, useDb, useSession } from './lib/store'
 import type { Db } from './types'
 import { applyPalette, loadPalette } from './lib/palette'
 import { plural } from './lib/util'
@@ -88,7 +88,24 @@ export default function App() {
 
     openSession(session.apiUrl, session.token).then((res) => {
       if (отменено) return
-      if (res.ok || res.статус !== 401) return
+      if (res.ok || res.статус !== 401) {
+        /*
+         * Название пати подтягиваем вместе с проверкой.
+         *
+         * Сесия хранит копию названия, и без этого переименование было видно
+         * только в той вкладке, где его сделали: переименовал на телефоне —
+         * на компьютере по-прежнему старое имя, пока не выйдешь и не войдёшь
+         * заново. Сервер ответил свежим именем, значит и в сессии должно
+         * стоять свежее.
+         *
+         * Только когда оно разное: обновление создаёт новый объект сессии,
+         * эффект перезапустится и пошёл бы по второму кругу.
+         */
+        if (res.ok && res.value.name && res.value.name !== session.name) {
+          updateSession({ name: res.value.name })
+        }
+        return
+      }
       signOut()
     })
 
