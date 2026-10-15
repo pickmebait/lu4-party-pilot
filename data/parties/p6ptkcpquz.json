@@ -1,0 +1,20 @@
+{
+  "partyId": "p6ptkcpquz",
+  "name": "Примерная пати",
+  "createdAt": "2026-10-15T18:03:50.878Z",
+  "masterHash": "49108c63e1de56f5b6e548a31a4bc1bc02b68e200623774bdf89033ecccf06b5",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-15T18:03:50.878Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
