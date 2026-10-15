@@ -6,57 +6,9 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-15T21:12:46.454Z",
-    "updatedBy": "Мастер",
-    "chars": [
-      {
-        "id": "cmva1bs1w1sf6jq",
-        "name": "PickMeBait",
-        "cls": "Abyss Walker",
-        "level": 75,
-        "affil": "roster",
-        "slots": {
-          "rhand": [
-            {
-              "itemId": 6367,
-              "mod": 2
-            }
-          ],
-          "lhand": [
-            null
-          ],
-          "head": [
-            null
-          ],
-          "chest": [
-            null
-          ],
-          "legs": [
-            null
-          ],
-          "gloves": [
-            null
-          ],
-          "feet": [
-            null
-          ],
-          "neck": [
-            null
-          ],
-          "ear": [
-            null,
-            null
-          ],
-          "ring": [
-            null,
-            null
-          ]
-        },
-        "subUnlocked": false,
-        "subs": [],
-        "away": {}
-      }
-    ],
+    "updatedAt": "2026-10-15T21:12:59.825Z",
+    "updatedBy": "",
+    "chars": [],
     "warehouse": {
       "stacks": [],
       "log": []
