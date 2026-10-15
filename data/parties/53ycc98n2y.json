@@ -1,0 +1,20 @@
+{
+  "partyId": "53ycc98n2y",
+  "name": "Дубль",
+  "createdAt": "2026-10-15T13:49:31.101Z",
+  "masterHash": "e6b56e380aecc09b8b57efa738bc3bbc1d2984048e0982fdd78f547bc0639ca1",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-15T13:49:31.101Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
