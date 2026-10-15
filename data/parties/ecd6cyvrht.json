@@ -1,0 +1,20 @@
+{
+  "partyId": "ecd6cyvrht",
+  "name": "Замер2",
+  "createdAt": "2026-10-15T12:58:16.132Z",
+  "masterHash": "b02cce6cebb0278ece6549812bdefbfd83db12b325646fd1981622d3816c12f5",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-15T12:58:16.132Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
