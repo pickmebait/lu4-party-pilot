@@ -6,9 +6,54 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-15T14:03:56.841Z",
-    "updatedBy": "",
-    "chars": [],
+    "updatedAt": "2026-10-15T14:04:17.653Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "cmv9m0q2f1nbos4",
+        "name": "Конарх",
+        "cls": "",
+        "level": 0,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
