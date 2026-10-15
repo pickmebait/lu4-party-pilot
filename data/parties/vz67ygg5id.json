@@ -1,0 +1,20 @@
+{
+  "partyId": "vz67ygg5id",
+  "name": "Статистика",
+  "createdAt": "2026-10-15T12:49:17.070Z",
+  "masterHash": "5c2a4e4e9cf013fc54001aecd707b5495aff5cc7946c226f48902cfb61e7870c",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-15T12:49:17.070Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
