@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-16T20:25:16.165Z",
+    "updatedAt": "2026-10-16T20:25:54.323Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -54,6 +54,9 @@
             null,
             null
           ]
+        },
+        "contacts": {
+          "realName": "Боря"
         },
         "subUnlocked": false,
         "subs": [],
