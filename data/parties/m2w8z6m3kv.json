@@ -1,0 +1,20 @@
+{
+  "partyId": "m2w8z6m3kv",
+  "name": "Порог 18 0",
+  "createdAt": "2026-10-16T16:26:25.782Z",
+  "masterHash": "042175cc92e0c56f9c630e396b32f62bd889be23fb64cddeb3fe426f5f4b88a6",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T16:26:25.782Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
