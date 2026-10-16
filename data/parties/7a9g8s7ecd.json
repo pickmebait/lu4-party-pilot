@@ -1,0 +1,20 @@
+{
+  "partyId": "7a9g8s7ecd",
+  "name": "Порог 27 0",
+  "createdAt": "2026-10-16T16:26:55.923Z",
+  "masterHash": "348c87d64257cf38f0c92aae642c0541369c8025938e6e46cbca9bdd94f4e9fe",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T16:26:55.923Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
