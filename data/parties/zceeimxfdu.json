@@ -1,0 +1,20 @@
+{
+  "partyId": "zceeimxfdu",
+  "name": "Размеры",
+  "createdAt": "2026-10-16T09:19:33.959Z",
+  "masterHash": "f3cc558fff7b27419f5ee4336850d3c12d7cfb11eb3c457106f19b2ba487daeb",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T09:19:33.959Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
