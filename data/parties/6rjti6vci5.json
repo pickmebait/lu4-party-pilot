@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-16T08:15:36.373Z",
+    "updatedAt": "2026-10-16T08:15:56.689Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -52,8 +52,48 @@
         "contacts": {
           "realName": "Борис"
         },
-        "subUnlocked": false,
-        "subs": [],
+        "subUnlocked": true,
+        "subs": [
+          {
+            "id": "smvap0m0637g0mk",
+            "cls": "",
+            "level": 0,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          }
+        ],
         "away": {}
       }
     ],
