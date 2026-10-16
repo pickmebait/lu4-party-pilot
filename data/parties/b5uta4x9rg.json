@@ -6,34 +6,96 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-16T08:57:41.201Z",
-    "updatedBy": "Сосед",
+    "updatedAt": "2026-10-16T08:58:01.230Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cOne",
         "name": "Первый",
         "cls": "Knight",
-        "level": 80,
-        "affil": "состав",
-        "slots": {},
-        "subs": [],
+        "level": 75,
+        "affil": "decade",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
         "subUnlocked": false,
-        "contacts": {},
-        "away": {},
-        "pa": null
+        "subs": [],
+        "away": {}
       },
       {
         "id": "cTwo",
-        "name": "Второй (правлен соседом)",
+        "name": "Второй(правленсо",
         "cls": "Knight",
         "level": 55,
-        "affil": "состав",
-        "slots": {},
-        "subs": [],
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
         "subUnlocked": false,
-        "contacts": {},
-        "away": {},
-        "pa": null
+        "subs": [],
+        "away": {}
       }
     ],
     "warehouse": {
@@ -42,11 +104,11 @@
     },
     "wishes": [],
     "sets": [],
+    "customNames": {},
     "schedule": {
       "prime": {},
       "offs": [],
       "checklist": []
-    },
-    "customNames": {}
+    }
   }
 }
