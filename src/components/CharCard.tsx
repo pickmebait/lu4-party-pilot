@@ -17,7 +17,7 @@ import { GearStack } from './GearStack'
 import { SubBar } from './SubBar'
 import { PaChip } from './PaChip'
 import { ConfirmModal } from './ConfirmModal'
-import { IconCheck, IconPhone } from './Icons'
+import { IconCheck } from './Icons'
 
 /**
  * Карточка персонажа: шапка, переключатель веток и снаряжение.
@@ -145,12 +145,25 @@ export function CharCard({
                   >
                     ✎
                   </button>
+                  {/*
+                    Знак, а не значок из Icons.
+                    
+                    Рядом стоят карандаш и корзина — оба контурные юникод-знаки.
+                    Телефон был сплошным значком четырнадцати пикселей при
+                    двенадцати соседних, и втрое тяжелее их: кнопка выглядела
+                    чужеродно и тянула взгляд с кнопки правки. Обведённый ✆ того
+                    же начертания встаёт в ряд ровно.
+
+                    В блоке контактов значки остаются: там нужно отличать
+                    мессенджеры друг от друга, и юникод-символы не различались.
+                    Здесь действие одно, и путать тут нечего.
+                  */}
                   <button
                     className={`icon-btn${контактов === 0 ? ' suggest' : ''}`}
                     title={контактов > 0 ? 'Изменить контакты' : 'Указать контакты'}
                     onClick={() => setEditContacts(true)}
                   >
-                    <IconPhone size={14} />
+                    ✆
                   </button>
                   <button
                     className="icon-btn danger"
