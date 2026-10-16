@@ -1,0 +1,20 @@
+{
+  "partyId": "pwa2pg4bzv",
+  "name": "Порог16-3-1792168170810",
+  "createdAt": "2026-10-16T16:29:31.760Z",
+  "masterHash": "3ac508f0cd86b9b715fe46a3697b2ffb1541041878469ed538df0a86077352e0",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T16:29:31.760Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
