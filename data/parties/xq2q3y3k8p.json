@@ -6,14 +6,14 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-16T08:42:16.115Z",
+    "updatedAt": "2026-10-16T08:42:48.762Z",
     "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cOne",
         "name": "Первый",
         "cls": "Knight",
-        "level": 74,
+        "level": 75,
         "affil": "состав",
         "slots": {},
         "subs": [],
