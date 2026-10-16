@@ -1,0 +1,20 @@
+{
+  "partyId": "957zi8r9re",
+  "name": "Порог20-2-1792168263003",
+  "createdAt": "2026-10-16T16:31:03.965Z",
+  "masterHash": "c5463df9176d510d24e63e8791524e77709f49981e23e391e8acc83b9716341b",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T16:31:03.965Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
