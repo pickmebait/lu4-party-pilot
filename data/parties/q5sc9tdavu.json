@@ -1,0 +1,20 @@
+{
+  "partyId": "q5sc9tdavu",
+  "name": "Порог13",
+  "createdAt": "2026-10-16T10:00:39.729Z",
+  "masterHash": "b6a4f10273ed9faa9a7f0806f10a5242327eab95f9581ec65edfe643e8ef892c",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T10:00:39.729Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
