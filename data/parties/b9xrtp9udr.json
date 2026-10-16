@@ -1,0 +1,20 @@
+{
+  "partyId": "b9xrtp9udr",
+  "name": "Порог14",
+  "createdAt": "2026-10-16T10:00:01.749Z",
+  "masterHash": "cabe2db8fb0290b1dafc00e736ba2df0034c80b518db84cb9af07c9d9754ffcd",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T10:00:01.749Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
