@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-16T09:04:20.064Z",
+    "updatedAt": "2026-10-16T09:04:23.429Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -57,7 +57,7 @@
         "id": "cTwo",
         "name": "Второй",
         "cls": "Knight",
-        "level": 80,
+        "level": 75,
         "affil": "roster",
         "slots": {
           "rhand": [
