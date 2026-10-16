@@ -5,16 +5,35 @@
   "masterHash": "d7697da3bd4f6c85eb2563f6a461692631c4b032ec17110ba4219d0423aad6f9",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-16T18:45:57.572Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 8,
+    "updatedAt": "2026-10-16T18:45:59.304Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "c1",
+        "name": "Первый",
+        "cls": "Knight",
+        "level": 80,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
     "wishes": [],
     "sets": [],
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    },
     "customNames": {}
   }
 }
