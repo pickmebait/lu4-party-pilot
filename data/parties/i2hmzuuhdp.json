@@ -1,0 +1,20 @@
+{
+  "partyId": "i2hmzuuhdp",
+  "name": "Гонка",
+  "createdAt": "2026-10-16T08:25:53.974Z",
+  "masterHash": "afdeaa4407d2d042383bfb4c56d0385e6fd6c174ecf8264a88f8f3a968012da0",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T08:25:53.974Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
