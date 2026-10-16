@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-16T08:15:20.918Z",
+    "updatedAt": "2026-10-16T08:15:36.373Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -48,6 +48,9 @@
             null,
             null
           ]
+        },
+        "contacts": {
+          "realName": "Борис"
         },
         "subUnlocked": false,
         "subs": [],
