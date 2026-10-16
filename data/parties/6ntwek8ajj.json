@@ -1,0 +1,20 @@
+{
+  "partyId": "6ntwek8ajj",
+  "name": "Проверка",
+  "createdAt": "2026-10-16T16:57:35.463Z",
+  "masterHash": "0b01bd08f3816357b6b0e1f7d378510551a43f03b04a7684ac4c179e2717b813",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T16:57:35.463Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
