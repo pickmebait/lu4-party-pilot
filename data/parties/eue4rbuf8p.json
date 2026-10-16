@@ -1,0 +1,20 @@
+{
+  "partyId": "eue4rbuf8p",
+  "name": "Проверка ожиданий",
+  "createdAt": "2026-10-16T18:53:22.564Z",
+  "masterHash": "8e104cd2c2714265b3d380d2ab9ae16001f8a3718f7b1fc8dff6ba479a02fbfe",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T18:53:22.564Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
