@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-16T18:55:14.216Z",
+    "updatedAt": "2026-10-16T18:56:07.416Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -100,6 +100,50 @@
       {
         "id": "cmvbbuzda5dr0os",
         "name": "Герой3",
+        "cls": "",
+        "level": 0,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      },
+      {
+        "id": "cmvbbvsgh7qy2y6",
+        "name": "Герой4",
         "cls": "",
         "level": 0,
         "affil": "roster",
