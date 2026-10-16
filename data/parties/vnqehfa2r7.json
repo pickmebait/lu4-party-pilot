@@ -1,0 +1,20 @@
+{
+  "partyId": "vnqehfa2r7",
+  "name": "Порог28-1-1792168376402",
+  "createdAt": "2026-10-16T16:32:57.620Z",
+  "masterHash": "9aedf9d4a9b8aafa32a67c157261f54a109c83afc70a0350b7a72f42c2d16993",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T16:32:57.620Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
