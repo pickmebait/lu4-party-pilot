@@ -1,0 +1,20 @@
+{
+  "partyId": "6bydb8wzrt",
+  "name": "Замер сохранения",
+  "createdAt": "2026-10-16T08:31:22.881Z",
+  "masterHash": "005f0503d23f603536b756b039ceacd4780c6e1a7b7f5c398d5542fb7a0465ca",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T08:31:22.881Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
