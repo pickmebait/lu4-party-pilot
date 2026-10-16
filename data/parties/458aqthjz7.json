@@ -1,0 +1,20 @@
+{
+  "partyId": "458aqthjz7",
+  "name": "Рамка",
+  "createdAt": "2026-10-16T19:41:19.265Z",
+  "masterHash": "2dd60a52fe8851dc5034aa22bd496dcd57e27db373a2709bc231ab3f1b31385c",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T19:41:19.265Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
