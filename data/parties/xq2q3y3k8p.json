@@ -1,0 +1,20 @@
+{
+  "partyId": "xq2q3y3k8p",
+  "name": "Повтор записи",
+  "createdAt": "2026-10-16T08:41:04.123Z",
+  "masterHash": "92dde520344d598c7442e75d479679caf636eee291c57fc4b440abe5ed83f6b8",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T08:41:04.123Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
