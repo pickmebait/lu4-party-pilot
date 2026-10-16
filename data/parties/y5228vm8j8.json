@@ -1,0 +1,20 @@
+{
+  "partyId": "y5228vm8j8",
+  "name": "Проверка сохранения 2",
+  "createdAt": "2026-10-16T06:43:03.137Z",
+  "masterHash": "3f562460d873cb60cb42d8714bbc2de7332e12b47d355e1524bd430908f06a7b",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T06:43:03.137Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
