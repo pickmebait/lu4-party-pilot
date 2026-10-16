@@ -1,0 +1,20 @@
+{
+  "partyId": "htszzeu5gc",
+  "name": "Замер середина-1792144724098",
+  "createdAt": "2026-10-16T09:58:47.347Z",
+  "masterHash": "92f89cbc8837a6eefb651f1c99ef7140ea297a2115233d728f9b927f35f5167d",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T09:58:47.347Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
