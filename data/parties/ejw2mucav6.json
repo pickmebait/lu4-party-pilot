@@ -1,0 +1,20 @@
+{
+  "partyId": "ejw2mucav6",
+  "name": "Разбор",
+  "createdAt": "2026-10-16T16:25:08.262Z",
+  "masterHash": "8e1be2a2238e180520bd30b7f3eaadfaa19706bec770e93096e4127f176627c0",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T16:25:08.262Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
