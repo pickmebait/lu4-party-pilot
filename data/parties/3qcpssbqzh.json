@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-16T20:23:04.227Z",
+    "updatedAt": "2026-10-16T20:23:36.990Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -23,7 +23,10 @@
             }
           ],
           "lhand": [
-            null
+            {
+              "itemId": 627,
+              "mod": 2
+            }
           ],
           "head": [
             null
