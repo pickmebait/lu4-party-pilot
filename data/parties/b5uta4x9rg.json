@@ -6,8 +6,8 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-16T08:59:01.498Z",
-    "updatedBy": "Сосед",
+    "updatedAt": "2026-10-16T08:59:36.847Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cOne",
@@ -55,7 +55,7 @@
       },
       {
         "id": "cTwo",
-        "name": "Второй (правлен соседом)",
+        "name": "Второй(правленсо",
         "cls": "Knight",
         "level": 55,
         "affil": "roster",
