@@ -1,0 +1,20 @@
+{
+  "partyId": "qke96dkrtv",
+  "name": "Размеры",
+  "createdAt": "2026-10-16T09:14:58.061Z",
+  "masterHash": "a0537b2da34f73ad73fd94d5e5ae6676d2b77a3f5de5be5e149d555ced42b6f7",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T09:14:58.061Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
