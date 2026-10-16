@@ -1,0 +1,20 @@
+{
+  "partyId": "vdzwhde3r9",
+  "name": "Порог16-1-1792168097068",
+  "createdAt": "2026-10-16T16:28:18.026Z",
+  "masterHash": "7d6fed4f8d0e4d03a661074cff12e3ee458968fefa4b94cd695fce15695d1bee",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T16:28:18.026Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
