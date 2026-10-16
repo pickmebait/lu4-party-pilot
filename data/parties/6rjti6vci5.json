@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-16T08:17:00.360Z",
+    "updatedAt": "2026-10-16T08:17:05.907Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -97,6 +97,45 @@
             "id": "smvap1an34hm1qb",
             "cls": "Spellhowler",
             "level": 62,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "id": "smvap2byz6aau7d",
+            "cls": "",
+            "level": 0,
             "slots": {
               "rhand": [
                 null
