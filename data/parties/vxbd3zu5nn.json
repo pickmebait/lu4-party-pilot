@@ -1,0 +1,20 @@
+{
+  "partyId": "vxbd3zu5nn",
+  "name": "Порог22",
+  "createdAt": "2026-10-16T10:03:54.894Z",
+  "masterHash": "13f05e24a89cf6fbd1c1e1ee3a18d896707997fc9215c7e3fe8f1516521fb9a0",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T10:03:54.894Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
