@@ -6,8 +6,8 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-16T08:49:27.958Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-16T08:50:06.951Z",
+    "updatedBy": "Сосед",
     "chars": [
       {
         "id": "cOne",
@@ -24,9 +24,9 @@
       },
       {
         "id": "cTwo",
-        "name": "Второй",
+        "name": "Второй (правлен соседом)",
         "cls": "Knight",
-        "level": 80,
+        "level": 55,
         "affil": "состав",
         "slots": {},
         "subs": [],
