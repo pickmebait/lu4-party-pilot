@@ -22,7 +22,7 @@
         "id": "cOne",
         "name": "Первый",
         "cls": "Knight",
-        "level": 73,
+        "level": 74,
         "affil": "состав",
         "slots": {},
         "subs": [],
@@ -34,7 +34,7 @@
     ],
     "updatedBy": "Мастер",
     "version": 8,
-    "updatedAt": "2026-10-16T08:47:11.477Z",
+    "updatedAt": "2026-10-16T08:47:42.931Z",
     "палитра": "coal"
   }
 }
