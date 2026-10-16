@@ -1,0 +1,20 @@
+{
+  "partyId": "b5uta4x9rg",
+  "name": "Выбор при конфликте",
+  "createdAt": "2026-10-16T08:49:26.350Z",
+  "masterHash": "fa51de2a70f499f4dbaa017ac9e450b5de496f28e3f58ac9fdc58f01c0cdd754",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T08:49:26.350Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
