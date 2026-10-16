@@ -5,16 +5,54 @@
   "masterHash": "2dd60a52fe8851dc5034aa22bd496dcd57e27db373a2709bc231ab3f1b31385c",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-16T19:41:19.265Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 8,
+    "updatedAt": "2026-10-16T19:41:20.988Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "c1",
+        "name": "Первый",
+        "cls": "Knight",
+        "level": 85,
+        "affil": "состав",
+        "slots": {
+          "weapon": {
+            "id": 1,
+            "name": "Меч",
+            "enchant": 8
+          }
+        },
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      },
+      {
+        "id": "c2",
+        "name": "Второй",
+        "cls": "Wizard",
+        "level": 70,
+        "affil": "десятка",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
     "wishes": [],
     "sets": [],
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    },
     "customNames": {}
   }
 }
