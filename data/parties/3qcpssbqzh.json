@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-16T20:20:54.889Z",
+    "updatedAt": "2026-10-16T20:23:04.227Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -21,6 +21,50 @@
               "itemId": 6367,
               "mod": 3
             }
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      },
+      {
+        "id": "cmvbezlb23k3rr7",
+        "name": "2345",
+        "cls": "Overlord",
+        "level": 44,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
           ],
           "lhand": [
             null
