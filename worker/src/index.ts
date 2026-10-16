@@ -856,11 +856,33 @@ async function writeData(request: Request, env: Env, cors: Cors): Promise<Respon
     access.sha,
     `${who || 'без ника'}: обновил базу пати (${updatedAt.slice(0, 16).replace('T', ' ')})`,
   )
-  if ('error' in saved) {
-    return json({ error: saved.error, conflict: saved.conflict ?? false }, 409, cors)
+  if (!('error' in saved)) return json({ ok: true, updatedAt }, 200, cors)
+
+  /*
+   * Отказ по отпечатку — не обязательно чужое действие.
+   *
+   * Два одинаковых запроса, ушедших одновременно, читают файл до записи и
+   * несут один отпечаток. Первый записывает, второй упирается в изменившийся
+   * отпечаток и получает «файл изменился прямо сейчас» — хотя в базе ровно то,
+   * что он сам и хотел положить. Воспроизводится в шести случаях из шести, и
+   * человек, который правит пати в одиночку, видит «кто-то опередил».
+   *
+   * Прежде чем ругаться, перечитываем файл: если там уже наша база, запись
+   * состоялась, и повтор должен её подтвердить. Отличаться могут только
+   * метки — их сервер ставит сам, и в одноИТоЖе они не в счёт.
+   */
+  if (saved.conflict) {
+    const заново = await authorize(env, request)
+    if (заново.ok && одноИТоЖе(заново.file.db, incoming)) {
+      return json(
+        { ok: true, updatedAt: (заново.file.db as { updatedAt?: string }).updatedAt ?? updatedAt },
+        200,
+        cors,
+      )
+    }
   }
 
-  return json({ ok: true, updatedAt }, 200, cors)
+  return json({ error: saved.error, conflict: saved.conflict ?? false }, 409, cors)
 }
 
 /**
