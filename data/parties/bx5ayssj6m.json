@@ -1,0 +1,20 @@
+{
+  "partyId": "bx5ayssj6m",
+  "name": "Порог34-2-1792168466332",
+  "createdAt": "2026-10-16T16:34:27.303Z",
+  "masterHash": "4b7936bd2c9c6916ed4e6afa3c3c1ebccb001b8889ea22e907e6b76bd945afb8",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T16:34:27.303Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
