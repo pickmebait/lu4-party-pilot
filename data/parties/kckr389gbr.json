@@ -1197,14 +1197,14 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-16T18:22:17.123Z",
+    "updatedAt": "2026-10-16T18:22:37.758Z",
     "updatedBy": "Мастер",
     "chars": [
       {
         "id": "c1",
         "name": "Первый",
         "cls": "Knight",
-        "level": 80,
+        "level": 90,
         "affil": "состав",
         "slots": {},
         "subs": [],
