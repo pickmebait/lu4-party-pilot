@@ -6,9 +6,175 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-15T21:18:57.022Z",
-    "updatedBy": "",
-    "chars": [],
+    "updatedAt": "2026-10-16T08:17:05.907Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "cmvap02du14frs5",
+        "name": "PickMeBait",
+        "cls": "Abyss Walker",
+        "level": 75,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "contacts": {
+          "realName": "Борис"
+        },
+        "subUnlocked": true,
+        "subs": [
+          {
+            "id": "smvap0m0637g0mk",
+            "cls": "Bounty Hunter",
+            "level": 52,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "id": "smvap1an34hm1qb",
+            "cls": "Spellhowler",
+            "level": 62,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "id": "smvap2byz6aau7d",
+            "cls": "",
+            "level": 0,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          }
+        ],
+        "away": {}
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
