@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Db } from '@/types'
 import { fetchDb, saveDb } from '@/lib/api'
-import { ктоЗатронут, слитьСвое } from '@/lib/merge'
+import { ктоЗатронут, одноИТоЖе, слитьСвое } from '@/lib/merge'
 import {
   авторПравки,
   базаПрочитана,
@@ -96,6 +96,15 @@ export function SyncBar() {
   const загружается = useRef(false)
   const сохраняется = useRef(false)
   /**
+   * Что мы последний раз отправляли на сервер.
+   *
+   * Нужно, чтобы отличить чужое действие от своего же. Связь рвётся уже после
+   * того, как запись легла на сервер, — и тогда сервер честно отвечает «база
+   * уже другая», хотя менялась она ровно на ту, которую просили. По отданному
+   * запросу видно сразу: если в пати лежит именно это, значит запись наша.
+   */
+  const посланное = useRef<{ db: Db } | null>(null)
+  /**
    * Сколько сохранений подряд не вышло. Сбрасывается при первом успехе.
    *
    * Именно состояние, а не ссылка: следующая попытка должна планироваться
@@ -144,13 +153,29 @@ export function SyncBar() {
         const remote = res.value
         const local = getDb()
         /*
+         * Сессию читаем отсюда, а не из замыкания: пока запрос летел, она могла
+         * уехать вперёд — например, прийти успешное сохранение.
+         */
+        const живое = getSession()!
+
+        /*
+         * Ответ, который за время полёта перестал быть свежим, — не применять.
+         *
+         * Чтение уходит за четверть секунды, за это время успевает пройти
+         * сохранение и поднять метку выше той, что мы запросили. Возврат старого
+         * ответа откатывал бы базу назад, и следующая же правка ушла бы в
+         * сервер от старой метки — с отказом, которого на самом деле нет.
+         */
+        if ((remote.updatedAt ?? '') < (живое.lastSyncedAt ?? '')) return
+
+        /*
          * Метка пустая — базу этой пати ещё ни разу не читали, и на руках
          * пустая заглушка, а не правки человека. Считать её правками нельзя:
          * тогда загрузка откажется затирать собственную заглушку и человек
          * так и увидит пустую пати.
          */
         const свои = базаПрочитана()
-          ? !session.lastSyncedAt || (local.updatedAt ?? '') !== session.lastSyncedAt
+          ? !живое.lastSyncedAt || (local.updatedAt ?? '') !== живое.lastSyncedAt
           : false
 
         if (свои) {
@@ -165,7 +190,7 @@ export function SyncBar() {
            * надпись оставалась «Загружаю из пати…», и полоса зависала: кнопки
            * не нажимаются, а человек не понимает, чего ждёт.
            */
-          const вПатиНовее = (remote.updatedAt ?? '') !== session.lastSyncedAt
+          const вПатиНовее = (remote.updatedAt ?? '') !== живое.lastSyncedAt
           if (!молча || вПатиНовее) {
             setState(
               вПатиНовее
@@ -182,7 +207,7 @@ export function SyncBar() {
           return
         }
 
-        const изменилось = (remote.updatedAt ?? '') !== session.lastSyncedAt
+        const изменилось = (remote.updatedAt ?? '') !== живое.lastSyncedAt
         if (!изменилось && молча) return
 
         replaceDb(remote)
@@ -203,13 +228,22 @@ export function SyncBar() {
     if (!естьСвоиПравки()) return
     сохраняется.current = true
 
+    /*
+     * Сессию читаем отсюда, а не из замыкания: замыкание хранит метку на
+     * момент отрисовки, а сохранение может быть вызвано позже — после того как
+     * метка уже сдвинулась. Сохранение по старой метке гарантированно
+     * получало отказ от сервера, и метка от этого уже не отставала.
+     */
+    const живое = getSession()!
+
     try {
       const current = getDb()
+      посланное.current = { db: current }
       const res = await saveDb(
-        session.apiUrl,
-        session.token,
+        живое.apiUrl,
+        живое.token,
         current,
-        session.lastSyncedAt,
+        живое.lastSyncedAt,
         // Пока запрос ещё идёт, человек видит, что он ушёл заново. Молчать
         // тут нельзя: надпись «Сохраняю в пати…» двадцать секунд выглядит как
         // зависшее приложение.
@@ -254,8 +288,8 @@ export function SyncBar() {
         }
 
         const повтор = await saveDb(
-          session.apiUrl,
-          session.token,
+          живое.apiUrl,
+          живое.token,
           слияние.db,
           res.forbidden.db.updatedAt,
         )
@@ -291,9 +325,33 @@ export function SyncBar() {
         return
       }
 
+      /*
+       * Отказ после собственной записи — не чужое действие.
+       *
+       * Связь рвётся уже после того, как запрос до сервера дошёл, и тогда он
+       * отвечает «в пати уже другое состояние», хотя менялась база ровно на ту,
+       * которую просили. Сверяем отданное с лежащим: если там наше — запись
+       * состоялась, а потерялся только ответ. Метку берём с сервера и
+       * говорим об этом прямо: человек должен знать, что отправка потребовала
+       * второй попытки, а не молчать.
+       */
+      const отданное = посланное.current
+      if (res.conflict && отданное && одноИТоЖе(res.conflict, отданное.db)) {
+        updateSession({ lastSyncedAt: res.conflict.updatedAt })
+        if (одноИТоЖе(current, отданное.db)) {
+          replaceDb({ ...current, updatedAt: res.conflict.updatedAt })
+          setНеудач(0)
+          setState({ kind: 'ok', text: 'Сохранено. Ответ не дошёл — метку пати взял заново.' })
+        }
+        return
+      }
+
       if (res.conflict) {
         setIncoming(res.conflict)
-        setState({ kind: 'err', text: 'Кто-то опередил: в пати уже есть другое состояние.' })
+        setState({
+          kind: 'err',
+          text: `В пати изменилось, пока ты правил (от: ${res.conflict.updatedBy || 'неизвестно'}, ${formatAgo(res.conflict.updatedAt)}).`,
+        })
         return
       }
       /*
@@ -308,7 +366,8 @@ export function SyncBar() {
     } finally {
       сохраняется.current = false
     }
-  }, [session.apiUrl, session.token, session.lastSyncedAt, свойCharId])
+    посланное.current = null
+  }, [свойCharId])
 
   /*
    * Автосохранение.
@@ -423,7 +482,27 @@ export function SyncBar() {
           >
             Взять версию из пати
           </button>
-          <button className="btn tiny" onClick={() => setIncoming(null)}>
+          <button
+            className="btn tiny"
+            onClick={() => {
+              /*
+               * Оставить своё — значит записать своё поверх того, что в пати.
+               *
+               * Раньше кнопка просто закрывала выбор, и это было ловушкой:
+               * метка оставалась прежней, автосохранение через паузу уходило с
+               * ней снова и снова, и то же самое сообщение возвращалось к
+               * человеку по кругу. Теперь метка становится свежей, правка
+               * действительно уходит поверх чужой, а токен персонажа на
+               * ответе о недостатке прав подставит в неё своего
+               * персонажа, как и раньше.
+               */
+              const серверная = incoming
+              setIncoming(null)
+              setState({ kind: 'busy', what: 'Сохраняю в пати…' })
+              updateSession({ lastSyncedAt: серверная.updatedAt })
+              void сохранить()
+            }}
+          >
             Оставить мою
           </button>
         </div>
