@@ -1,0 +1,20 @@
+{
+  "partyId": "dsdt76acrg",
+  "name": "Порог24-0-1792168285674",
+  "createdAt": "2026-10-16T16:31:26.963Z",
+  "masterHash": "920770dbe96a783eb35e23b37cace649e01165df58fe1b21700b637e51ed30e9",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T16:31:26.963Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
