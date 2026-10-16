@@ -6,9 +6,36 @@
   "tokens": [],
   "db": {
     "version": 1,
-    "updatedAt": "2026-10-16T09:19:33.959Z",
-    "updatedBy": "",
-    "chars": [],
+    "updatedAt": "2026-10-16T09:19:35.702Z",
+    "updatedBy": "Мастер 0",
+    "chars": [
+      {
+        "id": "c2-1792142374734-0",
+        "name": "Персонаж 2-1792142374734-0",
+        "cls": "Knight",
+        "level": 80,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      },
+      {
+        "id": "c2-1792142374734-1",
+        "name": "Персонаж 2-1792142374734-1",
+        "cls": "Knight",
+        "level": 80,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
