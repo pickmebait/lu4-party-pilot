@@ -56,6 +56,17 @@ import { привестиНик } from './nick'
 export const DB_VERSION = 8
 const DB_KEY = 'pp:db'
 
+/*
+ * Ключ сессии объявлен здесь, а рядом со своей сессией.
+ *
+ * Стоило оставить его ниже — и вызов loadSession() при инициализации базы
+ * (он нужен, чтобы знать, чья это база) попал бы во временную мёртвую зону:
+ * функция поднята в начало модуля, а ключ под ней ещё не инициализирован.
+ * Ошибка при этом тихая: модуль не падает, база поднимается пустой, и человек
+ * после перезагрузки видит «ничего не сохранилось» при данных, которые целы.
+ */
+const SESSION_KEY = 'pp:session'
+
 export function emptyChar(): Char {
   return {
     id: uid('c'),
@@ -353,11 +364,31 @@ function modOf(e: SlotEntry): number | undefined {
 /**
  * Ключ пати, которому принадлежит база в этом браузере.
  *
- * Пустой, пока пати не выбрана. С базой хранится и он: без такой пометки
- * браузер не отличает базу своей пати от базы той, в которой человек был
- * вчера, и отдаёт первую второй.
+ * Берётся из сохранённой сессии сразу, при загрузке модуля. Пока пати не
+ * выбрана — он пустой, и тогда база сохраняется без пометки, а при следующей
+ * загрузке та же база читается как чужая и отбрасывается: человек видел
+ * «Сохранено», а после перезагрузки — пустой состав. Проверено на живом
+ * сайте, поэтому пустой ключ здесь недопустим.
  */
-let dbPartyId = ''
+let dbPartyId = loadSession()?.partyId ?? ''
+
+/**
+ * Читалась ли база этой пати из браузера.
+ *
+ * Пустая база после неудачного чтения — заглушка, а не пустая пати, и отдать
+ * её как настоящую нельзя: у заглушки своя свежая метка, приложение решает,
+ * что человек правил, и отправляет пустоту на сервер поверх настоящей базы.
+ * Заметив такое, человек видит «Сохранено», а после перезагрузки — пустой
+ * состав, и потерянную правку уже не вернуть.
+ *
+ * Пока признак снят, синхронизация тянет базу с сервера и не рискует ничего.
+ */
+let dbПрочитана = false
+
+/** База в браузере прочитана и принадлежит этой пати. */
+export function базаПрочитана(): boolean {
+  return dbПрочитана
+}
 
 /**
  * Читает базу из браузера, если она принадлежит этой же пати.
@@ -368,6 +399,7 @@ let dbPartyId = ''
  * синхронизация подтянет настоящую с сервера.
  */
 function loadState(partyId = dbPartyId): Db {
+  dbПрочитана = false
   if (typeof localStorage === 'undefined') return emptyDb()
   try {
     const raw = localStorage.getItem(DB_KEY)
@@ -376,6 +408,7 @@ function loadState(partyId = dbPartyId): Db {
     // База, сохранённая до появления пометки, чужой считается: чей это id,
     // не узнать, а показать лишнее хуже, чем не показать ничего.
     if (!сохранённое.partyId || сохранённое.partyId !== partyId) return emptyDb()
+    dbПрочитана = true
     return normalizeDb(сохранённое.db)
   } catch {
     /* повреждённые данные не должны ронять приложение */
@@ -398,7 +431,7 @@ function saveState(next: Db): void {
   }
 }
 
-let db: Db = loadState(loadSession()?.partyId ?? '')
+let db: Db = loadState(dbPartyId)
 const listeners = new Set<() => void>()
 
 function emit() {
@@ -434,6 +467,7 @@ export function авторПравки(): string {
 
 /** Любое изменение данных проходит через сюда: метка времени + сохранение. */
 function commit(next: Db): void {
+  dbПрочитана = true
   db = { ...next, version: DB_VERSION, updatedAt: new Date().toISOString(), updatedBy: авторПравки() }
   saveState(db)
   emit()
@@ -915,8 +949,6 @@ export interface PartySession {
   lastSyncedAt: string
 }
 
-const SESSION_KEY = 'pp:session'
-
 let session: PartySession | null = loadSession()
 
 function loadSession(): PartySession | null {
@@ -1043,6 +1075,7 @@ export function useОткрытаяФорма(): boolean {
  * конфликт с сервером.
  */
 export function replaceDb(next: unknown): void {
+  dbПрочитана = true
   const normalized = normalizeDb(next)
   db = { ...normalized, version: DB_VERSION }
   saveState(db)
