@@ -1,0 +1,20 @@
+{
+  "partyId": "g3dp4sqtf2",
+  "name": "Порог24-2-1792168330731",
+  "createdAt": "2026-10-16T16:32:11.892Z",
+  "masterHash": "17a9d5d10882bc1cc3032d4b0eee6d3a60cf1132b424954eeb61beec7147094d",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T16:32:11.892Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
