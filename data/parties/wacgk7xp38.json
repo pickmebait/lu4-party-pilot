@@ -1,0 +1,20 @@
+{
+  "partyId": "wacgk7xp38",
+  "name": "Порог16-4-1792168194657",
+  "createdAt": "2026-10-16T16:29:55.613Z",
+  "masterHash": "4e195c833df33df8fc0cf29e8e7ddfe6beca402672bb4f305306724ddbb1233a",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T16:29:55.613Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
