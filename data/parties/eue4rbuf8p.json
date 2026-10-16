@@ -5,16 +5,66 @@
   "masterHash": "8e104cd2c2714265b3d380d2ab9ae16001f8a3718f7b1fc8dff6ba479a02fbfe",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-16T18:53:22.564Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 8,
+    "updatedAt": "2026-10-16T18:55:05.058Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "cmvbbume516vsq8",
+        "name": "Герой1",
+        "cls": "",
+        "level": 0,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
     "wishes": [],
     "sets": [],
-    "customNames": {}
+    "customNames": {},
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    }
   }
 }
