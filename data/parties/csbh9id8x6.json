@@ -1,0 +1,20 @@
+{
+  "partyId": "csbh9id8x6",
+  "name": "Порог26",
+  "createdAt": "2026-10-16T10:05:25.211Z",
+  "masterHash": "f4e87c8ccf8d7b3b26bf140cda498018251c382ff948af755da299487b757b88",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T10:05:25.211Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
