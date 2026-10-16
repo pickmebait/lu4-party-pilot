@@ -1,0 +1,20 @@
+{
+  "partyId": "86pzywedq5",
+  "name": "Палитра",
+  "createdAt": "2026-10-16T08:07:18.518Z",
+  "masterHash": "b798191d6a9fed97615398ac2ca2500e049e23de9ef907b0e570b9ef3b716460",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T08:07:18.518Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
