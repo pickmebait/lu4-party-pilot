@@ -1098,10 +1098,44 @@ function проверкаИмениПати(v: unknown): { ok: true; value: stri
   return { ok: true, value: s }
 }
 
+/**
+ * Тело запроса может быть ужатым, и это не украшение, а необходимость.
+ *
+ * Проверено замером: тело запроса больше 33 000 байт до воркера не доходит
+ * вовсе — соединение рвётся на девятнадцатой секунде, и никакое повторение не
+ * помогает. Черта одна и та же по HTTP/1.1 и по HTTP/2, по чужому хосту тело
+ * такого веса уходит без единой заминки, а значит и обойти её нельзя иначе,
+ * как уменьшить само тело.
+ *
+ * База — это повторяющиеся поля игровых данных, и жмётся она в десять раз.
+ * Полная пати на 24 персонажа — 23 килобайта, а по дороге два.
+ *
+ * Сжимается только передача. В репозиторий по-прежнему ложится обычный
+ * читаемый JSON: файл остаётся страховкой, в которую можно заглянуть глазами.
+ *
+ * Старое тело принимается как раньше — на случай, пока у кого-то в кэше
+ * лежит прежняя версия приложения.
+ */
 async function readJson(request: Request): Promise<any> {
+  let тело: any
   try {
-    return await request.json()
+    тело = await request.json()
   } catch {
+    return null
+  }
+
+  if (тело?.сжато !== true || typeof тело.данные !== 'string') return тело
+
+  try {
+    const сырое = decodeBase64ToBytes(тело.данные)
+    const распакованный = new Blob([сырое]).stream().pipeThrough(new DecompressionStream('gzip'))
+    return JSON.parse(await new Response(распакованный).text())
+  } catch {
+    /*
+     * Не распаковалось — отвечаем отказом, а не падением: тело с таким
+     * содержимым означает либо порчу на дороге, либо чужой клиент, и
+     * продолжать с ним незачем.
+     */
     return null
   }
 }
@@ -1135,9 +1169,13 @@ function encodeBase64(text: string): string {
   return btoa(bin)
 }
 
-function decodeBase64(b64: string): string {
+function decodeBase64ToBytes(b64: string): Uint8Array {
   const bin = atob(b64.replace(/\n/g, ''))
   const bytes = new Uint8Array(bin.length)
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
-  return new TextDecoder().decode(bytes)
+  return bytes
+}
+
+function decodeBase64(b64: string): string {
+  return new TextDecoder().decode(decodeBase64ToBytes(b64))
 }

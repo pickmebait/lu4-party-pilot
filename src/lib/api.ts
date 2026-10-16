@@ -393,6 +393,53 @@ export async function fetchDb(apiUrl: string, token: string): Promise<ApiResult<
  * baseUpdatedAt — версия, от которой клиент отталкивался. Сервер откажет,
  * если в базе уже есть другая, более свежая.
  */
+/**
+ * Ужать тело, если это выгодно.
+ *
+ * Замером найден предел: тело запроса крупнее 33 000 байт до воркера не
+ * доходит — соединение рвётся на девятнадцатой секунде, и это не зависит ни от
+ * протокола, ни от повторов. Полная пати на 24 персонажа — 23 килобайта, то
+ * есть запас сегодня есть, но тает он с каждым новым контактом и заточкой.
+ *
+ * База состоит из повторяющихся полей игровых данных и жмётся примерно в
+ * десять раз, поэтому даже после base64 запрос получается в несколько раз
+ * меньше прежнего. Жмётся только передача: в репозиторий по-прежнему ложится
+ * читаемый JSON.
+ *
+ * Если браузер не умеет сжимать или сжатое вышло тяжелее — отправляем как
+ * есть. Сервер принимает оба вида.
+ */
+const СЖИМАТЬ_ВЫГОДНЕЕ_ОТ = 4096
+
+async function ужатьТело(полезная: unknown): Promise<string> {
+  const текст = JSON.stringify(полезная)
+  if (typeof CompressionStream === 'undefined') return текст
+  if (текст.length <= СЖИМАТЬ_ВЫГОДНЕЕ_ОТ) return текст
+
+  try {
+    const поток = new Blob([текст]).stream().pipeThrough(new CompressionStream('gzip'))
+    const байты = new Uint8Array(await new Response(поток).arrayBuffer())
+    const свёрнутое = байтыВBase64(байты)
+    // Сжатый JSON в base64 всё равно больше трети исходного: короткий в Base64
+    // хуже, чем ничего не сжимать.
+    if (свёрнутое.length >= текст.length * 0.8) return текст
+    return JSON.stringify({ сжато: true, данные: свёрнутое })
+  } catch {
+    // Сжимать не вышло — отправляем как есть, это всегда работает.
+    return текст
+  }
+}
+
+/** Байты в base64 кусками: бросать в btoa весь массив можно только до 64 КБ. */
+function байтыВBase64(байты: Uint8Array): string {
+  let бинарный = ''
+  const кусок = 0x8000
+  for (let i = 0; i < байты.length; i += кусок) {
+    бинарный += String.fromCharCode(...байты.subarray(i, i + кусок))
+  }
+  return btoa(бинарный)
+}
+
 export async function saveDb(
   apiUrl: string,
   token: string,
@@ -406,7 +453,7 @@ export async function saveDb(
     повторяемая: true,
     onRetry,
     ожидание: ОЖИДАНИЕ_ЗАПИСИ_МС,
-    body: JSON.stringify({ db, baseUpdatedAt }),
+    body: await ужатьТело({ db, baseUpdatedAt }),
   })
 }
 
