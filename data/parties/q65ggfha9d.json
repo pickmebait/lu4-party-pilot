@@ -6,12 +6,12 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-16T08:27:44.506Z",
-    "updatedBy": "Первый человек",
+    "updatedAt": "2026-10-16T08:27:46.406Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cOne",
-        "name": "Первый",
+        "name": "Свежее чтение",
         "cls": "Knight",
         "level": 73,
         "affil": "состав",
