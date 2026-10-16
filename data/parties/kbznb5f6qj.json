@@ -1,0 +1,20 @@
+{
+  "partyId": "kbznb5f6qj",
+  "name": "Порог16",
+  "createdAt": "2026-10-16T10:01:30.414Z",
+  "masterHash": "3a64fa10dd3ca03b6da27cdfcf036a43233db8083422160b8f09f537436f3313",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T10:01:30.414Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
