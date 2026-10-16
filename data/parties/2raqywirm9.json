@@ -1,0 +1,20 @@
+{
+  "partyId": "2raqywirm9",
+  "name": "Порог34-0-1792168421288",
+  "createdAt": "2026-10-16T16:33:42.252Z",
+  "masterHash": "2b7338b87b1c21c59d39f92122aec4654a37e45ca3e41db3299ed18e04e499ec",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-16T16:33:42.252Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
