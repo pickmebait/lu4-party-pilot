@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-16T18:32:37.415Z",
+    "updatedAt": "2026-10-16T18:32:49.089Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -3895,6 +3895,50 @@
             }
           }
         ],
+        "away": {}
+      },
+      {
+        "id": "cmvbb25ft1y0vkt",
+        "name": "Двадцатьпятый",
+        "cls": "",
+        "level": 0,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
         "away": {}
       }
     ],
