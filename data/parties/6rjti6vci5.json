@@ -1,0 +1,25 @@
+{
+  "partyId": "6rjti6vci5",
+  "name": "Свинки",
+  "createdAt": "2026-10-15T21:10:57.812Z",
+  "masterHash": "457c5311eab27540a87b608675b34468271b02ccf7304007e8b1ac7d3f990826",
+  "tokens": [],
+  "db": {
+    "version": 8,
+    "updatedAt": "2026-10-15T21:18:57.022Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {},
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    }
+  }
+}
