@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-16T20:23:36.990Z",
+    "updatedAt": "2026-10-16T20:25:16.165Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -64,6 +64,50 @@
         "name": "2345",
         "cls": "Overlord",
         "level": 44,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      },
+      {
+        "id": "cmvbf2cdx5jcs2v",
+        "name": "2345",
+        "cls": "Prophet",
+        "level": 33,
         "affil": "roster",
         "slots": {
           "rhand": [
