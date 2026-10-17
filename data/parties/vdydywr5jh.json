@@ -1,0 +1,20 @@
+{
+  "partyId": "vdydywr5jh",
+  "name": "Слова",
+  "createdAt": "2026-10-17T12:11:45.916Z",
+  "masterHash": "5583b6a2340ede9212ad36d1a0a91fa6de8f85e78512e1b57c3528a79ed86eba",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-17T12:11:45.916Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
