@@ -5,16 +5,125 @@
   "masterHash": "a4a254a6042203571e6bcb9a8bdb564e4e3f2c0b19fdd7b9ecf63b378574f789",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-17T11:34:07.413Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 8,
+    "updatedAt": "2026-10-17T11:34:09.016Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "c1",
+        "name": "Первый",
+        "cls": "Knight",
+        "level": 85,
+        "affil": "состав",
+        "slots": {
+          "weapon": {
+            "id": 1,
+            "name": "Меч",
+            "enchant": 8
+          }
+        },
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {
+          "2026-10-17": {
+            "whole": true
+          },
+          "2026-10-18": {
+            "whole": false,
+            "window": {
+              "from": 1200,
+              "to": 1440
+            }
+          }
+        },
+        "pa": null
+      },
+      {
+        "id": "c2",
+        "name": "Второй",
+        "cls": "Wizard",
+        "level": 80,
+        "affil": "состав",
+        "slots": {
+          "weapon": {
+            "id": 1,
+            "name": "Меч",
+            "enchant": 8
+          }
+        },
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      },
+      {
+        "id": "c3",
+        "name": "Третий",
+        "cls": "ElfOracle",
+        "level": 78,
+        "affil": "состав",
+        "slots": {
+          "weapon": {
+            "id": 1,
+            "name": "Меч",
+            "enchant": 8
+          }
+        },
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
     "wishes": [],
     "sets": [],
+    "schedule": {
+      "prime": {
+        "2026-10-19": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-20": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-21": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-22": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-23": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-26": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-27": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-28": {
+          "from": 1260,
+          "to": 1410
+        }
+      },
+      "offs": [
+        "2026-10-18"
+      ],
+      "checklist": []
+    },
     "customNames": {}
   }
 }
