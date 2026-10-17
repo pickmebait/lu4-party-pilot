@@ -3779,6 +3779,23 @@ body {
   margin-bottom: 14px;
 }
 
+/*
+ * Четыре плитки по периодам — в два ряда, а не по числу колонок.
+ *
+ * При auto-fill на широком окне влезали три, и четвёртая («Хотелки») повисала
+ * одна в следующем ряду с пустотой рядом: одинокая плитка читается как
+ * оторванная от остальных, хотя это такой же раздел, как три первые.
+ */
+.sum-grid-period {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 760px) {
+  .sum-grid-period {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .sum-card {
   display: flex;
   flex-direction: column;

@@ -117,7 +117,7 @@ export function SummaryView({ catalog }: { catalog: CatalogApi }) {
         изменений в базе нет, поэтому такие плитки помечены «сейчас» и периодом не меняются.
       </p>
 
-      <div className="sum-grid">
+      <div className="sum-grid sum-grid-period">
         {/* ---------------------------------------------- расписание */}
         <article className="sum-card">
           <h3>Расписание</h3>
@@ -144,7 +144,12 @@ export function SummaryView({ catalog }: { catalog: CatalogApi }) {
               <div className="sum-bars sum-bars-week">
                 {прайм.поДнямНедели.map((сколько, i) => (
                   <div key={i} className="sum-bar-cell" title={`${ДНИ_НЕДЕЛИ[i]}: ${сколько}`}>
-                    <div className="sum-bar" style={{ height: `${(сколько / maxНедели) * 100}%` }} />
+                    {сколько > 0 && (
+                      <div
+                        className="sum-bar"
+                        style={{ height: `${(сколько / maxНедели) * 100}%` }}
+                      />
+                    )}
                     <span className="sum-bar-n">{сколько || ''}</span>
                     <span className="sum-bar-l">{ДНИ_НЕДЕЛИ[i]}</span>
                   </div>
