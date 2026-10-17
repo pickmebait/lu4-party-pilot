@@ -429,7 +429,7 @@ const долг = useMemo(
               <div className="sum-sub-h">недобор по персонажам за период</div>
               <ul className="sum-rows">
                 {долг.поЛюдям.slice(0, 8).map((н) => (
-                  <li key={н.имя}>
+                  <li key={н.charId}>
                     <span className="sum-row-name">{н.имя}</span>
                     <span className="sum-row-tail">
                       {н.всего} {plural(н.всего, 'слот', 'слота', 'слотов')} за {долг.дни.length}{' '}
