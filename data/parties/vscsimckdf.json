@@ -14,8 +14,8 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-17T11:34:09.016Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-17T11:42:59.643Z",
+    "updatedBy": "Второй",
     "chars": [
       {
         "id": "c1",
@@ -52,19 +52,48 @@
         "name": "Второй",
         "cls": "Wizard",
         "level": 80,
-        "affil": "состав",
+        "affil": "roster",
         "slots": {
-          "weapon": {
-            "id": 1,
-            "name": "Меч",
-            "enchant": 8
-          }
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
         },
-        "subs": [],
         "subUnlocked": false,
-        "contacts": {},
-        "away": {},
-        "pa": null
+        "subs": [],
+        "away": {
+          "2026-10-09": {
+            "whole": true
+          }
+        }
       },
       {
         "id": "c3",
