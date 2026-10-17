@@ -1306,45 +1306,10 @@ body {
 }
 
 /*
- * Кто уже отмечен на выделенных днях.
- *
- * Список, а не строка через запятую: с пятью отмеченными строка не помещалась
- * в половину экрана и переносилась так, что обрывалась на нике — сколько дней
- * не придётся ждать, было не видно.
+ * Списка «кто отмечен на выделенных днях» в блоке правки больше нет: те же
+ * имена стоят в клетках календаря и в сводке, а в блоке они были третьим
+ * упоминанием одного и того же. Стили к нему убраны вместе с ним.
  */
-.editor-note {
-  margin-top: 8px;
-  font-size: 11px;
-  color: var(--muted-dim);
-}
-
-.note-list {
-  list-style: none;
-  margin: 3px 0 0;
-  padding: 0;
-}
-
-.note-list li {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 1px 0;
-}
-
-.note-list li > span:first-child {
-  font-size: 12px;
-  color: var(--text);
-}
-
-.note-char {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.note-days {
-  margin-left: auto;
-  white-space: nowrap;
-}
 
 /* Список «кто» — в шапке блока, шириной по содержимому: имена длинные,
    а обрезанный список не читается. Ниже переключателя места всё равно нет. */
@@ -3659,16 +3624,37 @@ body {
   font-weight: 700;
 }
 
+/*
+ * Отсутствующие в клетке дня.
+ *
+ * Список, а не уголок с одной буквой: буква от буквы ничего не говорила, а
+ * полные имена читаются сразу. В потоке, а не абсолютным положением — иначе
+ * длинное имя наезжало бы на номер дня и время прайма.
+ *
+ * За край клетки не выходит: имя обрезается многоточием, лишние сворачиваются
+ * в «ещё N». Без обрезки неделя с отпуском растянула бы весь календарь.
+ */
 .cal-away {
-  position: absolute;
-  top: 3px;
-  right: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  margin-top: 1px;
+  max-width: 100%;
   font-size: 10px;
-  line-height: 1;
-  padding: 1px 3px;
-  border-radius: 4px;
-  background: #5a2a2a;
+  line-height: 1.25;
   color: #ffb3b3;
+}
+
+.cal-away-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal-away-more {
+  color: #d98a8a;
 }
 
 .cal-day {
