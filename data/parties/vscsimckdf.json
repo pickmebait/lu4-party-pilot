@@ -3,7 +3,15 @@
   "name": "Расписание",
   "createdAt": "2026-10-17T11:34:07.413Z",
   "masterHash": "a4a254a6042203571e6bcb9a8bdb564e4e3f2c0b19fdd7b9ecf63b378574f789",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "i3ybidi7vn",
+      "hash": "f3ad1c2099458a0d33fc91330356642be9309f667d9434e92dae9d273cf5dd18",
+      "charId": "c2",
+      "charName": "Второй",
+      "createdAt": "2026-10-17T11:42:13.213Z"
+    }
+  ],
   "db": {
     "version": 8,
     "updatedAt": "2026-10-17T11:34:09.016Z",
