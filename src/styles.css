@@ -1346,21 +1346,54 @@ body {
   white-space: nowrap;
 }
 
+/* Список «кто» — в шапке блока, шириной по содержимому: имена длинные,
+   а обрезанный список не читается. Ниже переключателя места всё равно нет. */
+
 /*
- * Поле «Кто» занимает всю ширину: имена длинные, обрезанный список
- * не читается, а ниже переключателя места всё равно нет.
+ * Шапка блока: подпись слева, «кто» справа.
+ *
+ * Раньше «Кто» стоял отдельной строкой под заголовком и съедал высоту целиком:
+ * в блоке высотой в пол-экрана половина уходила на выбор одного имени. Теперь
+ * он справа от заголовка, и блок ниже на строку.
+ *
+ * При своём токене списка нет вовсе: выбирать не из чего, и пустой перечень
+ * рядом с подписью читался бы как поломка. Там просто имя.
  */
-.cal-editor .editor-field {
+.block-head {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 12px;
-  color: var(--muted);
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  margin-bottom: 7px;
 }
 
-.cal-editor .editor-field select {
-  width: 100%;
-  margin-top: 7px;
+.block-head h4 {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.block-head .who,
+.block-head .who-fixed {
+  margin-left: auto;
+  width: auto;
+  max-width: 62%;
+  flex: 0 1 auto;
+}
+
+.block-head .who-fixed {
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * Один блок на всю ширину — так выглядит редактор под токеном персонажа:
+ * прайма там нет, и вторая колонка занимала бы место впустую.
+ */
+.editor-grid.один {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 /* Поля времени не растягиваются: в половине колонки они стали бы шире

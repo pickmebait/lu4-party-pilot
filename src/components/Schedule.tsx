@@ -35,7 +35,7 @@ import {
 import { isMarked, toggleChecklist, useChecklistMarks } from '@/lib/checklistSession'
 import { useAccess, useOwnCharName } from '@/lib/access'
 import { IconClose } from './Icons'
-import { ReadOnlyNote } from './ReadOnlyNote'
+import { ScheduleNote } from './ReadOnlyNote'
 
 /**
  * Расписание прайма: календарь с праздниками, выходными и отметками
@@ -116,8 +116,13 @@ function Переключатель<T extends string>({
 
 export function ScheduleView() {
   const db = useDb()
-  // Расписание общее: токен персонажа его не правит.
-  const { canEditParty: правый } = useAccess()
+  /*
+   * Прайм и выходные — только мастеру. А вот отсутствие — другое дело: это
+   * свойство персонажа, лежит оно в персонаже же, рядом со снаряжением и
+   * сабами, и токен персонажа правит своего целиком. Раньше блок не
+   * показывался вовсе, и получалось, что отметиться за свой счёт нечем.
+   */
+  const { master: мастер, ownCharId: свойId } = useAccess()
   const имяСвоего = useOwnCharName()
   const сегодня = isoToday()
   const [месяц, setМесяц] = useState(() => {
@@ -145,6 +150,15 @@ export function ScheduleView() {
   const [весьДень, setВесьДень] = useState(true)
   const тянем = useRef(false)
 
+  /*
+   * Кто отмечает отсутствие.
+   *
+   * Мастеру — любой из пати, своему токену — только тот, кому он выдан. Список
+   * при токене персонажа не прячем, а убираем совсем: выбирать не из чего, и
+   * пустой список рядом с подписью выглядел бы как ошибка.
+   */
+  const герой = мастер ? (кто || db.chars[0]?.id || '') : (свойId ?? '')
+
   const клетки = useMemo(() => monthGrid(месяц), [месяц])
   const выбрано = new Set(выбор)
   const границы = выбор.length > 0 ? [выбор[0], выбор[выбор.length - 1]] : null
@@ -159,13 +173,13 @@ export function ScheduleView() {
     const текущее = primeOf(db.schedule, выбор[0])
     if (текущее.kind === 'окно') setОкно(текущее.window)
     else if (текущее.kind === 'нет') setОкно(ПО_УМОЛЧАНИЮ)
-    const персонаж = db.chars.find((c) => c.id === (кто || db.chars[0]?.id))
+    const персонаж = db.chars.find((c) => c.id === герой)
     const его = персонаж?.away?.[выбор[0]]
     if (его) {
       setВесьДень(его.whole)
       if (!его.whole && его.window) setОкноУхода(его.window)
     }
-  }, [выбор, db.schedule, db.chars, кто])
+  }, [выбор, db.schedule, db.chars, герой])
 
   const выделитьДо = (key: string) => {
     if (!тянем.current || !якорь) return
@@ -210,8 +224,6 @@ export function ScheduleView() {
     if (!выбор.length) return
     unmarkOffs(выбор)
   }
-
-  const герой = кто || db.chars[0]?.id || ''
 
   const отметитьОтсутствие = () => {
     if (!герой || !выбор.length) return
@@ -347,7 +359,7 @@ export function ScheduleView() {
         </div>
       </div>
 
-      {!правый && <ReadOnlyNote имя={имяСвоего} />}
+      {!мастер && <ScheduleNote имя={имяСвоего} />}
 
       <div className="cal-layout">
         <div>
@@ -461,8 +473,11 @@ export function ScheduleView() {
         Порядок блоков неслучаен: слева прайм — его ставят чаще, и он первым
         попадает под курсор после выделения дней; справа отсутствие, которым
         пользуются реже и по другому поводу.
+
+        Появляется редактор и под токеном персонажа: там он состоит из одного
+        блока и занимает всю ширину, а не половину.
       */}
-    {правый && границы && (
+    {(мастер || свойId) && границы && (
         <div className="cal-editor">
               <div className="editor-what">
                 <strong>
@@ -493,10 +508,12 @@ export function ScheduleView() {
                 <span className="editor-now">{чтоТам}</span>
               </div>
 
-              <div className="editor-grid">
+              <div className={`editor-grid${мастер ? '' : ' один'}`}>
+                {/* Прайм и выходной — мастерские. Токен персонажа их не видит. */}
+                {мастер && (
                 <section className="editor-block">
                   <h4>Прайм</h4>
-<div className="row time-row">
+                  <div className="row time-row">
                     <label>
                       С
                       <input
@@ -524,10 +541,14 @@ export function ScheduleView() {
                     «Очистить» в конце, а не сразу после «Назначить прайм»:
                     стоящие рядом «назначить» и «очистить» читаются как отмена
                     того, что только что сделал, и рука промахивалась мимо.
+
+                    Слова короче прежних: подпись блока уже сказала «Прайм», и
+                    повторять его в каждой кнопке — трата места, из-за которой
+                    третья кнопка уезжала на новую строку.
                   */}
                   <div className="row">
                     <button className="btn primary" disabled={окно.from >= окно.to} onClick={назначитьПрайм}>
-                      Назначить прайм
+                      Назначить
                     </button>
                     {выходныхВВыборе === выбор.length ? (
                       <button className="btn" onClick={снятьВыходной}>
@@ -539,7 +560,7 @@ export function ScheduleView() {
                         onClick={отметитьВыходной}
                         title="Пати не собирается в эти дни"
                       >
-                        Назначить выходной
+                        Выходной
                       </button>
                     )}
                     <button
@@ -559,25 +580,43 @@ export function ScheduleView() {
                     <p className="hint">Прайм должен заканчиваться позже, чем начинается.</p>
                   )}
                 </section>
+                )}
 
                 <section className="editor-block">
-                  <h4>Отсутствие</h4>
+                  {/*
+                    Заголовок и «кто» в одной строке.
 
-                  <label className="editor-field">
-                    Кто
-                    <select
-                      className="input"
-                      value={герой}
-                      onChange={(e) => setКто(e.target.value)}
-                      disabled={db.chars.length === 0}
-                    >
-                      {db.chars.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name || 'Без имени'}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                    Раньше «Кто» стоял отдельной строкой под заголовком и съедал
+                    высоту целиком: в блоке высотой в пол-экрана половина уходила
+                    на выбор одного имени из списка. Теперь он справа от
+                    заголовка, и блок на строку ниже.
+
+                    При своём токене списка нет вовсе: выбирать не из чего, и
+                    пустой перечень рядом с подписью читался бы как поломка. Имя
+                    просто написано — кто отмечает, и так видно.
+                  */}
+                  <div className="block-head">
+                    <h4>Отсутствие</h4>
+                    {мастер ? (
+                      <select
+                        className="input who"
+                        value={герой}
+                        onChange={(e) => setКто(e.target.value)}
+                        disabled={db.chars.length === 0}
+                        title="Кого отмечаем отсутствующим"
+                      >
+                        {db.chars.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name || 'Без имени'}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="who-fixed" title="Токен персонажа правит только его">
+                        {db.chars.find((c) => c.id === герой)?.name || 'свой персонаж'}
+                      </span>
+                    )}
+                  </div>
 
                   {/*
                     На сколько отмечают — переключателем из двух равноправных
@@ -663,26 +702,31 @@ export function ScheduleView() {
                       title={уходовНет === 0 ? 'У выбранного персонажа на этих днях отметки нет' : undefined}
                       onClick={снятьОтсутствие}
                     >
-                      Снять отметку
+                      Снять
                     </button>
                     {/*
                       Снимает отметки у всех, кто их поставил, на выбранных
-                      днях. Отдельная от «Снять отметку»: та берёт своё, эта —
-                      всех, и на празднике, где отметились четверо, не надо
-                      было проходить по списку «Кто» вручную.
+                      днях. Отдельная от «Снять»: та берёт своё, эта — всех, и на
+                      празднике, где отметились четверо, не надо было проходить
+                      по списку «Кто» вручную.
+
+                      Только мастеру: чужой персонаж токеном персонажа не
+                      правится, и сервер такой запрос всё равно не примет.
                     */}
-                    <button
-                      className="btn"
-                      disabled={отмеченные.length === 0}
-                      title={
-                        отмеченные.length === 0
-                          ? 'На выделенных днях ни у кого нет отметки об отсутствии'
-                          : 'Снять отметки об отсутствии у всех на выделенных днях'
-                      }
-                      onClick={очиститьВсеОтсутствия}
-                    >
-                      Очистить все отсутствия
-                    </button>
+                    {мастер && (
+                      <button
+                        className="btn"
+                        disabled={отмеченные.length === 0}
+                        title={
+                          отмеченные.length === 0
+                            ? 'На выделенных днях ни у кого нет отметки об отсутствии'
+                            : 'Снять отметки об отсутствии у всех на выделенных днях'
+                        }
+                        onClick={очиститьВсеОтсутствия}
+                      >
+                        Снять у всех
+                      </button>
+                    )}
                   </div>
                 </section>
               </div>
