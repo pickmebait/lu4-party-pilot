@@ -14,7 +14,7 @@
     "check": "node scripts/check-catalog.mjs && tsc --noEmit",
     "test:access": "node scripts/test-access.mjs",
     "test:tokens": "node scripts/test-tokens.mjs",
-    "test": "node scripts/test-access.mjs && node scripts/test-tokens.mjs && node scripts/check-parties.mjs && node scripts/check-palette-html.mjs && node scripts/check-sync-flow.mjs && node scripts/check-analytics.mjs",
+    "test": "node scripts/test-access.mjs && node scripts/test-tokens.mjs && node scripts/check-parties.mjs && node scripts/check-palette-html.mjs && node scripts/check-sync-flow.mjs && node scripts/check-analytics.mjs && node scripts/check-goals-access.mjs",
     "rm:party": "node scripts/rm-party.mjs",
     "audit": "node scripts/audit-fields.mjs",
     "audit:dead": "node scripts/audit-exports.mjs && node scripts/audit-css.mjs && node scripts/audit-cycles.mjs",

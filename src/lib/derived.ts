@@ -139,7 +139,9 @@ export function computeSummary(db: Db): Summary {
     gearSlots: { total, filled },
     warehouseKinds: db.warehouse.stacks.length,
     warehouseItems: db.warehouse.stacks.reduce((a, s) => a + s.count, 0),
-    wishesOpen: db.wishes.filter((w) => !w.done).length,
+    // Отклонённая цель в работе не числится: её решение уже принято, и держать
+    // её в счётчике активных значит врать о том, над чем пати работает.
+    wishesOpen: db.wishes.filter((w) => !w.done && !w.rejected).length,
     wishesDone: db.wishes.filter((w) => w.done).length,
     setsDone: sets.filter((s) => s.complete).length,
     setsTotal: sets.length,

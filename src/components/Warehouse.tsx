@@ -13,6 +13,7 @@ import { gradeCode, gradeLabel } from '@/types'
 import { ItemPicker, matches } from './ItemPicker'
 import { ItemIcon } from './ItemIcon'
 import { ReadOnlyNote } from './ReadOnlyNote'
+import { SetsBlock } from './SetsBlock'
 
 export function WarehouseView({ catalog }: { catalog: CatalogApi }) {
   const db = useDb()
@@ -201,6 +202,8 @@ export function WarehouseView({ catalog }: { catalog: CatalogApi }) {
           )}
         </div>
       )}
+
+      <SetsBlock catalog={catalog} />
 
       {picking && (
         <ItemPicker

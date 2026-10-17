@@ -16,14 +16,33 @@ const PAGE_SIZES = [5, 10, 20] as const
 /** Потолок для поиска: справочник меньше двух тысяч предметов. */
 const SEARCH_LIMIT = 5000
 
+/**
+ * Сколько предметов можно набрать за один раз.
+ *
+ * Пятнадцать — не округлённое число, а длина списка, который ещё можно
+ * разглядеть в форме: дальше он перестаёт помещаться на экране, и половина
+ * целей выбрана, но не замечена.
+ */
+export const МНОЖЕСТВЕННЫЙ_ПОТОЛОК = 15
+
 interface Props {
   catalog: CatalogApi
   /** Слот экранировки: задаёт и то, что подходит, и какие фильтры показывать. */
   slot?: SlotDef
-  /** Для мест без слота — казны и хотелок: просто ограничение по типу. */
+  /** Для мест без слота — казны и целей: просто ограничение по типу. */
   accepts?: (item: CatalogItem) => boolean
   title?: string
   onPick: (itemId: number) => void
+  /**
+   * Режим множественного выбора.
+   *
+   * Список не закрывается после выбора, строка отмечается, а внизу появляется
+   * кнопка, которая возвращает всё набраное разом. Нужен там, где человек за
+   * один заход перечисляет список: пятнадцать целей подряд выбирать по одному
+   * и каждый раз открывать пикер заново — пятнадцать лишних кругов.
+   */
+  multi?: number[]
+  onPickMany?: (itemIds: number[]) => void
   onClose: () => void
 }
 
@@ -40,7 +59,7 @@ interface Props {
  * показывается при любом выборе. Иначе фильтр молча прятал бы вещи,
  * и игрок решил бы, что их не существует.
  */
-export function ItemPicker({ catalog, slot, accepts, title, onPick, onClose }: Props) {
+export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPickMany, onClose }: Props) {
   const [q, setQ] = useState('')
   const [type, setType] = useState<string | null>(null)
   const [grade, setGrade] = useState<string | null>(null)
@@ -48,6 +67,21 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, onClose }: P
   const [pageSize, setPageSize] = useState<number>(20)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+
+  // Множественный выбор живёт здесь, а не у вызывающего: пикер открыт поверх
+  // формы цели, и держать набор в её состоянии значило бы терять его при
+  // каждом перерисовывании формы.
+  const [отмечено, setОтмечено] = useState<number[]>(multi ?? [])
+  const множественный = !!onPickMany
+  const полный = множественный && отмечено.length >= МНОЖЕСТВЕННЫЙ_ПОТОЛОК
+
+  const переключить = (id: number) => {
+    setОтмечено((прежние) => {
+      if (прежние.includes(id)) return прежние.filter((x) => x !== id)
+      if (прежние.length >= МНОЖЕСТВЕННЫЙ_ПОТОЛОК) return прежние
+      return [...прежние, id]
+    })
+  }
 
   const acceptsFn = useMemo(() => accepts ?? slot?.accepts ?? (() => true), [accepts, slot])
   const filters = slot?.filters ?? {}
@@ -227,7 +261,10 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, onClose }: P
               key={it.id}
               it={it}
               inApp={catalog.knownIds.has(it.id)}
-              onPick={onPick}
+              multi={множественный}
+              chosen={отмечено.includes(it.id)}
+              blocked={полный && !отмечено.includes(it.id)}
+              onPick={множественный ? переключить : onPick}
               onClose={onClose}
             />
           ))}
@@ -265,9 +302,34 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, onClose }: P
         )}
 
         <div className="picker-foot">
-          Справочник: {catalog.count} предметов
-          {catalog.source ? ` · ${catalog.source}` : ''}. Список закрытый — предмет выбирается
-          только из него.
+          {множественный ? (
+            <>
+              <div className="picker-multi">
+                <span>
+                  выбрано {отмечено.length} из {МНОЖЕСТВЕННЫЙ_ПОТОЛОК}
+                  {полный && ' — больше не поместится'}
+                </span>
+                <button
+                  className="btn primary"
+                  disabled={отмечено.length === 0}
+                  onClick={() => onPickMany?.(отмечено)}
+                >
+                  Добавить выбранное
+                </button>
+              </div>
+              <div className="picker-foot-note">
+                Справочник: {catalog.count} предметов
+                {catalog.source ? ` · ${catalog.source}` : ''}. Список закрытый — предмет
+                выбирается только из него.
+              </div>
+            </>
+          ) : (
+            <>
+              Справочник: {catalog.count} предметов
+              {catalog.source ? ` · ${catalog.source}` : ''}. Список закрытый — предмет
+              выбирается только из него.
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -333,12 +395,20 @@ function FilterRow({
 function Row({
   it,
   inApp,
+  multi,
+  chosen,
+  blocked,
   onPick,
   onClose,
 }: {
   it: CatalogItem
   /** Уже надето в пати или лежит в казне — помечаем, чтобы было видно. */
   inApp: boolean
+  /** Режим множественного выбора: строка не закрывает список. */
+  multi?: boolean
+  chosen?: boolean
+  /** Потолок выбора достигнут — строка гасится, но не исчезает. */
+  blocked?: boolean
   onPick: (itemId: number) => void
   onClose: () => void
 }) {
@@ -353,13 +423,28 @@ function Row({
 
   return (
     <button
-      className={`picker-row ${inApp ? 'in-app' : ''}`}
+      className={`picker-row ${inApp ? 'in-app' : ''} ${multi ? 'multi' : ''} ${chosen ? 'chosen' : ''} ${blocked ? 'blocked' : ''}`}
       onClick={() => {
         onPick(it.id)
-        onClose()
+        // В множественном режиме список остаётся открытым: закрывать его после
+        // каждой отметки значило бы выбирать пятнадцать предметов пятнадцать
+        // разными заходами.
+        if (!multi) onClose()
       }}
-      title={[it.set, it.weaponClass, ...stats].filter(Boolean).join(' · ')}
+      title={[
+        it.set,
+        it.weaponClass,
+        ...stats,
+        blocked ? 'Потолок выбора — снимите что-нибудь' : '',
+      ]
+        .filter(Boolean)
+        .join(' · ')}
     >
+      {multi && (
+        <span className="picker-check" aria-hidden="true">
+          {chosen ? '✓' : ''}
+        </span>
+      )}
       <ItemIcon item={it} name={it.name} size={26} />
       <span className="picker-name">{it.name}</span>
       {stats.length > 0 && <span className="picker-stats">{stats.slice(0, 2).join(' · ')}</span>}

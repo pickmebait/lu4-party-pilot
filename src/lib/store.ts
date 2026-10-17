@@ -17,6 +17,7 @@ import {
   type Изменение,
   type MoveLog,
   type Pa,
+  type Priority,
   type PrimeWindow,
   type Schedule,
   type SetDef,
@@ -144,7 +145,7 @@ function normalizeDb(raw: unknown): Db {
     updatedBy: typeof d.updatedBy === 'string' ? d.updatedBy : '',
     chars,
     warehouse: { stacks, log },
-    wishes: Array.isArray(d.wishes) ? d.wishes : [],
+    wishes: normalizeWishes(d.wishes),
     sets: Array.isArray(d.sets) ? d.sets : [],
     customNames:
       d.customNames && typeof d.customNames === 'object' && !Array.isArray(d.customNames)
@@ -193,6 +194,48 @@ function normalizeHistory(сырое: unknown): Изменение[] {
     }
   }
   return out.slice(-ПОТОЛОК_ИСТОРИИ)
+}
+
+/**
+ * Цели приводятся к тому виду, в котором их пишет приложение.
+ *
+ * Раньше список брался из сети как есть, и одно кривое значение внутри него
+ * молча ломало счётчики в сводке и фильтры в разделе: сортировка по
+ * `w.priority` на строке вместо числа, например, не падает, а раскидывает
+ * цели в случайном порядке.
+ *
+ * Заодно снимается невозможное состояние: цель, помеченная и выполненной, и
+ * отклонённой, остаётся выполненной — так она записана была раньше, когда
+ * отклонения не существовало вовсе.
+ */
+function normalizeWishes(сырое: unknown): Wish[] {
+  if (!Array.isArray(сырое)) return []
+  const out: Wish[] = []
+  for (const цель of сырое) {
+    if (!цель || typeof цель !== 'object') continue
+    const ц = цель as Record<string, unknown>
+    const itemId = Math.trunc(Number(ц.itemId))
+    if (!Number.isFinite(itemId)) continue
+    const приоритет = Math.trunc(Number(ц.priority))
+    const mod = Math.trunc(Number(ц.mod))
+    const отклонена = ц.rejected === true
+    out.push({
+      id: typeof ц.id === 'string' && ц.id ? ц.id : uid('w'),
+      itemId,
+      mod: Number.isFinite(mod) && mod > 0 ? Math.min(MAX_MOD, mod) : undefined,
+      count: Math.max(1, Math.trunc(Number(ц.count)) || 1),
+      priority: приоритет >= 1 && приоритет <= 3 ? (приоритет as Priority) : 2,
+      seeker: typeof ц.seeker === 'string' ? ц.seeker : '',
+      forCharId: typeof ц.forCharId === 'string' && ц.forCharId ? ц.forCharId : undefined,
+      создатель: typeof ц.создатель === 'string' && ц.создатель ? ц.создатель : undefined,
+      note: typeof ц.note === 'string' && ц.note ? ц.note : undefined,
+      done: ц.done === true,
+      doneAt: typeof ц.doneAt === 'string' ? ц.doneAt : undefined,
+      rejected: ц.done === true ? false : отклонена,
+      rejectedAt: ц.done === true ? undefined : typeof ц.rejectedAt === 'string' ? ц.rejectedAt : undefined,
+    })
+  }
+  return out
 }
 
 /** Слепок слота из истории. */
@@ -1063,12 +1106,53 @@ export function dropFromWarehouse(itemId: number): void {
   })
 }
 
-/* ------------------------------------------------------------------- хотелки */
+/* --------------------------------------------------------------------- цели */
 
-export function addWish(w: Omit<Wish, 'id' | 'done'>): string {
-  const wish: Wish = { id: uid('w'), done: false, ...w }
-  commit({ ...db, wishes: [...db.wishes, wish] })
-  return wish.id
+/** Состояние цели: три исхода, а не два. */
+export type СтатусЦели = 'активная' | 'выполнена' | 'отклонена'
+
+export function статусЦели(w: Wish): СтатусЦели {
+  if (w.done) return 'выполнена'
+  if (w.rejected) return 'отклонена'
+  return 'активная'
+}
+
+/**
+ * Кто вправе вести эту цель.
+ *
+ * Создатель или мастер. Токен персонажа не даёт права закрыть чужую цель:
+ * список общий на всех, и иначе любой мог бы отметить выполненной то, чего
+ * никто не добывал, — и пати поверила бы.
+ *
+ * У цели без создателя (заведена до появления поля) правом есть только у
+ * мастера: закрыть её должен тот, кто разбирается.
+ */
+export function можетВестиЦель(цель: Wish): boolean {
+  const кто = session
+  if (!кто) return false
+  if (кто.role !== 'char') return true
+  return !!кто.charId && цель.создатель === кто.charId
+}
+
+/** Вправе ли этот пользователь завести цель для такого персонажа. */
+export function можетСоздаватьДля(charId: string | undefined): boolean {
+  const кто = session
+  if (!кто) return false
+  if (кто.role !== 'char') return true
+  return !!charId && !!кто.charId && charId === кто.charId
+}
+
+/**
+ * Несколько целей одной кнопкой.
+ *
+ * Правка идёт одной записью в историю, а не пятнадцатью: заведение списка
+ * «нужно к прайму» — одно действие человека, и пятнадцать отдельных
+ * подтверждений синхронизации только мешали бы.
+ */
+export function addWishes(список: Omit<Wish, 'id' | 'done'>[]): void {
+  if (список.length === 0) return
+  const новые = список.map((w) => ({ id: uid('w'), done: false, ...w }))
+  commit({ ...db, wishes: [...db.wishes, ...новые] })
 }
 
 export function updateWish(id: string, patch: Partial<Wish>): void {
@@ -1077,6 +1161,24 @@ export function updateWish(id: string, patch: Partial<Wish>): void {
 
 export function removeWish(id: string): void {
   commit({ ...db, wishes: db.wishes.filter((w) => w.id !== id) })
+}
+
+/**
+ * Перевод цели в другое состояние.
+ *
+ * Флаги взаимоисключающие, и решает это одна функция: «выполненная и при этом
+ * отклонённая» — не состояние, а ошибка записи, и расчёты потом считали бы её
+ * как выполненную, молча уводя чужую цель из активных.
+ */
+export function закрытьЦель(id: string, статус: СтатусЦели): void {
+  const сейчас = new Date().toISOString()
+  const patch: Partial<Wish> =
+    статус === 'выполнена'
+      ? { done: true, doneAt: сейчас, rejected: false, rejectedAt: undefined }
+      : статус === 'отклонена'
+        ? { done: false, doneAt: undefined, rejected: true, rejectedAt: сейчас }
+        : { done: false, doneAt: undefined, rejected: false, rejectedAt: undefined }
+  updateWish(id, patch)
 }
 
 /* ---------------------------------------------------------------------- сеты */

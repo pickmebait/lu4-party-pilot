@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { CharsView } from './components/Chars'
 import { Login } from './components/Login'
 import { PaletteBar } from './components/PaletteBar'
-import { SetsView } from './components/Sets'
 import { SyncBar } from './components/SyncBar'
 import { WarehouseView } from './components/Warehouse'
 import { WishesView } from './components/Wishes'
@@ -24,15 +23,14 @@ startCatalogLoad()
 // Палитру ставим до первой отрисовки, иначе на тёмном фоне мелькнёт светлый.
 applyPalette(loadPalette())
 
-type Tab = 'summary' | 'chars' | 'schedule' | 'warehouse' | 'wishes' | 'sets'
+type Tab = 'summary' | 'chars' | 'schedule' | 'warehouse' | 'wishes'
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'summary', label: 'Сводка' },
   { key: 'chars', label: 'Персонажи' },
   { key: 'schedule', label: 'Расписание' },
   { key: 'warehouse', label: 'Общая казна' },
-  { key: 'wishes', label: 'Хотелки' },
-  { key: 'sets', label: 'Комплекты' },
+  { key: 'wishes', label: 'Цели' },
 ]
 
 /**
@@ -57,14 +55,17 @@ function заметка(ключ: Tab, s: Summary, db: Db): string {
       if (часов === 0) return ушли ? `нет прайма, нет ${ушли}` : 'пусто'
       return `${часов} ${plural(часов, 'час', 'часа', 'часов')}${ушли ? `, нет ${ушли}` : ''}`
     }
-    case 'warehouse':
-      return s.warehouseKinds === 0
+    case 'warehouse': {
+      // Комплекты переехали в казну, и цифра собранного идёт под ней же.
+      const казна = s.warehouseKinds === 0
         ? 'пусто'
         : `${s.warehouseKinds} ${plural(s.warehouseKinds, 'позиция', 'позиции', 'позиций')} · ${s.warehouseItems} шт.`
+      return s.setsTotal === 0
+        ? казна
+        : `${казна} · компл. ${s.setsDone} из ${s.setsTotal}`
+    }
     case 'wishes':
       return `${s.wishesOpen} ${plural(s.wishesOpen, 'активная', 'активные', 'активных')}`
-    case 'sets':
-      return `${s.setsDone} из ${s.setsTotal}`
   }
 }
 
@@ -153,7 +154,6 @@ export default function App() {
         {tab === 'schedule' && <ScheduleView />}
         {tab === 'warehouse' && <WarehouseView catalog={catalog} />}
         {tab === 'wishes' && <WishesView catalog={catalog} />}
-        {tab === 'sets' && <SetsView catalog={catalog} />}
       </main>
 
       <footer className="foot">

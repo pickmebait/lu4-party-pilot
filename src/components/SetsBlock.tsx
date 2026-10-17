@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { CatalogApi } from '@/lib/catalog'
-import { useAccess, useOwnCharName } from '@/lib/access'
+import { useAccess } from '@/lib/access'
 import { computeSets } from '@/lib/derived'
 import { addSet, формаОткрыта, removeSet, updateSet, useDb } from '@/lib/store'
 import { gradeLabel } from '@/types'
+import { plural } from '@/lib/util'
 import { ItemPicker } from './ItemPicker'
 import { ItemIcon } from './ItemIcon'
-import { ReadOnlyNote } from './ReadOnlyNote'
 
 interface SetDraft {
   id: string | null
@@ -15,14 +15,23 @@ interface SetDraft {
   pieces: number[]
 }
 
-export function SetsView({ catalog }: { catalog: CatalogApi }) {
+/**
+ * Комплекты внутри общей казны.
+ *
+ * Отдельным разделом комплекты стояли по привычке, а не по смыслу: ведь они
+ * лежат в общем достоянии пати и отвечают на тот же вопрос, что и казна —
+ * «собрали ли мы это». Внутри казны список комплектов виден рядом с тем, что
+ * в ней лежит, и видно сразу: части в казне уже есть, осталось надеть.
+ *
+ * Правят комплекты только мастер-токеном, как и саму казну.
+ */
+export function SetsBlock({ catalog }: { catalog: CatalogApi }) {
   const db = useDb()
-  // Комплекты общие: токен персонажа их не правит.
   const { canEditParty: правый } = useAccess()
-  const имяСвоего = useOwnCharName()
-  const progress = useMemo(() => computeSets(db), [db])
   const [draft, setDraft] = useState<SetDraft | null>(null)
   const [pickingPiece, setPickingPiece] = useState(false)
+
+  const progress = useMemo(() => computeSets(db), [db])
 
   // Черновик комплекта живёт в форме, а не в базе: пока он открыт, подменять
   // базу извне нельзя, иначе собранный список пропадёт молча.
@@ -32,100 +41,103 @@ export function SetsView({ catalog }: { catalog: CatalogApi }) {
     return () => формаОткрыта(false)
   }, [!!draft])
 
+  const собранных = progress.filter((p) => p.complete).length
+
   return (
-    <section className="view">
-      <div className="view-head">
-        <h2>
+    <section className="sets-block">
+      <div className="sets-head">
+        <h3>
           Комплекты{' '}
           <span className="muted">
-            собрано {progress.filter((p) => p.complete).length} из {progress.length}
+            собрано {собранных} из {progress.length}
           </span>
-        </h2>
-        <div className="view-actions">
-          {правый && (
-            <button
-              className="btn primary"
-              onClick={() => setDraft({ id: null, name: '', bonus: '', pieces: [] })}
-            >
-              + Комплект
-            </button>
-          )}
-        </div>
+        </h3>
+        {правый && (
+          <button
+            className="btn tiny"
+            onClick={() => setDraft({ id: null, name: '', bonus: '', pieces: [] })}
+          >
+            + Комплект
+          </button>
+        )}
       </div>
 
-      {!правый && <ReadOnlyNote имя={имяСвоего} />}
+      {progress.length === 0 ? (
+        <p className="hint">
+          Комплектов пока нет. Собери список частей — приложение посчитает, сколько надето на
+          пати, сколько лежит в казне и каких частей не хватает.
+        </p>
+      ) : (
+        <div className="sets-grid">
+          {progress.map((p) => (
+            <article key={p.set.id} className={`set-card ${p.complete ? 'complete' : ''}`}>
+              <header>
+                <h3>{p.set.name}</h3>
+                <span className="pct">
+                  {p.equipped} / {p.total}
+                </span>
+              </header>
 
-      {progress.length === 0 && (
-        <div className="empty">
-          <p>Комплектов пока нет.</p>
-          <p className="hint">
-            Собери список частей — приложение посчитает, сколько надето на пати, сколько лежит в
-            казне и каких частей не хватает.
-          </p>
+              {p.set.bonus && <div className="set-bonus">{p.set.bonus}</div>}
+
+              <div className="bar">
+                <span style={{ width: `${p.total ? (p.equipped / p.total) * 100 : 0}%` }} />
+              </div>
+
+              <ul className="pieces">
+                {p.set.pieces.map((id) => {
+                  const name = catalog.nameOf(id)
+                  const grade = catalog.byId(id)?.gradeName
+                  // Три разных состояния: надето на ком-то, лежит в казне, не найдено.
+                  // Считать казну «собранной» нельзя — комплект собран только тем, что надето.
+                  const state = p.worn.includes(id)
+                    ? 'worn'
+                    : p.storedIds.includes(id)
+                      ? 'stored'
+                      : 'missing'
+                  return (
+                    <li key={id} className={state}>
+                      <span className="tick">
+                        {state === 'worn' ? '✓' : state === 'stored' ? '▣' : '·'}
+                      </span>
+                      <ItemIcon item={catalog.byId(id)} name={name} size={22} />
+                      <span className="pname">{name}</span>
+                      {grade && <span className="chip grade">{gradeLabel(grade)}</span>}
+                      {state !== 'worn' && (
+                        <span className="chip subtle">
+                          {state === 'stored' ? 'в казне' : 'нет'}
+                        </span>
+                      )}
+                      <span className="cell-id">#{id}</span>
+                    </li>
+                  )
+                })}
+              </ul>
+
+              {правый && (
+                <footer>
+                  <button
+                    className="btn tiny"
+                    onClick={() =>
+                      setDraft({
+                        id: p.set.id,
+                        name: p.set.name,
+                        bonus: p.set.bonus ?? '',
+                        pieces: [...p.set.pieces],
+                      })
+                    }
+                  >
+                    Изменить
+                  </button>
+                  <button className="btn tiny danger" onClick={() => removeSet(p.set.id)}>
+                    Удалить
+                  </button>
+                </footer>
+              )}
+            </article>
+          ))}
         </div>
       )}
-
-      <div className="sets-grid">
-        {progress.map((p) => (
-          <article key={p.set.id} className={`set-card ${p.complete ? 'complete' : ''}`}>
-            <header>
-              <h3>{p.set.name}</h3>
-              <span className="pct">
-                {p.equipped} / {p.total}
-              </span>
-            </header>
-
-            {p.set.bonus && <div className="set-bonus">{p.set.bonus}</div>}
-
-            <div className="bar">
-              <span style={{ width: `${p.total ? (p.equipped / p.total) * 100 : 0}%` }} />
-            </div>
-
-            <ul className="pieces">
-              {p.set.pieces.map((id) => {
-                const name = catalog.nameOf(id)
-                const grade = catalog.byId(id)?.gradeName
-                // Три разных состояния: надето на ком-то, лежит в казне, не найдено.
-                // Считать казну «собранной» нельзя — комплект собран только тем, что надето.
-                const state = p.worn.includes(id) ? 'worn' : p.storedIds.includes(id) ? 'stored' : 'missing'
-                return (
-                  <li key={id} className={state}>
-                    <span className="tick">{state === 'worn' ? '✓' : state === 'stored' ? '▣' : '·'}</span>
-                    <ItemIcon item={catalog.byId(id)} name={name} size={22} />
-                    <span className="pname">{name}</span>
-                    {grade && <span className="chip grade">{gradeLabel(grade)}</span>}
-                    {state !== 'worn' && (
-                      <span className="chip subtle">{state === 'stored' ? 'в казне' : 'нет'}</span>
-                    )}
-                    <span className="cell-id">#{id}</span>
-                  </li>
-                )
-              })}
-            </ul>
-
-            {правый && (
-              <footer>
-                <button
-                  className="btn tiny"
-                  onClick={() =>
-                    setDraft({
-                      id: p.set.id,
-                      name: p.set.name,
-                      bonus: p.set.bonus ?? '',
-                      pieces: [...p.set.pieces],
-                    })
-                  }
-                >
-                  Изменить
-                </button>
-                <button className="btn tiny danger" onClick={() => removeSet(p.set.id)}>
-                  Удалить
-                </button>
-              </footer>
-            )}
-          </article>
-        ))}
-      </div>
 
       {draft && (
         <div className="modal-backdrop" onClick={() => setDraft(null)}>
@@ -159,7 +171,9 @@ export function SetsView({ catalog }: { catalog: CatalogApi }) {
               </label>
 
               <div className="label-row">
-                <span>Части комплекта ({draft.pieces.length})</span>
+                <span>
+                  Части комплекта ({draft.pieces.length} {plural(draft.pieces.length, 'часть', 'части', 'частей')})
+                </span>
                 <button className="btn tiny" onClick={() => setPickingPiece(true)}>
                   + Добавить часть
                 </button>
