@@ -14,8 +14,8 @@
   ],
   "db": {
     "version": 8,
-    "updatedAt": "2026-10-16T20:32:38.443Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-17T11:54:33.556Z",
+    "updatedBy": "PickMe",
     "chars": [
       {
         "id": "cmvbewm5c13gfov",
@@ -68,7 +68,11 @@
         },
         "subUnlocked": false,
         "subs": [],
-        "away": {}
+        "away": {
+          "2026-10-17": {
+            "whole": true
+          }
+        }
       },
       {
         "id": "cmvbezlb23k3rr7",
