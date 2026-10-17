@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-17T17:13:43.067Z",
+    "updatedAt": "2026-10-17T17:17:05.537Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -194,7 +194,18 @@
         "doneAt": "2026-10-17T17:13:33.554Z"
       }
     ],
-    "sets": [],
+    "sets": [
+      {
+        "id": "smvcnsdie3yf9ey",
+        "name": "фыва",
+        "bonus": "234",
+        "pieces": [
+          599,
+          672,
+          526
+        ]
+      }
+    ],
     "customNames": {},
     "schedule": {
       "prime": {
