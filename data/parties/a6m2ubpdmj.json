@@ -5,16 +5,174 @@
   "masterHash": "a6a750628e663c7f46878490553aaf4e4013b5db4e58a0e5d6bfbe293e5d6aa5",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-17T12:42:41.066Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 8,
+    "updatedAt": "2026-10-17T12:42:42.677Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "c1",
+        "name": "Короткий",
+        "cls": "Knight",
+        "level": 85,
+        "affil": "состав",
+        "slots": {
+          "weapon": {
+            "id": 1,
+            "name": "Меч",
+            "enchant": 8
+          }
+        },
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {
+          "2026-10-18": {
+            "whole": true
+          }
+        },
+        "pa": null
+      },
+      {
+        "id": "c2",
+        "name": "Длинное имя",
+        "cls": "Wizard",
+        "level": 80,
+        "affil": "состав",
+        "slots": {
+          "weapon": {
+            "id": 1,
+            "name": "Меч",
+            "enchant": 8
+          }
+        },
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {
+          "2026-10-18": {
+            "whole": true
+          }
+        },
+        "pa": null
+      },
+      {
+        "id": "c3",
+        "name": "Третий",
+        "cls": "ElfOracle",
+        "level": 78,
+        "affil": "состав",
+        "slots": {
+          "weapon": {
+            "id": 1,
+            "name": "Меч",
+            "enchant": 8
+          }
+        },
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {
+          "2026-10-18": {
+            "whole": true
+          }
+        },
+        "pa": null
+      },
+      {
+        "id": "c4",
+        "name": "Четвёртый уходит рано",
+        "cls": "OrcMage",
+        "level": 76,
+        "affil": "состав",
+        "slots": {
+          "weapon": {
+            "id": 1,
+            "name": "Меч",
+            "enchant": 8
+          }
+        },
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {
+          "2026-10-18": {
+            "whole": false,
+            "window": {
+              "from": 300,
+              "to": 600
+            }
+          }
+        },
+        "pa": null
+      },
+      {
+        "id": "c5",
+        "name": "Пятый",
+        "cls": "ElvenWizard",
+        "level": 74,
+        "affil": "состав",
+        "slots": {
+          "weapon": {
+            "id": 1,
+            "name": "Меч",
+            "enchant": 8
+          }
+        },
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {
+          "2026-10-18": {
+            "whole": true
+          }
+        },
+        "pa": null
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
     "wishes": [],
     "sets": [],
+    "schedule": {
+      "prime": {
+        "2026-10-19": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-20": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-21": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-22": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-23": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-26": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-27": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-28": {
+          "from": 1260,
+          "to": 1410
+        }
+      },
+      "offs": [],
+      "checklist": []
+    },
     "customNames": {}
   }
 }
