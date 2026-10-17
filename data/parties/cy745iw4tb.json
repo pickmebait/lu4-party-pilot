@@ -6,15 +6,15 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-17T13:49:16.367Z",
+    "updatedAt": "2026-10-17T13:50:10.984Z",
     "updatedBy": "Мастер",
     "chars": [
       {
         "id": "c1",
         "name": "Алекс",
         "cls": "SM",
-        "level": 85,
-        "affil": "состав",
+        "level": 75,
+        "affil": "roster",
         "slots": {
           "rhand": [
             {
@@ -79,18 +79,16 @@
             }
           ]
         },
-        "subs": [],
         "subUnlocked": false,
-        "contacts": {},
-        "away": {},
-        "pa": null
+        "subs": [],
+        "away": {}
       },
       {
         "id": "c2",
         "name": "Бетта",
         "cls": "Oracle",
         "level": 83,
-        "affil": "состав",
+        "affil": "roster",
         "slots": {
           "rhand": [
             {
@@ -155,18 +153,16 @@
             }
           ]
         },
-        "subs": [],
         "subUnlocked": false,
-        "contacts": {},
-        "away": {},
-        "pa": null
+        "subs": [],
+        "away": {}
       },
       {
         "id": "c3",
         "name": "Вера",
         "cls": "KBD",
         "level": 70,
-        "affil": "состав",
+        "affil": "roster",
         "slots": {
           "rhand": [
             {
@@ -234,11 +230,9 @@
             }
           ]
         },
-        "subs": [],
         "subUnlocked": false,
-        "contacts": {},
-        "away": {},
-        "pa": null
+        "subs": [],
+        "away": {}
       }
     ],
     "warehouse": {
@@ -500,6 +494,14 @@
         "стало": [
           null
         ]
+      },
+      {
+        "ts": "2026-10-17T13:49:48.852Z",
+        "кто": "Мастер",
+        "charId": "c1",
+        "вид": "уровень",
+        "было": 85,
+        "стало": 75
       }
     ]
   }
