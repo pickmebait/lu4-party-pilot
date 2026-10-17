@@ -7,6 +7,7 @@ import { SyncBar } from './components/SyncBar'
 import { WarehouseView } from './components/Warehouse'
 import { WishesView } from './components/Wishes'
 import { ScheduleView } from './components/Schedule'
+import { SummaryView } from './components/Summary'
 import { Tagline } from './components/Tagline'
 import { APP_NAME } from './lib/brand'
 import { startCatalogLoad, useCatalog } from './lib/catalog'
@@ -23,9 +24,10 @@ startCatalogLoad()
 // Палитру ставим до первой отрисовки, иначе на тёмном фоне мелькнёт светлый.
 applyPalette(loadPalette())
 
-type Tab = 'chars' | 'schedule' | 'warehouse' | 'wishes' | 'sets'
+type Tab = 'summary' | 'chars' | 'schedule' | 'warehouse' | 'wishes' | 'sets'
 
 const TABS: { key: Tab; label: string }[] = [
+  { key: 'summary', label: 'Сводка' },
   { key: 'chars', label: 'Персонажи' },
   { key: 'schedule', label: 'Расписание' },
   { key: 'warehouse', label: 'Общая казна' },
@@ -43,6 +45,10 @@ const TABS: { key: Tab; label: string }[] = [
  */
 function заметка(ключ: Tab, s: Summary, db: Db): string {
   switch (ключ) {
+    case 'summary':
+      return s.chars === 0
+        ? 'пусто'
+        : `${s.chars} ${plural(s.chars, 'персонаж', 'персонажа', 'персонажей')}`
     case 'chars':
       return `${s.gearSlots.filled}/${s.gearSlots.total} слотов`
     case 'schedule': {
@@ -142,6 +148,7 @@ export default function App() {
       </nav>
 
       <main>
+        {tab === 'summary' && <SummaryView catalog={catalog} />}
         {tab === 'chars' && <CharsView catalog={catalog} />}
         {tab === 'schedule' && <ScheduleView />}
         {tab === 'warehouse' && <WarehouseView catalog={catalog} />}

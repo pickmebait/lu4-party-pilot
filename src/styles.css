@@ -3749,3 +3749,286 @@ body {
   background: #5a2a2a;
   border-color: #5a2a2a;
 }
+
+
+/* ============================================================ раздел «Сводка» */
+
+/*
+ * Плитки вместо таблицы.
+ *
+ * У каждого раздела своя главная цифра, и читать её надо не подряд, а по
+ * выбору: посмотрел сборы — пошёл дальше. Таблица заставляет читать всё
+ * целиком, а в сводке половина строк всегда не про этот вопрос.
+ */
+.sum-note {
+  margin: 0 0 14px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent-line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.sum-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.sum-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+.sum-card h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+
+/* Пометка «сейчас» на плитках без истории: чтобы не выдавать снимок за период. */
+.sum-mark {
+  padding: 1px 6px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Главная цифра плитки: сразу видно, о чём этот раздел. */
+.sum-figure {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.sum-big {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.sum-big.small {
+  font-size: 22px;
+}
+
+.sum-unit {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.sum-sub-h {
+  margin: 14px 0 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sum-lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+/*
+ * Строки «имя — значение».
+ *
+ * Имя тянется, значение прижато вправо: иначе числа разъезжаются по ширине
+ * карточки, и столбик перестаёт читаться столбиком.
+ */
+.sum-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sum-rows li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 0;
+  font-size: 12.5px;
+}
+
+.sum-row-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sum-row-tail {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.sum-rows li.warn .sum-row-tail {
+  color: #e0a35e;
+}
+
+/* Полоска занятых слотов между именем и цифрами. */
+.sum-rows-bars li {
+  gap: 8px;
+}
+
+.sum-bar-line {
+  flex: 1;
+  height: 6px;
+  min-width: 40px;
+  overflow: hidden;
+  background: var(--surface-deep);
+  border-radius: 999px;
+}
+
+.sum-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+/*
+ * Столбики по дням недели и по месяцам.
+ *
+ * Высота в процентах от максимального значения внутри плитки: абсолютная шкала
+ * здесь обманчива, и полустолбик в «30 дней» выглядел бы как полстолбика в
+ * «всё время», хотя это тот же вечер понедельника.
+ */
+.sum-bars {
+  display: grid;
+  gap: 4px;
+  align-items: end;
+}
+
+.sum-bars-week {
+  grid-template-columns: repeat(7, 1fr);
+  height: 76px;
+}
+
+.sum-bars-month {
+  grid-template-columns: repeat(auto-fit, minmax(38px, 1fr));
+  height: 76px;
+}
+
+.sum-bar-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  gap: 2px;
+}
+
+.sum-bar {
+  width: 100%;
+  min-height: 2px;
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  border-radius: 3px 3px 0 0;
+}
+
+.sum-bar-n {
+  color: var(--muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sum-bar-l {
+  color: var(--muted-dim);
+  font-size: 10px;
+}
+
+/* Дни неполных сборов: дата и кто не был. */
+.sum-days {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sum-days li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 2px 0;
+  font-size: 12px;
+}
+
+.sum-day {
+  flex-shrink: 0;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.sum-day-who {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sum-warn {
+  margin: 12px 0 0;
+  padding: 7px 9px;
+  border: 1px solid var(--accent-line);
+  border-radius: 8px;
+  background: var(--accent-deep);
+  color: var(--accent-2);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.sum-set + .sum-set {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.sum-set .sum-sub-h {
+  margin-top: 0;
+}
+
+/* Свой персонаж: четыре цифры в ряд, отдельно от общих списков. */
+.sum-card-own {
+  margin-bottom: 14px;
+}
+
+.sum-own {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 14px;
+}
+
+.sum-own-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+@media (max-width: 560px) {
+  .sum-big {
+    font-size: 26px;
+  }
+}
