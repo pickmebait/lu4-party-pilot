@@ -144,12 +144,14 @@ export function SummaryView({ catalog }: { catalog: CatalogApi }) {
               <div className="sum-bars sum-bars-week">
                 {прайм.поДнямНедели.map((сколько, i) => (
                   <div key={i} className="sum-bar-cell" title={`${ДНИ_НЕДЕЛИ[i]}: ${сколько}`}>
-                    {сколько > 0 && (
-                      <div
-                        className="sum-bar"
-                        style={{ height: `${(сколько / maxНедели) * 100}%` }}
-                      />
-                    )}
+                    <span className="sum-bar-slot">
+                      {сколько > 0 && (
+                        <span
+                          className="sum-bar"
+                          style={{ height: `${(сколько / maxНедели) * 100}%` }}
+                        />
+                      )}
+                    </span>
                     <span className="sum-bar-n">{сколько || ''}</span>
                     <span className="sum-bar-l">{ДНИ_НЕДЕЛИ[i]}</span>
                   </div>
@@ -166,10 +168,12 @@ export function SummaryView({ catalog }: { catalog: CatalogApi }) {
                         className="sum-bar-cell"
                         title={`${месяцКоротко(м.месяц)}: ${дробь(м.часов)} ч`}
                       >
-                        <div
-                          className="sum-bar"
-                          style={{ height: `${(м.часов / maxМесяца) * 100}%` }}
-                        />
+                        <span className="sum-bar-slot">
+                          <span
+                            className="sum-bar"
+                            style={{ height: `${(м.часов / maxМесяца) * 100}%` }}
+                          />
+                        </span>
                         <span className="sum-bar-n">{дробь(м.часов)}</span>
                         <span className="sum-bar-l">{месяцКоротко(м.месяц)}</span>
                       </div>

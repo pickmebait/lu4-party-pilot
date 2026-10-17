@@ -3943,26 +3943,42 @@ body {
 
 .sum-bars-week {
   grid-template-columns: repeat(7, 1fr);
-  height: 76px;
+  height: 84px;
 }
 
 .sum-bars-month {
   grid-template-columns: repeat(auto-fit, minmax(38px, 1fr));
-  height: 76px;
+  height: 84px;
 }
 
 .sum-bar-cell {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  height: 100%;
   gap: 2px;
+  height: 100%;
+}
+
+/*
+ * Слот под столбик — отдельный элемент, а не сам столбик.
+ *
+ * Пока столбик был flex-элементом вместе с цифрой и подписью, он сжимался под
+ * них: 80% и 100% давали одну и ту же высоту, и график показывал будние и
+ * пятницу одинаковыми. Здесь слот забирает всю свободную высоту, а процент
+ * отсчитывается уже от него.
+ */
+.sum-bar-slot {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
 }
 
 .sum-bar {
-  width: 100%;
-  min-height: 2px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   background: linear-gradient(180deg, var(--accent-2), var(--accent));
   border-radius: 3px 3px 0 0;
 }
