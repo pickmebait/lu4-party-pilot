@@ -1,0 +1,20 @@
+{
+  "partyId": "5wpczxyj6q",
+  "name": "Сводка",
+  "createdAt": "2026-10-17T13:29:35.863Z",
+  "masterHash": "6ac98479acaa35163be9415947a6d9961efa40ba8d69ad6283791c506b96bce7",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-17T13:29:35.863Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
