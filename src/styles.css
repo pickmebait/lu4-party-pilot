@@ -3634,17 +3634,96 @@ body {
  * За край клетки не выходит: имя обрезается многоточием, лишние сворачиваются
  * в «ещё N». Без обрезки неделя с отпуском растянула бы весь календарь.
  */
+/*
+ * Отсутствующие — в правом верхнем углу клетки, именами столбиком.
+ *
+ * Угол, а не поток: номер дня стоит слева, время прайма внизу, и список между
+ * ними забирал бы место и там, и там. В углу он ничего не занимает, а день
+ * остаётся читаемым, сколько бы народу ни отсутствовало.
+ *
+ * Имена полные: буква от буквы ничего не говорила, а в пати встречаются два
+ * Ирока. Не влезающие обрезаются многоточием — растягивать клетку нельзя,
+ * иначе одна неделя с отпуском поднимет весь календарь.
+ */
 .cal-away {
+  position: absolute;
+  top: 3px;
+  right: 4px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: flex-end;
   gap: 1px;
-  margin-top: 1px;
-  max-width: 100%;
+  max-width: 72%;
   font-size: 10px;
-  line-height: 1.25;
+  line-height: 1.2;
+  text-align: right;
   color: #ffb3b3;
 }
+
+.cal-away-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * «Ещё N» и окошко со всем списком.
+ *
+ * Окошко на самом наведении: состояние в React для этого не нужно, а при уходе
+ * мыши оно само схлопывается. Поверх соседних клеток поднимается z-index —
+ * иначе список уходил бы под них и читался обрывками.
+ */
+.cal-away-more {
+  position: relative;
+  color: #d98a8a;
+  cursor: default;
+}
+
+.cal-away-pop {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 30;
+  min-width: 150px;
+  margin-top: 3px;
+  padding: 5px 7px;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--surface-lit, #1b2130);
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  font-size: 11px;
+  line-height: 1.35;
+  text-align: left;
+  color: var(--text);
+}
+
+.cal-away-more:hover .cal-away-pop {
+  display: flex;
+}
+
+.cal-away-pop-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.cal-away-pop-when {
+  margin-left: auto;
+  color: var(--muted-dim);
+  font-size: 10px;
+}
+
+/* Клетка при наведении на «ещё» поднимается над соседями, иначе окошко
+   окажется под ними. */
+.cal-away-more:hover {
+  z-index: 31;
+}
+
 
 .cal-away-name {
   max-width: 100%;
