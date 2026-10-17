@@ -4,6 +4,7 @@ import {
   DEFAULT_AFFILIATION,
   MAX_MOD,
   MAX_SUBS,
+  SLOTS,
   SLOT_KEYS,
   SLOT_MAX,
   type Affiliation,
@@ -13,6 +14,7 @@ import {
   type ChecklistItem,
   type Contacts,
   type Db,
+  type Изменение,
   type MoveLog,
   type Pa,
   type PrimeWindow,
@@ -23,6 +25,7 @@ import {
   type Sub,
   type WarehouseStack,
   type Wish,
+  type ВещьВИстории,
 } from '@/types'
 import { emptySlots, equip, partnerOf, unequip, type GearHolder } from './slots'
 import {
@@ -53,7 +56,18 @@ import { привестиНик } from './nick'
  * необязательно — но её рост виден в базе, и по нему понятно, какие данные
  * приложение уже умеет читать.
  */
-export const DB_VERSION = 8
+export const DB_VERSION = 9
+
+/**
+ * Сколько записей об изменении хранится.
+ *
+ * История растёт сама: каждое переодевание — запись, и год активной игры даёт
+ * их тысячи. База лежит в репозитории обычным текстом, и он должен оставаться
+ * читаемым, а не превращаться в простыню. Пятисот записей хватает на несколько
+ * месяцев правки снаряжения, а стареть будут самые старые — там, где «как я
+ * развивался» уже ничего не скажет.
+ */
+export const ПОТОЛОК_ИСТОРИИ = 500
 const DB_KEY = 'pp:db'
 
 /*
@@ -97,6 +111,7 @@ export function emptyDb(): Db {
     sets: [],
     customNames: {},
     schedule: emptySchedule(),
+    history: [],
   }
 }
 
@@ -136,7 +151,68 @@ function normalizeDb(raw: unknown): Db {
         ? (d.customNames as Record<string, string>)
         : {},
     schedule: normalizeSchedule(d.schedule),
+    history: normalizeHistory(d.history),
   }
+}
+
+/**
+ * История приводится к тому виду, в котором её пишет приложение.
+ *
+ * Записи приходят из сети, а поле необязательное, поэтому проверяется всё:
+ * без проверки один кривой объект в середине списка тихо ломает разбор всей
+ * истории и уводит расчёты в молоко. Чужие и битые записи отбрасываются, а не
+ * чинятся — дописанное неизвестно чем было.
+ */
+function normalizeHistory(сырое: unknown): Изменение[] {
+  if (!Array.isArray(сырое)) return []
+  const out: Изменение[] = []
+  for (const за of сырое) {
+    if (!за || typeof за !== 'object') continue
+    const з = за as Record<string, unknown>
+    if (typeof з.ts !== 'string' || typeof з.charId !== 'string') continue
+    const кто = typeof з.кто === 'string' ? з.кто : ''
+    if (з.вид === 'уровень') {
+      const было = Math.trunc(Number(з.было))
+      const стало = Math.trunc(Number(з.стало))
+      if (!Number.isFinite(было) || !Number.isFinite(стало)) continue
+      out.push({ ts: з.ts, кто, charId: з.charId, вид: 'уровень', было, стало })
+      continue
+    }
+    if (з.вид === 'слот') {
+      if (typeof з.слот !== 'string' || !(з.слот in SLOTS)) continue
+      out.push({
+        ts: з.ts,
+        кто,
+        charId: з.charId,
+        вид: 'слот',
+        слот: з.слот as SlotKey,
+        subId: typeof з.subId === 'string' ? з.subId : null,
+        было: слепокИстории(з.было),
+        стало: слепокИстории(з.стало),
+      })
+    }
+  }
+  return out.slice(-ПОТОЛОК_ИСТОРИИ)
+}
+
+/** Слепок слота из истории. */
+function слепокИстории(сырое: unknown): (ВещьВИстории | null)[] {
+  if (!Array.isArray(сырое)) return []
+  const out: (ВещьВИстории | null)[] = []
+  for (const ячейка of сырое) {
+    if (!ячейка || typeof ячейка !== 'object') {
+      out.push(null)
+      continue
+    }
+    const в = ячейка as Record<string, unknown>
+    const itemId = Math.trunc(Number(в.itemId))
+    if (!Number.isFinite(itemId)) {
+      out.push(null)
+      continue
+    }
+    out.push({ itemId, mod: Math.max(0, Math.trunc(Number(в.mod)) || 0) })
+  }
+  return out
 }
 
 /**
@@ -486,10 +562,17 @@ export function addChar(partial: Partial<Char> = {}): string {
 }
 
 export function updateChar(id: string, patch: Partial<Char>): void {
-  commit({
-    ...db,
-    chars: db.chars.map((c) => (c.id === id ? { ...c, ...patch, name: привестиНик(patch.name ?? c.name) } : c)),
-  })
+  const прежний = findChar(id)
+  const следующий = {
+    ...прежний,
+    ...patch,
+    name: привестиНик(patch.name ?? прежний?.name ?? ''),
+  }
+  // Уровень и снаряжение правятся и здесь, а не только через слоты персонажа:
+  // без этой записи левеление не попало бы в историю и «как я рос» обрывалось
+  // бы на том дне, когда переодевали последний раз.
+  const записи = прежний ? diffChar(прежний, следующий as Char, авторПравки()) : []
+  commit({ ...сИстория(записи), chars: db.chars.map((c) => (c.id === id ? (следующий as Char) : c)) })
 }
 
 /**
@@ -553,8 +636,98 @@ function hasSub(char: Char, subId: string | null): boolean {
   return subId === null || char.subs.some((s) => s.id === subId)
 }
 
+/**
+ * Разница между двумя состояниями персонажа.
+ *
+ * Сравниваются только снаряжение и уровень: переодевание и левеление — это то,
+ * ради чего история и заводилась. Имя, класс, контакты и отсутствия меняются
+ * часто и ничего не говорят о том, как рос персонаж.
+ *
+ * Двуручное оружие занимает два слота, поэтому надеть его — две записи. Это
+ * верно, а не дубль: состояние действительно изменилось в обоих слотах, и при
+ * обратном ходе оба и откатываются.
+ */
+function diffChar(было: Char, стало: Char, кто: string): Изменение[] {
+  const ts = new Date().toISOString()
+  const записи: Изменение[] = []
+
+  if (было.level !== стало.level) {
+    записи.push({ ts, кто, charId: стало.id, вид: 'уровень', было: было.level, стало: стало.level })
+  }
+
+  const ветки: { subId: string | null; slots: Char['slots'] }[] = [
+    { subId: null, slots: было.slots },
+    ...было.subs.map((s) => ({ subId: s.id, slots: s.slots })),
+  ]
+  const новыеВетки = new Map<string | null, Char['slots']>([
+    [null, стало.slots],
+    ...стало.subs.map((s) => [s.id, s.slots] as [string, Char['slots']]),
+  ])
+
+  for (const ветка of ветки) {
+    const после = новыеВетки.get(ветка.subId) ?? emptySlots()
+    for (const слот of SLOT_KEYS) {
+      const прежде = слепокЯчеек(ветка.slots[слот])
+      const теперь = слепокЯчеек(после[слот])
+      if (слепкиРавны(прежде, теперь)) continue
+      записи.push({
+        ts,
+        кто,
+        charId: стало.id,
+        вид: 'слот',
+        слот,
+        subId: ветка.subId,
+        было: прежде,
+        стало: теперь,
+      })
+    }
+  }
+
+  return записи
+}
+
+/**
+ * Слепок слота для истории: все ячейки, а не только первая.
+ *
+ * В кольцах и серьгах вещей по две, и средняя заточка по одной из них считалась
+ * бы вдвое выше настоящей, а восстановление прошлого состояния оставило бы
+ * вторую ячейку такой, какой она стала сегодня.
+ */
+function слепокЯчеек(ячейки: (SlotEntry | null)[] | undefined): (ВещьВИстории | null)[] {
+  const out: (ВещьВИстории | null)[] = []
+  for (const вещь of ячейки ?? []) {
+    out.push(
+      вещь
+        ? { itemId: вещь.itemId, mod: Math.max(0, Math.trunc(вещь.mod ?? 0) || 0) }
+        : null,
+    )
+  }
+  return out
+}
+
+/** Одинаковы ли слепки по содержимому, а не по ссылкам. */
+function слепкиРавны(
+  один: (ВещьВИстории | null)[],
+  два: (ВещьВИстории | null)[],
+): boolean {
+  if (один.length !== два.length) return false
+  return один.every(
+    (вещь, i) =>
+      (вещь === null) === (два[i] === null) &&
+      (вещь === null || (вещь.itemId === два[i]!.itemId && вещь.mod === два[i]!.mod)),
+  )
+}
+
+/** История со свежими записями, обрезанная по потолку. */
+function сИстория(записи: Изменение[]): Db {
+  if (записи.length === 0) return db
+  return { ...db, history: [...(db.history ?? []), ...записи].slice(-ПОТОЛОК_ИСТОРИИ) }
+}
+
 function commitChar(charId: string, next: Char): void {
-  commit({ ...db, chars: db.chars.map((c) => (c.id === charId ? next : c)) })
+  const прежний = findChar(charId)
+  const записи = прежний ? diffChar(прежний, next, авторПравки()) : []
+  commit({ ...сИстория(записи), chars: db.chars.map((c) => (c.id === charId ? next : c)) })
 }
 
 /**

@@ -10,6 +10,8 @@ import {
   снаряжение,
   хотелкиЗаПериод,
   явкаЗаПериод,
+  развитие,
+  долгКПрайму,
   type ПериодДней,
 } from '@/lib/analytics'
 import { ДНИ_НЕДЕЛИ, isoKey, parseKey } from '@/lib/schedule'
@@ -75,6 +77,11 @@ export function SummaryView({ catalog }: { catalog: CatalogApi }) {
   const казна = useMemo(() => казнаЗаПериод(db, сОт), [db, сОт])
   const хотелки = useMemo(() => хотелкиЗаПериод(db, сОт), [db, сОт])
   const снаряжениеИтог = useMemo(() => снаряжение(db), [db])
+const рост = useMemo(() => развитие(db, сОт, сегодня), [db, сОт, сегодня])
+const долг = useMemo(
+  () => долгКПрайму(db, сОт, сегодня, ownCharId),
+  [db, сОт, сегодня, ownCharId],
+)
 
   const подписьПериода = ПЕРИОДЫ.find((п) => п.дней === дней)?.подпись ?? ''
 
@@ -327,6 +334,106 @@ export function SummaryView({ catalog }: { catalog: CatalogApi }) {
                     <span className="sum-row-name">{и.кто}</span>
                     <span className="sum-row-tail">
                       {и.сколько} {plural(и.сколько, 'штука', 'штуки', 'штук')}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </article>
+      </div>
+
+      {/* ---------------------------------------------- по истории */}
+      <div className="sum-grid sum-grid-period">
+        <article className="sum-card">
+          <h3>Как росло снаряжение</h3>
+          {рост.записей === 0 ? (
+            <>
+              <p className="hint">
+                Истории снаряжения пока нет — она появится сама, как только начнут править вещи или
+                уровень.
+              </p>
+              <p className="hint">
+                То, что было надето раньше, в базе не осталось: хранилось только нынешнее
+                состояние, и восстановить его не из чего.
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="sum-figure">
+                <span className="sum-big">
+                  {рост.поПерсонажам.reduce((всего, р) => всего + р.правок, 0)}
+                </span>
+                <span className="sum-unit">
+                  {plural(
+                    рост.поПерсонажам.reduce((всего, р) => всего + р.правок, 0),
+                    'правка',
+                    'правки',
+                    'правок',
+                  )}{' '}
+                  за период
+                </span>
+              </div>
+              <ul className="sum-rows">
+                {рост.поПерсонажам.map((р) => (
+                  <li key={р.charId}>
+                    <span className="sum-row-name">{р.имя}</span>
+                    <span className="sum-row-tail">
+                      +{дробь(р.было)} → +{дробь(р.сейчас)}
+                      {р.прирост !== 0 && (
+                        <span className={р.прирост > 0 ? 'gain' : 'lose'}>
+                          {' '}
+                          ({р.прирост > 0 ? '+' : ''}
+                          {дробь(р.прирост)})
+                        </span>
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="hint">
+                Средняя заточка на начало периода и сейчас. Знак честный: надеть слабую вещь —
+                это не рост, средняя от этого падает.
+              </p>
+              {рост.обрезана && (
+                <p className="sum-warn">
+                  Хранятся последние 500 записей, поэтому «всё время» здесь — это хвост истории, а
+                  не вся она.
+                </p>
+              )}
+            </>
+          )}
+        </article>
+
+        <article className="sum-card">
+          <h3>Долг к прайму</h3>
+          <div className="sum-figure">
+            <span className="sum-big">{дробь(долг.среднийДолг)}</span>
+            <span className="sum-unit">пустых слотов на прайм в среднем</span>
+          </div>
+          {долг.дни.length === 0 ? (
+            <p className="hint">Праймов за период нет, считать нечего.</p>
+          ) : (
+            <>
+              <ul className="sum-lines">
+                <li>
+                  праймов {долг.дни.length} · всего недобора {долг.дни.reduce((всего, д) => всего + д.пустых, 0)}
+                </li>
+                {долг.хужеВсего && (
+                  <li>
+                    хуже всего к {деньКоротко(долг.хужеВсего.день)} — пусто {долг.хужеВсего.пустых}
+                  </li>
+                )}
+              </ul>
+
+              <div className="sum-sub-h">недобор по персонажам за период</div>
+              <ul className="sum-rows">
+                {долг.поЛюдям.slice(0, 8).map((н) => (
+                  <li key={н.имя}>
+                    <span className="sum-row-name">{н.имя}</span>
+                    <span className="sum-row-tail">
+                      {н.всего} {plural(н.всего, 'слот', 'слота', 'слотов')} за {долг.дни.length}{' '}
+                      {plural(долг.дни.length, 'прайм', 'прайма', 'праймов')}
                     </span>
                   </li>
                 ))}
