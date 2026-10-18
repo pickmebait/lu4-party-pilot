@@ -1,0 +1,20 @@
+{
+  "partyId": "im4iz6j2jx",
+  "name": "Карточки",
+  "createdAt": "2026-10-18T10:21:22.671Z",
+  "masterHash": "880e3a6cc6fca4d01bb0e2a37abe98b03aa5965fc3e641e9b5c6a9216335e641",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-18T10:21:22.671Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
