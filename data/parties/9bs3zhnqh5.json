@@ -5,16 +5,100 @@
   "masterHash": "7514588596ead3d00e12293d89ddb9b6ba8e638d59ea3ffd8b106be15198d789",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-18T10:52:43.962Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 9,
+    "updatedAt": "2026-10-18T10:52:45.458Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "c1",
+        "name": "Алекс",
+        "cls": "SM",
+        "level": 85,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      },
+      {
+        "id": "c2",
+        "name": "Бетта",
+        "cls": "Oracle",
+        "level": 83,
+        "affil": "состав",
+        "slots": {},
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      }
+    ],
     "warehouse": {
-      "stacks": [],
+      "stacks": [
+        {
+          "itemId": 3000,
+          "count": 4
+        }
+      ],
       "log": []
     },
-    "wishes": [],
     "sets": [],
-    "customNames": {}
+    "goals": [
+      {
+        "id": "g1",
+        "priority": 1,
+        "seeker": "Алекс",
+        "forCharId": "c1",
+        "создатель": "c1",
+        "items": [
+          {
+            "itemId": 3100,
+            "count": 1,
+            "готово": true,
+            "готовоAt": "2026-10-15T12:00:00.000Z"
+          },
+          {
+            "itemId": 3101,
+            "count": 2,
+            "готово": false
+          },
+          {
+            "itemId": 3000,
+            "count": 1,
+            "готово": false
+          }
+        ]
+      },
+      {
+        "id": "g2",
+        "priority": 2,
+        "seeker": "Бетта",
+        "forCharId": "c2",
+        "создатель": "c2",
+        "items": [
+          {
+            "itemId": 3200,
+            "count": 1,
+            "готово": false
+          }
+        ]
+      }
+    ],
+    "customNames": {
+      "3000": "Кольцо Света",
+      "3100": "Кольцо Печати",
+      "3101": "Пояс Закалки",
+      "3200": "Зелье Силы"
+    },
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    },
+    "history": [],
+    "wishes": []
   }
 }
