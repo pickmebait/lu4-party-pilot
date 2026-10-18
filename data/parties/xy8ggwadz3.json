@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-18T22:53:12.388Z",
+    "updatedAt": "2026-10-18T22:53:19.020Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -55,13 +55,16 @@
       }
     ],
     "warehouse": {
-      "stacks": [
-        {
-          "itemId": 34899,
-          "count": 1
-        }
-      ],
+      "stacks": [],
       "log": [
+        {
+          "id": "lmvef8vji4p31eb",
+          "ts": "2026-10-18T22:53:17.358Z",
+          "who": "Мастер",
+          "itemId": 34899,
+          "count": 1,
+          "dir": "out"
+        },
         {
           "id": "lmvef8qd03tml6r",
           "ts": "2026-10-18T22:53:10.644Z",
