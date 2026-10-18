@@ -3,7 +3,15 @@
   "name": "Цели",
   "createdAt": "2026-10-18T08:30:27.858Z",
   "masterHash": "3e466503268ebfbbe2928f6823e0f19972cf645b76cc3374a4e9bd55b3ecee1c",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "ecgp9t63ca",
+      "hash": "096dd84f0d4f8b2125a8124303792c90daaacedf79f666745e89e5e33994a009",
+      "charId": "c2",
+      "charName": "Бетта",
+      "createdAt": "2026-10-18T08:30:30.813Z"
+    }
+  ],
   "db": {
     "version": 9,
     "updatedAt": "2026-10-18T08:30:29.494Z",
