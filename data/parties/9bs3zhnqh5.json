@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-18T10:52:45.458Z",
+    "updatedAt": "2026-10-18T10:53:14.727Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -14,45 +14,123 @@
         "name": "Алекс",
         "cls": "SM",
         "level": 85,
-        "affil": "состав",
-        "slots": {},
-        "subs": [],
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
         "subUnlocked": false,
-        "contacts": {},
-        "away": {},
-        "pa": null
+        "subs": [],
+        "away": {}
       },
       {
         "id": "c2",
         "name": "Бетта",
         "cls": "Oracle",
         "level": 83,
-        "affil": "состав",
-        "slots": {},
-        "subs": [],
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
         "subUnlocked": false,
-        "contacts": {},
-        "away": {},
-        "pa": null
+        "subs": [],
+        "away": {}
       }
     ],
     "warehouse": {
       "stacks": [
         {
           "itemId": 3000,
-          "count": 4
+          "count": 5
+        },
+        {
+          "itemId": 3101,
+          "count": 2
         }
       ],
-      "log": []
+      "log": [
+        {
+          "id": "lmvdpiut31n513v",
+          "ts": "2026-10-18T10:53:12.951Z",
+          "who": "Мастер",
+          "itemId": 3101,
+          "count": 2,
+          "dir": "in"
+        },
+        {
+          "id": "lmvdpiut32zb08u",
+          "ts": "2026-10-18T10:53:12.951Z",
+          "who": "Мастер",
+          "itemId": 3000,
+          "count": 1,
+          "dir": "in"
+        }
+      ]
     },
-    "sets": [],
     "goals": [
       {
         "id": "g1",
-        "priority": 1,
-        "seeker": "Алекс",
-        "forCharId": "c1",
-        "создатель": "c1",
         "items": [
           {
             "itemId": 3100,
@@ -63,30 +141,39 @@
           {
             "itemId": 3101,
             "count": 2,
-            "готово": false
+            "готово": true,
+            "готовоAt": "2026-10-18T10:53:12.951Z"
           },
           {
             "itemId": 3000,
             "count": 1,
-            "готово": false
+            "готово": true,
+            "готовоAt": "2026-10-18T10:53:12.951Z"
           }
-        ]
+        ],
+        "priority": 1,
+        "seeker": "Алекс",
+        "forCharId": "c1",
+        "создатель": "c1",
+        "rejected": false
       },
       {
         "id": "g2",
-        "priority": 2,
-        "seeker": "Бетта",
-        "forCharId": "c2",
-        "создатель": "c2",
         "items": [
           {
             "itemId": 3200,
             "count": 1,
             "готово": false
           }
-        ]
+        ],
+        "priority": 2,
+        "seeker": "Бетта",
+        "forCharId": "c2",
+        "создатель": "c2",
+        "rejected": false
       }
     ],
+    "sets": [],
     "customNames": {
       "3000": "Кольцо Света",
       "3100": "Кольцо Печати",
