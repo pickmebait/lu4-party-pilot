@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-17T17:18:18.389Z",
+    "updatedAt": "2026-10-18T10:03:11.882Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -184,14 +184,14 @@
     "wishes": [
       {
         "id": "wmvcnnwoc1cfza6",
-        "done": true,
         "itemId": 548,
         "count": 1,
         "priority": 2,
         "seeker": "PickMe",
         "forCharId": "cmvbewm5c13gfov",
         "note": "Куплю до 4кк",
-        "doneAt": "2026-10-17T17:13:33.554Z"
+        "done": false,
+        "rejected": false
       }
     ],
     "sets": [
