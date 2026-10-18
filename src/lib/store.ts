@@ -27,9 +27,11 @@ import {
   type ВещьВИстории,
 } from '@/types'
 import {
-  цельВыполнена,
+  адресатДоступен,
   idЦели,
   normalizeGoals,
+  цельВыполнена,
+  цельМоя,
   type Goal,
 } from './goals'
 import { emptySlots, equip, partnerOf, unequip, type GearHolder } from './slots'
@@ -1043,14 +1045,10 @@ function pushLog(dir: 'in' | 'out', itemId: number, count: number, who: string, 
 
 export function addToWarehouse(itemId: number, count = 1, who?: string): void {
   if (count <= 0) return
-  const stacks = [...db.warehouse.stacks]
-  const i = stacks.findIndex((s) => s.itemId === itemId)
-  if (i >= 0) stacks[i] = { ...stacks[i], count: stacks[i].count + count }
-  else stacks.push({ itemId, count })
   commit({
     ...db,
     warehouse: {
-      stacks: stacks.sort((a, b) => a.itemId - b.itemId),
+      stacks: сложитьВКазну(db.warehouse.stacks, [{ itemId, count }]),
       log: pushLog('in', itemId, count, who ?? авторПравки()),
     },
   })
@@ -1092,28 +1090,20 @@ export function dropFromWarehouse(itemId: number): void {
 /* --------------------------------------------------------------------- цели */
 
 /**
- * Кто вправе вести эту цель.
+ * Вправе ли вести эту цель.
  *
- * Создатель или мастер. Токен персонажа не даёт права закрыть чужую цель:
- * список общий на всех, и иначе любой мог бы отметить добытым то, чего никто
- * не добывал, — и пати поверила бы.
- *
- * У цели без создателя (заведена до появления поля) правом есть только у
- * мастера: закрыть её должен тот, кто разбирается.
+ * Правило живёт в goals.ts рядом с моделью и проверяется запуском; здесь
+ * только читается сессия. Смысл простой: список целей общий на всех, поэтому
+ * токен персонажа не даёт права закрыть чужую — иначе любой мог бы отметить
+ * добытым то, чего никто не добывал, и пати поверила бы.
  */
 export function можетВестиЦель(цель: Goal): boolean {
-  const кто = session
-  if (!кто) return false
-  if (кто.role !== 'char') return true
-  return !!кто.charId && цель.создатель === кто.charId
+  return цельМоя(цель, session?.charId ?? null, session?.role !== 'char')
 }
 
-/** Вправе ли этот пользователь завести цель для такого персонажа. */
+/** Вправе ли завести цель для такого персонажа. */
 export function можетСоздаватьДля(charId: string | undefined): boolean {
-  const кто = session
-  if (!кто) return false
-  if (кто.role !== 'char') return true
-  return !!charId && !!кто.charId && charId === кто.charId
+  return адресатДоступен(charId, session?.charId ?? null, session?.role !== 'char')
 }
 
 /**
@@ -1174,13 +1164,16 @@ export function отметитьВсё(id: string, готово: boolean): void 
 /**
  * Отказ: не сделали и делать не будем.
  *
- * Снимается сразу при попытке отметить что-то добытым: цепь за отказом
- * тащила бы в активные то, что уже решено не делать.
+ * Выполненную цель отклонить нельзя: она сделана, и «решено не делать» про
+ * неё бессмысленно. Раньше вызов молча снимал выполнение, и цель, которую
+ * человек закрыл как добытую, возвращалась в работу из-под отказа.
  */
 export function отклонитьЦель(id: string): void {
-  заменитьЦель(id, (цель) => ({
-    ...цель,
-    rejected: !цельВыполнена(цель),
+  const цель = найтиЦель(id)
+  if (!цель || цельВыполнена(цель)) return
+  заменитьЦель(id, (прежняя) => ({
+    ...прежняя,
+    rejected: true,
     rejectedAt: new Date().toISOString(),
   }))
 }
@@ -1191,6 +1184,82 @@ export function вернутьЦель(id: string): void {
 
 export function removeGoal(id: string): void {
   commit({ ...db, goals: db.goals.filter((цель) => цель.id !== id) })
+}
+
+/**
+ * «Всё добыто» одной записью.
+ *
+ * Раньше кнопка клала каждый предмет в казну отдельным вызовом и только потом
+ * отмечала цель: пятнадцать предметов — пятнадцать записей в базу, и если
+ * вкладка закрылась на середине, казна получила часть вещей, а цель осталась
+ * неотмеченной. Теперь это одна запись: либо всё сложилось, либо ничего.
+ *
+ * Уже добытые предметы в казну не кладутся повторно — иначе кнопка «добыто
+ * всё» удваивала бы то, что человек уже положил руками.
+ */
+export function добытьВсё(id: string): void {
+  const цель = найтиЦель(id)
+  if (!цель) return
+  const добирать = цель.items.filter((п) => !п.готово)
+  if (добирать.length === 0) return
+
+  const сейчас = new Date().toISOString()
+  const кто = авторПравки() || 'неизвестно'
+
+  /*
+   * Записи кладутся в начало журнала, а не в конец.
+   *
+   * Журнал хранит новые сверху, и обрезка до пятисот отбрасывает хвост. При
+   * добавлении в конец свежие передачи оказались бы самыми старыми, обрезка
+   * выкинула бы именно их, и «последние 500» перестало бы означать последние.
+   */
+  const записи = добирать.map<MoveLog>((п) => ({
+    id: uid('l'),
+    ts: сейчас,
+    who: кто,
+    itemId: п.itemId,
+    count: п.count,
+    dir: 'in',
+  }))
+
+  commit({
+    ...db,
+    warehouse: {
+      stacks: сложитьВКазну(db.warehouse.stacks, добирать),
+      log: [...записи, ...db.warehouse.log].slice(0, 500),
+    },
+    goals: db.goals.map((г) =>
+      г.id === id
+        ? {
+            ...г,
+            items: г.items.map((п) =>
+              п.готово ? п : { ...п, готово: true, готовоAt: п.готовоAt ?? сейчас },
+            ),
+          }
+        : г,
+    ),
+  })
+}
+
+/**
+ * Складывает предметы в казну, не трогая базу.
+ *
+ * Общая часть для addToWarehouse и добытьВсё: одна и та же раскладка стопок и
+ * одна и та же сортировка, иначе казна после двух разных путей выглядела бы
+ * отсортированной по-разному.
+ */
+function сложитьВКазну(
+  стопки: WarehouseStack[],
+  добирать: { itemId: number; count: number }[],
+): WarehouseStack[] {
+  const копия = [...стопки]
+  for (const { itemId, count } of добирать) {
+    if (count <= 0) continue
+    const i = копия.findIndex((s) => s.itemId === itemId)
+    if (i >= 0) копия[i] = { ...копия[i], count: копия[i].count + count }
+    else копия.push({ itemId, count })
+  }
+  return копия.sort((a, b) => a.itemId - b.itemId)
 }
 
 /* ---------------------------------------------------------------------- сеты */
