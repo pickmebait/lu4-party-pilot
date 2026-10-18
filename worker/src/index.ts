@@ -1059,22 +1059,35 @@ function emptyDb(now: string) {
     updatedBy: '',
     chars: [],
     warehouse: { stacks: [], log: [] },
-    wishes: [],
+    goals: [],
     sets: [],
     customNames: {},
   }
 }
 
+/**
+ * Похожа ли база на настоящую.
+ *
+ * Поле целей принимается в обеих формах: новое `goals`, где цель это список
+ * предметов, и прежнее `wishes`, где цель была одним предметом. Требование
+ * одного поля означало бы, что старая база перестала бы приниматься, а новая
+ * перестала бы записываться — и человек, у которого в базе лежит его работа,
+ * не смог бы её сохранить.
+ *
+ * Сервер сверяет документ целиком и не разбирает цели по частям: ему достаточно
+ * убедиться, что это база, а не мусор.
+ */
 function isDbLike(v: unknown): boolean {
   if (!v || typeof v !== 'object') return false
   const d = v as Record<string, unknown>
+  const естьЦели = Array.isArray(d.goals) || Array.isArray(d.wishes)
   return (
     typeof d.updatedAt === 'string' &&
     Array.isArray(d.chars) &&
     !!d.warehouse &&
     typeof d.warehouse === 'object' &&
     Array.isArray((d.warehouse as Record<string, unknown>).stacks) &&
-    Array.isArray(d.wishes)
+    естьЦели
   )
 }
 
