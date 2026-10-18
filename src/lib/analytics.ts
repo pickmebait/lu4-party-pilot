@@ -19,6 +19,7 @@ import type { Char, Db, SetDef, SlotEntry, ВещьВИстории, Измен�
 import { SLOT_KEYS, SLOT_MAX, type SlotKey } from '@/types'
 import { isoKey, parseKey } from './schedule'
 import { branchesOf, computeSets } from './derived'
+import { закрытаВ, цельВыполнена } from './goals'
 
 /** Сколько последних записей помещается в журнал передач. */
 const ПОТОЛОК_ЖУРНАЛА = 500
@@ -284,20 +285,23 @@ export function хотелкиЗаПериод(db: Db, сОт: string | null): �
   let активные = 0
   let отклонено = 0
 
-  for (const w of db.wishes) {
-    if (w.done) {
-      if (w.doneAt && (сОт === null || w.doneAt.slice(0, 10) >= сОт)) закрыто++
+  for (const цель of db.goals) {
+    // Закрытие цели — это когда добыт последний её предмет, а не отдельный
+    // флажок: иначе дата выполнения и список предметов разошлись бы.
+    const закрыта = закрытаВ(цель)
+    if (цельВыполнена(цель)) {
+      if (закрыта && (сОт === null || закрыта.slice(0, 10) >= сОт)) закрыто++
       continue
     }
     // Отклонённая цель не в работе: держать её в активных значит держать в
     // списке то, что уже решено не делать.
-    if (w.rejected) {
-      if (w.rejectedAt && (сОт === null || w.rejectedAt.slice(0, 10) >= сОт)) отклонено++
+    if (цель.rejected) {
+      if (закрыта && (сОт === null || закрыта.slice(0, 10) >= сОт)) отклонено++
       continue
     }
     активные++
-    поПриоритету[(w.priority ?? 3) - 1]++
-    const кто = w.seeker || 'без имени'
+    поПриоритету[(цель.priority ?? 3) - 1]++
+    const кто = цель.seeker || 'без имени'
     поИщущим.set(кто, (поИщущим.get(кто) ?? 0) + 1)
   }
 

@@ -1,5 +1,6 @@
 import type { Char, Db, SetDef, SlotEntry, SlotKey } from '@/types'
 import { SLOT_KEYS, affiliationOrder } from '@/types'
+import { статусЦели, цельВыполнена } from './goals'
 
 /**
  * Персонажи в порядке показа: свой, потом состав, потом десятка, потом окно.
@@ -71,7 +72,9 @@ export function equippedItemIds(db: Db): Set<number> {
 export function usedItemIds(db: Db): Set<number> {
   const out = equippedItemIds(db)
   for (const s of db.warehouse.stacks) out.add(s.itemId)
-  for (const w of db.wishes) out.add(w.itemId)
+  // Все предметы целей, а не только первые: подсказки и поиск по справочнику
+  // должны знать про вещь, даже если она в цели вторая.
+  for (const цель of db.goals) for (const предмет of цель.items) out.add(предмет.itemId)
   for (const s of db.sets) for (const p of s.pieces) out.add(p)
   return out
 }
@@ -113,8 +116,8 @@ export interface Summary {
   gearSlots: { total: number; filled: number }
   warehouseItems: number
   warehouseKinds: number
-  wishesOpen: number
-  wishesDone: number
+  goalsOpen: number
+  goalsDone: number
   setsDone: number
   setsTotal: number
 }
@@ -141,8 +144,8 @@ export function computeSummary(db: Db): Summary {
     warehouseItems: db.warehouse.stacks.reduce((a, s) => a + s.count, 0),
     // Отклонённая цель в работе не числится: её решение уже принято, и держать
     // её в счётчике активных значит врать о том, над чем пати работает.
-    wishesOpen: db.wishes.filter((w) => !w.done && !w.rejected).length,
-    wishesDone: db.wishes.filter((w) => w.done).length,
+    goalsOpen: db.goals.filter((цель) => статусЦели(цель) === 'активная').length,
+    goalsDone: db.goals.filter((цель) => цельВыполнена(цель)).length,
     setsDone: sets.filter((s) => s.complete).length,
     setsTotal: sets.length,
   }

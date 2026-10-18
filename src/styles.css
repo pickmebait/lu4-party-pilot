@@ -2507,18 +2507,6 @@ body {
   color: var(--muted);
 }
 
-.p1 .prio {
-  background: #2a1414;
-  border-color: #6b2a2a;
-  color: #ff9d9d;
-}
-
-.p2 .prio {
-  background: #2a2312;
-  border-color: #6b5b1a;
-  color: #ffdd8f;
-}
-
 /* -------------------------------------------------------------- экипировка */
 
 /*
@@ -2881,109 +2869,6 @@ body {
 .log-panel h3 {
   margin: 0 0 10px;
   font-size: 15px;
-}
-
-/* ---------------------------------------------------------------- хотелки */
-
-.wish-list {
-  display: grid;
-  gap: 8px;
-}
-
-.wish {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--bg-2);
-  border: 1px solid var(--line);
-  border-left-width: 3px;
-  border-left-color: var(--line-2);
-  border-radius: var(--radius);
-  padding: 10px 14px;
-}
-
-.wish.p1 {
-  border-left-color: #c0392b;
-}
-.wish.p2 {
-  border-left-color: #d4af37;
-}
-.wish.done {
-  opacity: 0.5;
-}
-
-.wish.done .name {
-  text-decoration: line-through;
-}
-
-.wish-check input {
-  width: 17px;
-  height: 17px;
-  cursor: pointer;
-  /*
-   * Галочка нарисована, а не оставлена системной. С appearance: auto
-   * браузер рисует её белой в любой теме, и в кровяной или изумрудной палитре
-   * она выглядела как чужеродный квадрат: проверка палитры показала, что
-   * цвет этого элемента не меняется ни при каком переключении.
-   */
-  appearance: none;
-  position: relative;
-  border: 1px solid var(--line-2);
-  border-radius: 4px;
-  background: var(--surface);
-}
-
-.wish-check input:checked {
-  background: var(--ok);
-  border-color: var(--ok);
-}
-
-.wish-check input:checked::after {
-  content: '';
-  position: absolute;
-  left: 4px;
-  top: 1px;
-  width: 4px;
-  height: 8px;
-  border: solid var(--bg);
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-.wish-main {
-  flex: 1;
-  min-width: 0;
-}
-
-.wish-title {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.wish-title .name {
-  font-weight: 600;
-}
-
-.wish-meta {
-  display: flex;
-  gap: 12px;
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 3px;
-  flex-wrap: wrap;
-}
-
-.wish-meta .note {
-  font-style: italic;
-}
-
-.wish-tools {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  flex-wrap: wrap;
 }
 
 /* --------------------------------------------------------------- комплекты */
@@ -3470,9 +3355,6 @@ body {
   /* Постоянная ширина на узком экране отнимала бы половину строки впустую. */
   .sync {
     width: auto;
-  }
-  .wish {
-    flex-wrap: wrap;
   }
 }
 /*
@@ -4154,40 +4036,14 @@ body {
 
 /* ============================ раздел «Цели» */
 
-/* Список предметов в форме цели: по строке на предмет, с заточкой. */
-.goal-items {
-  margin: 8px 0 0;
-  padding: 0;
-  list-style: none;
-  max-height: min(320px, 34vh);
-  overflow: auto;
-}
-
-.goal-items li {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 0;
-  border-bottom: 1px solid var(--line);
-}
-
-.goal-item-name {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 13px;
-}
-
 /*
  * Права в разделе целей.
  *
- * Пишется прямо над списком, а не прячется за реакцией кнопок: человек
+ * Пишется прямо над карточками, а не прячется за реакцией кнопок: человек
  * должен знать, что ему можно, до того, как нажал и ничего не получил.
  */
 .goal-note {
-  margin: 0 0 12px;
+  margin: 0 0 14px;
   padding: 9px 12px;
   border: 1px solid var(--line);
   border-left: 3px solid var(--accent-line);
@@ -4199,19 +4055,218 @@ body {
 }
 
 /*
- * Отклонённая цель видна как закрытая, но не как сделанная.
+ * Карточки вместо строк.
  *
- * Зачёркнутое имя здесь — не украшение: «мы это не будем делать» и «мы это
- * сделали» выглядят в списке одинаково, если различать их только галочкой.
+ * Цель — это список предметов с общим прогрессом, и строка такой список не
+ * показывает: в строке поместилось бы название, а десять пунктов по галочкам
+ * пришлось бы прятать под раскрытие. Карточка даёт место и списку, и полосе,
+ * и кнопкам, и всё это видно сразу, без кликов.
  */
-.wish.rejected .wish-title .name {
+.goal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.goal-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 14px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  /* Полоса слева — приоритет цветом, а не словами: слова читаются медленнее. */
+  border-left: 3px solid var(--приоритет, var(--line-2));
+  border-radius: var(--radius);
+}
+
+.goal-card.done {
+  background: linear-gradient(180deg, #10201a, var(--bg-2));
+  border-color: #23543c;
+  border-left-color: #3f8f66;
+}
+
+.goal-card.rejected {
+  opacity: 0.72;
+}
+
+.goal-card.rejected .goal-title,
+.goal-card.rejected .goal-item-name {
   text-decoration: line-through;
   text-decoration-color: var(--muted-dim);
 }
 
-.chip.mod {
+.goal-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.goal-head .prio {
+  padding: 1px 7px;
+  border: 1px solid var(--приоритет, var(--line-2));
+  border-radius: 999px;
+  color: var(--приоритет, var(--muted));
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.goal-for {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.goal-for::before {
+  content: 'для ';
+  opacity: 0.7;
+}
+
+.goal-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/*
+ * Полоса прогресса.
+ *
+ * Процент стоит рядом с полосой, а не внутри неё: в процентах важна точность,
+ * а внутри полосы цифра мельчает и обрезается на длинных целях.
+ */
+.goal-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.goal-bar {
+  flex: 1;
+  height: 8px;
+  overflow: hidden;
+  background: var(--surface-deep);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.goal-bar > span {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-radius: 999px;
+  transition: width 0.18s ease-out;
+}
+
+.goal-card.done .goal-bar > span {
+  background: linear-gradient(90deg, #3f8f66, #6fcf97);
+}
+
+.goal-pct {
+  min-width: 38px;
+  text-align: right;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.goal-count {
+  color: var(--muted);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Список предметов внутри карточки. */
+.goal-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.goal-items li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 0;
+  font-size: 12.5px;
+}
+
+.goal-items li.got {
+  color: var(--muted-dim);
+}
+
+.goal-check {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.goal-check input {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+  cursor: inherit;
+}
+
+.goal-check input:disabled {
+  cursor: default;
+}
+
+.goal-item-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.goal-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.goal-tools .icon-btn {
+  margin-left: auto;
+}
+
+/*
+ * Мягкое выделение кнопки, когда она главная на карточке.
+ *
+ * Не основная: «Всё добыто» закрывает цель необратимо для пати, и такая кнопка
+ * не должна выглядеть так же, как добавление чего-то обратимого.
+ */
+.btn.primary-soft {
   border-color: var(--accent-line);
   color: var(--accent-2);
+  background: var(--accent-deep);
+}
+
+.btn.primary-soft:hover {
+  border-color: var(--accent);
 }
 
 .chip.reject {
@@ -4223,4 +4278,20 @@ body {
    без названий. */
 .modal.wide {
   max-width: 640px;
+}
+
+.goal-items-form {
+  max-height: min(300px, 32vh);
+  overflow: auto;
+  margin-top: 8px;
+}
+
+.goal-items-form li {
+  border-bottom: 1px solid var(--line);
+}
+
+@media (max-width: 560px) {
+  .goal-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

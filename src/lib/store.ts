@@ -17,7 +17,6 @@ import {
   type Изменение,
   type MoveLog,
   type Pa,
-  type Priority,
   type PrimeWindow,
   type Schedule,
   type SetDef,
@@ -25,9 +24,14 @@ import {
   type SlotKey,
   type Sub,
   type WarehouseStack,
-  type Wish,
   type ВещьВИстории,
 } from '@/types'
+import {
+  цельВыполнена,
+  idЦели,
+  normalizeGoals,
+  type Goal,
+} from './goals'
 import { emptySlots, equip, partnerOf, unequip, type GearHolder } from './slots'
 import {
   addOffs,
@@ -108,7 +112,7 @@ export function emptyDb(): Db {
     updatedBy: '',
     chars: [],
     warehouse: { stacks: [], log: [] },
-    wishes: [],
+    goals: [],
     sets: [],
     customNames: {},
     schedule: emptySchedule(),
@@ -145,7 +149,14 @@ function normalizeDb(raw: unknown): Db {
     updatedBy: typeof d.updatedBy === 'string' ? d.updatedBy : '',
     chars,
     warehouse: { stacks, log },
-    wishes: normalizeWishes(d.wishes),
+    // Старые базы лежат полем wishes, где цель — это один предмет.
+    // Читается оно, пока нового поля goals нет: выбрасывать чужие цели молча
+    // нельзя, а писать наоборот — значит заставлять всех пересохранять базу.
+    // Поле wishes в типе базы отсутствует намеренно: оно нужно только для чтения
+    // старых баз, и описывать его в Db значит снова начать писать туда.
+    goals: normalizeGoals(
+      Array.isArray(d.goals) ? d.goals : (d as { wishes?: unknown }).wishes,
+    ),
     sets: Array.isArray(d.sets) ? d.sets : [],
     customNames:
       d.customNames && typeof d.customNames === 'object' && !Array.isArray(d.customNames)
@@ -208,35 +219,7 @@ function normalizeHistory(сырое: unknown): Изменение[] {
  * отклонённой, остаётся выполненной — так она записана была раньше, когда
  * отклонения не существовало вовсе.
  */
-function normalizeWishes(сырое: unknown): Wish[] {
-  if (!Array.isArray(сырое)) return []
-  const out: Wish[] = []
-  for (const цель of сырое) {
-    if (!цель || typeof цель !== 'object') continue
-    const ц = цель as Record<string, unknown>
-    const itemId = Math.trunc(Number(ц.itemId))
-    if (!Number.isFinite(itemId)) continue
-    const приоритет = Math.trunc(Number(ц.priority))
-    const mod = Math.trunc(Number(ц.mod))
-    const отклонена = ц.rejected === true
-    out.push({
-      id: typeof ц.id === 'string' && ц.id ? ц.id : uid('w'),
-      itemId,
-      mod: Number.isFinite(mod) && mod > 0 ? Math.min(MAX_MOD, mod) : undefined,
-      count: Math.max(1, Math.trunc(Number(ц.count)) || 1),
-      priority: приоритет >= 1 && приоритет <= 3 ? (приоритет as Priority) : 2,
-      seeker: typeof ц.seeker === 'string' ? ц.seeker : '',
-      forCharId: typeof ц.forCharId === 'string' && ц.forCharId ? ц.forCharId : undefined,
-      создатель: typeof ц.создатель === 'string' && ц.создатель ? ц.создатель : undefined,
-      note: typeof ц.note === 'string' && ц.note ? ц.note : undefined,
-      done: ц.done === true,
-      doneAt: typeof ц.doneAt === 'string' ? ц.doneAt : undefined,
-      rejected: ц.done === true ? false : отклонена,
-      rejectedAt: ц.done === true ? undefined : typeof ц.rejectedAt === 'string' ? ц.rejectedAt : undefined,
-    })
-  }
-  return out
-}
+
 
 /** Слепок слота из истории. */
 function слепокИстории(сырое: unknown): (ВещьВИстории | null)[] {
@@ -1108,26 +1091,17 @@ export function dropFromWarehouse(itemId: number): void {
 
 /* --------------------------------------------------------------------- цели */
 
-/** Состояние цели: три исхода, а не два. */
-export type СтатусЦели = 'активная' | 'выполнена' | 'отклонена'
-
-export function статусЦели(w: Wish): СтатусЦели {
-  if (w.done) return 'выполнена'
-  if (w.rejected) return 'отклонена'
-  return 'активная'
-}
-
 /**
  * Кто вправе вести эту цель.
  *
  * Создатель или мастер. Токен персонажа не даёт права закрыть чужую цель:
- * список общий на всех, и иначе любой мог бы отметить выполненной то, чего
- * никто не добывал, — и пати поверила бы.
+ * список общий на всех, и иначе любой мог бы отметить добытым то, чего никто
+ * не добывал, — и пати поверила бы.
  *
  * У цели без создателя (заведена до появления поля) правом есть только у
  * мастера: закрыть её должен тот, кто разбирается.
  */
-export function можетВестиЦель(цель: Wish): boolean {
+export function можетВестиЦель(цель: Goal): boolean {
   const кто = session
   if (!кто) return false
   if (кто.role !== 'char') return true
@@ -1143,42 +1117,80 @@ export function можетСоздаватьДля(charId: string | undefined): 
 }
 
 /**
- * Несколько целей одной кнопкой.
+ * Завести цель целиком.
  *
- * Правка идёт одной записью в историю, а не пятнадцатью: заведение списка
- * «нужно к прайму» — одно действие человека, и пятнадцать отдельных
- * подтверждений синхронизации только мешали бы.
+ * Предметы приходят уже выбранными: одна цель — один список, а не пятнадцать
+ * целей по одной. Так видно, что вещи добываются вместе, и одна галочка
+ * показывает, что из десяти пунктов взяли четыре.
  */
-export function addWishes(список: Omit<Wish, 'id' | 'done'>[]): void {
-  if (список.length === 0) return
-  const новые = список.map((w) => ({ id: uid('w'), done: false, ...w }))
-  commit({ ...db, wishes: [...db.wishes, ...новые] })
+export function addGoal(цель: Omit<Goal, 'id'>): void {
+  if (цель.items.length === 0) return
+  commit({ ...db, goals: [...db.goals, { id: idЦели(), ...цель }] })
 }
 
-export function updateWish(id: string, patch: Partial<Wish>): void {
-  commit({ ...db, wishes: db.wishes.map((w) => (w.id === id ? { ...w, ...patch } : w)) })
+function заменитьЦель(id: string, правка: (цель: Goal) => Goal): void {
+  commit({
+    ...db,
+    goals: db.goals.map((цель) => (цель.id === id ? правка(цель) : цель)),
+  })
 }
 
-export function removeWish(id: string): void {
-  commit({ ...db, wishes: db.wishes.filter((w) => w.id !== id) })
+function найтиЦель(id: string): Goal | undefined {
+  return db.goals.find((цель) => цель.id === id)
 }
 
 /**
- * Перевод цели в другое состояние.
+ * Отметка добытым одного предмета внутри цели.
  *
- * Флаги взаимоисключающие, и решает это одна функция: «выполненная и при этом
- * отклонённая» — не состояние, а ошибка записи, и расчёты потом считали бы её
- * как выполненную, молча уводя чужую цель из активных.
+ * Дата ставится только при новой отметке и снимается при снятии: вернуть
+ * предмет и оставить дату добычи было бы историей, которой не было.
  */
-export function закрытьЦель(id: string, статус: СтатусЦели): void {
+export function отметитьПредмет(id: string, номер: number, готово: boolean): void {
+  const цель = найтиЦель(id)
+  if (!цель || !цель.items[номер]) return
+  заменитьЦель(id, (прежняя) => ({
+    ...прежняя,
+    items: прежняя.items.map((п, i) =>
+      i === номер ? { ...п, готово, готовоAt: готово ? new Date().toISOString() : undefined } : п,
+    ),
+  }))
+}
+
+/** Отметить добытым всё сразу — кнопка «Готово» под прогрессом. */
+export function отметитьВсё(id: string, готово: boolean): void {
+  const цель = найтиЦель(id)
+  if (!цель) return
   const сейчас = new Date().toISOString()
-  const patch: Partial<Wish> =
-    статус === 'выполнена'
-      ? { done: true, doneAt: сейчас, rejected: false, rejectedAt: undefined }
-      : статус === 'отклонена'
-        ? { done: false, doneAt: undefined, rejected: true, rejectedAt: сейчас }
-        : { done: false, doneAt: undefined, rejected: false, rejectedAt: undefined }
-  updateWish(id, patch)
+  заменитьЦель(id, (прежняя) => ({
+    ...прежняя,
+    items: прежняя.items.map((п) => ({
+      ...п,
+      готово,
+      готовоAt: готово ? п.готовоAt ?? сейчас : undefined,
+    })),
+  }))
+}
+
+/**
+ * Отказ: не сделали и делать не будем.
+ *
+ * Снимается сразу при попытке отметить что-то добытым: цепь за отказом
+ * тащила бы в активные то, что уже решено не делать.
+ */
+export function отклонитьЦель(id: string): void {
+  заменитьЦель(id, (цель) => ({
+    ...цель,
+    rejected: !цельВыполнена(цель),
+    rejectedAt: new Date().toISOString(),
+  }))
+}
+
+export function вернутьЦель(id: string): void {
+  заменитьЦель(id, (цель) => ({ ...цель, rejected: false, rejectedAt: undefined }))
+}
+
+export function removeGoal(id: string): void {
+  commit({ ...db, goals: db.goals.filter((цель) => цель.id !== id) })
 }
 
 /* ---------------------------------------------------------------------- сеты */

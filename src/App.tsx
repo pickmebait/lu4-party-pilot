@@ -4,7 +4,7 @@ import { Login } from './components/Login'
 import { PaletteBar } from './components/PaletteBar'
 import { SyncBar } from './components/SyncBar'
 import { WarehouseView } from './components/Warehouse'
-import { WishesView } from './components/Wishes'
+import { GoalsView } from './components/Goals'
 import { ScheduleView } from './components/Schedule'
 import { SummaryView } from './components/Summary'
 import { Tagline } from './components/Tagline'
@@ -65,7 +65,7 @@ function заметка(ключ: Tab, s: Summary, db: Db): string {
         : `${казна} · компл. ${s.setsDone} из ${s.setsTotal}`
     }
     case 'wishes':
-      return `${s.wishesOpen} ${plural(s.wishesOpen, 'активная', 'активные', 'активных')}`
+      return `${s.goalsOpen} ${plural(s.goalsOpen, 'активная', 'активные', 'активных')}`
   }
 }
 
@@ -153,7 +153,7 @@ export default function App() {
         {tab === 'chars' && <CharsView catalog={catalog} />}
         {tab === 'schedule' && <ScheduleView />}
         {tab === 'warehouse' && <WarehouseView catalog={catalog} />}
-        {tab === 'wishes' && <WishesView catalog={catalog} />}
+        {tab === 'wishes' && <GoalsView catalog={catalog} />}
       </main>
 
       <footer className="foot">
