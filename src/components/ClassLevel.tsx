@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { CLASSES, LEVEL_MAX, LEVEL_MIN, clampLevel, extraClasses } from '@/lib/classes'
+import { CLASSES, LEVEL_MAX, LEVEL_MIN, extraClasses, levelForInput } from '@/lib/classes'
 import { useDb } from '@/lib/store'
 
 /**
@@ -90,17 +90,10 @@ export function LevelInput({
       autoComplete="off"
       placeholder={`${LEVEL_MIN}–${LEVEL_MAX}`}
       value={value}
-      onChange={(e) => {
-        const digits = e.target.value.replace(/\D/g, '').slice(0, 2)
-        if (digits === '') {
-          onChange('')
-          return
-        }
-        onChange(Number(digits) > LEVEL_MAX ? String(LEVEL_MAX) : digits)
-      }}
+      onChange={(e) => onChange(levelForInput(e.target.value))}
       onBlur={() => {
         if (value === '') return
-        onChange(clampLevel(value))
+        onChange(levelForInput(value))
       }}
       onKeyDown={(e) => e.stopPropagation()}
       title={`Уровень от ${LEVEL_MIN} до ${LEVEL_MAX}`}

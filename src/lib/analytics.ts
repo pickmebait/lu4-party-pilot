@@ -667,7 +667,7 @@ export function снаряжение(db: Db): Снаряжение {
     for (const слоты of branchesOf(c)) {
       for (const k of SLOT_KEYS as readonly SlotKey[]) {
         for (const e of слоты[k] ?? []) {
-          всего++
+          всего += 1
           const м = заточка(e)
           if (м < 0) continue
           занято++

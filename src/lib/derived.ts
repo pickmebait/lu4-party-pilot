@@ -110,6 +110,45 @@ export function computeSets(db: Db): SetProgress[] {
     .sort((a, b) => Number(a.complete) - Number(b.complete) || a.set.name.localeCompare(b.set.name))
 }
 
+/**
+ * Занятые слоты ветки — то, что человек видит на карточке.
+ *
+ * Одно место вместо четырёх. Считалось по-разному: на карточке и в строке —
+ * по одной ветке через группы слотов и предельные размеры, в сводке и в
+ * разборе — по всем веткам через сами массивы. Числа сходились только потому,
+ * что нормализация дополняет слот до предельного размера. Разница в охвате
+ * намеренная, но нигде не была названа, и следующий правлящий счёл бы её как
+ * ошибку.
+ */
+export function слотыВетки(слоты: Char['slots']): { занято: number; всего: number } {
+  let занято = 0
+  let всего = 0
+  for (const k of SLOT_KEYS as readonly SlotKey[]) {
+    const ячейки = слоты[k] ?? []
+    всего += ячейки.length
+    for (const e of ячейки) if (e) занято += 1
+  }
+  return { занято, всего }
+}
+
+/**
+ * Занятые слоты персонажа целиком, включая сабы.
+ *
+ * Сабы считаются наравно с основной профессией: надето оно на том же
+ * персонаже, и в комплекте эта вещь тоже засчитывается. Поэтому у персонажа
+ * с одним сабом здесь двадцать четыре слота, а на карточке — двенадцать.
+ */
+export function слотыПерсонажа(char: Char): { занято: number; всего: number } {
+  let занято = 0
+  let всего = 0
+  for (const ветка of branchesOf(char)) {
+    const счёт = слотыВетки(ветка)
+    занято += счёт.занято
+    всего += счёт.всего
+  }
+  return { занято, всего }
+}
+
 export interface Summary {
   chars: number
   /** Сколько слотов всего и сколько занято — полезно видеть прогресс по чарам. */
@@ -126,15 +165,9 @@ export function computeSummary(db: Db): Summary {
   let total = 0
   let filled = 0
   for (const c of db.chars) {
-    // Сабы считаются наравне с основной профессией: надето оно на том
-    // же персонаже, и в комплекте эта вещь тоже засчитывается.
-    for (const слоты of branchesOf(c)) {
-      for (const k of SLOT_KEYS as readonly SlotKey[]) {
-        const arr = слоты[k] ?? []
-        total += arr.length
-        for (const e of arr) if (e) filled += 1
-      }
-    }
+    const счёт = слотыПерсонажа(c)
+    total += счёт.всего
+    filled += счёт.занято
   }
   const sets = computeSets(db)
   return {

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Char, Sub } from '@/types'
-import { clampLevel } from '@/lib/classes'
-import { НИК_МАКС, написаноБезПробелов, привестиНик } from '@/lib/nick'
+import { levelToSave } from '@/lib/classes'
+import { привестиНик } from '@/lib/nick'
 import { формаОткрыта } from '@/lib/store'
 import { AffiliationSelect } from './AffiliationSelect'
+import { NickInput } from './NickInput'
 import { ClassSelect, LevelInput } from './ClassLevel'
 import { PaEdit, paFromFields } from './PaEdit'
 
@@ -60,46 +61,18 @@ export function CharEditForm({
   )
 
   const save = () => {
-    const ур = clampLevel(level)
-    const пара = { cls, level: ур === '' ? 0 : Number(ур) }
+    const пара = { cls, level: levelToSave(level) }
     // Платный аккаунт — свойство аккаунта, а не ветки: у саба своего нет, так
     // же как принадлежности.
     if (саб) onDone({ name: привестиНик(name), affil }, пара)
     else onDone({ name: привестиНик(name), affil, ...пара, pa: paFromFields(paFrom, paDays) })
   }
 
-  /*
-   * Поле не принимает того, чего в игре не бывает: пробел и лишние
-   * шестнадцать символов отбрасываются прямо при вводе, а не при
-   * сохранении. Иначе человек написал бы двадцать символов, увидел в карточке
-   * обрезанное имя и гадал, куда делось остальное.
-   */
-  const никСлишкомДлинный = написаноБезПробелов(name).length > НИК_МАКС
-  const никПустой = привестиНик(name).length === 0
 
   return (
     <div className="edit-form">
       {саб && <div className="edit-sub">Саб-класс</div>}
-      <input
-        className="input"
-        autoFocus
-        value={name}
-        maxLength={НИК_МАКС + 4}
-        placeholder={`ник в игре, до ${НИК_МАКС} символов без пробелов`}
-        onChange={(e) => {
-          const чистый = написаноБезПробелов(e.target.value)
-          // Обрезаем по лимиту с запасом на пробелы: человек не должен
-          // упереться в потолок, не успев дописать имя.
-          setName([...чистый].slice(0, НИК_МАКС + 4).join(''))
-        }}
-        onBlur={() => setName(привестиНик(name))}
-      />
-      {никСлишкомДлинный && (
-        <p className="hint err-hint">
-          Ник в игре — до {НИК_МАКС} символов. Лишнее будет отброшено.
-        </p>
-      )}
-      {!никСлишкомДлинный && никПустой && <p className="hint">Без ника персонажа не найти.</p>}
+      <NickInput value={name} onChange={setName} autoFocus />
       <div className="row">
         <div className="grow">
           <ClassSelect value={cls} onChange={setCls} exclude={саб ? занятые : undefined} />

@@ -47,13 +47,33 @@ export const LEVEL_MIN = 1
 export const LEVEL_MAX = 75
 
 /**
- * Приводит введённый уровень к допустимому виду.
- * Больше двух цифр не пропускаем, границы подрезаем.
+ * Уровень при вводе.
+ *
+ * Цифры, не больше двух, и верхняя граница — сразу, при наборе. Нижняя
+ * граница здесь намеренно не трогается: «0» в начале ввода это ещё не ноль, и
+ * подставлять вместо него «1» значит путать человека на ровном месте.
+ *
+ * Отдельная функция от levelToSave именно поэтому: правило разное, и сводить
+ * их в одну — экономия двух строк ценой тихой ошибки, потому что правило при
+ * вводе было написано здесь, а правило при сохранении ещё в двух формах.
  */
-export function clampLevel(raw: string): string {
-  const digits = raw.replace(/\D/g, '').slice(0, 2)
-  if (digits === '') return ''
-  return String(Math.min(LEVEL_MAX, Math.max(LEVEL_MIN, Number(digits))))
+export function levelForInput(raw: string): string {
+  const цифры = raw.replace(/\D/g, '').slice(0, 2)
+  if (цифры === '') return ''
+  return Number(цифры) > LEVEL_MAX ? String(LEVEL_MAX) : цифры
+}
+
+/**
+ * Уровень для сохранения.
+ *
+ * Полные границы, потому что в базу попадает число, а не текст в поле. Пустое
+ * поле — не нулевой уровень, а «не указан», и это разные состояния: ноль
+ * значит «ещё не вписан», а не «первый уровень».
+ */
+export function levelToSave(raw: string): number {
+  const цифры = raw.replace(/\D/g, '')
+  if (цифры === '') return 0
+  return Math.min(LEVEL_MAX, Math.max(LEVEL_MIN, Number(цифры.slice(0, 2))))
 }
 
 /** Профессии, которые уже встречаются в базе, но их нет в списке. */

@@ -10,15 +10,16 @@ import {
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
 import { useAccess } from '@/lib/access'
-import { НИК_МАКС, написаноБезПробелов, привестиНик } from '@/lib/nick'
+import { привестиНик } from '@/lib/nick'
 import { addChar, emptyChar, equipItem, useDb, type Branch } from '@/lib/store'
 import { sortedChars } from '@/lib/derived'
 import { ItemPicker } from './ItemPicker'
 import { CharCard } from './CharCard'
 import { CharRow } from './CharRow'
 import { AffiliationSelect } from './AffiliationSelect'
+import { NickInput, никПодходит } from './NickInput'
 import { ClassSelect, LevelInput } from './ClassLevel'
-import { clampLevel } from '@/lib/classes'
+import { levelToSave } from '@/lib/classes'
 
 /**
  * Куда надевается предмет: ветка (персонаж целиком или его саб-класс),
@@ -47,6 +48,17 @@ type Фильтр = Affiliation | 'все'
  */
 type Вид = 'строка' | 'колонка'
 
+/*
+ * Вид и фильтр живут в модуле, а не в состоянии компонента.
+ *
+ * Раздел пересоздаётся при каждом переходе на другую вкладку: вернулся — и
+ * получил строку вместо колонки, хотя её выбирал минуту назад, чтобы сравнить
+ * двоих. Это не данные пати и не то, что человек менял, — просто способ
+ * посмотреть, и он должен переживать переключение вкладок.
+ */
+let сохранённыйВид: Вид = 'строка'
+let сохранённыйФильтр: Фильтр = 'все'
+
 const ВИДЫ: { key: Вид; label: string; подсказка: string }[] = [
   { key: 'строка', label: 'Строка', подсказка: 'Персонажи в строку, карточка целиком' },
   { key: 'колонка', label: 'Колонка', подсказка: 'Персонажи в столбец, компактно' },
@@ -55,8 +67,17 @@ const ВИДЫ: { key: Вид; label: string; подсказка: string }[] = [
 export function CharsView({ catalog }: { catalog: CatalogApi }) {
   const [target, setTarget] = useState<PickerTarget | null>(null)
   const [quickAdd, setQuickAdd] = useState(false)
-  const [фильтр, setФильтр] = useState<Фильтр>('все')
-  const [вид, setВид] = useState<Вид>('строка')
+  const [фильтр, setФильтр] = useState<Фильтр>(сохранённыйФильтр)
+  const [вид, setВид] = useState<Вид>(сохранённыйВид)
+
+  const выбратьФильтр = (новый: Фильтр) => {
+    сохранённыйФильтр = новый
+    setФильтр(новый)
+  }
+  const выбратьВид = (новый: Вид) => {
+    сохранённыйВид = новый
+    setВид(новый)
+  }
 
   const db = useDb()
   const { master, ownCharId } = useAccess()
@@ -85,7 +106,7 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
             <button
               type="button"
               className={фильтр === 'все' ? 'on' : ''}
-              onClick={() => setФильтр('все')}
+              onClick={() => выбратьФильтр('все')}
             >
               Все
             </button>
@@ -94,7 +115,7 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
                 key={a.key}
                 type="button"
                 className={фильтр === a.key ? 'on' : ''}
-                onClick={() => setФильтр(a.key)}
+                onClick={() => выбратьФильтр(a.key)}
               >
                 {a.label}
               </button>
@@ -107,7 +128,7 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
                 type="button"
                 className={вид === в.key ? 'on' : ''}
                 title={в.подсказка}
-                onClick={() => setВид(в.key)}
+                onClick={() => выбратьВид(в.key)}
               >
                 {в.label}
               </button>
@@ -127,12 +148,12 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
       </div>
 
       <div className={вид === 'строка' ? 'chars-grid' : 'chars-col'}>
-        <DbChars
+        <СписокПерсонажей
           вид={вид}
           chars={показанные}
           всего={все.length}
           фильтр={фильтр}
-          сбросить={() => setФильтр('все')}
+          сбросить={() => выбратьФильтр('все')}
           catalog={catalog}
           onPick={(ветка, slot, index) => setTarget({ ...ветка, slot, index })}
         />
@@ -158,8 +179,13 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
   )
 }
 
-/** Список персонажей: вынесен, чтобы пустое состояние не мешало вёрстке. */
-function DbChars({
+/**
+ * Сам список и пустые состояния.
+ *
+ * Вынесено из оболочки вкладки, чтобы та занималась только фильтром и видом,
+ * а «персонажей нет» и «в группе никого нет» стояли рядом с разметкой списка.
+ */
+function СписокПерсонажей({
   вид,
   chars,
   всего,
@@ -261,33 +287,21 @@ function QuickAddForm({
   // Принадлежность всегда задана: по умолчанию состав, его подходит
   // большинству, и он же первый в порядке показа.
   const [affil, setAffil] = useState<Affiliation>(DEFAULT_AFFILIATION)
-  const никСлишкомДлинный = написаноБезПробелов(name).length > НИК_МАКС
-  const ok = !никСлишкомДлинный && привестиНик(name).length > 0
+  // Правило «годится ли имя» — одно, и живёт рядом с полем: расходиться
+  // ему не с чем.
+  const ok = никПодходит(name)
 
   const submit = () => {
     if (!ok) return
-    const l = clampLevel(level)
-    onDone(привестиНик(name), cls, l === '' ? 0 : Number(l), affil)
+    onDone(привестиНик(name), cls, levelToSave(level), affil)
   }
 
   return (
     <div className="form">
       <label>
         Имя персонажа
-        <input
-          className="input"
-          autoFocus
-          value={name}
-          maxLength={НИК_МАКС + 4}
-          placeholder={`ник в игре, до ${НИК_МАКС} символов без пробелов`}
-          onChange={(e) => setName([...написаноБезПробелов(e.target.value)].slice(0, НИК_МАКС + 4).join(''))}
-          onBlur={() => setName(привестиНик(name))}
-          onKeyDown={(e) => e.key === 'Enter' && submit()}
-        />
+        <NickInput value={name} onChange={setName} autoFocus />
       </label>
-      {никСлишкомДлинный && (
-        <p className="hint err-hint">Ник в игре — до {НИК_МАКС} символов.</p>
-      )}
 
       <div className="row">
         <label className="grow">

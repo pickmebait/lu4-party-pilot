@@ -3,16 +3,15 @@ import {
   MAX_MOD,
   SLOTS,
   SLOT_GROUPS,
-  SLOT_KEYS,
   affiliationLabel,
   type Char,
   type SlotKey,
   type Sub,
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
-import { useAccess } from '@/lib/access'
 import { removeChar, removeSub, updateChar, updateSub, type Branch } from '@/lib/store'
 import { ItemIcon } from './ItemIcon'
+import { useПерсонаж } from '@/lib/useChar'
 import { CharEditForm } from './CharEditForm'
 import { ContactsModal } from './ContactsModal'
 import { IconUser } from './Icons'
@@ -50,39 +49,21 @@ export function CharRow({
   catalog: CatalogApi
   onPick: (ветка: Branch, slot: SlotKey, index: number) => void
 }) {
-  const [выбранный, setВыбранный] = useState<string | null>(null)
+  // Как и на карточке: ветка, права и счётчик слотов выводит общий хук.
+  const { сабы, саб, выбратьСаб: setВыбранный, ветка, слоты, cls, level, правый, свой, счётчик } =
+    useПерсонаж(char)
+  const занято = счётчик.занято
+  const всего = счётчик.всего
+
+  // Состояния правки и подтверждений — к персонажу не относятся, в отличие
+  // от выбранного саба, и живут здесь: у строки своя шапка без кнопок правки,
+  // а форму и окна удаления она всё равно открывает.
   const [editing, setEditing] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
-  // Саб, который сейчас убирают. Хранится именно он, а не флаг: в подписи
-  // окна нужно назвать, что удаляется, и у флага не было бы что показать.
+  // Саб, который сейчас убирают: хранится именно он, а не флаг, потому
+  // что в подписи окна нужно назвать, что удаляется.
   const [убираемыйСаб, setУбираемыйСаб] = useState<Sub | null>(null)
   const [contactsOpen, setContactsOpen] = useState(false)
-
-  const { canEditChar, ownCharId } = useAccess()
-
-  /*
-   * Как и в карточке: выбранный саб мог быть удалён или скрыт снятием
-   * отметки, и тогда показывать надо основную профессию, а не пустоту.
-   */
-  const сабы = char.subUnlocked ? char.subs : []
-  const саб = выбранный ? (сабы.find((s) => s.id === выбранный) ?? null) : null
-  const ветка: Branch = { charId: char.id, subId: саб?.id ?? null }
-
-  const слоты = саб ? саб.slots : char.slots
-  const cls = саб ? саб.cls : char.cls
-  const level = саб ? саб.level : char.level
-
-  let занято = 0
-  for (const key of SLOT_KEYS) занято += (слоты[key] ?? []).filter(Boolean).length
-  const всего = Object.values(SLOTS).reduce((a, s) => a + s.max, 0)
-
-  /*
-   * Токен персонажа правит ровно одного: у остальных ячейки просто не
-   * нажимаются, сабы не добавляются и не убираются. Переключать ветку и
-   * смотреть контакты можно всем — это ничего не меняет.
-   */
-  const правый = canEditChar(char.id)
-  const свой = правый && ownCharId === char.id
 
   return (
     <article className={`char-row${свой ? ' own' : ''}`}>

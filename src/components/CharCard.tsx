@@ -1,15 +1,13 @@
 import { useState } from 'react'
 import {
-  SLOTS,
-  SLOT_GROUPS,
   affiliationLabel,
   type Char,
   type SlotKey,
   type Sub,
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
-import { useAccess } from '@/lib/access'
 import { removeChar, removeSub, updateChar, updateSub, type Branch } from '@/lib/store'
+import { useПерсонаж } from '@/lib/useChar'
 import { CharEditForm } from './CharEditForm'
 import { ContactsModal } from './ContactsModal'
 import { ContactsBlock } from './ContactsBlock'
@@ -46,47 +44,17 @@ export function CharCard({
   const [убираемыйСаб, setУбираемыйСаб] = useState<Sub | null>(null)
   const [editContacts, setEditContacts] = useState(false)
 
-  /*
-   * Какая ветка экипировки показана: null — основная профессия, иначе id
-   * саб-класса. Выбор живёт в карточке, а не в базе: это то, что смотрит
-   * конкретный человек, и делиться им с пати незачем.
-   *
-   * Если саб удалили или отметку о квесте сняли, выбранного саба больше нет.
-   * Подстановка ниже схлопывает такой выбор на основную профессию — иначе
-   * карточка осталась бы с чужими слотами на экране.
-   */
-  const [выбранный, setВыбранный] = useState<string | null>(null)
+  // Ветка, слоты, права и счётчик занятых слотов выводит общий хук: то же
+  // самое нужно строке, и выводить это дважды значило бы однажды разойтись.
+  const { сабы, саб, выбратьСаб: setВыбранный, ветка, слоты, cls, level, правый, свой, счётчик } =
+    useПерсонаж(char)
 
-  const { canEditChar, ownCharId } = useAccess()
+  const filled = счётчик.занято
+  const total = счётчик.всего
 
-  const сабы = char.subUnlocked ? char.subs : []
-  const саб = выбранный ? (сабы.find((s) => s.id === выбранный) ?? null) : null
-  const ветка: Branch = { charId: char.id, subId: саб?.id ?? null }
-
-  // Всё, что ниже, смотрит на выбранную ветку, а не всегда на персонажа.
-  const cls = саб ? саб.cls : char.cls
-  const level = саб ? саб.level : char.level
-  const слоты = саб ? саб.slots : char.slots
-
-  let filled = 0
-  let total = 0
-  for (const g of SLOT_GROUPS) {
-    for (const key of g.slots) {
-      total += SLOTS[key].max
-      filled += (слоты[key] ?? []).filter(Boolean).length
-    }
-  }
 
   const контактов = Object.keys(char.contacts ?? {}).length
 
-  /*
-   * Токен персонажа правит ровно одного. Всё, что правит, у чужого
-   * персонажа не показывается вовсе: иначе нажатие приводило бы к отказу
-   * сервера, и выглядело бы как ошибка у человека, который всё сделал
-   * правильно.
-   */
-  const правый = canEditChar(char.id)
-  const свой = правый && ownCharId === char.id
 
   return (
     <article className={`char-card${свой ? ' own' : ''}`}>
