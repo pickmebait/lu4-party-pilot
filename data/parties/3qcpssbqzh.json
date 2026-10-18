@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-18T10:03:11.882Z",
+    "updatedAt": "2026-10-18T10:04:10.039Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -192,6 +192,52 @@
         "note": "Куплю до 4кк",
         "done": false,
         "rejected": false
+      },
+      {
+        "id": "wmvdnrovn1ra83r",
+        "done": false,
+        "itemId": 599,
+        "mod": 16,
+        "count": 1,
+        "priority": 2,
+        "seeker": "Мастер",
+        "создатель": "Мастер"
+      },
+      {
+        "id": "wmvdnrovn2ty8jk",
+        "done": false,
+        "itemId": 548,
+        "count": 1,
+        "priority": 2,
+        "seeker": "Мастер",
+        "создатель": "Мастер"
+      },
+      {
+        "id": "wmvdnrovn379p5t",
+        "done": false,
+        "itemId": 8181,
+        "count": 1,
+        "priority": 2,
+        "seeker": "Мастер",
+        "создатель": "Мастер"
+      },
+      {
+        "id": "wmvdnrovn4s3hzp",
+        "done": false,
+        "itemId": 672,
+        "count": 1,
+        "priority": 2,
+        "seeker": "Мастер",
+        "создатель": "Мастер"
+      },
+      {
+        "id": "wmvdnrovn52cxce",
+        "done": false,
+        "itemId": 577,
+        "count": 1,
+        "priority": 2,
+        "seeker": "Мастер",
+        "создатель": "Мастер"
       }
     ],
     "sets": [
