@@ -5,16 +5,313 @@
   "masterHash": "3e466503268ebfbbe2928f6823e0f19972cf645b76cc3374a4e9bd55b3ecee1c",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-18T08:30:27.858Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 9,
+    "updatedAt": "2026-10-18T08:30:29.494Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "c1",
+        "name": "Алекс",
+        "cls": "SM",
+        "level": 85,
+        "affil": "состав",
+        "slots": {
+          "rhand": [
+            {
+              "itemId": 100,
+              "mod": 16
+            }
+          ],
+          "head": [
+            {
+              "itemId": 101,
+              "mod": 16
+            }
+          ],
+          "chest": [
+            {
+              "itemId": 102,
+              "mod": 16
+            }
+          ],
+          "legs": [
+            {
+              "itemId": 103,
+              "mod": 16
+            }
+          ],
+          "gloves": [
+            {
+              "itemId": 104,
+              "mod": 16
+            }
+          ],
+          "feet": [
+            {
+              "itemId": 105,
+              "mod": 16
+            }
+          ],
+          "neck": [
+            {
+              "itemId": 106,
+              "mod": 16
+            }
+          ],
+          "ear": [
+            {
+              "itemId": 107,
+              "mod": 16
+            },
+            null
+          ],
+          "ring": [
+            {
+              "itemId": 108,
+              "mod": 16
+            },
+            null
+          ],
+          "lhand": [
+            null
+          ]
+        },
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      },
+      {
+        "id": "c2",
+        "name": "Бетта",
+        "cls": "Oracle",
+        "level": 83,
+        "affil": "состав",
+        "slots": {
+          "rhand": [
+            {
+              "itemId": 200,
+              "mod": 16
+            }
+          ],
+          "head": [
+            {
+              "itemId": 201,
+              "mod": 15
+            }
+          ],
+          "chest": [
+            {
+              "itemId": 202,
+              "mod": 16
+            }
+          ],
+          "legs": [
+            {
+              "itemId": 203,
+              "mod": 16
+            }
+          ],
+          "gloves": [
+            {
+              "itemId": 204,
+              "mod": 16
+            }
+          ],
+          "feet": [
+            {
+              "itemId": 205,
+              "mod": 16
+            }
+          ],
+          "neck": [
+            {
+              "itemId": 206,
+              "mod": 16
+            }
+          ],
+          "ear": [
+            {
+              "itemId": 207,
+              "mod": 16
+            },
+            {
+              "itemId": 208,
+              "mod": 16
+            }
+          ],
+          "ring": [
+            {
+              "itemId": 209,
+              "mod": 16
+            },
+            {
+              "itemId": 210,
+              "mod": 16
+            }
+          ],
+          "lhand": [
+            null
+          ]
+        },
+        "subs": [],
+        "subUnlocked": false,
+        "contacts": {},
+        "away": {},
+        "pa": null
+      }
+    ],
     "warehouse": {
-      "stacks": [],
+      "stacks": [
+        {
+          "itemId": 300,
+          "count": 1
+        },
+        {
+          "itemId": 301,
+          "count": 2
+        }
+      ],
       "log": []
     },
-    "wishes": [],
-    "sets": [],
-    "customNames": {}
+    "sets": [
+      {
+        "id": "s1",
+        "name": "Набор рыцаря",
+        "pieces": [
+          108,
+          109,
+          300,
+          301
+        ],
+        "bonus": "Физ. АТК +50"
+      }
+    ],
+    "wishes": [
+      {
+        "id": "w1",
+        "itemId": 400,
+        "count": 1,
+        "priority": 1,
+        "seeker": "Алекс",
+        "forCharId": "c1",
+        "создатель": "c1",
+        "note": "к прайму"
+      },
+      {
+        "id": "w2",
+        "itemId": 401,
+        "mod": 14,
+        "count": 1,
+        "priority": 2,
+        "seeker": "Бетта",
+        "forCharId": "c2",
+        "создатель": "c2"
+      },
+      {
+        "id": "w3",
+        "itemId": 402,
+        "count": 1,
+        "priority": 3,
+        "seeker": "Алекс",
+        "создатель": "Мастер"
+      },
+      {
+        "id": "w4",
+        "itemId": 403,
+        "count": 1,
+        "priority": 1,
+        "seeker": "Алекс",
+        "done": true,
+        "doneAt": "2026-10-13T09:00:00.000Z"
+      },
+      {
+        "id": "w5",
+        "itemId": 404,
+        "count": 1,
+        "priority": 2,
+        "seeker": "Бетта",
+        "done": false,
+        "rejected": true,
+        "rejectedAt": "2026-10-15T09:00:00.000Z"
+      }
+    ],
+    "customNames": {},
+    "schedule": {
+      "prime": {
+        "2026-09-28": {
+          "from": 1260,
+          "to": 1380
+        },
+        "2026-09-29": {
+          "from": 1260,
+          "to": 1380
+        },
+        "2026-09-30": {
+          "from": 1260,
+          "to": 1380
+        },
+        "2026-10-01": {
+          "from": 1260,
+          "to": 1380
+        },
+        "2026-10-02": {
+          "from": 1260,
+          "to": 1380
+        },
+        "2026-10-05": {
+          "from": 1260,
+          "to": 1380
+        },
+        "2026-10-06": {
+          "from": 1260,
+          "to": 1380
+        },
+        "2026-10-07": {
+          "from": 1260,
+          "to": 1380
+        },
+        "2026-10-08": {
+          "from": 1260,
+          "to": 1380
+        },
+        "2026-10-09": {
+          "from": 1260,
+          "to": 1380
+        },
+        "2026-10-12": {
+          "from": 1260,
+          "to": 1380
+        },
+        "2026-10-13": {
+          "from": 1260,
+          "to": 1380
+        },
+        "2026-10-14": {
+          "from": 1260,
+          "to": 1380
+        },
+        "2026-10-15": {
+          "from": 1260,
+          "to": 1380
+        },
+        "2026-10-16": {
+          "from": 1260,
+          "to": 1380
+        },
+        "2026-10-19": {
+          "from": 1260,
+          "to": 1380
+        },
+        "2026-10-20": {
+          "from": 1260,
+          "to": 1380
+        }
+      },
+      "offs": [],
+      "checklist": []
+    },
+    "history": []
   }
 }
