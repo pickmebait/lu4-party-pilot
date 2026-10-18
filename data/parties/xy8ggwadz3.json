@@ -5,16 +5,68 @@
   "masterHash": "c47cdb67293af5f3ab350280e56277fcb019ca017bbe6655baab0b956cb54d66",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-18T22:52:05.764Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 9,
+    "updatedAt": "2026-10-18T22:52:38.701Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "cmvef80ey1j80sx",
+        "name": "Rocket",
+        "cls": "Bounty Hunter",
+        "level": 55,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
-    "wishes": [],
+    "goals": [],
     "sets": [],
-    "customNames": {}
+    "customNames": {},
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    },
+    "history": [],
+    "wishes": []
   }
 }
