@@ -3,7 +3,15 @@
   "name": "Моя пати",
   "createdAt": "2026-10-16T20:19:33.691Z",
   "masterHash": "923721e9e495ab5e48df3f162821225268241f535958b865ebc1532b6aa8002e",
-  "tokens": [],
+  "tokens": [
+    {
+      "id": "u9f7kbffj6",
+      "hash": "37c4db55449f371a72ba3485ba415c8ed5607268e0b4306abe1ea32f099bac0d",
+      "charId": "cmvbewm5c13gfov",
+      "charName": "PickMeBait",
+      "createdAt": "2026-10-19T16:30:30.391Z"
+    }
+  ],
   "db": {
     "version": 9,
     "updatedAt": "2026-10-19T15:09:55.887Z",
