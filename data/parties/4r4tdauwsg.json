@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T16:45:47.642Z",
+    "updatedAt": "2026-10-19T16:45:52.135Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -126,6 +126,10 @@
         {
           "id": "ckmvfhk2nb54vsm9",
           "text": "БЕГИТ"
+        },
+        {
+          "id": "ckmvfhk65s61167i",
+          "text": "АНЖУМАНЯ"
         }
       ]
     },
