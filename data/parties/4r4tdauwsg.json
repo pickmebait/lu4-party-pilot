@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T16:47:48.734Z",
+    "updatedAt": "2026-10-19T16:47:53.072Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -56,7 +56,7 @@
           "phone": "777",
           "telegram": "@anusslona"
         },
-        "subUnlocked": true,
+        "subUnlocked": false,
         "subs": [
           {
             "id": "smvfhiffu3z79mj",
