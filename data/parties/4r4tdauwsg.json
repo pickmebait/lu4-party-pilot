@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T16:44:23.562Z",
+    "updatedAt": "2026-10-19T16:44:30.849Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -51,8 +51,48 @@
             null
           ]
         },
-        "subUnlocked": false,
-        "subs": [],
+        "subUnlocked": true,
+        "subs": [
+          {
+            "id": "smvfhiffu3z79mj",
+            "cls": "",
+            "level": 0,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          }
+        ],
         "away": {}
       }
     ],
