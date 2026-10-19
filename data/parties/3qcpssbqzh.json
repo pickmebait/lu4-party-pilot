@@ -2,16 +2,8 @@
   "partyId": "3qcpssbqzh",
   "name": "Моя пати",
   "createdAt": "2026-10-16T20:19:33.691Z",
-  "masterHash": "107763922a114e5499da463509efaa94e280d1d2f586c89b7f380d27ec510d7e",
-  "tokens": [
-    {
-      "id": "zfwvrj8nze",
-      "hash": "cdbddf1ed4d864ee6956be4c1b8111a4ba6291d9ded40e61a5fed6f70bab3e23",
-      "charId": "cmvbewm5c13gfov",
-      "charName": "PickMeBait",
-      "createdAt": "2026-10-19T16:29:30.606Z"
-    }
-  ],
+  "masterHash": "923721e9e495ab5e48df3f162821225268241f535958b865ebc1532b6aa8002e",
+  "tokens": [],
   "db": {
     "version": 9,
     "updatedAt": "2026-10-19T15:09:55.887Z",
