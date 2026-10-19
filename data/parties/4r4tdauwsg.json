@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T16:44:30.849Z",
+    "updatedAt": "2026-10-19T16:45:00.338Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -50,6 +50,11 @@
             null,
             null
           ]
+        },
+        "contacts": {
+          "realName": "хуесос",
+          "phone": "777",
+          "telegram": "@anusslona"
         },
         "subUnlocked": true,
         "subs": [
