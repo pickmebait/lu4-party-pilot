@@ -14,12 +14,12 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T07:43:27.651Z",
+    "updatedAt": "2026-10-19T07:43:53.092Z",
     "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmvbewm5c13gfov",
-        "name": "PickMe",
+        "name": "PickMeBait",
         "cls": "Abyss Walker",
         "level": 75,
         "affil": "roster",
@@ -217,6 +217,10 @@
           "2026-10-17": {
             "whole": true
           }
+        },
+        "pa": {
+          "from": "2026-09-28",
+          "days": 30
         }
       },
       {
