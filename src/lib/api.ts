@@ -51,6 +51,14 @@ export type ApiResult<T> =
        * первый, поэтому человек должен знать, что запись была повторена.
        */
       попыток: number
+      /**
+       * Код ответа сервера.
+       *
+       * Нужен для подробностей под значком: разбирать неудачу почти всегда
+       * приходится позже, когда надпись уже сменилась, и без кода остаётся
+       * только «что-то сломалось».
+       */
+      статус: number
     }
   | {
       ok: false
@@ -250,7 +258,7 @@ async function однаПопытка<T>(url: string, init: CallInit, headers: R
     if (!res.ok) {
       return { обрыв: false, ответ: { ok: false, error: json?.error ?? `Сервер ответил ${res.status}` } }
     }
-    return { обрыв: false, ответ: { ok: true, value: json as T, попыток: 1 } }
+    return { обрыв: false, ответ: { ok: true, value: json as T, попыток: 1, статус: res.status } }
   } catch (e) {
     return {
       обрыв: true,
@@ -303,7 +311,7 @@ async function call<T>(base: string, path: string, init: CallInit = {}): Promise
 
   let отправлено = 0
   let решён = false
-  let успех: { ok: true; value: T; попыток: number } | null = null
+  let успех: { ok: true; value: T; попыток: number; статус: number } | null = null
   const отказы: Отказ<T>[] = []
   const обрывы: Обрыв[] = []
 

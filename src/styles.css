@@ -306,7 +306,11 @@ body {
  * настроек, и она абзац, а не подпись к кнопке. По правому краю такой текст
  * рвался бы по левому и читался хуже.
  */
-.sync > .sync-msg {
+.sync > .sync-note {
+  margin-left: auto;
+}
+
+.sync > .sync-note .sync-msg {
   margin-left: auto;
   text-align: right;
 }
@@ -319,6 +323,78 @@ body {
 .sync-msg.err {
   border-color: #5a2a2a;
   color: #ffb3b3;
+}
+
+/*
+ * Плашка сообщения и значок подробностей.
+ *
+ * Значок стоит внутри плашки, а не рядом с ней: он относится к этому
+ * сообщению, и человек тянется к нему, а не ищет глазами по шапке.
+ * Кнопка без рамки — иначе значок спорит с кнопкой меню пати, которая стоит
+ * рядом и выглядит важнее, чем он есть.
+ */
+.sync-note {
+  width: fit-content;
+  max-width: 100%;
+  margin-left: auto;
+}
+
+.sync-msg {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.sync-text {
+  min-width: 0;
+}
+
+.sync-info {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: currentColor;
+  opacity: 0.55;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.sync-info:hover,
+.sync-info:focus-visible {
+  opacity: 1;
+}
+
+.sync-info.on {
+  opacity: 1;
+}
+
+/*
+ * Подробности под плашкой.
+ *
+ * Моноширинным шрифтом и с переносом по словам, а не встык: там адрес,
+ * метки времени и код ответа, и строкой подряд они читаются как каша.
+ * Ширина та же, что у плашки, и прижата к тому же краю — подробности
+ * относятся к надписи над ними, а не висят отдельно.
+ */
+.sync-details {
+  width: fit-content;
+  max-width: 100%;
+  margin: 4px 0 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-3);
+  color: var(--text-dim);
+  font-family: var(--mono, ui-monospace, Consolas, monospace);
+  font-size: 11px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-align: right;
+  overflow-x: auto;
 }
 
 .sync-actions {
