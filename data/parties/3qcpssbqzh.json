@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T07:41:21.863Z",
+    "updatedAt": "2026-10-19T07:41:26.056Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -95,7 +95,47 @@
           "realName": "Боря"
         },
         "subUnlocked": true,
-        "subs": [],
+        "subs": [
+          {
+            "id": "smvey40ge21lodz",
+            "cls": "",
+            "level": 0,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          }
+        ],
         "away": {
           "2026-10-17": {
             "whole": true
