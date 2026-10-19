@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T16:47:20.845Z",
+    "updatedAt": "2026-10-19T16:47:41.818Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -56,7 +56,7 @@
           "phone": "777",
           "telegram": "@anusslona"
         },
-        "subUnlocked": false,
+        "subUnlocked": true,
         "subs": [
           {
             "id": "smvfhiffu3z79mj",
@@ -141,6 +141,10 @@
             null,
             null
           ]
+        },
+        "contacts": {
+          "realName": "саферо",
+          "phone": "666"
         },
         "subUnlocked": false,
         "subs": [],
