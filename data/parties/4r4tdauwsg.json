@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T16:44:18.781Z",
+    "updatedAt": "2026-10-19T16:44:23.562Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -17,7 +17,9 @@
         "affil": "roster",
         "slots": {
           "rhand": [
-            null
+            {
+              "itemId": 3922
+            }
           ],
           "lhand": [
             null
@@ -66,7 +68,25 @@
       "offs": [],
       "checklist": []
     },
-    "history": [],
+    "history": [
+      {
+        "ts": "2026-10-19T16:44:21.190Z",
+        "кто": "Мастер",
+        "charId": "cmvfhi64c116opv",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 3922,
+            "mod": 0
+          }
+        ]
+      }
+    ],
     "wishes": []
   }
 }
