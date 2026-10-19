@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T07:41:56.584Z",
+    "updatedAt": "2026-10-19T07:42:04.627Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -176,8 +176,8 @@
           },
           {
             "id": "smvey4o135zbo68",
-            "cls": "",
-            "level": 0,
+            "cls": "Destroyer",
+            "level": 48,
             "slots": {
               "rhand": [
                 null
