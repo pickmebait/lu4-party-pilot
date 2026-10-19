@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T07:41:02.667Z",
+    "updatedAt": "2026-10-19T07:41:21.863Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -94,7 +94,7 @@
         "contacts": {
           "realName": "Боря"
         },
-        "subUnlocked": false,
+        "subUnlocked": true,
         "subs": [],
         "away": {
           "2026-10-17": {
