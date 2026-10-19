@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-18T10:04:10.039Z",
+    "updatedAt": "2026-10-19T07:36:11.633Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -181,60 +181,127 @@
         }
       ]
     },
-    "wishes": [
+    "goals": [
       {
         "id": "wmvcnnwoc1cfza6",
-        "itemId": 548,
-        "count": 1,
+        "items": [
+          {
+            "itemId": 548,
+            "count": 1,
+            "готово": false
+          }
+        ],
         "priority": 2,
         "seeker": "PickMe",
         "forCharId": "cmvbewm5c13gfov",
         "note": "Куплю до 4кк",
-        "done": false,
         "rejected": false
       },
       {
         "id": "wmvdnrovn1ra83r",
-        "done": false,
-        "itemId": 599,
-        "mod": 16,
-        "count": 1,
+        "items": [
+          {
+            "itemId": 599,
+            "mod": 16,
+            "count": 1,
+            "готово": false
+          }
+        ],
         "priority": 2,
         "seeker": "Мастер",
-        "создатель": "Мастер"
+        "создатель": "Мастер",
+        "rejected": false
       },
       {
         "id": "wmvdnrovn2ty8jk",
-        "done": false,
-        "itemId": 548,
-        "count": 1,
+        "items": [
+          {
+            "itemId": 548,
+            "count": 1,
+            "готово": false
+          }
+        ],
         "priority": 2,
         "seeker": "Мастер",
-        "создатель": "Мастер"
+        "создатель": "Мастер",
+        "rejected": false
       },
       {
         "id": "wmvdnrovn379p5t",
-        "done": false,
-        "itemId": 8181,
-        "count": 1,
+        "items": [
+          {
+            "itemId": 8181,
+            "count": 1,
+            "готово": false
+          }
+        ],
         "priority": 2,
         "seeker": "Мастер",
-        "создатель": "Мастер"
+        "создатель": "Мастер",
+        "rejected": false
       },
       {
         "id": "wmvdnrovn4s3hzp",
-        "done": false,
-        "itemId": 672,
-        "count": 1,
+        "items": [
+          {
+            "itemId": 672,
+            "count": 1,
+            "готово": false
+          }
+        ],
         "priority": 2,
         "seeker": "Мастер",
-        "создатель": "Мастер"
+        "создатель": "Мастер",
+        "rejected": false
       },
       {
         "id": "wmvdnrovn52cxce",
-        "done": false,
-        "itemId": 577,
-        "count": 1,
+        "items": [
+          {
+            "itemId": 577,
+            "count": 1,
+            "готово": false
+          }
+        ],
+        "priority": 2,
+        "seeker": "Мастер",
+        "создатель": "Мастер",
+        "rejected": false
+      },
+      {
+        "id": "gmvexx9uu1",
+        "items": [
+          {
+            "itemId": 548,
+            "count": 1,
+            "готово": false
+          },
+          {
+            "itemId": 672,
+            "count": 1,
+            "готово": false
+          },
+          {
+            "itemId": 577,
+            "count": 1,
+            "готово": false
+          },
+          {
+            "itemId": 407,
+            "count": 1,
+            "готово": false
+          },
+          {
+            "itemId": 526,
+            "count": 1,
+            "готово": false
+          },
+          {
+            "itemId": 8181,
+            "count": 1,
+            "готово": false
+          }
+        ],
         "priority": 2,
         "seeker": "Мастер",
         "создатель": "Мастер"
@@ -287,6 +354,7 @@
       ],
       "checklist": []
     },
-    "history": []
+    "history": [],
+    "wishes": []
   }
 }
