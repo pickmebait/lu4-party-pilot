@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T16:51:48.597Z",
+    "updatedAt": "2026-10-19T16:52:02.969Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -56,50 +56,8 @@
           "phone": "777",
           "telegram": "@anusslona"
         },
-        "subUnlocked": false,
-        "subs": [
-          {
-            "id": "smvfhiffu3z79mj",
-            "cls": "",
-            "level": 0,
-            "slots": {
-              "rhand": [
-                {
-                  "itemId": 6579
-                }
-              ],
-              "lhand": [
-                null
-              ],
-              "head": [
-                null
-              ],
-              "chest": [
-                null
-              ],
-              "legs": [
-                null
-              ],
-              "gloves": [
-                null
-              ],
-              "feet": [
-                null
-              ],
-              "neck": [
-                null
-              ],
-              "ear": [
-                null,
-                null
-              ],
-              "ring": [
-                null,
-                null
-              ]
-            }
-          }
-        ],
+        "subUnlocked": true,
+        "subs": [],
         "away": {}
       },
       {
@@ -148,7 +106,7 @@
           "realName": "саферо",
           "phone": "666"
         },
-        "subUnlocked": true,
+        "subUnlocked": false,
         "subs": [],
         "away": {}
       }
@@ -233,6 +191,23 @@
             "itemId": 6,
             "mod": 0
           }
+        ]
+      },
+      {
+        "ts": "2026-10-19T16:51:59.235Z",
+        "кто": "Мастер",
+        "charId": "cmvfhi64c116opv",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": "smvfhiffu3z79mj",
+        "было": [
+          {
+            "itemId": 6579,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          null
         ]
       }
     ],
