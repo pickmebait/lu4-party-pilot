@@ -5,16 +5,68 @@
   "masterHash": "8e0442cede6bc50254d8bc10260597e7423037ee74853f73595fddd9b86c8e11",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-19T16:43:44.909Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 9,
+    "updatedAt": "2026-10-19T16:44:18.781Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "cmvfhi64c116opv",
+        "name": "узбек",
+        "cls": "Paladin",
+        "level": 75,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
-    "wishes": [],
+    "goals": [],
     "sets": [],
-    "customNames": {}
+    "customNames": {},
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    },
+    "history": [],
+    "wishes": []
   }
 }
