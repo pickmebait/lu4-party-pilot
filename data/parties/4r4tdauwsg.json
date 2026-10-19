@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T16:45:29.559Z",
+    "updatedAt": "2026-10-19T16:45:40.357Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -118,7 +118,12 @@
         }
       },
       "offs": [],
-      "checklist": []
+      "checklist": [
+        {
+          "id": "ckmvfhjx2a4wey6v",
+          "text": "ПРЕС КАЧАТ"
+        }
+      ]
     },
     "history": [
       {
