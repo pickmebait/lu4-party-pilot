@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T07:41:26.056Z",
+    "updatedAt": "2026-10-19T07:41:36.769Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -98,8 +98,8 @@
         "subs": [
           {
             "id": "smvey40ge21lodz",
-            "cls": "",
-            "level": 0,
+            "cls": "Bounty Hunter",
+            "level": 52,
             "slots": {
               "rhand": [
                 null
