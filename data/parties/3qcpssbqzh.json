@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T07:36:21.099Z",
+    "updatedAt": "2026-10-19T07:36:49.032Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -310,6 +310,25 @@
         "seeker": "Мастер",
         "создатель": "Мастер",
         "rejected": false
+      },
+      {
+        "id": "gmvexy2rv2",
+        "items": [
+          {
+            "itemId": 548,
+            "count": 1,
+            "готово": false
+          },
+          {
+            "itemId": 8181,
+            "count": 1,
+            "готово": false
+          }
+        ],
+        "priority": 1,
+        "seeker": "Мастер",
+        "forCharId": "cmvbewm5c13gfov",
+        "создатель": "Мастер"
       }
     ],
     "sets": [
