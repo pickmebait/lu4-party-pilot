@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T07:41:36.769Z",
+    "updatedAt": "2026-10-19T07:41:40.881Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -100,6 +100,45 @@
             "id": "smvey40ge21lodz",
             "cls": "Bounty Hunter",
             "level": 52,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "id": "smvey4byh46oeha",
+            "cls": "",
+            "level": 0,
             "slots": {
               "rhand": [
                 null
