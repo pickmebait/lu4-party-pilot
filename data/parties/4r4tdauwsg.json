@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T16:52:02.969Z",
+    "updatedAt": "2026-10-19T16:52:07.265Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -106,7 +106,7 @@
           "realName": "саферо",
           "phone": "666"
         },
-        "subUnlocked": false,
+        "subUnlocked": true,
         "subs": [],
         "away": {}
       }
