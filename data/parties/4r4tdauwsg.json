@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T16:45:40.357Z",
+    "updatedAt": "2026-10-19T16:45:47.642Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -122,6 +122,10 @@
         {
           "id": "ckmvfhjx2a4wey6v",
           "text": "ПРЕС КАЧАТ"
+        },
+        {
+          "id": "ckmvfhk2nb54vsm9",
+          "text": "БЕГИТ"
         }
       ]
     },
