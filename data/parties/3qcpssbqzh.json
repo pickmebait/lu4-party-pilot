@@ -14,7 +14,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-19T07:41:53.321Z",
+    "updatedAt": "2026-10-19T07:41:56.584Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -139,6 +139,45 @@
             "id": "smvey4byh46oeha",
             "cls": "Spellhowler",
             "level": 62,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "id": "smvey4o135zbo68",
+            "cls": "",
+            "level": 0,
             "slots": {
               "rhand": [
                 null
