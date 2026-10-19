@@ -1,0 +1,20 @@
+{
+  "partyId": "4r4tdauwsg",
+  "name": "тупарылые нигеры",
+  "createdAt": "2026-10-19T16:43:44.909Z",
+  "masterHash": "8e0442cede6bc50254d8bc10260597e7423037ee74853f73595fddd9b86c8e11",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-19T16:43:44.909Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "wishes": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
