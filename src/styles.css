@@ -1729,8 +1729,7 @@ body {
  * нажимаются: нажатие привело бы к отказу сервера, и выглядело бы как
  * поломка у человека, который всё сделал правильно.
  */
-.slot-icon:disabled,
-.gear-cell .cell-main:disabled {
+.slot-icon:disabled {
   cursor: default;
   opacity: 1;
 }
@@ -2349,6 +2348,27 @@ body {
   border-style: dashed;
 }
 
+/* Парная копия в левой руке: бледная, с пунктиром и меткой «оба».
+   Кнопки у неё убраны — управление только через правую ячейку, и копия
+   обязана выглядеть как отражение, а не как второй предмет. */
+.gear-cell.ghost {
+  border-style: dashed;
+  background: transparent;
+  opacity: 0.55;
+}
+
+.gear-cell.ghost .cell-icon {
+  filter: grayscale(0.4);
+}
+
+.cell-ghost-mark {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+}
+
 /* Фильтры: тип предмета и грейд дополняют поиск. */
 .filters {
   display: grid;
@@ -2707,21 +2727,6 @@ body {
   gap: 6px;
 }
 
-.cell-main {
-  background: none;
-  border: none;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  flex: 1;
-  min-width: 0;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
 .cell-icon {
   flex: none;
 }
@@ -2743,26 +2748,16 @@ body {
   color: var(--muted-dim);
 }
 
-/* Ранг идёт перед названием, поэтому поджат по высоте. */
-.cell-main .chip.grade,
-.cell-main .chip.span {
-  flex: none;
-  padding: 0 5px;
-  font-size: 10px;
-  line-height: 16px;
-  border-radius: 4px;
-}
-
 .cell-mod {
   display: flex;
   align-items: center;
   gap: 1px;
   margin-left: auto;
   /*
-   * Место под кнопку снятия в правом верхнем углу резервируется здесь, а
-   * не в .cell-main: кнопка стоит у правого края ячейки, то есть как раз
-   * за счётчиком. Если резервировать в .cell-main, счётчик подползал под
-   * кнопку и нажимать на + в её правой части было нельзя.
+   * Место под кнопку снятия в правом верхнем углу резервируется здесь: кнопка
+   * стоит у правого края ячейки, то есть как раз за счётчиком. Без отступа
+   * счётчик подползал под кнопку, и нажимать на + в её правой части было
+   * нельзя.
    */
   margin-right: 18px;
   background: var(--surface-deep);
@@ -2826,7 +2821,7 @@ body {
  * Замер по прямоугольнику текста показывал попадание в центр, а на деле
  * глиф был вне кнопки.
  *
- * Место под кнопку зарезервировано в .cell-main постоянно: если резервировать
+ * Место под кнопку резервируется в .cell-mod постоянно: если резервировать
  * только при наведении, ячейка прыгала бы, а счётчик заточки накрывался бы.
  */
 .cell-tools .icon-btn.tiny {
@@ -3242,6 +3237,54 @@ body {
 .picker-id {
   font-size: 11px;
   color: var(--muted-dim);
+}
+
+/*
+ * Разворот SA и редкого эффекта.
+ *
+ * Блок лежит под строкой, а не внутри неё: строка — это клик по выбору
+ * предмета, а кнопка внутри кнопки браузер не разбирает. Описание занимает
+ * всю ширину списка, чтобы длинный текст не обрывался на половине.
+ */
+.picker-expand {
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.picker-expand.on {
+  color: var(--accent-2);
+  text-decoration: none;
+}
+
+.picker-effects {
+  display: grid;
+  gap: 5px;
+  margin: -1px 0 3px;
+  padding: 8px 10px;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+
+.picker-effect {
+  display: grid;
+  grid-template-columns: minmax(0, 92px) 1fr;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.picker-effect-name {
+  color: var(--accent-2);
+  font-weight: 600;
+}
+
+.picker-effect-desc {
+  color: var(--muted);
+}
+
+.picker-effect.rare .picker-effect-name {
+  color: var(--accent);
 }
 
 /* Иконка предмета: картинка или первая буква, если файла нет. */

@@ -2,6 +2,7 @@
 import {
   ARMOR_TYPE_OPTIONS,
   GRADE_OPTIONS,
+  JEWELRY_TYPE_OPTIONS,
   WEAPON_TYPE_LABELS,
   type CatalogItem,
   type SlotDef,
@@ -105,11 +106,12 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
   )
 
   const typeField =
-    filters.type === 'weapon' ? 'weaponType' : filters.type === 'armor' ? 'armorType' : null
+    filters.type === 'weapon' ? 'weaponType' : filters.type === 'armor' ? 'armorType' : filters.type === 'jewelry' ? 'jewelryType' : null
 
   const typeOptions = useMemo(() => {
     if (filters.type === 'weapon') return WEAPON_TYPE_LABELS.map((v) => ({ value: v, label: v }))
     if (filters.type === 'armor') return ARMOR_TYPE_OPTIONS.map((v) => ({ value: v.value, label: v.label }))
+    if (filters.type === 'jewelry') return JEWELRY_TYPE_OPTIONS.map((v) => ({ value: v.value, label: v.label }))
     return []
   }, [filters.type])
 
@@ -123,6 +125,7 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
         pool.some((it) => {
           if (typeField === 'weaponType') return it.weaponType === o.value
           if (typeField === 'armorType') return it.armorType === o.value
+          if (typeField === 'jewelryType') return jewelryTypeOf(it) === o.value
           return false
         }),
       ),
@@ -205,7 +208,7 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
           <div className="filters">
             {показыватьТип && (
               <FilterRow
-                label={filters.type === 'weapon' ? 'Тип оружия' : 'Тип брони'}
+                label={filters.type === 'weapon' ? 'Тип оружия' : filters.type === 'armor' ? 'Тип брони' : 'Тип бижутерии'}
                 options={typeOptions}
                 value={type}
                 total={total}
@@ -337,12 +340,21 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
 }
 
 /** Неизвестный тип или грейд не прячет предмет: он проходит любой фильтр. */
+function jewelryTypeOf(it: CatalogItem): string | null {
+  if (it.epic) return "epic"
+  if (it.slot === 'l_ring') return 'l_ring'
+  if (it.slot === 'l_ear') return 'l_ear'
+  if (it.slot === 'neck') return 'neck'
+  return null
+}
+
 function passesType(
   it: CatalogItem,
-  field: 'weaponType' | 'armorType' | null,
+  field: 'weaponType' | 'armorType' | 'jewelryType' | null,
   value: string | null,
 ): boolean {
   if (!value || !field) return true
+  if (field === 'jewelryType') return jewelryTypeOf(it) === value
   return it[field] === value
 }
 
@@ -421,8 +433,21 @@ function Row({
   if (it.dual) stats.push('дуальное')
   if (it.fullbody) stats.push('цельное')
 
+  const [effectsOpen, setEffectsOpen] = useState(false)
+  const естьЭффекты = (it.saEffects?.length ?? 0) > 0 || !!it.rareEffect
+
   return (
-    <button
+    /*
+     * Разворачиваемые эффекты — соседняя строка под основной, а не вложенная
+     * кнопка в кнопку: вложенную кнопку браузер не разбирает, и клик по
+     * «▼ Эффекты» одновременно выбирал бы предмет. Поэтому сама строка —
+     * div с ролью button, а блок эффектов лежит под ней, вне кликабельной
+     * области.
+     */
+    <>
+    <div
+      role="button"
+      tabIndex={0}
       className={`picker-row ${inApp ? 'in-app' : ''} ${multi ? 'multi' : ''} ${chosen ? 'chosen' : ''} ${blocked ? 'blocked' : ''}`}
       onClick={() => {
         onPick(it.id)
@@ -455,7 +480,38 @@ function Row({
       {it.gradeName && <span className={`tag grade g-${it.gradeName}`}>{it.gradeName}</span>}
       {inApp && <span className="tag in-app-mark" title="Уже есть в пати">в пати</span>}
       <span className="picker-id">#{it.id}</span>
-    </button>
+      {естьЭффекты && (
+        <button
+          className={`link-btn picker-expand${effectsOpen ? ' on' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation()
+            setEffectsOpen((v) => !v)
+          }}
+          title={effectsOpen ? 'Скрыть эффекты' : 'Показать эффекты'}
+        >
+          {effectsOpen ? '▲' : '▼ Эффекты'}
+        </button>
+      )}
+    </div>
+    {effectsOpen && естьЭффекты && (
+      <div className="picker-effects">
+        {it.saEffects?.map((sa, i) => (
+          <div key={i} className="picker-effect">
+            <span className="picker-effect-name">{sa.name}</span>
+            <span className="picker-effect-desc">{sa.description}</span>
+          </div>
+        ))}
+        {it.rareEffect && (
+          <div className="picker-effect rare">
+            <span className="picker-effect-name">{it.rareEffect.name || 'Rare'}</span>
+            {it.rareEffect.description && (
+              <span className="picker-effect-desc">{it.rareEffect.description}</span>
+            )}
+          </div>
+        )}
+      </div>
+    )}
+    </>
   )
 }
 

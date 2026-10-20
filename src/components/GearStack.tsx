@@ -1,22 +1,9 @@
-import { MAX_MOD, SLOT_GROUPS, SLOTS, gradeCode, gradeLabel, type Char, type SlotKey } from '@/types'
+import { SLOT_GROUPS, SLOTS, type Char, type SlotKey } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
 import { setSlotMod, unequipItem, type Branch } from '@/lib/store'
 import { ItemIcon } from './ItemIcon'
 import { IconClose } from './Icons'
 
-/**
- * Снаряжение персонажа в карточке: три группы, в каждой ячейки столбиком.
- *
- * Блоки идут друг под другом, а не справа друг от друга: каждый блок
- * занимает всю ширину карточки, поэтому ячейка может быть шире и название
- * предмета помещается целиком. В экран влезает вся пати, а не один с
- * половиной герой.
- *
- * Внутри блока ячейки тоже стоят друг под другом — так выглядит персонаж
- * целиком, и карточка получается узкой.
- *
- * Порядок групп задан в SLOT_GROUPS: оружие, броня, бижутерия.
- */
 export function GearStack({
   ветка,
   слоты,
@@ -58,10 +45,9 @@ export function GearStack({
 /**
  * Ячейки одного слота: у серёг и колец их по две, у остальных по одной.
  *
- * Обёртки .gear-slot и .gear-cells разворачиваются в ячейки через
- * display: contents — благодаря этому ячейки разных слотов становятся
- * соседями сетки, у брони пять ячеек в столбик, у бижутерии тоже пять, и
- * пары не рвутся.
+ * Обёртка разворачивается в ячейки через display: contents — благодаря этому
+ * ячейки разных слотов становятся соседями сетки, у брони пять ячеек в
+ * столбик, у бижутерии тоже пять, и пары не рвутся.
  */
 function SlotCells({
   ветка,
@@ -83,146 +69,140 @@ function SlotCells({
 
   return (
     <div className="gear-slot">
-      <div className="gear-cells">
-        {arr.map((entry, i) => {
-          const name = entry ? catalog.nameOf(entry.itemId) : ''
-
-          if (!entry) {
-            /*
-             * У чужого персонажа пустая ячейка — не кнопка. Иначе она
-             * выглядела бы такой же нажимаемой, как своя, и нажатие
-             * приводило бы к отказу сервера.
-             */
-            if (!правый) {
-              return (
-                <div key={i} className="gear-cell void ro" title={`${def.label}: пусто`}>
-                  +
-                </div>
-              )
-            }
+      {arr.map((entry, i) => {
+        if (!entry) {
+          /*
+           * Пустая ячейка — не кнопка. У чужого персонажа она просто не
+           * нажимается, а в форме правки открывает пикер напрямую: пикер —
+           * тот же клик по месту, что был и раньше, но без накладных расходов
+           * на понятие «выбрать пустую ячейку».
+           */
+          if (!правый) {
             return (
-              <button
-                key={i}
-                className="gear-cell void"
-                title={`${def.label}: пусто`}
-                onClick={() => onPick(i)}
-              >
+              <div key={i} className="gear-cell void ro" title={`${def.label}: пусто`}>
                 +
-              </button>
+              </div>
             )
           }
-
-          const item = catalog.byId(entry.itemId)
-          const grade = item?.gradeName
-          const gradeCss = gradeCode(grade)
-          const mod = entry.mod ?? 0
-
           return (
-            <div
+            <button
               key={i}
-              className={`gear-cell filled ${
-                gradeCss !== null ? `g${gradeCss}` : ''
-              } ${entry.spans ? 'spans' : ''}`}
-              title={[
-                `${def.label}: ${name}`,
-                grade ? `ранг ${grade}` : '',
-                `№${entry.itemId}`,
-                entry.mod ? `заточка +${entry.mod}` : '',
-                entry.spans ? 'занимает два слота' : '',
-                item?.twoHanded ? 'двуручное' : '',
-                item?.dual ? 'дуальное' : '',
-                item?.fullbody ? 'цельная броня' : '',
-                item?.weaponClass,
-                typeof item?.atkPhys === 'number' ? `физ. АТК ${item.atkPhys}` : '',
-                typeof item?.atkMag === 'number' ? `маг. АТК ${item.atkMag}` : '',
-                typeof item?.physDef === 'number' ? `физ. ЗАЩ ${item.physDef}` : '',
-                typeof item?.mDef === 'number' ? `маг. ЗАЩ ${item.mDef}` : '',
-                item?.set,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
+              className="gear-cell void"
+              title={`${def.label}: выбрать предмет`}
+              onClick={() => onPick(i)}
             >
-              {/*
-                Всё в одну строку: иконка, ранг, название, счётчик заточки.
-                Раньше ранг и заточка стояли под названием, и ячейка была
-                вдвое выше — карточка не помещалась в экран по высоте.
-              */}
-              <button
-                className="cell-main"
-                disabled={!правый}
-                title={правый ? `${def.label}: ${name}` : 'Только просмотр'}
-                onClick={() => onPick(i)}
-              >
-                <span className="cell-icon">
-                  <ItemIcon item={item} name={name} size={24} />
-                </span>
-                {grade && <span className="chip grade">{gradeLabel(grade)}</span>}
-                {entry.spans && <span className="chip span">2</span>}
-                <span className="cell-name">{name}</span>
-              </button>
-
-              {/*
-                Заточка всегда на виду: в ячейке двенадцать вещей, спрятать
-                её под наведение — значит забыть про неё и упустить
-                перезаточку перед походом. Кнопки стоят отдельными элементами
-                от .cell-main, потому что кнопка внутри кнопки браузером не
-                разбирается, а нажатие на + открывало бы пикер предмета.
-
-                У чужого персонажа заточка не меняется, но число остаётся:
-                сравнивать затоску у всей пати нужно, и для этого хватает
-                самой цифры.
-              */}
-              {правый ? (
-                <div className="cell-mod" title={`Заточка от 0 до ${MAX_MOD}`}>
-                  <button
-                    className="mod-btn"
-                    disabled={mod <= 0}
-                    onClick={() => setSlotMod(ветка, slot, i, mod - 1)}
-                    title="Убавить заточку на 1"
-                  >
-                    −
-                  </button>
-                  <span className={`mod-value${mod > 0 ? ' on' : ''}`}>+{mod}</span>
-                  <button
-                    className="mod-btn"
-                    disabled={mod >= MAX_MOD}
-                    onClick={() => setSlotMod(ветка, slot, i, mod + 1)}
-                    title="Добавить заточку на 1"
-                  >
-                    +
-                  </button>
-                </div>
-              ) : (
-                <span className="cell-mod readonly" title="Только просмотр">
-                  <span className={`mod-value${mod > 0 ? ' on' : ''}`}>+{mod}</span>
-                </span>
-              )}
-
-              {/*
-                Снять вещь. Кнопка в правом верхнем углу, по наведению и
-                только на заполненной ячейке: у пустой и так понятно, что
-                снимать нечего.
-
-                Место под неё зарезервировано в .cell-main постоянно, а не
-                только при наведении: иначе наведение сдвигало бы счётчик
-                заточки и накрывало его — а нажать на + нужно как раз для
-                того, ради чего ячейку и наводят.
-              */}
-              {правый && (
-                <div className="cell-tools">
-                  <button
-                    className="icon-btn tiny danger"
-                    title={entry.spans ? 'Снять с обоих слотов' : 'Снять'}
-                    onClick={() => unequipItem(ветка, slot, i)}
-                  >
-                    <IconClose />
-                  </button>
-                </div>
-              )}
-            </div>
+              +
+            </button>
           )
-        })}
-      </div>
+        }
+
+        const item = catalog.byId(entry.itemId)
+        const name = catalog.nameOf(entry.itemId)
+        const grade = item?.gradeName
+        const gradeCss = gradeCode(grade)
+        const mod = entry.mod ?? 0
+
+        /*
+         * Парная копия в левой руке — призрак. У парного и двуручного
+         * оружия на экране две ячейки, но предмет один, и вторая пара
+         * кнопок с заточкой означала бы вторую вещь, которой нет:
+         * снять заточку из левой руки и надеть правую отдельно нельзя,
+         * поэтому управление только справа, а слева — метка «занимает
+         * оба слота».
+         */
+        const ghost = slot === 'lhand' && entry.spans === true
+
+        return (
+          <div
+            key={i}
+            className={`gear-cell filled ${
+              gradeCss !== null ? `g${gradeCss}` : ''
+            } ${entry.spans ? 'spans' : ''}${ghost ? ' ghost' : ''}`}
+            title={[
+              `${def.label}: ${name}`,
+              grade ? `ранг ${grade}` : '',
+              `№${entry.itemId}`,
+              entry.mod ? `заточка +${entry.mod}` : '',
+              entry.spans ? 'занимает два слота' : '',
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          >
+            {/*
+              Иконка берётся из справочника, а не из названия: двенадцать
+              одинаковых иконок на ткани в ячейке одинаково бесполезны, и
+              текстура — единственное, что их различает.
+            */}
+            <div className="cell-icon">
+              <ItemIcon item={item} name={name} />
+            </div>
+            <span className="cell-name">{name}</span>
+            {/*
+              Заточка всегда на виду: в ячейке двенадцать вещей, и спрятанная
+              в подсказке цифра затирается — человек управляет снаряжением
+              глазами, а не по памяти.
+
+              У парной копии заточки нет: она принадлежит правой половине,
+              и второй счётчик означал бы вторую вещь, которой нет, — вместо
+              него метка «оба».
+            */}
+            {ghost ? (
+              <span className="cell-ghost-mark" title="Предмет занимает оба слота">
+                оба
+              </span>
+            ) : (
+              <div className="cell-mod">
+                <span className={`mod-value${mod > 0 ? ' on' : ''}`}>+{mod}</span>
+              </div>
+            )}
+
+            {/*
+              Кнопки снятия и управления заточкой. Без них пришлось бы сначала
+              выбирать предмет, а потом правильно нажимать на стрелочки —
+              два разных жеста там, где хватило бы одного.
+            */}
+            {правый && !ghost && (
+              <div className="cell-tools">
+                <button
+                  className="mod-btn"
+                  onClick={() => setSlotMod(ветка, slot, i, mod - 1)}
+                  title="Убавить заточку на 1"
+                >
+                  −
+                </button>
+                <button
+                  className="mod-btn"
+                  onClick={() => setSlotMod(ветка, slot, i, mod + 1)}
+                  title="Добавить заточку на 1"
+                >
+                  +
+                </button>
+                <button
+                  className="icon-btn tiny danger"
+                  title="Снять"
+                  onClick={() => unequipItem(ветка, slot, i)}
+                >
+                  <IconClose />
+                </button>
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
+}
+
+/** Числовой код грейда для цвета рамки, либо null если грейда нет. */
+function gradeCode(grade?: string): number | null {
+  if (!grade) return null
+  const codes: Record<string, number> = {
+    NG: 0,
+    D: 1,
+    C: 2,
+    B: 3,
+    A: 4,
+    S: 5,
+  }
+  return codes[grade] ?? null
 }

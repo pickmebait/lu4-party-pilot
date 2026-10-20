@@ -35,7 +35,7 @@ export function emptySlots(): Char['slots'] {
 
 /** Слот, который предмет занимает вместе с указанным. */
 export function partnerSlot(slot: SlotKey, item: CatalogItem | null | undefined): SlotKey | null {
-  if (slot === 'rhand' && item?.twoHanded) return 'lhand'
+  if (slot === 'rhand' && (item?.twoHanded || item?.dual)) return 'lhand'
   if (slot === 'chest' && item?.fullbody) return 'legs'
   return null
 }

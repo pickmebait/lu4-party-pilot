@@ -23,7 +23,7 @@ export interface SlotDef {
   /** Короткая подсказка для окна выбора. */
   hint: string
   /** Какие фильтры показывать в пикере для этого слота. */
-  filters: { type?: 'weapon' | 'armor'; grade?: boolean }
+  filters: { type?: 'weapon' | 'armor' | 'jewelry'; grade?: boolean }
 }
 
 /**
@@ -36,29 +36,31 @@ export const WEAPON_TYPE_LABELS = [
   'Топоры',
   'Кинжалы',
   'Луки',
-  'Копья',
-  'Кастеты',
-  'Посохи',
-  'Магические мечи',
-  'Магические посохи',
-  'Магические кинжалы',
   'Двуручные мечи',
   'Двуручные топоры',
   'Двуручные посохи',
   'Парные мечи',
   'Парные топоры',
   'Парные кинжалы',
-  'Другое',
+  'Кастеты',
+  'Копья',
+  'Посохи',
 ] as const
 
 export const ARMOR_TYPE_OPTIONS = [
   { value: 'heavy', label: 'Тяжёлая' },
   { value: 'light', label: 'Лёгкая' },
   { value: 'magic', label: 'Магическая' },
+]
+export const JEWELRY_TYPE_OPTIONS = [
+  { value: 'l_ring', label: 'Кольца' },
+  { value: 'l_ear', label: 'Серьги' },
+  { value: 'neck', label: 'Ожерелья' },
+  { value: 'epic', label: 'Эпическая' },
 ] as const
 
 /** Грейды в порядке убывания: так привычнее игроку. */
-export const GRADE_OPTIONS = ['NG', 'D', 'C', 'B', 'A', 'S'] as const
+export const GRADE_OPTIONS = ['NG', 'D', 'C', 'B', 'A'] as const
 
 /**
  * Числовой код грейда для цвета метки.
@@ -170,7 +172,7 @@ export const SLOTS: Record<string, SlotDef> = {
     max: 1,
     accepts: (i) => i.slot === 'neck',
     hint: 'Ожерелья и амулеты',
-    filters: { grade: true },
+    filters: { type: 'jewelry', grade: true },
   },
   ear: {
     key: 'ear',
@@ -178,7 +180,7 @@ export const SLOTS: Record<string, SlotDef> = {
     max: 2,
     accepts: (i) => i.slot === 'l_ear',
     hint: 'Серьги, по две штуки',
-    filters: { grade: true },
+    filters: { type: 'jewelry', grade: true },
   },
   ring: {
     key: 'ring',
@@ -186,7 +188,7 @@ export const SLOTS: Record<string, SlotDef> = {
     max: 2,
     accepts: (i) => i.slot === 'l_ring',
     hint: 'Кольца, по две штуки',
-    filters: { grade: true },
+    filters: { type: 'jewelry', grade: true },
   },
 }
 
@@ -600,6 +602,8 @@ export interface CatalogItem {
    * есть не везде — такие вещи видны при любом выборе.
    */
   armorType?: 'heavy' | 'light' | 'magic'
+  /** Тип бижутерии для фильтра: кольца, серьги, ожерелья, эпическая. */
+  jewelryType?: string
   /** Эпическая бижутерия по статье «Все виды бижутерии». */
   epic?: boolean
   /** Занимает обе руки: двуручное или дуальное. */
@@ -620,10 +624,10 @@ export interface CatalogItem {
   mpIncrease?: number
   /** Название части: у брони может отличаться от названия вещи. */
   pieceName?: string
-  /** SA-эффекты: тир, цвет, название, описание. */
-  saEffects?: { tier?: string; color?: string; name?: string; effect?: string }[]
-  /** Особый эффект редкой вещи. */
-  rareEffect?: string
+  /** SA-эффекты: название и описание, по одному на каждый из трёх вариантов. */
+  saEffects?: { name?: string; description?: string }[]
+  /** Особый эффект редкой вещи: название и описание. */
+  rareEffect?: { name?: string; description?: string }
 
   /* --------------------------------------------------------------------- крафт */
 
