@@ -5,16 +5,67 @@
   "masterHash": "c122ba2a6358eb53075fc2f18c666bef0c02c6d7269301ca770987c02c8589e7",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-20T13:24:49.999Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 9,
+    "updatedAt": "2026-10-20T13:30:54.591Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "cmvgq1bcu1f0ibz",
+        "name": "Mayhem",
+        "cls": "Phantom Ranger",
+        "level": 75,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
     "goals": [],
     "sets": [],
-    "customNames": {}
+    "customNames": {},
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    },
+    "history": []
   }
 }
