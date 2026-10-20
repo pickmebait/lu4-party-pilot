@@ -1,0 +1,20 @@
+{
+  "partyId": "xd8m4r3k4w",
+  "name": "[ WALL STREET ]",
+  "createdAt": "2026-10-20T13:24:49.999Z",
+  "masterHash": "c122ba2a6358eb53075fc2f18c666bef0c02c6d7269301ca770987c02c8589e7",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-20T13:24:49.999Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "goals": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
