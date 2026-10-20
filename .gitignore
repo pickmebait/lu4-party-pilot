@@ -17,3 +17,4 @@ secrets*
 .vscode/
 .idea/
 items-prev.json
+.git/wiki-data/
