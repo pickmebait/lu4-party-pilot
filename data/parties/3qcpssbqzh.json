@@ -1,0 +1,1471 @@
+{
+  "partyId": "3qcpssbqzh",
+  "name": "Моя пати",
+  "createdAt": "2026-10-16T20:19:33.691Z",
+  "masterHash": "923721e9e495ab5e48df3f162821225268241f535958b865ebc1532b6aa8002e",
+  "tokens": [
+    {
+      "id": "u9f7kbffj6",
+      "hash": "37c4db55449f371a72ba3485ba415c8ed5607268e0b4306abe1ea32f099bac0d",
+      "charId": "cmvbewm5c13gfov",
+      "charName": "PickMeBait",
+      "createdAt": "2026-10-19T16:30:30.391Z"
+    }
+  ],
+  "db": {
+    "version": 9,
+    "updatedAt": "2026-10-19T16:51:59.226Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "cmvbewm5c13gfov",
+        "name": "PickMeBait",
+        "cls": "Abyss Walker",
+        "level": 75,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            {
+              "itemId": 5618,
+              "mod": 3
+            }
+          ],
+          "lhand": [
+            {
+              "itemId": 11385
+            }
+          ],
+          "head": [
+            {
+              "itemId": 12992
+            }
+          ],
+          "chest": [
+            {
+              "itemId": 11475,
+              "mod": 1
+            }
+          ],
+          "legs": [
+            {
+              "itemId": 11475,
+              "mod": 1,
+              "spans": true
+            }
+          ],
+          "gloves": [
+            {
+              "itemId": 11473
+            }
+          ],
+          "feet": [
+            {
+              "itemId": 11478
+            }
+          ],
+          "neck": [
+            {
+              "itemId": 11587,
+              "mod": 3
+            }
+          ],
+          "ear": [
+            {
+              "itemId": 11589,
+              "mod": 3
+            },
+            {
+              "itemId": 11589,
+              "mod": 3
+            }
+          ],
+          "ring": [
+            {
+              "itemId": 11588,
+              "mod": 3
+            },
+            {
+              "itemId": 11588,
+              "mod": 3
+            }
+          ]
+        },
+        "contacts": {
+          "realName": "Боря"
+        },
+        "subUnlocked": true,
+        "subs": [
+          {
+            "id": "smvey40ge21lodz",
+            "cls": "Bounty Hunter",
+            "level": 52,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "id": "smvey4byh46oeha",
+            "cls": "Spellhowler",
+            "level": 62,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "id": "smvey4o135zbo68",
+            "cls": "Destroyer",
+            "level": 48,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          }
+        ],
+        "away": {
+          "2026-10-17": {
+            "whole": true
+          }
+        },
+        "pa": {
+          "from": "2026-09-28",
+          "days": 30
+        }
+      },
+      {
+        "id": "cmvbezlb23k3rr7",
+        "name": "2345",
+        "cls": "Overlord",
+        "level": 44,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": true,
+        "subs": [
+          {
+            "id": "smvfhrves1rsl9y",
+            "cls": "",
+            "level": 0,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "id": "smvfhryxo2dxgb5",
+            "cls": "",
+            "level": 0,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "id": "smvfhrzzl3gediz",
+            "cls": "",
+            "level": 0,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          }
+        ],
+        "away": {}
+      },
+      {
+        "id": "cmvbf2cdx5jcs2v",
+        "name": "2345",
+        "cls": "Prophet",
+        "level": 33,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      }
+    ],
+    "warehouse": {
+      "stacks": [
+        {
+          "itemId": 548,
+          "count": 1
+        }
+      ],
+      "log": [
+        {
+          "id": "lmvcno4mq217lun",
+          "ts": "2026-10-17T17:13:33.554Z",
+          "who": "Мастер",
+          "itemId": 548,
+          "count": 1,
+          "dir": "in"
+        }
+      ]
+    },
+    "goals": [
+      {
+        "id": "wmvcnnwoc1cfza6",
+        "items": [
+          {
+            "itemId": 548,
+            "count": 1,
+            "готово": false
+          }
+        ],
+        "priority": 2,
+        "seeker": "PickMe",
+        "forCharId": "cmvbewm5c13gfov",
+        "note": "Куплю до 4кк",
+        "rejected": false
+      },
+      {
+        "id": "wmvdnrovn1ra83r",
+        "items": [
+          {
+            "itemId": 599,
+            "mod": 16,
+            "count": 1,
+            "готово": false
+          }
+        ],
+        "priority": 2,
+        "seeker": "Мастер",
+        "создатель": "Мастер",
+        "rejected": false
+      },
+      {
+        "id": "wmvdnrovn2ty8jk",
+        "items": [
+          {
+            "itemId": 548,
+            "count": 1,
+            "готово": false
+          }
+        ],
+        "priority": 2,
+        "seeker": "Мастер",
+        "создатель": "Мастер",
+        "rejected": false
+      },
+      {
+        "id": "wmvdnrovn379p5t",
+        "items": [
+          {
+            "itemId": 8181,
+            "count": 1,
+            "готово": false
+          }
+        ],
+        "priority": 2,
+        "seeker": "Мастер",
+        "создатель": "Мастер",
+        "rejected": false
+      },
+      {
+        "id": "wmvdnrovn4s3hzp",
+        "items": [
+          {
+            "itemId": 672,
+            "count": 1,
+            "готово": false
+          }
+        ],
+        "priority": 2,
+        "seeker": "Мастер",
+        "создатель": "Мастер",
+        "rejected": false
+      },
+      {
+        "id": "wmvdnrovn52cxce",
+        "items": [
+          {
+            "itemId": 577,
+            "count": 1,
+            "готово": false
+          }
+        ],
+        "priority": 2,
+        "seeker": "Мастер",
+        "создатель": "Мастер",
+        "rejected": false
+      },
+      {
+        "id": "gmvexx9uu1",
+        "items": [
+          {
+            "itemId": 548,
+            "count": 1,
+            "готово": true,
+            "готовоAt": "2026-10-19T07:36:15.000Z"
+          },
+          {
+            "itemId": 672,
+            "count": 1,
+            "готово": true,
+            "готовоAt": "2026-10-19T07:36:17.132Z"
+          },
+          {
+            "itemId": 577,
+            "count": 1,
+            "готово": true,
+            "готовоAt": "2026-10-19T07:36:16.684Z"
+          },
+          {
+            "itemId": 407,
+            "count": 1,
+            "готово": true,
+            "готовоAt": "2026-10-19T07:36:18.216Z"
+          },
+          {
+            "itemId": 526,
+            "count": 1,
+            "готово": false
+          },
+          {
+            "itemId": 8181,
+            "count": 1,
+            "готово": false
+          }
+        ],
+        "priority": 2,
+        "seeker": "Мастер",
+        "создатель": "Мастер",
+        "rejected": false
+      },
+      {
+        "id": "gmvexy2rv2",
+        "items": [
+          {
+            "itemId": 548,
+            "count": 1,
+            "готово": false
+          },
+          {
+            "itemId": 8181,
+            "count": 1,
+            "готово": false
+          }
+        ],
+        "priority": 1,
+        "seeker": "Мастер",
+        "forCharId": "cmvbewm5c13gfov",
+        "создатель": "Мастер",
+        "rejected": false
+      }
+    ],
+    "sets": [
+      {
+        "id": "smvcnsdie3yf9ey",
+        "name": "фыва",
+        "bonus": "234",
+        "pieces": [
+          599,
+          672,
+          526,
+          548
+        ]
+      }
+    ],
+    "customNames": {},
+    "schedule": {
+      "prime": {
+        "2026-10-19": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-20": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-21": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-22": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-23": {
+          "from": 1260,
+          "to": 1410
+        },
+        "2026-10-17": {
+          "from": 1260,
+          "to": 1410
+        }
+      },
+      "offs": [
+        "2026-10-24",
+        "2026-10-25",
+        "2026-10-30",
+        "2026-10-31"
+      ],
+      "checklist": []
+    },
+    "history": [
+      {
+        "ts": "2026-10-19T07:38:44.183Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "neck",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 11587,
+            "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:38:45.435Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "neck",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11587,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11587,
+            "mod": 1
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:38:45.623Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "neck",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11587,
+            "mod": 1
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11587,
+            "mod": 2
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:38:45.820Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "neck",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11587,
+            "mod": 2
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11587,
+            "mod": 3
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:38:54.634Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "ear",
+        "subId": null,
+        "было": [
+          null,
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 11589,
+            "mod": 0
+          },
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:38:58.001Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "ear",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11589,
+            "mod": 0
+          },
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 11589,
+            "mod": 0
+          },
+          {
+            "itemId": 11589,
+            "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:39:04.385Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "ring",
+        "subId": null,
+        "было": [
+          null,
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 11588,
+            "mod": 0
+          },
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:39:08.343Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "ring",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11588,
+            "mod": 0
+          },
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 11588,
+            "mod": 1
+          },
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:39:08.516Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "ring",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11588,
+            "mod": 1
+          },
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 11588,
+            "mod": 2
+          },
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:39:08.694Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "ring",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11588,
+            "mod": 2
+          },
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 11588,
+            "mod": 3
+          },
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:39:17.326Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "ring",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11588,
+            "mod": 3
+          },
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 11588,
+            "mod": 3
+          },
+          {
+            "itemId": 11588,
+            "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:39:20.889Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "ear",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11589,
+            "mod": 0
+          },
+          {
+            "itemId": 11589,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11589,
+            "mod": 0
+          },
+          {
+            "itemId": 11589,
+            "mod": 1
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:39:21.113Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "ear",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11589,
+            "mod": 0
+          },
+          {
+            "itemId": 11589,
+            "mod": 1
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11589,
+            "mod": 0
+          },
+          {
+            "itemId": 11589,
+            "mod": 2
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:39:21.311Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "ear",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11589,
+            "mod": 0
+          },
+          {
+            "itemId": 11589,
+            "mod": 2
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11589,
+            "mod": 0
+          },
+          {
+            "itemId": 11589,
+            "mod": 3
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:39:22.625Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "ring",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11588,
+            "mod": 3
+          },
+          {
+            "itemId": 11588,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11588,
+            "mod": 3
+          },
+          {
+            "itemId": 11588,
+            "mod": 1
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:39:22.807Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "ring",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11588,
+            "mod": 3
+          },
+          {
+            "itemId": 11588,
+            "mod": 1
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11588,
+            "mod": 3
+          },
+          {
+            "itemId": 11588,
+            "mod": 2
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:39:22.994Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "ring",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11588,
+            "mod": 3
+          },
+          {
+            "itemId": 11588,
+            "mod": 2
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11588,
+            "mod": 3
+          },
+          {
+            "itemId": 11588,
+            "mod": 3
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:39:25.013Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "ear",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11589,
+            "mod": 0
+          },
+          {
+            "itemId": 11589,
+            "mod": 3
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11589,
+            "mod": 1
+          },
+          {
+            "itemId": 11589,
+            "mod": 3
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:39:25.201Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "ear",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11589,
+            "mod": 1
+          },
+          {
+            "itemId": 11589,
+            "mod": 3
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11589,
+            "mod": 2
+          },
+          {
+            "itemId": 11589,
+            "mod": 3
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:39:25.395Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "ear",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11589,
+            "mod": 2
+          },
+          {
+            "itemId": 11589,
+            "mod": 3
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11589,
+            "mod": 3
+          },
+          {
+            "itemId": 11589,
+            "mod": 3
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:40:39.427Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "head",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 12992,
+            "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:40:44.162Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "chest",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 11475,
+            "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:40:44.162Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "legs",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 11475,
+            "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:40:51.117Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "gloves",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 11473,
+            "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:40:56.227Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "feet",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 11478,
+            "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:40:59.834Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "chest",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11475,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11475,
+            "mod": 1
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:40:59.834Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "legs",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11475,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11475,
+            "mod": 1
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:42:57.909Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 6367,
+            "mod": 3
+          }
+        ],
+        "стало": [
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:42:58.851Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 627,
+            "mod": 2
+          }
+        ],
+        "стало": [
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:43:04.643Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 11385,
+            "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:43:23.220Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 5618,
+            "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:43:24.294Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 5618,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 5618,
+            "mod": 1
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:43:24.510Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 5618,
+            "mod": 1
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 5618,
+            "mod": 2
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T07:43:24.685Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 5618,
+            "mod": 2
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 5618,
+            "mod": 3
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T15:09:30.211Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11385,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11385,
+            "mod": 1
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T15:09:31.282Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11385,
+            "mod": 1
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11385,
+            "mod": 2
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T15:09:31.826Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11385,
+            "mod": 2
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11385,
+            "mod": 1
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-19T15:09:32.094Z",
+        "кто": "Мастер",
+        "charId": "cmvbewm5c13gfov",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 11385,
+            "mod": 1
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 11385,
+            "mod": 0
+          }
+        ]
+      }
+    ],
+    "wishes": []
+  }
+}
