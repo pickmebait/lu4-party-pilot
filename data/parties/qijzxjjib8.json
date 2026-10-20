@@ -5,16 +5,67 @@
   "masterHash": "5ea286bc774c590be4a71a040875f428162ff1336958653a10b798b01630cd52",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-20T07:26:55.348Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 9,
+    "updatedAt": "2026-10-20T07:27:17.076Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "cmvgd1o0n1aulrn",
+        "name": "PickMeBait",
+        "cls": "Abyss Walker",
+        "level": 75,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
     "goals": [],
     "sets": [],
-    "customNames": {}
+    "customNames": {},
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    },
+    "history": []
   }
 }
