@@ -1,0 +1,20 @@
+{
+  "partyId": "qijzxjjib8",
+  "name": "Моя пати",
+  "createdAt": "2026-10-20T07:26:55.348Z",
+  "masterHash": "5ea286bc774c590be4a71a040875f428162ff1336958653a10b798b01630cd52",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-20T07:26:55.348Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "goals": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
