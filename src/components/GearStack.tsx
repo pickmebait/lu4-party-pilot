@@ -121,6 +121,7 @@ function SlotCells({
             title={[
               `${def.label}: ${name}`,
               grade ? `ранг ${grade}` : '',
+              item?.set,
               `№${entry.itemId}`,
               entry.mod ? `заточка +${entry.mod}` : '',
               entry.spans ? 'занимает два слота' : '',

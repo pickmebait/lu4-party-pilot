@@ -5,6 +5,13 @@
  * через CDP), разбирает и кладёт public/items.json и public/icons-mw/.
  *
  * Запуск: node scripts/rebuild-catalog.mjs
+ *
+ * Про комплекты. На странице доспехов у каждого комплекта две строки: одна —
+ * сам комплект с бонусами, вторая — его детали. Обе ссылаются на одни и те же
+ * id предметов, поэтому комплект нельзя класть в справочник как вещь: он
+ * надеть нельзя, а id у него уже занят деталью. Поэтому строку комплекта
+ * пропускаем, а его имя, тип и бонусы отдаём деталям — так у детали появляется
+ * принадлежность к комплекту, а id остаются разными.
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
@@ -49,6 +56,13 @@ const СЛОТ_БИЖУТЕРИИ = {
 
 const ТИП_БРОНИ = { 'Магический': 'magic', 'Легкий': 'light', 'Тяжелый': 'heavy' }
 
+/** Тип комплекта из строки «Легкий комплект» в обзоре. */
+const ТИП_КОМПЛЕКТА = {
+  'Магический комплект': 'magic',
+  'Легкий комплект': 'light',
+  'Тяжелый комплект': 'heavy',
+}
+
 function parseName(строка) {
   const parts = строка.trim().split(/\s+/)
   const тир = parts.find((p) => /^T\d+$/.test(p)) || null
@@ -57,11 +71,49 @@ function parseName(строка) {
   return { name, тир, грейд }
 }
 
+/** Ссылка на карточку предмета. В ячейке может быть ещё и ссылка на улучшение,
+ *  поэтому берём ту, что ведёт в /item/. */
+function ссылкаПредмета(cell) {
+  return cell?.links?.find((l) => l.href?.includes('/item/'))?.href || null
+}
+
+/** Первый id предмета в ячейке — он у вещи один. */
 function itemId(cell) {
-  const a = cell?.links?.find((l) => l.href?.includes('/item/'))
-  if (!a) return null
-  const m = a.href.match(/\/item\/(\d+)-/)
+  const href = ссылкаПредмета(cell)
+  if (!href) return null
+  const m = href.match(/\/item\/(\d+)-/)
   return m ? Number(m[1]) : null
+}
+
+/** Все id, на которые ссылается ячейка. У обзора комплекта их несколько. */
+function ссылкиЯчейки(cell) {
+  return (cell?.links || [])
+    .map((l) => {
+      const m = l.href?.match(/\/item\/(\d+)-/)
+      return m ? Number(m[1]) : null
+    })
+    .filter((n) => typeof n === 'number')
+}
+
+/** Техническое имя из адреса карточки: «…/item/44-leather-helmet» → «leather-helmet». */
+function texИзИсточника(source) {
+  const m = (source || '').match(/\/item\/\d+-(.+)$/)
+  return m ? m[1] : undefined
+}
+
+/** Число или undefined: пустые и битые ячейки в справочнике не нужны. */
+function числоИлиНет(значение) {
+  const n = Number(значение)
+  return Number.isFinite(n) && n !== 0 ? n : undefined
+}
+
+/** Пустые поля (null, undefined, «») не пишем: приложение разбирает их как отсутствие. */
+function чистый(п) {
+  for (const k of Object.keys(п)) {
+    const v = п[k]
+    if (v === undefined || v === null || v === '') delete п[k]
+  }
+  return п
 }
 
 function parseWeapon(rows) {
@@ -78,16 +130,18 @@ function parseWeapon(rows) {
     const { name, грейд } = parseName(first)
     if (!name || !грейд) continue
     const atk = (row[1]?.text || '').split('/').map((s) => Number(s.trim()))
+    const source = ссылкаПредмета(row[0])
     const item = {
       id, name, fullName: first, gradeName: грейд, slot: 'r_hand',
       weaponType: type, atkPhys: atk[0] ?? null, atkMag: atk[1] ?? null,
       twoHanded: ['Двуручные мечи', 'Двуручные топоры', 'Двуручные посохи', 'Луки'].includes(type),
       dual: ['Парные мечи', 'Парные топоры', 'Парные кинжалы'].includes(type),
       icon: row[0].imgs?.[0]?.src || null,
-      source: row[0].links?.[0]?.href || null,
+      source: source || null,
     }
+    item.tex = texИзИсточника(item.source)
     if (item.dual) item.twoHanded = true
-    out.push(item); last = item
+    out.push(чистый(item)); last = item
   }
   // SA и rare
   last = null
@@ -116,27 +170,60 @@ function parseWeapon(rows) {
 
 function parseArmor(rows) {
   const out = []
+  const комплекты = []
   let slot = null
   for (const row of rows) {
     if (!row.length || (row.length === 1 && row[0].text === '')) continue
     const first = row[0]?.text || ''
     const secKey = Object.keys(СЛОТ_ДОСПЕХА).find((k) => first.includes(k))
     if (secKey && !row[1]?.links?.length) { slot = СЛОТ_ДОСПЕХА[secKey]; continue }
+
+    const ссылки = ссылкиЯчейки(row[0])
+    // Обзор комплекта: в имени «комплект», а ссылки ведут на несколько деталей.
+    if (/комплект/i.test(first) && ссылки.length >= 2) {
+      const строки = first.split('\n').map((s) => s.trim()).filter(Boolean)
+      const типКлюч = Object.keys(ТИП_КОМПЛЕКТА).find((k) => строки.some((s) => s.includes(k)))
+      const { name } = parseName(строки[0] || '')
+      комплекты.push({
+        name,
+        type: типКлюч ? ТИП_КОМПЛЕКТА[типКлюч] : undefined,
+        pieces: ссылки,
+        bonuses: (row[1]?.text || '').split('\n').map((s) => s.trim()).filter(Boolean),
+      })
+      continue
+    }
+
     const id = itemId(row[0])
     if (!id) continue
     const { name, грейд } = parseName(first)
     if (!name || !грейд) continue
     const typeText = row[1]?.text || ''
     const typeKey = Object.keys(ТИП_БРОНИ).find((k) => typeText.includes(k))
-    out.push({
+    const source = ссылкаПредмета(row[0])
+    out.push(чистый({
       id, name, fullName: first, gradeName: грейд, slot,
-      armorType: typeKey ? ТИП_БРОНИ[typeKey] : null,
-      physDef: Number(row[2]?.text) || null,
-      mpIncrease: Number(row[3]?.text) || null,
+      armorType: typeKey ? ТИП_БРОНИ[typeKey] : undefined,
+      physDef: числоИлиНет(row[2]?.text),
+      mpIncrease: числоИлиНет(row[3]?.text),
       fullbody: first.includes('Полный'),
-      icon: row[0].imgs?.[0]?.src || null,
-      source: row[0].links?.[0]?.href || null,
-    })
+      icon: row[0].imgs?.[0]?.src || undefined,
+      source: source || undefined,
+      tex: texИзИсточника(source),
+    }))
+  }
+
+  // Комплект к деталям: имя и бонусы. Тип берём и оттуда же — у шлемов,
+  // перчаток и сапог на вики его нет, а у комплекта он написан.
+  for (const к of комплекты) {
+    for (const id of к.pieces) {
+      const деталь = out.find((п) => п.id === id)
+      if (!деталь) continue
+      if (!деталь.set) {
+        деталь.set = к.name
+        if (к.bonuses.length) деталь.setBonuses = к.bonuses
+      }
+      if (!деталь.armorType && к.type) деталь.armorType = к.type
+    }
   }
   return out
 }
@@ -160,14 +247,16 @@ function parseJewelry(rows) {
       else if (/earring/.test(text)) finalSlot = 'l_ear'
       else if (/necklace|ожерелье|amulet|amulette/.test(text)) finalSlot = 'neck'
     }
-    out.push({
+    const source = ссылкаПредмета(row[0])
+    out.push(чистый({
       id, name, fullName: first, gradeName: грейд, slot: finalSlot,
-      mDef: Number(row[1]?.text) || null,
-      mpIncrease: Number(row[2]?.text) || null,
+      mDef: числоИлиНет(row[1]?.text),
+      mpIncrease: числоИлиНет(row[2]?.text),
       epic: first.includes('Epic') || first.includes('Эпическая'),
-      icon: row[0].imgs?.[0]?.src || null,
-      source: row[0].links?.[0]?.href || null,
-    })
+      icon: row[0].imgs?.[0]?.src || undefined,
+      source: source || undefined,
+      tex: texИзИсточника(source),
+    }))
   }
   return out
 }
@@ -181,8 +270,10 @@ const items = [...weapons, ...jewelry, ...armor].sort((a, b) => a.id - b.id)
 
 // Иконки: локальные пути (файлы скачаны в public/icons-mw/)
 mkdirSync('public/icons-mw', { recursive: true })
+// Адрес иконки в исходнике относительный («/i64/…»), а на вики он висит на
+// своём домене — поэтому берём только имя файла и складываем в локальную папку.
 for (const it of items) {
-  if (it.icon && it.icon.startsWith('http')) {
+  if (it.icon && !it.icon.startsWith('icons-mw/')) {
     const filename = it.icon.split('/').pop()
     it.icon = `icons-mw/${filename}`
   }
@@ -194,6 +285,7 @@ writeFileSync('public/items.json', JSON.stringify({
   notes: {
     format: 'луки занимают 2 слота; двуручное и парное оружие — 2 слота; цельная броня — верх+низ',
     icons: 'адреса на masterwork.wiki, локальные файлы в public/icons-mw',
+    sets: 'комплект не кладётся отдельной вещью: его имя и бонусы достаются деталям',
   },
   items,
 }, null, 2), 'utf8')
@@ -203,3 +295,4 @@ console.log(`  Оружие: ${weapons.length} | Бижутерия: ${jewelry.l
 console.log(`  Двуручных: ${items.filter((i) => i.twoHanded).length}`)
 console.log(`  С SA: ${weapons.filter((w) => w.saEffects?.length).length}`)
 console.log(`  С rare: ${weapons.filter((w) => w.rareEffect).length}`)
+console.log(`  С комплектом: ${items.filter((i) => i.set).length}`)
