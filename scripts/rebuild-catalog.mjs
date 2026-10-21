@@ -77,6 +77,12 @@ function ссылкаПредмета(cell) {
   return cell?.links?.find((l) => l.href?.includes('/item/'))?.href || null
 }
 
+/** Адрес в исходнике относительный («/lu4-gamma/item/…») — отдаём целиком,
+ *  чтобы ссылку можно было открыть как есть. */
+function абсолютный(href) {
+  return href && href.startsWith('/') ? 'https://masterwork.wiki' + href : href
+}
+
 /** Первый id предмета в ячейке — он у вещи один. */
 function itemId(cell) {
   const href = ссылкаПредмета(cell)
@@ -130,7 +136,7 @@ function parseWeapon(rows) {
     const { name, грейд } = parseName(first)
     if (!name || !грейд) continue
     const atk = (row[1]?.text || '').split('/').map((s) => Number(s.trim()))
-    const source = ссылкаПредмета(row[0])
+    const source = абсолютный(ссылкаПредмета(row[0]))
     const item = {
       id, name, fullName: first, gradeName: грейд, slot: 'r_hand',
       weaponType: type, atkPhys: atk[0] ?? null, atkMag: atk[1] ?? null,
@@ -199,7 +205,7 @@ function parseArmor(rows) {
     if (!name || !грейд) continue
     const typeText = row[1]?.text || ''
     const typeKey = Object.keys(ТИП_БРОНИ).find((k) => typeText.includes(k))
-    const source = ссылкаПредмета(row[0])
+    const source = абсолютный(ссылкаПредмета(row[0]))
     out.push(чистый({
       id, name, fullName: first, gradeName: грейд, slot,
       armorType: typeKey ? ТИП_БРОНИ[typeKey] : undefined,
@@ -247,7 +253,7 @@ function parseJewelry(rows) {
       else if (/earring/.test(text)) finalSlot = 'l_ear'
       else if (/necklace|ожерелье|amulet|amulette/.test(text)) finalSlot = 'neck'
     }
-    const source = ссылкаПредмета(row[0])
+    const source = абсолютный(ссылкаПредмета(row[0]))
     out.push(чистый({
       id, name, fullName: first, gradeName: грейд, slot: finalSlot,
       mDef: числоИлиНет(row[1]?.text),
