@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T21:04:14.878Z",
+    "updatedAt": "2026-10-22T21:04:22.735Z",
     "updatedBy": "DOKTOP",
     "chars": [
       {
@@ -1017,8 +1017,48 @@
             null
           ]
         },
-        "subUnlocked": true,
-        "subs": [],
+        "subUnlocked": false,
+        "subs": [
+          {
+            "id": "smvk1459a1mr82g",
+            "cls": "",
+            "level": 0,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          }
+        ],
         "away": {}
       },
       {
