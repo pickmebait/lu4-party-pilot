@@ -1,0 +1,20 @@
+{
+  "partyId": "y3z7bzisne",
+  "name": "Поросята",
+  "createdAt": "2026-10-22T15:04:43.289Z",
+  "masterHash": "035e1b0f9277f4d21c88e9c22981233c626da06cd1680a681961ffc5bbc5ddb9",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-22T15:04:43.289Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "goals": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
