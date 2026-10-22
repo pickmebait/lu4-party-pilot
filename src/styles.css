@@ -2361,8 +2361,12 @@ body {
   filter: grayscale(0.4);
 }
 
+/* Метка «оба» стоит на месте заточки — слева, чтобы было видно, что вторая
+   половина предмета управляется через первую. */
 .cell-ghost-mark {
-  margin-left: auto;
+  align-self: stretch;
+  display: grid;
+  place-items: center;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.4px;
@@ -2564,6 +2568,13 @@ body {
   color: #93e0a8;
 }
 
+/* Эпическая бижутерия: метка о редкости, а не о слоте. */
+.tag.epic {
+  border-color: #6d4b86;
+  color: #d7a8f2;
+  background: #241a2e;
+}
+
 .picker-stats {
   font-size: 11px;
   color: var(--muted);
@@ -2748,34 +2759,34 @@ body {
   color: var(--muted-dim);
 }
 
-.cell-mod {
+/*
+ * Заточка — колонкой слева: плюс сверху, минус под ним, под ними значение.
+ * Вертикально, потому что в ячейке мало ширины, а ряд кнопок справа
+ * наезжал на название и появлялся только по наведению — его не было видно.
+ */
+.cell-enchant {
+  flex: none;
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 1px;
-  margin-left: auto;
-  /*
-   * Место под кнопку снятия в правом верхнем углу резервируется здесь: кнопка
-   * стоит у правого края ячейки, то есть как раз за счётчиком. Без отступа
-   * счётчик подползал под кнопку, и нажимать на + в её правой части было
-   * нельзя.
-   */
-  margin-right: 18px;
-  background: var(--surface-deep);
-  border: 1px solid var(--line);
-  border-radius: 5px;
-  padding: 1px;
+  align-self: stretch;
+  justify-content: center;
+}
+
+.cell-enchant .mod-btn {
+  width: 16px;
+  height: 15px;
+  font-size: 11px;
 }
 
 .mod-btn {
-  width: 17px;
-  height: 16px;
   display: grid;
   place-items: center;
   background: var(--surface-lit);
   border: 1px solid var(--line-2);
   border-radius: 3px;
   color: var(--text);
-  font-size: 12px;
   line-height: 1;
   padding: 0;
   cursor: pointer;
@@ -2805,38 +2816,28 @@ body {
   font-weight: 700;
 }
 
-.cell-tools {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  display: none;
-  background: var(--surface);
-  border: 1px solid var(--line-2);
-  border-radius: 4px;
-}
-
 /*
- * Крестик нарисован, а не набран символом шрифта: на строке в 14 пикселей
- * символ рисовался ниже рамки, и метрики шрифта решали, где он окажется.
- * Замер по прямоугольнику текста показывал попадание в центр, а на деле
- * глиф был вне кнопки.
- *
- * Место под кнопку резервируется в .cell-mod постоянно: если резервировать
- * только при наведении, ячейка прыгала бы, а счётчик заточки накрывался бы.
+ * Кнопка снятия — видимая, у правого края. Крестик нарисован, а не набран
+ * символом шрифта: на строке в 14 пикселей символ рисовался ниже рамки.
  */
-.cell-tools .icon-btn.tiny {
-  width: 14px;
-  height: 14px;
+.cell-remove {
+  flex: none;
+  margin-left: auto;
+  width: 18px;
+  height: 18px;
   padding: 0;
   display: grid;
   place-items: center;
   border: none;
   background: none;
-  border-radius: 3px;
+  border-radius: 4px;
+  color: var(--muted-dim);
+  cursor: pointer;
 }
 
-.gear-cell.filled:hover .cell-tools {
-  display: block;
+.cell-remove:hover {
+  color: #c0392b;
+  background: var(--surface-deep);
 }
 
 /* Грейды предметов: чем выше, тем «ценнее» цвет рамки. */

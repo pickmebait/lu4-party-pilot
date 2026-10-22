@@ -99,9 +99,17 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  /** Предметы, подходящие под слот, по алфавиту: с ними удобно листать. */
+  /** Предметы, подходящие под слот: эпические — первыми, дальше по алфавиту. */
   const pool = useMemo(
-    () => catalog.all().filter(acceptsFn).sort((a, b) => a.name.localeCompare(b.name, 'ru')),
+    () =>
+      catalog
+        .all()
+        .filter(acceptsFn)
+        .sort(
+          (a, b) =>
+            Number(!!b.epic) - Number(!!a.epic) ||
+            a.name.localeCompare(b.name, 'ru'),
+        ),
     [catalog, acceptsFn],
   )
 
@@ -120,15 +128,7 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
    * с этим типом. Иначе вылезут три кнопки с нулём — выглядит как поломка.
    */
   const естьТипВДанных = useMemo(
-    () =>
-      typeOptions.some((o) =>
-        pool.some((it) => {
-          if (typeField === 'weaponType') return it.weaponType === o.value
-          if (typeField === 'armorType') return it.armorType === o.value
-          if (typeField === 'jewelryType') return jewelryTypeOf(it) === o.value
-          return false
-        }),
-      ),
+    () => typeOptions.some((o) => pool.some((it) => passesType(it, typeField, o.value))),
     [typeOptions, pool, typeField],
   )
   const показыватьТип = typeOptions.length > 0 && естьТипВДанных
@@ -339,9 +339,12 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
   )
 }
 
-/** Неизвестный тип или грейд не прячет предмет: он проходит любой фильтр. */
+/**
+ * Тип бижутерии — это слот, а не редкость. Эпическая вещь остаётся кольцом,
+ * серьгой или ожерельем: иначе фильтр «Кольца» прятал бы эпические кольца,
+ * и они выглядели бы пропавшими из справочника.
+ */
 function jewelryTypeOf(it: CatalogItem): string | null {
-  if (it.epic) return "epic"
   if (it.slot === 'l_ring') return 'l_ring'
   if (it.slot === 'l_ear') return 'l_ear'
   if (it.slot === 'neck') return 'neck'
@@ -354,7 +357,7 @@ function passesType(
   value: string | null,
 ): boolean {
   if (!value || !field) return true
-  if (field === 'jewelryType') return jewelryTypeOf(it) === value
+  if (field === 'jewelryType') return value === 'epic' ? !!it.epic : jewelryTypeOf(it) === value
   return it[field] === value
 }
 
@@ -478,6 +481,13 @@ function Row({
       {it.weaponType && <span className="tag">{it.weaponType}</span>}
       {it.armorType && <span className="tag">{ARMOR_TYPE_LABELS[it.armorType] ?? it.armorType}</span>}
       {it.gradeName && <span className={`tag grade g-${it.gradeName}`}>{it.gradeName}</span>}
+      {/* Эпическая бижутерия — не отдельный тип слота, поэтому метка видна
+          и в общем списке, и внутри фильтра «Кольца» или «Серьги». */}
+      {it.epic && (
+        <span className="tag epic" title="Эпическая бижутерия">
+          эпическая
+        </span>
+      )}
       {inApp && <span className="tag in-app-mark" title="Уже есть в пати">в пати</span>}
       <span className="picker-id">#{it.id}</span>
       {естьЭффекты && (

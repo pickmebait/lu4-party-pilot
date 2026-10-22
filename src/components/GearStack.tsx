@@ -130,6 +130,40 @@ function SlotCells({
               .join(' · ')}
           >
             {/*
+              Заточка стоит слева и вертикально: плюс сверху, минус под ним,
+              под ними текущее значение. Раньше счётчик лежал справа, а
+              кнопки появлялись только по наведению — их нельзя было найти.
+            */}
+            {ghost ? (
+              <span className="cell-ghost-mark" title="Предмет занимает оба слота">
+                оба
+              </span>
+            ) : (
+              <div className="cell-enchant">
+                {/* Кнопки — только своей вещи: чужую заточка не трогает. */}
+                {правый && (
+                  <>
+                    <button
+                      className="mod-btn"
+                      onClick={() => setSlotMod(ветка, slot, i, mod + 1)}
+                      title="Добавить заточку на 1"
+                    >
+                      +
+                    </button>
+                    <button
+                      className="mod-btn"
+                      onClick={() => setSlotMod(ветка, slot, i, mod - 1)}
+                      title="Убавить заточку на 1"
+                    >
+                      −
+                    </button>
+                  </>
+                )}
+                <span className={`mod-value${mod > 0 ? ' on' : ''}`}>+{mod}</span>
+              </div>
+            )}
+
+            {/*
               Иконка берётся из справочника, а не из названия: двенадцать
               одинаковых иконок на ткани в ячейке одинаково бесполезны, и
               текстура — единственное, что их различает.
@@ -138,54 +172,19 @@ function SlotCells({
               <ItemIcon item={item} name={name} />
             </div>
             <span className="cell-name">{name}</span>
-            {/*
-              Заточка всегда на виду: в ячейке двенадцать вещей, и спрятанная
-              в подсказке цифра затирается — человек управляет снаряжением
-              глазами, а не по памяти.
-
-              У парной копии заточки нет: она принадлежит правой половине,
-              и второй счётчик означал бы вторую вещь, которой нет, — вместо
-              него метка «оба».
-            */}
-            {ghost ? (
-              <span className="cell-ghost-mark" title="Предмет занимает оба слота">
-                оба
-              </span>
-            ) : (
-              <div className="cell-mod">
-                <span className={`mod-value${mod > 0 ? ' on' : ''}`}>+{mod}</span>
-              </div>
-            )}
 
             {/*
-              Кнопки снятия и управления заточкой. Без них пришлось бы сначала
-              выбирать предмет, а потом правильно нажимать на стрелочки —
-              два разных жеста там, где хватило бы одного.
+              Снятие — видимая кнопка справа, а не по наведению: иначе её не
+              найти, и вещь остаётся надетой молча.
             */}
             {правый && !ghost && (
-              <div className="cell-tools">
-                <button
-                  className="mod-btn"
-                  onClick={() => setSlotMod(ветка, slot, i, mod - 1)}
-                  title="Убавить заточку на 1"
-                >
-                  −
-                </button>
-                <button
-                  className="mod-btn"
-                  onClick={() => setSlotMod(ветка, slot, i, mod + 1)}
-                  title="Добавить заточку на 1"
-                >
-                  +
-                </button>
-                <button
-                  className="icon-btn tiny danger"
-                  title="Снять"
-                  onClick={() => unequipItem(ветка, slot, i)}
-                >
-                  <IconClose />
-                </button>
-              </div>
+              <button
+                className="cell-remove"
+                title="Снять"
+                onClick={() => unequipItem(ветка, slot, i)}
+              >
+                <IconClose />
+              </button>
             )}
           </div>
         )
