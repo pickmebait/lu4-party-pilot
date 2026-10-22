@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:10:11.847Z",
+    "updatedAt": "2026-10-22T15:10:20.349Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -17,16 +17,10 @@
         "affil": "roster",
         "slots": {
           "rhand": [
-            {
-              "itemId": 236,
-              "sa": "Critical Damage",
-              "rare": true
-            }
+            null
           ],
           "lhand": [
-            {
-              "itemId": 110
-            }
+            null
           ],
           "head": [
             {
@@ -35,12 +29,14 @@
           ],
           "chest": [
             {
-              "itemId": 2394
+              "itemId": 2394,
+              "mod": 1
             }
           ],
           "legs": [
             {
               "itemId": 2394,
+              "mod": 1,
               "spans": true
             }
           ],
@@ -924,6 +920,82 @@
           {
             "itemId": 5784,
             "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:10:15.378Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 110,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:10:16.720Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 236,
+            "mod": 0,
+            "sa": "Critical Damage",
+            "rare": true
+          }
+        ],
+        "стало": [
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:10:18.572Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "chest",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 2394,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 2394,
+            "mod": 1
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:10:18.572Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "legs",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 2394,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 2394,
+            "mod": 1
           }
         ]
       }
