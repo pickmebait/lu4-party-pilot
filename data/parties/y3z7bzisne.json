@@ -70,7 +70,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:43:20.861Z",
+    "updatedAt": "2026-10-22T15:43:54.799Z",
     "updatedBy": "Nortrom",
     "chars": [
       {
@@ -560,12 +560,14 @@
           "rhand": [
             {
               "itemId": 5706,
+              "mod": 4,
               "rare": true
             }
           ],
           "lhand": [
             {
               "itemId": 5706,
+              "mod": 4,
               "spans": true,
               "rare": true
             }
@@ -635,16 +637,16 @@
               "rhand": [
                 {
                   "itemId": 5286,
-                  "sa": "Focus",
-                  "mod": 3
+                  "mod": 3,
+                  "sa": "Focus"
                 }
               ],
               "lhand": [
                 {
                   "itemId": 5286,
-                  "sa": "Focus",
+                  "mod": 3,
                   "spans": true,
-                  "mod": 3
+                  "sa": "Focus"
                 }
               ],
               "head": [
