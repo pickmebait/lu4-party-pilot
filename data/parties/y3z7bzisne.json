@@ -21,7 +21,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:31:30.277Z",
+    "updatedAt": "2026-10-22T15:32:40.527Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -364,6 +364,50 @@
       {
         "id": "cmvjp83fc32841q",
         "name": "DaintyWilder",
+        "cls": "",
+        "level": 0,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      },
+      {
+        "id": "cmvjp9lub5osa0i",
+        "name": "godswe",
         "cls": "",
         "level": 0,
         "affil": "roster",
