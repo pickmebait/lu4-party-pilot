@@ -2759,7 +2759,9 @@ body {
 }
 
 .cell-effect {
+  max-width: 96px;
   padding: 0 4px;
+  overflow: hidden;
   border: 1px solid var(--accent-line);
   border-radius: 3px;
   background: var(--accent-deep);
@@ -2768,6 +2770,8 @@ body {
   font-weight: 700;
   line-height: 13px;
   letter-spacing: 0.3px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cell-effect.rare {

@@ -146,7 +146,7 @@ function SlotCells({
               <span className="cell-effects">
                 {entry.sa && (
                   <span className="cell-effect" title={`SA: ${entry.sa}`}>
-                    SA
+                    {entry.sa}
                   </span>
                 )}
                 {entry.rare && (
