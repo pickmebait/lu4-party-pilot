@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:10:31.058Z",
+    "updatedAt": "2026-10-22T15:11:52.590Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -25,8 +25,8 @@
           "lhand": [
             {
               "itemId": 283,
-              "sa": "Focus",
-              "spans": true
+              "spans": true,
+              "sa": "Focus"
             }
           ],
           "head": [
@@ -35,17 +35,10 @@
             }
           ],
           "chest": [
-            {
-              "itemId": 2394,
-              "mod": 1
-            }
+            null
           ],
           "legs": [
-            {
-              "itemId": 2394,
-              "mod": 1,
-              "spans": true
-            }
+            null
           ],
           "gloves": [
             {
@@ -1040,6 +1033,40 @@
             "mod": 0,
             "sa": "Focus"
           }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:11:50.724Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "chest",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 2394,
+            "mod": 1
+          }
+        ],
+        "стало": [
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:11:50.724Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "legs",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 2394,
+            "mod": 1
+          }
+        ],
+        "стало": [
+          null
         ]
       }
     ]
