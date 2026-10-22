@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:13:10.197Z",
+    "updatedAt": "2026-10-22T15:13:40.084Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -83,6 +83,10 @@
               "mod": 3
             }
           ]
+        },
+        "contacts": {
+          "realName": "Боря",
+          "telegram": "@crnrs"
         },
         "subUnlocked": false,
         "subs": [],
