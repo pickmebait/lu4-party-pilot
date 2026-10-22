@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:14:57.063Z",
+    "updatedAt": "2026-10-22T15:15:05.367Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -170,8 +170,8 @@
           },
           {
             "id": "smvjom2r34az0e1",
-            "cls": "",
-            "level": 0,
+            "cls": "Destroyer",
+            "level": 51,
             "slots": {
               "rhand": [
                 null
