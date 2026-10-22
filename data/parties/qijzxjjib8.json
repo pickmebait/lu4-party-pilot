@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T10:47:45.601Z",
+    "updatedAt": "2026-10-22T10:48:38.465Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -72,10 +72,17 @@
         "affil": "roster",
         "slots": {
           "rhand": [
-            null
+            {
+              "itemId": 287,
+              "sa": "Focus"
+            }
           ],
           "lhand": [
-            null
+            {
+              "itemId": 287,
+              "sa": "Focus",
+              "spans": true
+            }
           ],
           "head": [
             null
@@ -1375,6 +1382,42 @@
         ],
         "стало": [
           null
+        ]
+      },
+      {
+        "ts": "2026-10-22T10:48:35.357Z",
+        "кто": "Мастер",
+        "charId": "cmvhsmair1b8chh",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 287,
+            "mod": 0,
+            "sa": "Focus"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T10:48:35.357Z",
+        "кто": "Мастер",
+        "charId": "cmvhsmair1b8chh",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 287,
+            "mod": 0,
+            "sa": "Focus"
+          }
         ]
       }
     ]
