@@ -70,7 +70,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:50:13.075Z",
+    "updatedAt": "2026-10-22T15:50:26.914Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -1053,6 +1053,10 @@
         {
           "id": "ckmvjpw65cjkjybw",
           "text": "Отмыть пк"
+        },
+        {
+          "id": "ckmvjpwgpwkwohtj",
+          "text": "Купить элексиры"
         }
       ]
     },
