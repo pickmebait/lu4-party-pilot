@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:53:06.884Z",
+    "updatedAt": "2026-10-22T15:56:12.167Z",
     "updatedBy": "Nocturnal",
     "chars": [
       {
@@ -593,40 +593,69 @@
         "subs": [
           {
             "id": "smvjpzw0d2zknj3",
-            "cls": "",
-            "level": 0,
+            "cls": "Treasure Hunter",
+            "level": 46,
             "slots": {
               "rhand": [
-                null
+                {
+                  "itemId": 34933,
+                  "mod": 4
+                }
               ],
               "lhand": [
-                null
+                {
+                  "itemId": 34933,
+                  "spans": true,
+                  "mod": 4
+                }
               ],
               "head": [
-                null
+                {
+                  "itemId": 517
+                }
               ],
               "chest": [
-                null
+                {
+                  "itemId": 398
+                }
               ],
               "legs": [
-                null
+                {
+                  "itemId": 418
+                }
               ],
               "gloves": [
-                null
+                {
+                  "itemId": 2455
+                }
               ],
               "feet": [
-                null
+                {
+                  "itemId": 2431
+                }
               ],
               "neck": [
-                null
+                {
+                  "itemId": 119
+                }
               ],
               "ear": [
-                null,
-                null
+                {
+                  "itemId": 855,
+                  "mod": 5
+                },
+                {
+                  "itemId": 855,
+                  "mod": 5
+                }
               ],
               "ring": [
-                null,
-                null
+                {
+                  "itemId": 885
+                },
+                {
+                  "itemId": 885
+                }
               ]
             }
           }
