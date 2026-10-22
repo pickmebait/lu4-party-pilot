@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:14:30.217Z",
+    "updatedAt": "2026-10-22T15:14:57.063Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -131,8 +131,8 @@
           },
           {
             "id": "smvjom1e73m4i48",
-            "cls": "",
-            "level": 0,
+            "cls": "Spellhowler",
+            "level": 62,
             "slots": {
               "rhand": [
                 null
