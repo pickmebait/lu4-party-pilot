@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:14:22.557Z",
+    "updatedAt": "2026-10-22T15:14:30.217Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -92,8 +92,8 @@
         "subs": [
           {
             "id": "smvjolwxp1w64im",
-            "cls": "",
-            "level": 0,
+            "cls": "Bounty Hunter",
+            "level": 52,
             "slots": {
               "rhand": [
                 null
