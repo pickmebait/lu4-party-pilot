@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T16:09:46.650Z",
-    "updatedBy": "Nocturnal",
+    "updatedAt": "2026-10-22T17:08:16.504Z",
+    "updatedBy": "Nortrom",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -822,7 +822,11 @@
             }
           }
         ],
-        "away": {}
+        "away": {},
+        "pa": {
+          "from": "2026-10-10",
+          "days": 100
+        }
       },
       {
         "id": "cmvjpcbwzbar5dm",
