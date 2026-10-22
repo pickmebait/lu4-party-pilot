@@ -70,7 +70,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:42:02.898Z",
+    "updatedAt": "2026-10-22T15:43:20.861Z",
     "updatedBy": "Nortrom",
     "chars": [
       {
@@ -625,8 +625,78 @@
         "contacts": {
           "realName": "Миша"
         },
-        "subUnlocked": false,
-        "subs": [],
+        "subUnlocked": true,
+        "subs": [
+          {
+            "id": "smvjpm0kn1kkhad",
+            "cls": "Destroyer",
+            "level": 46,
+            "slots": {
+              "rhand": [
+                {
+                  "itemId": 5286,
+                  "sa": "Focus",
+                  "mod": 3
+                }
+              ],
+              "lhand": [
+                {
+                  "itemId": 5286,
+                  "sa": "Focus",
+                  "spans": true,
+                  "mod": 3
+                }
+              ],
+              "head": [
+                {
+                  "itemId": 2414
+                }
+              ],
+              "chest": [
+                {
+                  "itemId": 356
+                }
+              ],
+              "legs": [
+                {
+                  "itemId": 356,
+                  "spans": true
+                }
+              ],
+              "gloves": [
+                {
+                  "itemId": 2462
+                }
+              ],
+              "feet": [
+                {
+                  "itemId": 2438
+                }
+              ],
+              "neck": [
+                {
+                  "itemId": 119
+                }
+              ],
+              "ear": [
+                {
+                  "itemId": 854
+                },
+                {
+                  "itemId": 854
+                }
+              ],
+              "ring": [
+                {
+                  "itemId": 885
+                },
+                {
+                  "itemId": 885
+                }
+              ]
+            }
+          }
+        ],
         "away": {}
       },
       {
