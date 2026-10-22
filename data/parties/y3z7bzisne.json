@@ -70,8 +70,8 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:43:54.799Z",
-    "updatedBy": "Nortrom",
+    "updatedAt": "2026-10-22T15:44:28.333Z",
+    "updatedBy": "Nocturnal",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -509,46 +509,82 @@
       {
         "id": "cmvjpah777383dy",
         "name": "Nocturnal",
-        "cls": "",
-        "level": 0,
+        "cls": "Shillien Elder",
+        "level": 75,
         "affil": "roster",
         "slots": {
           "rhand": [
-            null
+            {
+              "itemId": 7889,
+              "sa": "Acumen",
+              "mod": 6
+            }
           ],
           "lhand": [
-            null
+            {
+              "itemId": 110
+            }
           ],
           "head": [
-            null
+            {
+              "itemId": 2419
+            }
           ],
           "chest": [
-            null
+            {
+              "itemId": 2409
+            }
           ],
           "legs": [
-            null
+            {
+              "itemId": 2409,
+              "spans": true
+            }
           ],
           "gloves": [
-            null
+            {
+              "itemId": 5776
+            }
           ],
           "feet": [
-            null
+            {
+              "itemId": 5788
+            }
           ],
           "neck": [
-            null
+            {
+              "itemId": 924,
+              "mod": 1
+            }
           ],
           "ear": [
-            null,
-            null
+            {
+              "itemId": 855,
+              "mod": 5
+            },
+            {
+              "itemId": 855,
+              "mod": 5
+            }
           ],
           "ring": [
-            null,
-            null
+            {
+              "itemId": 895,
+              "mod": 5
+            },
+            {
+              "itemId": 895,
+              "mod": 5
+            }
           ]
         },
         "subUnlocked": false,
         "subs": [],
-        "away": {}
+        "away": {},
+        "pa": {
+          "from": "2026-10-09",
+          "days": 30
+        }
       },
       {
         "id": "cmvjpb8929ima8w",
