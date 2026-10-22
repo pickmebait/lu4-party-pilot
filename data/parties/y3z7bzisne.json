@@ -70,8 +70,8 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:44:28.333Z",
-    "updatedBy": "Nocturnal",
+    "updatedAt": "2026-10-22T15:50:13.075Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -516,8 +516,8 @@
           "rhand": [
             {
               "itemId": 7889,
-              "sa": "Acumen",
-              "mod": 6
+              "mod": 6,
+              "sa": "Acumen"
             }
           ],
           "lhand": [
@@ -1049,7 +1049,12 @@
         }
       },
       "offs": [],
-      "checklist": []
+      "checklist": [
+        {
+          "id": "ckmvjpw65cjkjybw",
+          "text": "Отмыть пк"
+        }
+      ]
     },
     "history": [
       {
