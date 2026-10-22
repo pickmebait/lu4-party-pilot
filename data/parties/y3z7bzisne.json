@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:06:12.919Z",
+    "updatedAt": "2026-10-22T15:06:43.754Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -17,7 +17,11 @@
         "affil": "roster",
         "slots": {
           "rhand": [
-            null
+            {
+              "itemId": 236,
+              "sa": "Critical Damage",
+              "rare": true
+            }
           ],
           "lhand": [
             null
@@ -66,6 +70,26 @@
       "offs": [],
       "checklist": []
     },
-    "history": []
+    "history": [
+      {
+        "ts": "2026-10-22T15:06:41.965Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 236,
+            "mod": 0,
+            "sa": "Critical Damage",
+            "rare": true
+          }
+        ]
+      }
+    ]
   }
 }
