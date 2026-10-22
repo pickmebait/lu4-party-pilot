@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:06:57.113Z",
+    "updatedAt": "2026-10-22T15:07:07.254Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -29,7 +29,10 @@
             }
           ],
           "head": [
-            null
+            {
+              "itemId": 2418,
+              "rare": true
+            }
           ],
           "chest": [
             null
@@ -106,6 +109,24 @@
           {
             "itemId": 110,
             "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:07:05.375Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "head",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 2418,
+            "mod": 0,
+            "rare": true
           }
         ]
       }
