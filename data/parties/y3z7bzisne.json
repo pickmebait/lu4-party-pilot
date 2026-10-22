@@ -70,7 +70,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:40:31.420Z",
+    "updatedAt": "2026-10-22T15:40:47.495Z",
     "updatedBy": "Nortrom",
     "chars": [
       {
@@ -566,12 +566,14 @@
           "lhand": [
             {
               "itemId": 5706,
-              "rare": true,
-              "spans": true
+              "spans": true,
+              "rare": true
             }
           ],
           "head": [
-            null
+            {
+              "itemId": 547
+            }
           ],
           "chest": [
             null
