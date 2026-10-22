@@ -42,7 +42,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:33:55.960Z",
+    "updatedAt": "2026-10-22T15:34:47.433Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -517,6 +517,50 @@
       {
         "id": "cmvjpb8929ima8w",
         "name": "Nortrom",
+        "cls": "",
+        "level": 0,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      },
+      {
+        "id": "cmvjpcbwzbar5dm",
+        "name": "band1tos",
         "cls": "",
         "level": 0,
         "affil": "roster",
