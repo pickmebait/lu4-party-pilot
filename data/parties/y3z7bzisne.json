@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:06:43.754Z",
+    "updatedAt": "2026-10-22T15:06:57.113Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -24,7 +24,9 @@
             }
           ],
           "lhand": [
-            null
+            {
+              "itemId": 110
+            }
           ],
           "head": [
             null
@@ -87,6 +89,23 @@
             "mod": 0,
             "sa": "Critical Damage",
             "rare": true
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:06:55.361Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 110,
+            "mod": 0
           }
         ]
       }
