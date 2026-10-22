@@ -70,7 +70,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:41:24.235Z",
+    "updatedAt": "2026-10-22T15:41:33.334Z",
     "updatedBy": "Nortrom",
     "chars": [
       {
@@ -603,9 +603,13 @@
           ],
           "ear": [
             {
-              "itemId": 864
+              "itemId": 864,
+              "mod": 3
             },
-            null
+            {
+              "itemId": 864,
+              "mod": 3
+            }
           ],
           "ring": [
             null,
