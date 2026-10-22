@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:16:38.086Z",
+    "updatedAt": "2026-10-22T15:17:01.003Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -135,7 +135,11 @@
             "level": 62,
             "slots": {
               "rhand": [
-                null
+                {
+                  "itemId": 7893,
+                  "sa": "Acumen",
+                  "mod": 4
+                }
               ],
               "lhand": [
                 null
@@ -1772,6 +1776,112 @@
           {
             "itemId": 885,
             "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:16:57.407Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": "smvjom1e73m4i48",
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 7893,
+            "mod": 0,
+            "sa": "Acumen"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:16:58.492Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": "smvjom1e73m4i48",
+        "было": [
+          {
+            "itemId": 7893,
+            "mod": 0,
+            "sa": "Acumen"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 7893,
+            "mod": 1,
+            "sa": "Acumen"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:16:58.789Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": "smvjom1e73m4i48",
+        "было": [
+          {
+            "itemId": 7893,
+            "mod": 1,
+            "sa": "Acumen"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 7893,
+            "mod": 2,
+            "sa": "Acumen"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:16:58.943Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": "smvjom1e73m4i48",
+        "было": [
+          {
+            "itemId": 7893,
+            "mod": 2,
+            "sa": "Acumen"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 7893,
+            "mod": 3,
+            "sa": "Acumen"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:16:59.126Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": "smvjom1e73m4i48",
+        "было": [
+          {
+            "itemId": 7893,
+            "mod": 3,
+            "sa": "Acumen"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 7893,
+            "mod": 4,
+            "sa": "Acumen"
           }
         ]
       }
