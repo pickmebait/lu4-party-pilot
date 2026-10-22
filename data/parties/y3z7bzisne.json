@@ -70,7 +70,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:36:35.597Z",
+    "updatedAt": "2026-10-22T15:38:32.124Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -149,6 +149,7 @@
         },
         "contacts": {
           "realName": "Боря",
+          "phone": "+79112332191",
           "telegram": "@crnrs"
         },
         "subUnlocked": true,
