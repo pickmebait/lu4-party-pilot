@@ -70,8 +70,8 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:40:12.548Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-22T15:40:31.420Z",
+    "updatedBy": "Nortrom",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -558,10 +558,17 @@
         "affil": "roster",
         "slots": {
           "rhand": [
-            null
+            {
+              "itemId": 5706,
+              "rare": true
+            }
           ],
           "lhand": [
-            null
+            {
+              "itemId": 5706,
+              "rare": true,
+              "spans": true
+            }
           ],
           "head": [
             null
