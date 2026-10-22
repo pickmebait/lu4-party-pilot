@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T18:47:27.729Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-22T21:01:08.630Z",
+    "updatedBy": "DaintyWilder",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -465,7 +465,7 @@
             null
           ]
         },
-        "subUnlocked": false,
+        "subUnlocked": true,
         "subs": [],
         "away": {}
       },
