@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:52:57.573Z",
+    "updatedAt": "2026-10-22T15:53:02.325Z",
     "updatedBy": "Nocturnal",
     "chars": [
       {
@@ -589,7 +589,7 @@
           "realName": "Мишель",
           "telegram": "@lutial"
         },
-        "subUnlocked": false,
+        "subUnlocked": true,
         "subs": [],
         "away": {},
         "pa": {
