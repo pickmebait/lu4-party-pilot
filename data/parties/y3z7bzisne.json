@@ -63,7 +63,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:35:45.744Z",
+    "updatedAt": "2026-10-22T15:36:35.597Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -670,6 +670,50 @@
       {
         "id": "cmvjpdktjft6xe4",
         "name": "DOKTOP",
+        "cls": "",
+        "level": 0,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      },
+      {
+        "id": "cmvjpene6hj7ony",
+        "name": "Sargor",
         "cls": "",
         "level": 0,
         "affil": "roster",
