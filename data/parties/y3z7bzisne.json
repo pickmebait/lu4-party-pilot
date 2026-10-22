@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:25:58.434Z",
+    "updatedAt": "2026-10-22T15:26:07.283Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -17,7 +17,11 @@
         "affil": "roster",
         "slots": {
           "rhand": [
-            null
+            {
+              "itemId": 236,
+              "sa": "Focus",
+              "mod": 3
+            }
           ],
           "lhand": [
             null
@@ -3497,6 +3501,90 @@
         ],
         "стало": [
           null
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:26:03.820Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 236,
+            "mod": 0,
+            "sa": "Focus"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:26:04.935Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 236,
+            "mod": 0,
+            "sa": "Focus"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 236,
+            "mod": 1,
+            "sa": "Focus"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:26:05.153Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 236,
+            "mod": 1,
+            "sa": "Focus"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 236,
+            "mod": 2,
+            "sa": "Focus"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:26:05.313Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 236,
+            "mod": 2,
+            "sa": "Focus"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 236,
+            "mod": 3,
+            "sa": "Focus"
+          }
         ]
       }
     ]
