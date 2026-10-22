@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:15:05.367Z",
+    "updatedAt": "2026-10-22T15:15:19.110Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -174,10 +174,19 @@
             "level": 51,
             "slots": {
               "rhand": [
-                null
+                {
+                  "itemId": 7882,
+                  "sa": "Focus",
+                  "mod": 4
+                }
               ],
               "lhand": [
-                null
+                {
+                  "itemId": 7882,
+                  "sa": "Focus",
+                  "spans": true,
+                  "mod": 4
+                }
               ],
               "head": [
                 null
@@ -1341,6 +1350,218 @@
           {
             "itemId": 2394,
             "mod": 1
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:15:14.782Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": "smvjom2r34az0e1",
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 7882,
+            "mod": 0,
+            "sa": "Focus"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:15:14.782Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": "smvjom2r34az0e1",
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 7882,
+            "mod": 0,
+            "sa": "Focus"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:15:16.178Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": "smvjom2r34az0e1",
+        "было": [
+          {
+            "itemId": 7882,
+            "mod": 0,
+            "sa": "Focus"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 7882,
+            "mod": 1,
+            "sa": "Focus"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:15:16.178Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": "smvjom2r34az0e1",
+        "было": [
+          {
+            "itemId": 7882,
+            "mod": 0,
+            "sa": "Focus"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 7882,
+            "mod": 1,
+            "sa": "Focus"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:15:16.456Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": "smvjom2r34az0e1",
+        "было": [
+          {
+            "itemId": 7882,
+            "mod": 1,
+            "sa": "Focus"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 7882,
+            "mod": 2,
+            "sa": "Focus"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:15:16.456Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": "smvjom2r34az0e1",
+        "было": [
+          {
+            "itemId": 7882,
+            "mod": 1,
+            "sa": "Focus"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 7882,
+            "mod": 2,
+            "sa": "Focus"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:15:16.689Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": "smvjom2r34az0e1",
+        "было": [
+          {
+            "itemId": 7882,
+            "mod": 2,
+            "sa": "Focus"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 7882,
+            "mod": 3,
+            "sa": "Focus"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:15:16.689Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": "smvjom2r34az0e1",
+        "было": [
+          {
+            "itemId": 7882,
+            "mod": 2,
+            "sa": "Focus"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 7882,
+            "mod": 3,
+            "sa": "Focus"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:15:16.891Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": "smvjom2r34az0e1",
+        "было": [
+          {
+            "itemId": 7882,
+            "mod": 3,
+            "sa": "Focus"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 7882,
+            "mod": 4,
+            "sa": "Focus"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:15:16.891Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": "smvjom2r34az0e1",
+        "было": [
+          {
+            "itemId": 7882,
+            "mod": 3,
+            "sa": "Focus"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 7882,
+            "mod": 4,
+            "sa": "Focus"
           }
         ]
       }
