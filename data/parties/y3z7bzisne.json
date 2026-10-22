@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T17:09:57.233Z",
-    "updatedBy": "Nortrom",
+    "updatedAt": "2026-10-22T18:44:20.487Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -676,8 +676,8 @@
       {
         "id": "cmvjpb8929ima8w",
         "name": "Nortrom",
-        "cls": "",
-        "level": 0,
+        "cls": "Gladiator",
+        "level": 75,
         "affil": "roster",
         "slots": {
           "rhand": [
@@ -4449,6 +4449,14 @@
             "mod": 0
           }
         ]
+      },
+      {
+        "ts": "2026-10-22T18:44:18.401Z",
+        "кто": "Мастер",
+        "charId": "cmvjpb8929ima8w",
+        "вид": "уровень",
+        "было": 0,
+        "стало": 75
       }
     ]
   }
