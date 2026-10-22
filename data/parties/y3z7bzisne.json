@@ -70,7 +70,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:41:11.422Z",
+    "updatedAt": "2026-10-22T15:41:16.651Z",
     "updatedBy": "Nortrom",
     "chars": [
       {
@@ -597,7 +597,9 @@
             }
           ],
           "neck": [
-            null
+            {
+              "itemId": 924
+            }
           ],
           "ear": [
             null,
