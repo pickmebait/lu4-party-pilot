@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:51:09.977Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-22T15:52:57.573Z",
+    "updatedBy": "Nocturnal",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -584,6 +584,10 @@
               "mod": 5
             }
           ]
+        },
+        "contacts": {
+          "realName": "Мишель",
+          "telegram": "@lutial"
         },
         "subUnlocked": false,
         "subs": [],
