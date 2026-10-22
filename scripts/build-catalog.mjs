@@ -1,502 +1,527 @@
 ﻿/**
- * Сборка public/items.json из данных masterwork.wiki.
+ * Сборка public/items.json из трёх статей masterwork.wiki.
  *
  * Источники:
- *   data/masterwork/list.json   полный список предметов вики, 39 запросов
- *   data/masterwork/types/*.json разбивка по типам со страниц вики:
- *                                 weapons.json  «Все виды оружия»
- *                                 armor.json    «Все доспехи и комплекты»
- *                                 jewelry.json  «Все виды бижутерии»
+ *   data/masterwork/posts/weapons.json   все виды оружия
+ *   data/masterwork/posts/jewelry.json   все виды бижутерии
+ *   data/masterwork/posts/armor.json     все доспехи и комплекты
  *
  * Запуск:
- *   node scripts/build-catalog.mjs            собрать items.json и скачать иконки
- *   node scripts/build-catalog.mjs --no-icons  только items.json
+ *   node scripts/build-catalog.mjs                 скачать недостающие иконки
+ *   node scripts/build-catalog.mjs --no-icons      только items.json
+ *   node scripts/build-catalog.mjs --refresh-icons заново скачать все иконки
  *
- * Важное про версии.
- *
- * В списке вики попадаются предметы из других версий: у них в названии
- * префикс «MW », например «MW Ivory Damascus Sword Focus» — это MasterWork,
- * а не Lu4: Gamma. Такие предметы выбрасываются: игрок на Gamma их не
- * встретит, а выбрать их в пикере вредно.
- *
- * Типы берутся со страниц вики, где их разбирают по полочкам. Разбивка
- * точнее, чем то, что отдаёт поиск: «Двуручные мечи» и «Парные мечи» в
- * поиске сливаются в просто «Мечи», а это разные вещи — одни занимают
- * обе руки, вторые надеваются парой.
- *
- * Чего в данных нет: названия комплектов (на странице доспехов в колонке
- * «Часть комплекта» стоит знак «+», а не имя), полные таблицы зачарования,
- * тип брони у шлемов, перчаток и сапог. Пустые поля оставляем пустыми,
- * предметы с ними видны при любом выборе фильтра.
+ * Скрипт намеренно падает, если данные не сходятся: лучше остановиться на
+ * сборке, чем записать справочник с потерянными SA, слотами или комплектами.
  */
-import { readFile, writeFile, mkdir, stat, readdir } from 'node:fs/promises'
-import { join } from 'node:path'
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  renameSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { setTimeout as sleep } from 'node:timers/promises'
 
-const ИСТОЧНИК = 'data/masterwork/list.json'
-const ПАПКА_ТИПОВ = 'data/masterwork/types'
-const ПАПКА_ЧАСТЕЙ = 'data/masterwork/parts'
-const ЦЕЛЬ = 'public/items.json'
-/** Папка на диске, куда кладутся иконки. */
-const ПАПКА_ИКОНОК = 'public/icons-mw'
-/** То же самое, но так, как это видит приложение: путь от корня сайта. */
-const ПУТЬ_ИКОНОК = 'icons-mw'
-const ОСНОВА_ИКОНОК = 'https://masterwork.wiki/'
+const КОРЕНЬ = fileURLToPath(new URL('..', import.meta.url))
+const ПАПКА_ПОСТОВ = join(КОРЕНЬ, 'data', 'masterwork', 'posts')
+const ПУБЛИЧНАЯ = join(КОРЕНЬ, 'public')
+const ПАПКА_ИКОНОК = join(ПУБЛИЧНАЯ, 'icons-mw')
+const ФАЙЛ_КАТАЛОГА = join(ПУБЛИЧНАЯ, 'items.json')
+const ИСТОЧНИК = 'https://masterwork.wiki'
+const ПАУЗА_МС = 140
 
-const безИконок = process.argv.includes('--no-icons')
+const аргументы = new Set(process.argv.slice(2))
+const безИконок = аргументы.has('--no-icons')
+const обновитьИконки = аргументы.has('--refresh-icons')
 
-/** Префикс предметов из других версий сервера. */
-const ЧУЖАЯ_ВЕРСИЯ = /^MW\s/
+const ГРЕЙДЫ = { NG: 0, D: 7, C: 9, B: 12, A: 14 }
+const ГРЕЙДЫ_СЛОВАМИ = new Set(Object.keys(ГРЕЙДЫ))
 
 /**
- * Битый блок на вики: id 1295…1332.
- *
- * Внутри у всех одинаковые характеристики: у шести разных мечей 22/6, у
- * всей брони по одной защите на слот (51, 32, 14, 14), у части вещей
- * 30000 атаки. Настоящие вещи с теми же именами есть отдельно и со
- *statами настоящими: Long Sword #2 это 24/17, Brandish #1333 это 21/12.
- * Похоже на неудачный импорт шаблона. Такие строки не предлагаем.
+ * Классы оружия в статье и подписи фильтра. «Посохи» в игре — магические
+ * посохи, поэтому в фильтре они называются так же, как остальные магические
+ * ветки. Список должен совпадать с WEAPON_TYPE_LABELS в src/types.ts.
  */
-const БИТЫЙ_БЛОК = (id) => id >= 1295 && id <= 1332
+const ТИПЫ_ОРУЖИЯ = new Map([
+  ['Мечи', 'Мечи'],
+  ['Топоры', 'Топоры'],
+  ['Кинжалы', 'Кинжалы'],
+  ['Луки', 'Луки'],
+  ['Двуручные мечи', 'Двуручные мечи'],
+  ['Двуручные топоры', 'Двуручные топоры'],
+  ['Кастеты', 'Кастеты'],
+  ['Копья', 'Копья'],
+  ['Магические мечи', 'Магические мечи'],
+  ['Посохи', 'Магические посохи'],
+  ['Магические кинжалы', 'Магические кинжалы'],
+  ['Двуручные посохи', 'Двуручные посохи'],
+  ['Парные мечи', 'Парные мечи'],
+  ['Парные топоры', 'Парные топоры'],
+  ['Парные кинжалы', 'Парные кинжалы'],
+  ['Другое', 'Другое'],
+])
 
-const читать = async (путь) => JSON.parse(await readFile(путь, 'utf8'))
+const СЛОТЫ_БИЖУТЕРИИ = { ring: 'l_ring', earring: 'l_ear', necklace: 'neck' }
+const ТИПЫ_ПРЕДМЕТОВ_БРОНИ = new Set([
+  'top',
+  'bottom',
+  'full',
+  'helmet',
+  'gloves',
+  'boots',
+  'shield',
+  'accessory',
+])
 
-const типыОружия = await читать(join(ПАПКА_ТИПОВ, 'weapons.json'))
-const типыБрони = await читать(join(ПАПКА_ТИПОВ, 'armor.json'))
-const типыБижутерии = await читать(join(ПАПКА_ТИПОВ, 'jewelry.json'))
-
-/** Имя → тип оружия по странице «Все виды оружия». */
-const имяТипОружия = {}
-for (const [тип, имена] of Object.entries(типыОружия)) {
-  for (const имя of имена) if (!имяТипОружия[имя]) имяТипОружия[имя] = тип
+function прочитать(файл) {
+  return JSON.parse(readFileSync(join(ПАПКА_ПОСТОВ, файл), 'utf8'))
 }
 
-/**
- * Класс из поиска вики → ближайший тип из шестнадцати. Нужен для предметов,
- * которых нет на странице видов оружия: это SA-варианты, редкие вещи и
- *season-подарки. Без него тип остался бы пустым у половины оружия.
- */
-/**
- * Слот, который вики пишет в колонке «Тип», → слот приложения.
- * Имена слотов берём из SLOTS в src/types.ts, поэтому проверка
- * scripts/check-catalog.mjs идёт по тому же списку.
- */
-const СЛОТ_БРОНИ = {
-  'Головной убор': 'head',
-  Шлем: 'head',
-  'Верх. доспех': 'chest',
-  'Полный доспех': 'chest',
-  'Ниж. доспех': 'legs',
-  Перчатки: 'gloves',
-  Сапоги: 'feet',
-  Щит: 'l_hand',
+function проверить(условие, сообщение) {
+  if (!условие) throw new Error(сообщение)
 }
 
-const КЛАСС_В_ТИП = {
-  Меч: 'Мечи',
-  'Парные клинки': 'Парные мечи',
-  Дробящее: 'Топоры',
-  'Парное Дробящее': 'Парные топоры',
-  Кинжал: 'Кинжалы',
-  'Парные Кинжалы': 'Парные кинжалы',
-  Луки: 'Луки',
-  Древковое: 'Копья',
-  Кастет: 'Кастеты',
+function чисто(значение) {
+  return String(значение ?? '')
+    .replace(/\u00a0/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
-/** Порядок типов для фильтра: как на странице вики. */
-const ПОРЯДОК_ОРУЖИЯ = [
-  'Мечи',
-  'Топоры',
-  'Кинжалы',
-  'Луки',
-  'Копья',
-  'Кастеты',
-  'Посохи',
-  'Магические мечи',
-  'Магические посохи',
-  'Магические кинжалы',
-  'Двуручные мечи',
-  'Двуручные топоры',
-  'Двуручные посохи',
-  'Парные мечи',
-  'Парные топоры',
-  'Парные кинжалы',
-  'Другое',
-]
-
-/** Что вики пишет в колонках списка, по категориям. */
-const КОЛОНКИ = {
-  Оружие: ['atkPhys', 'atkMag'],
-  Доспехи: ['physDef'],
-  Аксессуар: ['mDef'],
+function абсолютный(путь) {
+  return new URL(путь, ИСТОЧНИК).href
 }
 
-/**
- * Карточки предметов, которые удалось выкачать.
- *
- * В карточке вики лежит то, чего нет в списке: путь типа
- * «Оружие / Дробящее / Двуручный» — одна или две руки, и
- * «Доспехи / Тяжелый / Верх. доспех» — тип брони. Плюс таблицы
- * зачарования, рецепты и дроп.
- *
- * Выкачка идёт частями по 20 предметов и может быть неполной: сколько
- * частей успело набраться, столько предметов и уточнено.
- */
-async function прочитатьКарточки() {
-  let файлы = []
-  try {
-    файлы = (await readdir(ПАПКА_ЧАСТЕЙ))
-      .filter((f) => /^mw-raw-\d+\.json$/.test(f))
-      .sort()
-  } catch {
-    return {}
-  }
-  const карточки = {}
-  for (const имя of файлы) {
-    try {
-      const часть = JSON.parse(await readFile(join(ПАПКА_ЧАСТЕЙ, имя), 'utf8'))
-      for (const п of часть.предметы || []) карточки[п.id] = п
-    } catch {
-      console.log(`[!] не читается часть ${имя}, пропускаю`)
-    }
-  }
-  console.log(`Карточек прочитано: ${Object.keys(карточки).length} из ${файлы.length} частей`)
-  return карточки
+function имяИконки(src) {
+  const имя = String(src || '').split('/').pop() || ''
+  проверить(/^[a-zA-Z0-9_.-]+\.png$/.test(имя), `плохое имя иконки: "${src}"`)
+  return имя
 }
 
-const карточки = await прочитатьКарточки()
-
-/** Тип брони из пути «Доспехи / Тяжелый / Верх. доспех». */
-function типБрониИзПути(путь) {
-  const части = (путь || '').split('/').map((s) => s.trim())
-  const средний = части[1]
-  if (средний === 'Тяжелый') return 'heavy'
-  if (средний === 'Лёгкий' || средний === 'Легкий') return 'light'
-  if (средний === 'Магический') return 'magic'
-  return null
+function иконка(src) {
+  return `icons-mw/${имяИконки(src)}`
 }
 
-/** Руки из пути «Оружие / Дробящее / Двуручный». */
-function рукиИзПути(путь) {
-  const последний = (путь || '').split('/').map((s) => s.trim()).pop()
-  if (последний === 'Двуручный') return 'two'
-  if (последний === 'Парный') return 'dual'
-  if (последний === 'Одноручный') return 'one'
-  return null
+function редкие(эффекты) {
+  return (эффекты ?? []).map((э) => ({
+    name: чисто(э.name) || undefined,
+    description: чисто(э.description) || undefined,
+  }))
 }
 
-/** Грейд вики «A», «NG» — в строке карточки может быть с названием вещи. */
-function числоИзЗначения(значение) {
-  const n = Number(String(значение).replace(',', '.'))
-  return Number.isFinite(n) ? n : null
-}
+function предметОружия(сырой) {
+  const тип = ТИПЫ_ОРУЖИЯ.get(сырой.weaponClass)
+  проверить(тип, `неизвестный класс оружия: "${сырой.weaponClass}"`)
+  проверить(ГРЕЙДЫ_СЛОВАМИ.has(сырой.gradeName), `неизвестный грейд оружия: "${сырой.gradeName}"`)
 
-const сырьё = await читать(ИСТОЧНИК)
-const записи = Object.values(сырьё.краткий)
-
-const собрано = []
-const отчёт = {
-  всего: записи.length,
-  чужойВерсии: 0,
-  битых: 0,
-  полныхДублей: 0,
-  служебных: 0,
-  соСлотом: 0,
-  безСлота: 0,
-  типОружияИзСтраницы: 0,
-  типОружияИзПоиска: 0,
-  типБрони: 0,
-  двуручных: 0,
-  дуальных: 0,
-  поСлоту: {},
-  поТипуОружия: {},
-  поТипуБрони: {},
-}
-
-for (const з of записи) {
-  const имя = (з.имя || '').trim()
-
-  // Вики держит служебные записи: имя «(Not Use)» или «0». В игре их нет.
-  if (!имя || /^\(?not use\)?$/i.test(имя) || /^[\d\s.\-_/*]+$/.test(имя)) {
-    отчёт.служебных++
-    continue
-  }
-  // Предметы других версий сервера. На Gamma их нет.
-  if (ЧУЖАЯ_ВЕРСИЯ.test(имя)) {
-    отчёт.чужойВерсии++
-    continue
-  }
-  // Битые строки шаблона на вики.
-  if (БИТЫЙ_БЛОК(з.id)) {
-    отчёт.битых++
-    continue
+  const sa = (сырой.saEffects ?? []).map((э) => ({
+    name: чисто(э.name) || undefined,
+    description: чисто(э.description) || undefined,
+  }))
+  проверить(sa.length === 0 || sa.length === 3, `у "${сырой.name}" SA ${sa.length}, а не 0 или 3`)
+  for (const э of sa) {
+    проверить(э.name && э.description, `у "${сырой.name}" пустой SA`)
   }
 
-  // Вики перечисляет через звёздочку все варианты крафта одной вещи:
-  // «Saber*Bastard Sword*Spinebone Sword» — это один Saber, который ещё и
-  // варится как другие мечи. Первое имя основное, остальные идут в
-  // синонимы, чтобы по любому из них вещь находилась поиском.
-  const варианты = имя.split('*').map((s) => s.trim()).filter(Boolean)
-  const основное = варианты[0] || имя
-  const синонимы = [...new Set(варианты.slice(1).filter((s) => s !== основное))]
-
-  const out = {
-    id: з.id,
-    name: основное,
-    tex: з.slug.replace(/^\d+-/, ''),
-    icon: з.иконка ? ПУТЬ_ИКОНОК + '/' + з.иконка.split('/').pop() : undefined,
-  }
-  if (синонимы.length) {
-    out.fullName = имя
-    out.aliases = синонимы
+  const всеРедкие = редкие(сырой.rareEffects)
+  for (const э of всеРедкие) {
+    проверить(э.name && э.description, `у "${сырой.name}" пустой редкий эффект`)
   }
 
-  if (з.грейд) out.gradeName = з.грейд
-  if (з.класс) out.variant = з.класс
-
-  if (з.категория === 'Оружие') {
-    const тип = имяТипОружия[имя] || имяТипОружия[основа(имя)]
-    const известен = Boolean(имяТипОружия[имя] || имяТипОружия[основа(имя)])
-    if (известен) отчёт.типОружияИзСтраницы++
-    else if (КЛАСС_В_ТИП[з.тип]) отчёт.типОружияИзПоиска++
-
-    const итог = тип || КЛАСС_В_ТИП[з.тип]
-    if (итог) {
-      out.slot = 'r_hand'
-      out.weaponType = итог
-      out.weaponClass = з.тип || итог
-      отчёт.поТипуОружия[итог] = (отчёт.поТипуОружия[итог] || 0) + 1
-
-      // Руки: сначала карточка — там написано прямо, потом тип из статьи.
-      const карточка = карточки[з.id]
-      const руки = карточка ? рукиИзПути(карточка.путьТипа) : null
-      if (руки === 'dual') {
-        out.dual = true
-        out.twoHanded = true
-        отчёт.дуальных++
-      } else if (руки === 'two') {
-        out.twoHanded = true
-        отчёт.двуручных++
-      } else if (/^Парные/.test(итог)) {
-        out.dual = true
-        out.twoHanded = true
-        отчёт.дуальных++
-      } else if (/^Двуручные/.test(итог)) {
-        out.twoHanded = true
-        отчёт.двуручных++
-      }
-    }
-  } else if (з.категория === 'Доспехи') {
-    const слот = СЛОТ_БРОНИ[з.тип]
-    if (слот) {
-      out.slot = слот
-      if (слот === 'chest' && з.тип === 'Полный доспех') out.fullbody = true
-
-      // Тип брони: карточка, потом статья, потом название — там прямо написано
-      // «Dark Crystal Boots Heavy Armor».
-      const карточка = карточки[з.id]
-      const изКарточки = карточка ? типБрониИзПути(карточка.путьТипа) : null
-      const соСтраницы = типыБрони[имя]?.type || типыБрони[основа(имя)]?.type
-      const изНазвания = /Heavy Armor/i.test(имя)
-        ? 'heavy'
-        : /Light Armor/i.test(имя)
-          ? 'light'
-          : /Robe/i.test(имя)
-            ? 'magic'
-            : null
-      out.armorType = изКарточки || соСтраницы || изНазвания || undefined
-      if (out.armorType) {
-        отчёт.типБрони++
-        отчёт.поТипуБрони[out.armorType] = (отчёт.поТипуБрони[out.armorType] || 0) + 1
-      }
-
-      // Статы из карточки: они полнее, чем одна колонка из списка.
-      if (карточка?.статы) {
-        const с = карточка.статы
-        const физЗащ = числоИзЗначения(с['Физ. Защ.'])
-        const магЗащ = числоИзЗначения(с['Маг. Защ.'])
-        if (физЗащ !== null) out.physDef = физЗащ
-        if (магЗащ !== null) out.mDef = магЗащ
-        const вес = числоИзЗначения(с['Вес'])
-        if (вес !== null) out.weight = вес
-        if (карточка.ограничения) out.trade = cardRestrictions(карточка.ограничения)
-      }
-
-      // Таблица зачарования: сколько кристаллов и сколько даёт прирост.
-      if (карточка?.вкладки?.['Бонусы модификации']) {
-        const таблица = карточка.вкладки['Бонусы модификации'].таблицы?.[0]
-        if (таблица?.строки?.length) out.enchant = таблица.строки
-      }
-    }
-  } else if (з.категория === 'Аксессуар') {
-    // Серьги и кольца в приложении называются l_ear и l_ring: в игре их
-    // по две, и названия остались от прежней базы. Если написать ear и
-    // ring, бижутерия просто не попадёт ни в один слот.
-    if (з.тип === 'Кольцо') out.slot = 'l_ring'
-    else if (з.тип === 'Серьга') out.slot = 'l_ear'
-    else if (з.тип === 'Ожерелье') out.slot = 'neck'
-    if (out.slot && /^Эпическая/.test(типыБижутерии[имя] || '')) out.epic = true
+  const заточка = (сырой.enchantBonuses ?? [])
+    .map((б) => ({ mod: Number(б.mod), description: чисто(б.description) }))
+    .sort((a, b) => a.mod - b.mod)
+  for (const б of заточка) {
+    проверить(Number.isInteger(б.mod) && б.mod > 0, `у "${сырой.name}" плохая заточка ${б.mod}`)
+    проверить(б.description, `у "${сырой.name}" пустое описание заточки +${б.mod}`)
   }
 
-  const поля = КОЛОНКИ[з.категория] || []
-  з.колонки.forEach((значение, i) => {
-    const ключ = поля[i]
-    if (!ключ) return
-    const n = Number(значение)
-    if (Number.isFinite(n)) out[ключ] = n
-  })
+  const двуручное =
+    сырой.weaponClass === 'Луки' ||
+    сырой.weaponClass.startsWith('Двуручные') ||
+    сырой.weaponClass.startsWith('Парные')
+  const парное = сырой.weaponClass.startsWith('Парные')
 
-  if (out.slot) {
-    отчёт.соСлотом++
-    отчёт.поСлоту[out.slot] = (отчёт.поСлоту[out.slot] || 0) + 1
-  } else {
-    отчёт.безСлота++
-  }
-
-  for (const k of Object.keys(out)) if (out[k] === undefined) delete out[k]
-  собрано.push(out)
-}
-
-/** Ограничения из карточки: пригодность, передача, торговля. */
-function cardRestrictions(ограничения) {
-  const да = (название) => ограничения[название] === true
   return {
-    personal: да('Личный склад'),
-    trade: да('Передача'),
-    drop: да('Выбросить'),
-    shop: да('Торговая лавка'),
+    id: сырой.id,
+    name: чисто(сырой.name),
+    tex: сырой.slug,
+    fullName: чисто(сырой.name),
+    kind: 'finished',
+    section: `weapon-${сырой.gradeName}`,
+    slot: 'r_hand',
+    type: 'Weapon',
+    equipmentId: сырой.slug,
+    grade: ГРЕЙДЫ[сырой.gradeName],
+    gradeName: сырой.gradeName,
+    icon: иконка(сырой.icon),
+    url: сырой.url,
+    imageUrl: абсолютный(сырой.imageSrc),
+    weaponClass: сырой.weaponClass,
+    weaponType: тип,
+    twoHanded: двуручное || undefined,
+    dual: парное || undefined,
+    atkPhys: сырой.atkPhys,
+    atkMag: сырой.atkMag,
+    saEffects: sa.length ? sa : undefined,
+    saCommon: сырой.saCommon
+      ? {
+          name: чисто(сырой.saCommon.name) || undefined,
+          description: чисто(сырой.saCommon.description) || undefined,
+        }
+      : undefined,
+    rareEffect: всеРедкие[0],
+    rareEffects: всеРедкие.length ? всеРедкие : undefined,
+    enchantBonuses: заточка.length ? заточка : undefined,
   }
 }
 
-/** Имя без приписки варианта: «Yaksa Mace*Yaksa Mace - Earth» → «Yaksa Mace». */
-function основа(имя) {
-  return имя.split('*')[0].split(' - ')[0].trim()
+function предметБижутерии(сырой) {
+  проверить(ГРЕЙДЫ_СЛОВАМИ.has(сырой.gradeName), `неизвестный грейд бижутерии: "${сырой.gradeName}"`)
+  const слот = СЛОТЫ_БИЖУТЕРИИ[сырой.jewelryType]
+  проверить(слот, `неизвестный тип бижутерии: "${сырой.jewelryType}"`)
+  проверить(слот === сырой.slot, `у "${сырой.name}" слот ${сырой.slot} не совпадает с типом ${сырой.jewelryType}`)
+  проверить(Number(сырой.mDef) > 0, `у "${сырой.name}" нет маг. защиты`)
+  const всеРедкие = редкие(сырой.rareEffects)
+  for (const э of всеРедкие) {
+    проверить(э.name && э.description, `у "${сырой.name}" пустой редкий эффект`)
+  }
+
+  return {
+    id: сырой.id,
+    name: чисто(сырой.name),
+    tex: сырой.slug,
+    fullName: чисто(сырой.name),
+    kind: 'finished',
+    section: `jewelry-${сырой.gradeName}`,
+    slot: слот,
+    type: 'Jewelry',
+    equipmentId: сырой.slug,
+    grade: ГРЕЙДЫ[сырой.gradeName],
+    gradeName: сырой.gradeName,
+    icon: иконка(сырой.icon),
+    url: сырой.url,
+    imageUrl: абсолютный(сырой.imageSrc),
+    jewelryType: сырой.jewelryType,
+    epic: сырой.epic || undefined,
+    mDef: Number(сырой.mDef),
+    mpIncrease: Number.isFinite(Number(сырой.mpIncrease)) ? Number(сырой.mpIncrease) : undefined,
+    rareEffect: всеРедкие[0],
+    rareEffects: всеРедкие.length ? всеРедкие : undefined,
+    epicBonus: сырой.epicBonus
+      ? {
+          name: чисто(сырой.epicBonus.name) || undefined,
+          description: чисто(сырой.epicBonus.description) || undefined,
+        }
+      : undefined,
+  }
 }
 
-/**
- * Убираем только полные дубли.
- *
- * На вики есть группы предметов с одинаковым именем, слотом, грейдом и
- * характеристиками, но разными id. Делить их на дубли нельзя: у части
- * расходится SA-класс (один и тот же «Doom Shield» обычный и Foundation),
- * у части — иконка. Такие предметы различаются и должны остаться.
- *
- * Поэтому ключ включает иконку и SA-класс: совпало всё — различий в
- * пикере нет, строку можно убрать. Оставляем меньший id.
- * Отчёт о том, что осталось различающимся: scripts/report-duplicates.mjs
- */
-/**
- * Ключ совпадения — это то, по чему предмет узнают в пикере.
- *
- * tex, fullName и aliases сюда не входят намеренно: они выведены из
- * названия, и у двух записей одной вещи отличаются только ими. Например
- * «Shadow Item: Stormbringer» #8848 и #9000: после разбора звёздочки
- * названия совпали, а технические имена остались разными —
- * shadow-item-stormbringer и shadow-item-stormbringerstormbringer. Это
- * один предмет, а в списке он был двумя одинаковыми строками.
- *
- * Оставляем запись с меньшим id: у неё техническое имя короче.
- */
-function убратьПолныеДубли(список) {
-  const увидено = new Set()
-  const осталось = []
-  let отброшено = 0
-  for (const п of список) {
-    const ключ = [
-      п.name,
-      п.slot ?? '',
-      п.gradeName ?? '',
-      п.atkPhys ?? '',
-      п.atkMag ?? '',
-      п.physDef ?? '',
-      п.mDef ?? '',
-      п.weaponType ?? '',
-      п.armorType ?? '',
-      п.variant ?? '',
-      п.icon ?? '',
-    ].join('|')
-    if (увидено.has(ключ)) {
-      отброшено++
-      continue
+function предметБрони(сырой) {
+  проверить(ГРЕЙДЫ_СЛОВАМИ.has(сырой.gradeName), `неизвестный грейд брони: "${сырой.gradeName}"`)
+  проверить(ТИПЫ_ПРЕДМЕТОВ_БРОНИ.has(сырой.armorItemType), `неизвестный тип предмета брони: "${сырой.armorItemType}"`)
+  проверить(сырой.slot, `у "${сырой.name}" нет слота`)
+  if (сырой.fullbody) проверить(сырой.slot === 'chest', `цельная броня "${сырой.name}" не в слоте верха`)
+  if (сырой.armorItemType === 'shield') проверить(сырой.slot === 'l_hand', `щит "${сырой.name}" не в левой руке`)
+  if (сырой.armorItemType === 'accessory') проверить(сырой.slot === 'head', `аксессуар "${сырой.name}" не в шлеме`)
+
+  const всеРедкие = редкие(сырой.rareEffects)
+  for (const э of всеРедкие) {
+    проверить(э.name && э.description, `у "${сырой.name}" пустой редкий эффект`)
+  }
+
+  const наборы = (сырой.sets ?? []).map((с) => ({
+    setId: с.setId,
+    setName: чисто(с.setName),
+    setType: с.setType || undefined,
+    setBonuses: (с.setBonuses ?? []).map(чисто).filter(Boolean),
+  }))
+  проверить(наборы.length === 0 || наборы.every((с) => с.setId && с.setName), `у "${сырой.name}" неполный комплект`)
+
+  return {
+    id: сырой.id,
+    name: чисто(сырой.name),
+    tex: сырой.slug,
+    fullName: чисто(сырой.name),
+    kind: 'finished',
+    section: `armor-${сырой.gradeName}`,
+    slot: сырой.slot,
+    type:
+      сырой.armorItemType === 'shield'
+        ? 'Shield'
+        : сырой.armorItemType === 'accessory'
+          ? 'Accessory'
+          : 'Armor',
+    equipmentId: сырой.slug,
+    grade: ГРЕЙДЫ[сырой.gradeName],
+    gradeName: сырой.gradeName,
+    icon: иконка(сырой.icon),
+    url: сырой.url,
+    imageUrl: абсолютный(сырой.imageSrc),
+    armorType: сырой.armorType || undefined,
+    armorItemType: сырой.armorItemType,
+    fullbody: сырой.fullbody || undefined,
+    physDef: сырой.pdef,
+    mpIncrease: сырой.mp,
+    set: чисто(сырой.set) || undefined,
+    setName: чисто(сырой.set) || undefined,
+    setType: сырой.setType || undefined,
+    setId: наборы.length === 1 ? наборы[0].setId : undefined,
+    setBonuses: сырой.setBonuses?.length ? сырой.setBonuses.map(чисто).filter(Boolean) : undefined,
+    bonus: сырой.setBonuses?.length ? сырой.setBonuses.map(чисто).filter(Boolean).join(' · ') : undefined,
+    sets: наборы.length ? наборы : undefined,
+    rareEffect: всеРедкие[0],
+    rareEffects: всеРедкие.length ? всеРедкие : undefined,
+  }
+}
+
+function прочитатьПодписиИзTypes() {
+  const исходник = readFileSync(join(КОРЕНЬ, 'src', 'types.ts'), 'utf8')
+  const прочитатьМассив = (имя) => {
+    const m = исходник.match(new RegExp(`export const ${имя} = \\[([\\s\\S]*?)\\]`))
+    проверить(m, `в src/types.ts нет массива ${имя}`)
+    return [...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1])
+  }
+  return {
+    оружие: new Set(прочитатьМассив('WEAPON_TYPE_LABELS')),
+    предметыБрони: new Set(прочитатьМассив('ARMOR_ITEM_TYPE_OPTIONS')),
+    грейды: new Set(прочитатьМассив('GRADE_OPTIONS')),
+  }
+}
+
+function проверитьКаталог(предметы, комплекты) {
+  const подписи = прочитатьПодписиИзTypes()
+
+  const ids = new Set()
+  for (const п of предметы) {
+    проверить(Number.isInteger(п.id) && п.id > 0, `плохой id: ${п.id}`)
+    проверить(!ids.has(п.id), `дубль id ${п.id}`)
+    ids.add(п.id)
+    проверить(п.name, `пустое имя у ${п.id}`)
+    проверить(п.tex, `нет tex у "${п.name}"`)
+    проверить(п.gradeName && подписи.грейды.has(п.gradeName), `неизвестный грейд у "${п.name}"`)
+    проверить(п.icon?.startsWith('icons-mw/'), `иконка не в icons-mw у "${п.name}"`)
+    проверить(п.url?.startsWith(`${ИСТОЧНИК}/`), `нет ссылки на источник у "${п.name}"`)
+    проверить(п.imageUrl?.startsWith(`${ИСТОЧНИК}/`), `нет ссылки на картинку у "${п.name}"`)
+    if (п.slot === 'r_hand') {
+      проверить(подписи.оружие.has(п.weaponType), `неизвестный тип оружия "${п.weaponType}"`)
+      проверить(п.atkPhys > 0 && п.atkMag > 0, `у "${п.name}" нет атаки`)
+      проверить(!п.dual || п.twoHanded, `парное без двуручности: "${п.name}"`)
+      if (п.saEffects) проверить(п.saEffects.length === 3, `у "${п.name}" не три SA`)
     }
-    увидено.add(ключ)
-    осталось.push(п)
+    if (['head', 'chest', 'legs', 'gloves', 'feet', 'l_hand'].includes(п.slot)) {
+      проверить(подписи.предметыБрони.has(п.armorItemType), `неизвестный предмет брони "${п.armorItemType}"`)
+      if (п.armorType) проверить(['heavy', 'light', 'magic'].includes(п.armorType), `неизвестный тип брони "${п.armorType}"`)
+      if (п.fullbody) проверить(п.slot === 'chest', `цельная броня не в верхе: "${п.name}"`)
+    }
+    if (['l_ring', 'l_ear', 'neck'].includes(п.slot)) {
+      проверить(п.mDef > 0, `у бижутерии "${п.name}" нет маг. защиты`)
+    }
   }
-  return { осталось, отброшено }
+
+  for (const к of комплекты) {
+    проверить(к.id && к.name && к.pieces.length >= 2, `плохой комплект ${к.id}`)
+    for (const id of к.pieces) проверить(ids.has(id), `в комплекте ${к.id} нет предмета ${id}`)
+  }
+
+  const оружие = предметы.filter((п) => п.slot === 'r_hand')
+  const бижутерия = предметы.filter((п) => ['l_ring', 'l_ear', 'neck'].includes(п.slot))
+  const броня = предметы.filter((п) => ['head', 'chest', 'legs', 'gloves', 'feet', 'l_hand'].includes(п.slot))
+  проверить(оружие.length === 414, `оружия ${оружие.length}, ждём 414`)
+  проверить(бижутерия.length === 63, `бижутерии ${бижутерия.length}, ждём 63`)
+  проверить(броня.length === 292, `брони ${броня.length}, ждём 292`)
+  проверить(предметы.length === 769, `всего предметов ${предметы.length}, ждём 769`)
+  проверить(комплекты.length === 65, `комплектов ${комплекты.length}, ждём 65`)
+  проверить(оружие.filter((п) => п.saEffects?.length === 3).length === 172, 'не сходится число оружия с SA')
+  проверить(оружие.filter((п) => п.saCommon).length === 33, 'не сходится число общих SA')
+  проверить(оружие.filter((п) => п.rareEffects?.length).length === 129, 'не сходится число редких эффектов')
+  проверить(оружие.filter((п) => п.rareEffects?.length === 2).length === 17, 'не сходится число двойных rare')
+  проверить(оружие.filter((п) => п.enchantBonuses?.length).length === 138, 'не сходится число бонусов заточки')
+  проверить(броня.filter((п) => п.fullbody).length === 20, 'не сходится число цельной брони')
+  проверить(броня.filter((п) => п.armorItemType === 'shield').length === 26, 'не сходится число щитов')
+  проверить(броня.filter((п) => п.armorItemType === 'accessory').length === 6, 'не сходится число аксессуаров')
+  проверить(броня.filter((п) => п.set).length === 220, 'не сходится число предметов в комплектах')
+  проверить(бижутерия.filter((п) => п.epic).length === 4, 'не сходится число эпической бижутерии')
+  проверить(бижутерия.filter((п) => п.rareEffects?.length).length === 12, 'не сходится число редкой бижутерии')
+  проверить(new Set(предметы.map((п) => п.icon)).size === 587, 'не сходится число иконок')
+
+  return { оружие, бижутерия, броня }
 }
 
-const убрано = убратьПолныеДубли(собрано)
-const предметы = убрано.осталось
-отчёт.полныхДублей = убрано.отброшено
+function проверитьИконку(путь) {
+  проверить(existsSync(путь), `нет иконки ${путь}`)
+  const размер = statSync(путь).size
+  проверить(размер > 100, `пустая иконка ${путь}`)
+  const буфер = readFileSync(путь)
+  проверить(
+    буфер.subarray(0, 8).toString('hex') === '89504e470d0a1a0a',
+    `файл не PNG: ${путь}`,
+  )
+}
 
-предметы.sort((a, b) => a.id - b.id)
+async function скачатьИконку(имя, папка) {
+  const url = `${ИСТОЧНИК}/i64/${encodeURIComponent(имя)}`
+  let последняяОшибка
+  for (let попытка = 1; попытка <= 4; попытка++) {
+    try {
+      const ответ = await fetch(url, {
+        headers: {
+          'user-agent': 'Mozilla/5.0 (compatible; lu4-party-pilot catalog builder)',
+          referer: `${ИСТОЧНИК}/lu4-gamma/posts/post/793-all-weapon-types`,
+        },
+      })
+      if (!ответ.ok) throw new Error(`HTTP ${ответ.status}`)
+      const buffer = Buffer.from(await ответ.arrayBuffer())
+      if (buffer.length <= 100) throw new Error(`маленький файл ${buffer.length} Б`)
+      if (buffer.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a') {
+        throw new Error('ответ не PNG')
+      }
+      writeFileSync(join(папка, имя), buffer)
+      return
+    } catch (ошибка) {
+      последняяОшибка = ошибка
+      if (попытка < 4) await sleep(600 * попытка)
+    }
+  }
+  throw new Error(`не скачалась иконка ${имя}: ${последняяОшибка?.message ?? последняяОшибка}`)
+}
 
-await writeFile(
-  ЦЕЛЬ,
-  JSON.stringify({
+async function скачатьВсе(имена, папка) {
+  let готово = 0
+  for (const имя of [...имена].sort()) {
+    await скачатьИконку(имя, папка)
+    готово++
+    if (готово % 50 === 0 || готово === имена.size) {
+      console.log(`  иконки: ${готово}/${имена.size}`)
+    }
+    await sleep(ПАУЗА_МС)
+  }
+}
+
+function удалитьЛишниеИконки(имена) {
+  for (const файл of readdirSync(ПАПКА_ИКОНОК)) {
+    const путь = join(ПАПКА_ИКОНОК, файл)
+    if (!statSync(путь).isFile()) continue
+    if (!имена.has(файл)) rmSync(путь)
+  }
+}
+
+async function подготовитьИконки(имена) {
+  if (безИконок) {
+    for (const имя of имена) проверитьИконку(join(ПАПКА_ИКОНОК, имя))
+    console.log(`Иконки не трогаем: ${имена.size} файлов уже на месте`)
+    return
+  }
+
+  if (!обновитьИконки) {
+    mkdirSync(ПАПКА_ИКОНОК, { recursive: true })
+    const отсутствуют = [...имена].filter((имя) => !existsSync(join(ПАПКА_ИКОНОК, имя)))
+    console.log(`Иконки: нужно ${имена.size}, не хватает ${отсутствуют.length}`)
+    if (отсутствуют.length) {
+      await скачатьВсе(new Set(отсутствуют), ПАПКА_ИКОНОК)
+    }
+    for (const имя of имена) проверитьИконку(join(ПАПКА_ИКОНОК, имя))
+    удалитьЛишниеИконки(имена)
+    return
+  }
+
+  const временная = join(ПУБЛИЧНАЯ, `icons-mw.tmp-${process.pid}`)
+  const старая = join(ПУБЛИЧНАЯ, `icons-mw.old-${process.pid}`)
+  rmSync(временная, { recursive: true, force: true })
+  mkdirSync(временная, { recursive: true })
+  console.log(`Скачиваю все иконки заново: ${имена.size}`)
+  try {
+    await скачатьВсе(имена, временная)
+    for (const имя of имена) проверитьИконку(join(временная, имя))
+    if (existsSync(ПАПКА_ИКОНОК)) renameSync(ПАПКА_ИКОНОК, старая)
+    renameSync(временная, ПАПКА_ИКОНОК)
+    rmSync(старая, { recursive: true, force: true })
+  } catch (ошибка) {
+    rmSync(временная, { recursive: true, force: true })
+    if (existsSync(старая)) {
+      if (existsSync(ПАПКА_ИКОНОК)) rmSync(ПАПКА_ИКОНОК, { recursive: true, force: true })
+      renameSync(старая, ПАПКА_ИКОНОК)
+    }
+    throw ошибка
+  }
+}
+
+async function main() {
+  const оружие = прочитать('weapons.json')
+  const бижутерия = прочитать('jewelry.json')
+  const броня = прочитать('armor.json')
+
+  const предметы = [
+    ...оружие.items.map(предметОружия),
+    ...броня.items.map(предметБрони),
+    ...бижутерия.items.map(предметБижутерии),
+  ].sort((a, b) => a.grade - b.grade || a.name.localeCompare(b.name, 'ru'))
+
+  const комплекты = броня.sets.map((с) => ({
+    id: с.id,
+    name: чисто(с.name),
+    type: с.type || undefined,
+    grade: с.grade || undefined,
+    tier: с.tier || undefined,
+    pieces: с.pieces.map((п) => п.id),
+    bonuses: (с.bonuses ?? []).map(чисто).filter(Boolean),
+    totals: (с.totals ?? []).map(чисто).filter(Boolean),
+  }))
+
+  const { оружие: оружиеВКаталоге, бижутерия: бижутерияВКаталоге, броня: броняВКаталоге } =
+    проверитьКаталог(предметы, комплекты)
+
+  const именаИконок = new Set(предметы.map((п) => п.icon.replace('icons-mw/', '')))
+  await подготовитьИконки(именаИконок)
+
+  const каталог = {
     generatedAt: new Date().toISOString(),
-    source: `masterwork.wiki · Lu4: Gamma · список предметов ${new Date(сырьё.meta.начало).toISOString().slice(0, 10)}`,
-    notes: {
-      версия: 'только Lu4: Gamma, предметы других версий отброшены',
-      типы: 'разбивка со страниц вики: виды оружия, виды брони, виды бижутерии',
-      нетВДанных: 'названия комплектов, таблицы зачарования, тип брони у шлемов и сапог',
-    },
+    source: 'masterwork.wiki · Lu4: Gamma · оружие, бижутерия, доспехи и комплекты',
+    posts: [
+      {
+        kind: 'weapons',
+        url: оружие.sourceUrl,
+        title: оружие.sourceTitle,
+        scrapedAt: оружие.scrapedAt,
+        count: оружие.items.length,
+      },
+      {
+        kind: 'jewelry',
+        url: бижутерия.sourceUrl,
+        title: бижутерия.sourceTitle,
+        scrapedAt: бижутерия.scrapedAt,
+        count: бижутерия.items.length,
+      },
+      {
+        kind: 'armor',
+        url: броня.sourceUrl,
+        title: броня.sourceTitle,
+        scrapedAt: броня.scrapedAt,
+        count: броня.items.length,
+      },
+    ],
     items: предметы,
-  }),
-  'utf8',
-)
+    sets: комплекты,
+  }
 
-console.log(`Записано ${ЦЕЛЬ}: ${предметы.length} предметов`)
-console.log(`  отброшено служебных: ${отчёт.служебных}, чужих версий: ${отчёт.чужойВерсии}, битых: ${отчёт.битых}`)
-console.log(`  отброшено полных дублей: ${отчёт.полныхДублей}`)
-console.log(`  со слотом: ${отчёт.соСлотом}, без слота: ${отчёт.безСлота}`)
-console.log(`  тип оружия со страницы вики: ${отчёт.типОружияИзСтраницы}, из поиска: ${отчёт.типОружияИзПоиска}`)
-console.log(`  тип брони: ${отчёт.типБрони} ${JSON.stringify(отчёт.поТипуБрони)}`)
-console.log(`  двуручных: ${отчёт.двуручных}, дуальных: ${отчёт.дуальных}`)
-console.log(`  слоты: ${JSON.stringify(отчёт.поСлоту)}`)
-console.log(`  порядок типов оружия в фильтре: ${ПОРЯДОК_ОРУЖИЯ.length}`)
-
-// Иконки лежат на вики отдельными файлами и отдаются мимо защиты страницы,
-// поэтому их можно скачать обычным клиентом. Адреса берём из источника, а не
-// из готового каталога: там уже переименованный путь приложения.
-if (!безИконок) {
-  await скачатьИконки(записи)
+  writeFileSync(ФАЙЛ_КАТАЛОГА, JSON.stringify(каталог, null, 2) + '\n', 'utf8')
+  console.log('')
+  console.log(`Собрано: ${предметы.length} предметов, ${комплекты.length} комплектов`)
+  console.log(
+    `  оружие ${оружиеВКаталоге.length} · бижутерия ${бижутерияВКаталоге.length} · броня ${броняВКаталоге.length}`,
+  )
+  console.log(`  иконки: ${именаИконок.size}`)
+  console.log(`  файл: ${ФАЙЛ_КАТАЛОГА}`)
 }
 
-async function скачатьИконки(записиИсточника) {
-  await mkdir(ПАПКА_ИКОНОК, { recursive: true })
-  const нужные = [...new Set(записиИсточника.map((з) => з.иконка).filter(Boolean))]
-  let скачано = 0
-  let битых = 0
-  const ОДНОВРЕМЕННО = 4
-
-  const очередь = [...нужные]
-  async function рабочий() {
-    for (;;) {
-      const адрес = очередь.pop()
-      if (!адрес) return
-      const путь = join(ПАПКА_ИКОНОК, адрес.split('/').pop())
-      try {
-        await stat(путь)
-        continue
-      } catch {
-        /* файла нет — качаем */
-      }
-      try {
-        const r = await fetch(ОСНОВА_ИКОНОК + адрес.replace(/^\/+/, ''), {
-          headers: { 'User-Agent': 'lu4-party-pilot' },
-        })
-        if (!r.ok) throw new Error('HTTP ' + r.status)
-        await writeFile(путь, Buffer.from(await r.arrayBuffer()))
-        скачано++
-      } catch {
-        битых++
-      }
-    }
-  }
-  await Promise.all(Array.from({ length: ОДНОВРЕМЕННО }, рабочий))
-  console.log(`Иконки: ${нужные.length} всего, скачано ${скачано}, не получилось ${битых}`)
-  if (битых) {
-    console.log('  у таких предметов иконка не загрузится, приложение покажет первую букву названия')
-  }
-}
+main().catch((ошибка) => {
+  console.error('')
+  console.error('Сборка остановлена:', ошибка instanceof Error ? ошибка.message : ошибка)
+  process.exit(1)
+})

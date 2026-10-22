@@ -1,4 +1,4 @@
-import { SLOT_GROUPS, SLOTS, type Char, type SlotKey } from '@/types'
+import { SLOT_GROUPS, SLOTS, setLabel, type Char, type SlotKey } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
 import { setSlotMod, unequipItem, type Branch } from '@/lib/store'
 import { ItemIcon } from './ItemIcon'
@@ -101,6 +101,12 @@ function SlotCells({
         const grade = item?.gradeName
         const gradeCss = gradeCode(grade)
         const mod = entry.mod ?? 0
+        const редкие = item?.rareEffects?.length
+          ? item.rareEffects
+          : item?.rareEffect
+            ? [item.rareEffect]
+            : []
+        const активныеБонусы = (item?.enchantBonuses ?? []).filter((б) => mod >= б.mod)
 
         /*
          * Парная копия в левой руке — призрак. У парного и двуручного
@@ -121,11 +127,19 @@ function SlotCells({
             title={[
               `${def.label}: ${name}`,
               grade ? `ранг ${grade}` : '',
-              item?.set,
+              item ? setLabel(item) : '',
               `№${entry.itemId}`,
               entry.mod ? `заточка +${entry.mod}` : '',
               entry.sa ? `SA: ${entry.sa}` : '',
-              entry.rare ? 'редкий эффект' : '',
+              entry.sa && item?.saCommon?.description
+                ? `общее для всех SA: ${item.saCommon.description}`
+                : '',
+              ...активныеБонусы.map((б) => `с +${б.mod}: ${б.description}`),
+              entry.rare
+                ? `редкий эффект: ${редкие
+                    .map((э) => [э.name, э.description].filter(Boolean).join(': '))
+                    .join('; ')}`
+                : '',
               entry.spans ? 'занимает два слота' : '',
             ]
               .filter(Boolean)
@@ -142,18 +156,43 @@ function SlotCells({
             <span className="cell-name">{name}</span>
             {/* Выбранные свойства видны метками: без них непонятно, что
                 SA и редкий эффект действительно записались. */}
-            {(entry.sa || entry.rare) && (
+            {(entry.sa || entry.rare || активныеБонусы.length > 0) && (
               <span className="cell-effects">
                 {entry.sa && (
-                  <span className="cell-effect" title={`SA: ${entry.sa}`}>
+                  <span
+                    className="cell-effect"
+                    title={`SA: ${entry.sa}${
+                      item?.saCommon?.description
+                        ? ` · общее: ${item.saCommon.description}`
+                        : ''
+                    }`}
+                  >
                     {entry.sa}
                   </span>
                 )}
                 {entry.rare && (
-                  <span className="cell-effect rare" title="Редкий эффект">
+                  <span
+                    className="cell-effect rare"
+                    title={
+                      редкие.length
+                        ? `Редкий эффект: ${редкие
+                            .map((э) => [э.name, э.description].filter(Boolean).join(': '))
+                            .join('; ')}`
+                        : 'Редкий эффект'
+                    }
+                  >
                     R
                   </span>
                 )}
+                {активныеБонусы.map((б, j) => (
+                  <span
+                    className="cell-effect bonus"
+                    key={j}
+                    title={`Бонус заточки +${б.mod}: ${б.description}`}
+                  >
+                    +{б.mod}
+                  </span>
+                ))}
               </span>
             )}
 

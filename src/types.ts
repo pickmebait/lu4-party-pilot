@@ -23,7 +23,7 @@ export interface SlotDef {
   /** Короткая подсказка для окна выбора. */
   hint: string
   /** Какие фильтры показывать в пикере для этого слота. */
-  filters: { type?: 'weapon' | 'armor' | 'jewelry'; grade?: boolean }
+  filters: { type?: 'weapon' | 'armor' | 'jewelry'; grade?: boolean; itemType?: boolean }
 }
 
 /**
@@ -36,17 +36,17 @@ export const WEAPON_TYPE_LABELS = [
   'Топоры',
   'Кинжалы',
   'Луки',
-  'Копья',
-  'Кастеты',
-  'Посохи',
   'Двуручные мечи',
   'Двуручные топоры',
+  'Кастеты',
+  'Копья',
+  'Магические мечи',
+  'Магические посохи',
+  'Магические кинжалы',
   'Двуручные посохи',
   'Парные мечи',
   'Парные топоры',
   'Парные кинжалы',
-  'Магические мечи',
-  'Магические кинжалы',
   'Другое',
 ] as const
 
@@ -55,6 +55,24 @@ export const ARMOR_TYPE_OPTIONS = [
   { value: 'light', label: 'Лёгкая' },
   { value: 'magic', label: 'Магическая' },
 ]
+export const ARMOR_TYPE_LABELS: Record<string, string> = {
+  heavy: 'Тяжёлая',
+  light: 'Лёгкая',
+  magic: 'Магическая',
+}
+export const ARMOR_ITEM_TYPE_OPTIONS = [
+  { value: 'top', label: 'Верхние' },
+  { value: 'bottom', label: 'Нижние' },
+  { value: 'full', label: 'Полные' },
+  { value: 'helmet', label: 'Шлемы' },
+  { value: 'gloves', label: 'Перчатки' },
+  { value: 'boots', label: 'Ботинки' },
+  { value: 'shield', label: 'Щиты' },
+  { value: 'accessory', label: 'Аксессуары' },
+] as const
+export const ARMOR_ITEM_TYPE_LABELS: Record<string, string> = Object.fromEntries(
+  ARMOR_ITEM_TYPE_OPTIONS.map((o) => [o.value, o.label]),
+)
 export const JEWELRY_TYPE_OPTIONS = [
   { value: 'l_ring', label: 'Кольца' },
   { value: 'l_ear', label: 'Серьги' },
@@ -118,7 +136,7 @@ export const SLOTS: Record<string, SlotDef> = {
     label: 'В правой руке',
     max: 1,
     accepts: (i) => i.slot === 'r_hand',
-    hint: 'Оружие: мечи, копья, луки, дробящие, кинжалы, посохи',
+    hint: 'Оружие: мечи, топоры, кинжалы, луки, копья, кастеты, посохи',
     filters: { type: 'weapon', grade: true },
   },
   lhand: {
@@ -126,7 +144,7 @@ export const SLOTS: Record<string, SlotDef> = {
     label: 'В левой руке',
     max: 1,
     accepts: (i) => i.slot === 'l_hand',
-    hint: 'Щит. Занят, если оружие двуручное',
+    hint: 'Щит. Занят, если оружие двуручное или парное',
     filters: { grade: true },
   },
   head: {
@@ -134,8 +152,8 @@ export const SLOTS: Record<string, SlotDef> = {
     label: 'Шлем',
     max: 1,
     accepts: (i) => i.slot === 'head',
-    hint: 'Шлемы, капюшоны, диадемы',
-    filters: { type: 'armor', grade: true },
+    hint: 'Шлемы, капюшоны, диадемы и аксессуары',
+    filters: { type: 'armor', grade: true, itemType: true },
   },
   chest: {
     key: 'chest',
@@ -143,7 +161,7 @@ export const SLOTS: Record<string, SlotDef> = {
     max: 1,
     accepts: (i) => i.slot === 'chest',
     hint: 'Нагрудники и халаты. Цельная броня занимает ещё и низ',
-    filters: { type: 'armor', grade: true },
+    filters: { type: 'armor', grade: true, itemType: true },
   },
   legs: {
     key: 'legs',
@@ -151,7 +169,7 @@ export const SLOTS: Record<string, SlotDef> = {
     max: 1,
     accepts: (i) => i.slot === 'legs',
     hint: 'Поножи и штаны',
-    filters: { type: 'armor', grade: true },
+    filters: { type: 'armor', grade: true, itemType: true },
   },
   gloves: {
     key: 'gloves',
@@ -159,7 +177,7 @@ export const SLOTS: Record<string, SlotDef> = {
     max: 1,
     accepts: (i) => i.slot === 'gloves',
     hint: 'Перчатки и рукавицы',
-    filters: { type: 'armor', grade: true },
+    filters: { type: 'armor', grade: true, itemType: true },
   },
   feet: {
     key: 'feet',
@@ -167,7 +185,7 @@ export const SLOTS: Record<string, SlotDef> = {
     max: 1,
     accepts: (i) => i.slot === 'feet',
     hint: 'Сапоги и башмаки',
-    filters: { type: 'armor', grade: true },
+    filters: { type: 'armor', grade: true, itemType: true },
   },
   neck: {
     key: 'neck',
@@ -584,12 +602,22 @@ export interface CatalogItem {
   grade?: number
   /** Грейд словами, как в источнике: "NG", "B", "A". */
   gradeName?: string
-  /** Иконка относительно корня сайта: "icons/foo.webp". */
+  /** Иконка относительно корня сайта: "icons-mw/foo.png". */
   icon?: string
+  /** Исходная страница предмета на masterwork.wiki. */
+  url?: string
+  /** Исходная картинка на masterwork.wiki. */
+  imageUrl?: string
 
   /* ---------------------------------------------------------------- комплекты */
 
   set?: string
+  /** Название комплекта без варианта брони. */
+  setName?: string
+  /** Вариант комплекта: тяжёлый, лёгкий или магический. */
+  setType?: 'heavy' | 'light' | 'magic'
+  /** Устойчивый идентификатор комплекта: имя плюс вариант. */
+  setId?: string
   /** Бонус комплекта одной строкой. */
   bonus?: string
   /** Бонусы комплекта по частям: тяжёлая, лёгкая, мантия. */
@@ -599,7 +627,13 @@ export interface CatalogItem {
   /** Бонусы после полной обработки. */
   masterworkBonuses?: string[]
   /** Все комплекты предмета, когда их больше одного. */
-  sets?: { setName: string; setBonuses?: string[]; rareBonuses?: string[] }[]
+  sets?: {
+    setId?: string
+    setName: string
+    setType?: 'heavy' | 'light' | 'magic'
+    setBonuses?: string[]
+    rareBonuses?: string[]
+  }[]
 
   /* ----------------------------------------------------------- оружие и броня */
 
@@ -617,6 +651,8 @@ export interface CatalogItem {
    * есть не везде — такие вещи видны при любом выборе.
    */
   armorType?: 'heavy' | 'light' | 'magic'
+  /** Тип предмета брони: верх, низ, полный, шлем, перчатки, ботинки, щит, аксессуар. */
+  armorItemType?: string
   /** Тип бижутерии для фильтра: кольца, серьги, ожерелья, эпическая. */
   jewelryType?: string
   /** Эпическая бижутерия по статье «Все виды бижутерии». */
@@ -641,8 +677,16 @@ export interface CatalogItem {
   pieceName?: string
   /** SA-эффекты: название и описание, по одному на каждый из трёх вариантов. */
   saEffects?: { name?: string; description?: string }[]
+  /** Общий бонус, который действует при любом из SA-вариантов. */
+  saCommon?: { name?: string; description?: string }
   /** Особый эффект редкой вещи: название и описание. */
   rareEffect?: { name?: string; description?: string }
+  /** Все редкие эффекты: у шлемов их бывает три, по варианту брони. */
+  rareEffects?: { name?: string; description?: string }[]
+  /** Бонусы, которые открываются при определённой заточке. */
+  enchantBonuses?: { mod: number; description: string }[]
+  /** Эпический бонус бижутерии. */
+  epicBonus?: { name?: string; description?: string }
 
   /* --------------------------------------------------------------------- крафт */
 
@@ -673,9 +717,40 @@ export interface CatalogItem {
   aliases?: string[]
 }
 
+export interface CatalogSet {
+  id: string
+  name: string
+  type?: 'heavy' | 'light' | 'magic'
+  grade?: string
+  tier?: string
+  /** id предметов, которые входят в комплект. */
+  pieces: number[]
+  bonuses?: string[]
+  /** Суммарные защита и MP комплекта, если источник их приводит. */
+  totals?: string[]
+}
+
 export interface Catalog {
   generatedAt: string
   /** Название источника — чтобы понимать, чей это датабаз. */
   source?: string
   items: CatalogItem[]
+  /** Комплекты брони: части, варианты и бонусы. */
+  sets?: CatalogSet[]
+  /** Статьи, из которых собран справочник. */
+  posts?: { kind: string; url: string; title?: string; scrapedAt?: string; count?: number }[]
+}
+
+/**
+ * Подпись комплекта для ячеек и списка.
+ *
+ * У тяжёлой, лёгкой и магической версии одного комплекта совпадает имя,
+ * поэтому вариант показываем рядом. У шлема, который входит сразу в три
+ * варианта, вместо типа стоит число вариантов.
+ */
+export function setLabel(item: CatalogItem): string {
+  if (!item.set) return ''
+  if (item.sets && item.sets.length > 1) return `${item.set} · ${item.sets.length} варианта`
+  const type = item.setType ? ARMOR_TYPE_LABELS[item.setType] : ''
+  return type ? `${item.set} · ${type}` : item.set
 }

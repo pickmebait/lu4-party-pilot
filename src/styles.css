@@ -2780,6 +2780,12 @@ body {
   color: #d7a8f2;
 }
 
+.cell-effect.bonus {
+  border-color: #6b5a2d;
+  background: #2a2414;
+  color: #e5c86a;
+}
+
 /* Номер предмета: нужен складу и комплектам. В ячейке персонажа он уехал
    в подсказку — название в ячейке и без него обрезано. */
 .cell-id {
@@ -3326,6 +3332,34 @@ body {
 
 .picker-effect.rare .picker-effect-name {
   color: var(--accent);
+}
+
+.picker-effect.common .picker-effect-name {
+  color: var(--accent-2);
+}
+
+.picker-effect.epic .picker-effect-name {
+  color: #d8b45c;
+}
+
+.picker-effect.enchant .picker-effect-name {
+  color: var(--muted);
+}
+
+.picker-effect-line {
+  display: block;
+}
+
+.picker-source {
+  justify-self: start;
+  margin-top: 2px;
+  color: var(--accent-2);
+  font-size: 11px;
+  text-decoration: none;
+}
+
+.picker-source:hover {
+  text-decoration: underline;
 }
 
 /* Выбор SA и редкого эффекта: список radio и галочка. */

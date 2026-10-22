@@ -18,7 +18,6 @@
     "rm:party": "node scripts/rm-party.mjs",
     "audit": "node scripts/audit-fields.mjs",
     "audit:dead": "node scripts/audit-exports.mjs && node scripts/audit-css.mjs && node scripts/audit-cycles.mjs",
-    "mw:serve": "node scripts/serve-scrape.mjs",
     "cf:login": "wrangler login",
     "cf:secret": "node scripts/set-secret.mjs",
     "cf:dev": "wrangler dev --local --port 8787",

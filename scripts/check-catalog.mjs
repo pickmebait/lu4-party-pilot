@@ -43,6 +43,17 @@ const СЛОТЫ = new Set(прочитатьСлоты())
 const ГРЕЙДЫ = new Set(прочитатьМассив('GRADE_OPTIONS'))
 const ТИПЫ_ОРУЖИЯ = new Set(прочитатьМассив('WEAPON_TYPE_LABELS'))
 const ТИПЫ_БРОНИ = new Set(['heavy', 'light', 'magic'])
+const ТИПЫ_ПРЕДМЕТОВ = new Set([
+  'top',
+  'bottom',
+  'full',
+  'helmet',
+  'gloves',
+  'boots',
+  'shield',
+  'accessory',
+])
+const КОМПЛЕКТЫ = new Map((каталог.sets ?? []).map((с) => [с.id, с]))
 
 const ошибки = []
 const ошибка = (текст) => ошибки.push(текст)
@@ -75,6 +86,25 @@ for (const п of предметы) {
     ошибка(`неизвестный слот "${п.slot}" у "${п.name}"`)
   }
 
+  // Ссылки на источник и картинку: по ним обновляют справочник.
+  if (!п.url || !/^https:\/\/masterwork\.wiki\//.test(п.url)) {
+    ошибка(`нет ссылки на источник у "${п.name}"`)
+  }
+  if (!п.imageUrl || !/^https:\/\/masterwork\.wiki\//.test(п.imageUrl)) {
+    ошибка(`нет ссылки на картинку у "${п.name}"`)
+  }
+
+  // Тип предмета брони и правила его слота.
+  if (п.armorItemType !== undefined && !ТИПЫ_ПРЕДМЕТОВ.has(п.armorItemType)) {
+    ошибка(`неизвестный тип предмета брони "${п.armorItemType}" у "${п.name}"`)
+  }
+  if (п.armorItemType === 'shield' && п.slot !== 'l_hand') {
+    ошибка(`щит не в левой руке: "${п.name}"`)
+  }
+  if (п.armorItemType === 'accessory' && п.slot !== 'head') {
+    ошибка(`аксессуар не в шлеме: "${п.name}"`)
+  }
+
   if (п.slot === 'r_hand') {
     if (!п.weaponType) ошибка(`оружие без типа: "${п.name}"`)
     else if (!ТИПЫ_ОРУЖИЯ.has(п.weaponType)) {
@@ -85,6 +115,26 @@ for (const п of предметы) {
     if (п.dual && !п.twoHanded) ошибка(`парное оружие без признака двуручности: "${п.name}"`)
     if (п.dual && !/^Парные/.test(п.weaponType || '')) {
       ошибка(`парное оружие с типом "${п.weaponType}": "${п.name}"`)
+    }
+    if (п.saEffects && п.saEffects.length !== 3) {
+      ошибка(`у "${п.name}" ${п.saEffects.length} SA, а не три`)
+    }
+    for (const sa of п.saEffects ?? []) {
+      if (!sa.name || !sa.description) ошибка(`пустой SA у "${п.name}"`)
+    }
+    if (п.saCommon && !п.saCommon.description) {
+      ошибка(`пустой общий SA у "${п.name}"`)
+    }
+    if (п.rareEffects?.length && !п.rareEffect) {
+      ошибка(`у "${п.name}" есть rareEffects, но нет rareEffect`)
+    }
+    for (const rare of п.rareEffects ?? []) {
+      if (!rare.name || !rare.description) ошибка(`пустой редкий эффект у "${п.name}"`)
+    }
+    for (const bonus of п.enchantBonuses ?? []) {
+      if (!Number.isInteger(bonus.mod) || bonus.mod <= 0 || !bonus.description) {
+        ошибка(`плохой бонус заточки у "${п.name}"`)
+      }
     }
   }
 
@@ -97,6 +147,16 @@ for (const п of предметы) {
 
   // Цельная броня занимает верх и низ
   if (п.fullbody && п.slot !== 'chest') ошибка(`цельная броня не в слоте верха: "${п.name}"`)
+
+  // Комплекты: у предмета может быть несколько вариантов, например у шлема.
+  if (п.setId && !КОМПЛЕКТЫ.has(п.setId)) {
+    ошибка(`неизвестный комплект "${п.setId}" у "${п.name}"`)
+  }
+  for (const набор of п.sets ?? []) {
+    if (!КОМПЛЕКТЫ.has(набор.setId)) {
+      ошибка(`неизвестный комплект "${набор.setId}" у "${п.name}"`)
+    }
+  }
 
   // Иконка: путь должен вести в ту папку, которую мы собираем
   if (п.icon && !п.icon.startsWith('icons-mw/')) {
@@ -146,6 +206,23 @@ for (const [имя, список] of поИмени) {
   }
 }
 
+// Комплекты: идентификаторы не повторяются, все части есть в справочнике.
+const идыКомплектов = new Set()
+for (const набор of каталог.sets ?? []) {
+  if (!набор.id || идыКомплектов.has(набор.id)) {
+    ошибка(`дубль или пустой id комплекта: "${набор.id}"`)
+  }
+  идыКомплектов.add(набор.id)
+  if (!набор.name) ошибка(`пустое имя комплекта ${набор.id}`)
+  if (!Array.isArray(набор.pieces) || набор.pieces.length < 2) {
+    ошибка(`в комплекте ${набор.id} меньше двух частей`)
+    continue
+  }
+  for (const id of набор.pieces) {
+    if (!поId.has(id)) ошибка(`в комплекте ${набор.id} нет предмета ${id}`)
+  }
+}
+
 // Итоги
 const вСлотах = предметы.filter((п) => п.slot)
 const оружие = предметы.filter((п) => п.slot === 'r_hand')
@@ -153,6 +230,7 @@ const брони = предметы.filter((п) => ['head', 'chest', 'legs', 'gl
 
 console.log('Справочник:', предметы.length, 'предметов')
 console.log('  в слотах:', вСлотах.length, '| оружия:', оружие.length, '| брони:', брони.length)
+console.log('  комплектов:', КОМПЛЕКТЫ.size)
 console.log('  без грейда:', предметы.filter((п) => !п.gradeName).length)
 console.log(
   '  тип оружия задан у',

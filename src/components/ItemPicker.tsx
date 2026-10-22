@@ -1,9 +1,13 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import {
+  ARMOR_ITEM_TYPE_LABELS,
+  ARMOR_ITEM_TYPE_OPTIONS,
+  ARMOR_TYPE_LABELS,
   ARMOR_TYPE_OPTIONS,
   GRADE_OPTIONS,
   JEWELRY_TYPE_OPTIONS,
   WEAPON_TYPE_LABELS,
+  setLabel,
   type CatalogItem,
   type ItemEffectChoice,
   type SlotDef,
@@ -68,6 +72,7 @@ interface Props {
 export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPickMany, onClose }: Props) {
   const [q, setQ] = useState('')
   const [type, setType] = useState<string | null>(null)
+  const [itemType, setItemType] = useState<string | null>(null)
   const [grade, setGrade] = useState<string | null>(null)
   const [page, setPage] = useState(0)
   const [pageSize, setPageSize] = useState<number>(20)
@@ -129,6 +134,20 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
   }, [filters.type])
 
   /**
+   * Тип предмета брони: верх, низ, полные, шлем, перчатки, ботинки, щит,
+   * аксессуар. Показываем только если в слоте действительно есть больше
+   * одного типа: в слоте «Низ» отдельный фильтр был бы кнопкой с одним
+   * значением.
+   */
+  const itemTypeOptions = useMemo(() => {
+    if (!filters.itemType) return []
+    const есть = new Set(pool.map((it) => it.armorItemType).filter(Boolean))
+    return ARMOR_ITEM_TYPE_OPTIONS.filter((o) => есть.has(o.value))
+  }, [filters.itemType, pool])
+
+  const показыватьТипПредмета = itemTypeOptions.length > 1
+
+  /**
    * Показываем фильтр типа только если в данных есть хоть один предмет
    * с этим типом. Иначе вылезут три кнопки с нулём — выглядит как поломка.
    */
@@ -139,14 +158,35 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
   const показыватьТип = typeOptions.length > 0 && естьТипВДанных
 
   const matches = (it: CatalogItem) =>
-    acceptsFn(it) && passesType(it, typeField, type) && passesGrade(it, grade)
+    acceptsFn(it) &&
+    passesType(it, typeField, type) &&
+    passesItemType(it, itemType) &&
+    passesGrade(it, grade)
 
   /** Сколько предметов в слоте с указанным типом и выбранным грейдом. */
   const typeCount = (value: string) =>
-    pool.filter((it) => passesType(it, typeField, value) && passesGrade(it, grade)).length
+    pool.filter(
+      (it) =>
+        passesType(it, typeField, value) &&
+        passesItemType(it, itemType) &&
+        passesGrade(it, grade),
+    ).length
+
+  const itemTypeCount = (value: string) =>
+    pool.filter(
+      (it) =>
+        passesType(it, typeField, type) &&
+        passesItemType(it, value) &&
+        passesGrade(it, grade),
+    ).length
 
   const gradeCount = (value: string) =>
-    pool.filter((it) => passesType(it, typeField, type) && passesGrade(it, value)).length
+    pool.filter(
+      (it) =>
+        passesType(it, typeField, type) &&
+        passesItemType(it, itemType) &&
+        passesGrade(it, value),
+    ).length
 
   // С пустым поиском берём весь список слота по алфавиту. С поиском —
   // ранжированную выдачу справочника, она умеет искать по синонимам
@@ -154,11 +194,11 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
   const query = q.trim()
   const results = useMemo(
     () => (query ? catalog.search(q, SEARCH_LIMIT) : pool).filter(matches),
-    [query, q, catalog, pool, acceptsFn, type, grade, typeField], // eslint-disable-line react-hooks/exhaustive-deps
+    [query, q, catalog, pool, acceptsFn, type, itemType, grade, typeField], // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const total = pool.length
-  const filtered = query.length > 0 || type !== null || grade !== null
+  const filtered = query.length > 0 || type !== null || itemType !== null || grade !== null
 
   const pages = Math.max(1, Math.ceil(results.length / pageSize))
   const pageNo = Math.min(page, pages - 1)
@@ -174,6 +214,7 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
   }
   const onQuery = reset(setQ)
   const onType = reset(setType)
+  const onItemType = reset(setItemType)
   const onGrade = reset(setGrade)
 
   const goTo = (n: number) => {
@@ -209,7 +250,7 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
           onChange={(e) => onQuery(e.target.value)}
         />
 
-        {(показыватьТип || filters.grade) && (
+        {(показыватьТип || показыватьТипПредмета || filters.grade) && (
           <div className="filters">
             {показыватьТип && (
               <FilterRow
@@ -219,6 +260,16 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
                 total={total}
                 countFor={typeCount}
                 onChange={onType}
+              />
+            )}
+            {показыватьТипПредмета && (
+              <FilterRow
+                label="Тип предмета"
+                options={itemTypeOptions}
+                value={itemType}
+                total={total}
+                countFor={itemTypeCount}
+                onChange={onItemType}
               />
             )}
             {filters.grade && (
@@ -239,11 +290,12 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
             {filtered ? `Подходит ${results.length} из ${total}` : `Всего в слоте: ${total}`}
             {results.length > 0 && ` · показано ${from}–${to}`}
           </span>
-          {(type || grade || query) && (
+          {(type || itemType || grade || query) && (
             <button
               className="link-btn"
               onClick={() => {
                 setType(null)
+                setItemType(null)
                 setGrade(null)
                 setQ('')
                 setPage(0)
@@ -366,6 +418,13 @@ function passesType(
   return it[field] === value
 }
 
+function passesItemType(it: CatalogItem, value: string | null): boolean {
+  if (!value) return true
+  // Предмет без определённого типа не прячем: иначе фильтр молча
+  // выбрасывал бы старые или неполные записи.
+  return !it.armorItemType || it.armorItemType === value
+}
+
 function passesGrade(it: CatalogItem, value: string | null): boolean {
   if (!value) return true
   return it.gradeName === value
@@ -437,21 +496,37 @@ function Row({
   if (typeof it.atkMag === 'number') stats.push(`маг. АТК ${it.atkMag}`)
   if (typeof it.physDef === 'number') stats.push(`физ. ЗАЩ ${it.physDef}`)
   if (typeof it.mDef === 'number') stats.push(`маг. ЗАЩ ${it.mDef}`)
-  if (it.twoHanded) stats.push('двуручное')
+  if (typeof it.mpIncrease === 'number') stats.push(`MP +${it.mpIncrease}`)
+  // Парное оружие всегда занимает обе руки, поэтому не дублируем две метки:
+  // в строке важнее сказать «дуальное», а не «двуручное».
   if (it.dual) stats.push('дуальное')
+  else if (it.twoHanded) stats.push('двуручное')
   if (it.fullbody) stats.push('цельное')
 
   const [effectsOpen, setEffectsOpen] = useState(false)
   const [sa, setSa] = useState<string | null>(null)
   const [rare, setRare] = useState(false)
-  const естьЭффекты = (it.saEffects?.length ?? 0) > 0 || !!it.rareEffect
+  const редкие = it.rareEffects?.length
+    ? it.rareEffects
+    : it.rareEffect
+      ? [it.rareEffect]
+      : []
+  const естьЭффекты =
+    (it.saEffects?.length ?? 0) > 0 ||
+    !!it.saCommon ||
+    редкие.length > 0 ||
+    (it.enchantBonuses?.length ?? 0) > 0 ||
+    !!it.epicBonus
   /*
    * У оружия с SA или редким эффектом один клик по строке не надевает вещь:
    * сначала нужно выбрать эффект. Поэтому строка раскрывает выбор, а вещь
    * надевается кнопкой «Выбрать». В множественном выборе (цели) свойства не
    * нужны — там клик по-прежнему просто отмечает предмет.
+   *
+   * Бонус заточки и общий SA-бонус — справочные: они не мешают надеть вещь
+   * одним кликом и просто показываются в раскрытом блоке.
    */
-  const выбираетЭффекты = !multi && естьЭффекты
+  const выбираетЭффекты = !multi && ((it.saEffects?.length ?? 0) > 0 || редкие.length > 0)
 
   const выбрать = () => {
     onPick(it.id, { sa: sa ?? undefined, rare: rare || undefined })
@@ -479,7 +554,7 @@ function Row({
         выбрать()
       }}
       title={[
-        it.set,
+        setLabel(it),
         it.weaponClass,
         ...stats,
         blocked ? 'Потолок выбора — снимите что-нибудь' : '',
@@ -495,11 +570,17 @@ function Row({
       )}
       <ItemIcon item={it} name={it.name} size={26} />
       <span className="picker-name">{it.name}</span>
-      {stats.length > 0 && <span className="picker-stats">{stats.slice(0, 2).join(' · ')}</span>}
+      {stats.length > 0 && <span className="picker-stats">{stats.slice(0, 3).join(' · ')}</span>}
       {/* Тип и грейд видно в строке: сразу понятно, почему предмет
           остался в списке при выбранном фильтре. */}
       {it.weaponType && <span className="tag">{it.weaponType}</span>}
       {it.armorType && <span className="tag">{ARMOR_TYPE_LABELS[it.armorType] ?? it.armorType}</span>}
+      {it.armorItemType &&
+        (it.armorItemType === 'accessory' || it.armorItemType === 'shield') && (
+          <span className="tag">
+            {ARMOR_ITEM_TYPE_LABELS[it.armorItemType] ?? it.armorItemType}
+          </span>
+        )}
       {it.gradeName && <span className={`tag grade g-${it.gradeName}`}>{it.gradeName}</span>}
       {/* Эпическая бижутерия — не отдельный тип слота, поэтому метка видна
           и в общем списке, и внутри фильтра «Кольца» или «Серьги». */}
@@ -535,22 +616,7 @@ function Row({
             </div>
           </>
         ) : (
-          <>
-            {it.saEffects?.map((sa, i) => (
-              <div key={i} className="picker-effect">
-                <span className="picker-effect-name">{sa.name}</span>
-                <span className="picker-effect-desc">{sa.description}</span>
-              </div>
-            ))}
-            {it.rareEffect && (
-              <div className="picker-effect rare">
-                <span className="picker-effect-name">{it.rareEffect.name || 'Rare'}</span>
-                {it.rareEffect.description && (
-                  <span className="picker-effect-desc">{it.rareEffect.description}</span>
-                )}
-              </div>
-            )}
-          </>
+          <EffectDetails item={it} />
         )}
       </div>
     )}
@@ -579,13 +645,26 @@ export function EffectChoices({
   onRare: (on: boolean) => void
 }) {
   const эффекты = item.saEffects ?? []
-  if (эффекты.length === 0 && !item.rareEffect) return null
+  const редкие = item.rareEffects?.length
+    ? item.rareEffects
+    : item.rareEffect
+      ? [item.rareEffect]
+      : []
+  if (
+    эффекты.length === 0 &&
+    редкие.length === 0 &&
+    !item.saCommon &&
+    (item.enchantBonuses?.length ?? 0) === 0 &&
+    !item.epicBonus
+  ) {
+    return null
+  }
 
   return (
     <>
       {эффекты.length > 0 && (
         <div className="picker-choice-group" role="radiogroup" aria-label="SA эффект">
-          <div className="picker-choice-head">SA эффект — можно выбрать один</div>
+          <div className="picker-choice-head">SA-эффект — можно выбрать один</div>
           <label className="picker-choice">
             <input
               type="radio"
@@ -613,7 +692,7 @@ export function EffectChoices({
           })}
         </div>
       )}
-      {item.rareEffect && (
+      {редкие.length > 0 && (
         <label className="picker-choice rare">
           <input
             type="checkbox"
@@ -622,19 +701,82 @@ export function EffectChoices({
           />
           <span className="picker-effect-name">Редкий эффект</span>
           <span className="picker-effect-desc">
-            {item.rareEffect.name ? `${item.rareEffect.name}: ` : ''}
-            {item.rareEffect.description}
+            {редкие.map((э, i) => (
+              <span className="picker-effect-line" key={i}>
+                {э.name ? `${э.name}: ` : ''}
+                {э.description}
+              </span>
+            ))}
           </span>
         </label>
       )}
+      <EffectDetails item={item} hideRare />
     </>
   )
 }
 
-const ARMOR_TYPE_LABELS: Record<string, string> = {
-  heavy: 'Тяжёлая',
-  light: 'Лёгкая',
-  magic: 'Магическая',
+/**
+ * Справочные эффекты предмета: общий SA-бонус, бонус заточки, эпический
+ * бонус и редкие варианты. Показываются и в режиме выбора, и просто при
+ * раскрытии строки — поэтому вынесены отдельно от радиокнопок.
+ */
+export function EffectDetails({
+  item,
+  hideRare,
+}: {
+  item: CatalogItem
+  hideRare?: boolean
+}) {
+  const редкие = item.rareEffects?.length
+    ? item.rareEffects
+    : item.rareEffect
+      ? [item.rareEffect]
+      : []
+
+  return (
+    <>
+      {item.saCommon && (
+        <div className="picker-effect common">
+          <span className="picker-effect-name">Общее для всех SA</span>
+          {item.saCommon.description && (
+            <span className="picker-effect-desc">{item.saCommon.description}</span>
+          )}
+        </div>
+      )}
+      {item.epicBonus && (
+        <div className="picker-effect epic">
+          <span className="picker-effect-name">Эпический бонус</span>
+          {item.epicBonus.description && (
+            <span className="picker-effect-desc">{item.epicBonus.description}</span>
+          )}
+        </div>
+      )}
+      {item.enchantBonuses?.map((б, i) => (
+        <div className="picker-effect enchant" key={i}>
+          <span className="picker-effect-name">С заточки +{б.mod}</span>
+          <span className="picker-effect-desc">{б.description}</span>
+        </div>
+      ))}
+      {!hideRare &&
+        редкие.map((э, i) => (
+          <div className="picker-effect rare" key={i}>
+            <span className="picker-effect-name">{э.name || 'Rare'}</span>
+            {э.description && <span className="picker-effect-desc">{э.description}</span>}
+          </div>
+        ))}
+      {item.url && (
+        <a
+          className="picker-source"
+          href={item.url}
+          target="_blank"
+          rel="noreferrer"
+          onClick={(e) => e.stopPropagation()}
+        >
+          Источник на masterwork.wiki ↗
+        </a>
+      )}
+    </>
+  )
 }
 
 /** Фильтр по названию для уже готовых списков. */
