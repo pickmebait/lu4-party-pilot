@@ -1739,6 +1739,17 @@ body {
   cursor: default;
 }
 
+/* Вторая ячейка пары в компактной строке: та же приглушённая копия. */
+.slot-icon.ghost {
+  border-style: dashed;
+  background: transparent;
+  opacity: 0.55;
+}
+
+.slot-icon.ghost .icon {
+  filter: grayscale(0.4);
+}
+
 .slot-icon.ro:hover {
   background: var(--bg-2);
   border-color: var(--line);
@@ -2365,11 +2376,13 @@ body {
 .cell-ghost-mark {
   align-self: center;
   display: grid;
+  flex: none;
   place-items: center;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.4px;
   color: var(--muted);
+  white-space: nowrap;
 }
 
 /* Фильтры: тип предмета и грейд дополняют поиск. */

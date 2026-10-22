@@ -109,14 +109,13 @@ function SlotCells({
         const активныеБонусы = (item?.enchantBonuses ?? []).filter((б) => mod >= б.mod)
 
         /*
-         * Парная копия в левой руке — призрак. У парного и двуручного
-         * оружия на экране две ячейки, но предмет один, и вторая пара
-         * кнопок с заточкой означала бы вторую вещь, которой нет:
-         * снять заточку из левой руки и надеть правую отдельно нельзя,
-         * поэтому управление только справа, а слева — метка «занимает
-         * оба слота».
+         * Вторая ячейка пары — призрак. У парного и двуручного оружия,
+         * а также у цельной брони на экране две ячейки, но предмет один.
+         * Вторая ячейка только показывает, что место занято: без SA,
+         * редкого эффекта, заточки и кнопок, иначе она выглядит как
+         * отдельная вещь, которой нет.
          */
-        const ghost = slot === 'lhand' && entry.spans === true
+        const ghost = entry.spans === true
 
         return (
           <div
@@ -124,26 +123,30 @@ function SlotCells({
             className={`gear-cell filled ${
               gradeCss !== null ? `g${gradeCss}` : ''
             } ${entry.spans ? 'spans' : ''}${ghost ? ' ghost' : ''}`}
-            title={[
-              `${def.label}: ${name}`,
-              grade ? `ранг ${grade}` : '',
-              item ? setLabel(item) : '',
-              `№${entry.itemId}`,
-              entry.mod ? `заточка +${entry.mod}` : '',
-              entry.sa ? `SA: ${entry.sa}` : '',
-              entry.sa && item?.saCommon?.description
-                ? `общее для всех SA: ${item.saCommon.description}`
-                : '',
-              ...активныеБонусы.map((б) => `с +${б.mod}: ${б.description}`),
-              entry.rare
-                ? `редкий эффект: ${редкие
-                    .map((э) => [э.name, э.description].filter(Boolean).join(': '))
-                    .join('; ')}`
-                : '',
-              entry.spans ? 'занимает два слота' : '',
-            ]
-              .filter(Boolean)
-              .join(' · ')}
+            title={
+              ghost
+                ? `${def.label}: ${name} · занимает два слота`
+                : [
+                    `${def.label}: ${name}`,
+                    grade ? `ранг ${grade}` : '',
+                    item ? setLabel(item) : '',
+                    `№${entry.itemId}`,
+                    entry.mod ? `заточка +${entry.mod}` : '',
+                    entry.sa ? `SA: ${entry.sa}` : '',
+                    entry.sa && item?.saCommon?.description
+                      ? `общее для всех SA: ${item.saCommon.description}`
+                      : '',
+                    ...активныеБонусы.map((б) => `с +${б.mod}: ${б.description}`),
+                    entry.rare
+                      ? `редкий эффект: ${редкие
+                          .map((э) => [э.name, э.description].filter(Boolean).join(': '))
+                          .join('; ')}`
+                      : '',
+                    entry.spans ? 'занимает два слота' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')
+            }
           >
             {/*
               Иконка берётся из справочника, а не из названия: двенадцать
@@ -155,8 +158,9 @@ function SlotCells({
             </div>
             <span className="cell-name">{name}</span>
             {/* Выбранные свойства видны метками: без них непонятно, что
-                SA и редкий эффект действительно записались. */}
-            {(entry.sa || entry.rare || активныеБонусы.length > 0) && (
+                SA и редкий эффект действительно записались. На второй
+                ячейке пары этих меток быть не должно. */}
+            {!ghost && (entry.sa || entry.rare || активныеБонусы.length > 0) && (
               <span className="cell-effects">
                 {entry.sa && (
                   <span
@@ -202,8 +206,8 @@ function SlotCells({
               ячейку, чтобы крестик не висел на каждой вещи постоянно.
             */}
             {ghost ? (
-              <span className="cell-ghost-mark" title="Предмет занимает оба слота">
-                оба
+              <span className="cell-ghost-mark" title="Предмет занимает два слота">
+                2 слота
               </span>
             ) : (
               <div className="cell-enchant">

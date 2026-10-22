@@ -276,27 +276,31 @@ function SlotIcon({
   const item = catalog.byId(entry.itemId)
   const name = catalog.nameOf(entry.itemId)
   const mod = entry.mod ?? 0
+  const ghost = entry.spans === true
 
   return (
     <button
-      className="slot-icon filled"
+      className={`slot-icon filled${ghost ? ' ghost' : ''}`}
       disabled={!правый}
-      title={[
-        `${def.label}: ${name}`,
-        item?.gradeName ? `ранг ${item.gradeName}` : '',
-        `№${entry.itemId}`,
-        `заточка +${mod} из ${MAX_MOD}`,
-        entry.sa ? `SA: ${entry.sa}` : '',
-        entry.rare ? 'редкий эффект' : '',
-        entry.spans ? 'занимает два слота' : '',
-        правый ? '' : 'только просмотр',
-      ]
-        .filter(Boolean)
-        .join(' · ')}
+      title={
+        ghost
+          ? `${def.label}: ${name} · 2 слота`
+          : [
+              `${def.label}: ${name}`,
+              item?.gradeName ? `ранг ${item.gradeName}` : '',
+              `№${entry.itemId}`,
+              `заточка +${mod} из ${MAX_MOD}`,
+              entry.sa ? `SA: ${entry.sa}` : '',
+              entry.rare ? 'редкий эффект' : '',
+              правый ? '' : 'только просмотр',
+            ]
+              .filter(Boolean)
+              .join(' · ')
+      }
       onClick={onPick}
     >
       <ItemIcon item={item} name={name} size={20} />
-      {mod > 0 && <span className="slot-mod">+{mod}</span>}
+      {!ghost && mod > 0 && <span className="slot-mod">+{mod}</span>}
     </button>
   )
 }
