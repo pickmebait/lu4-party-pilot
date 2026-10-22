@@ -21,8 +21,10 @@ const путьКаталога = new URL('../public/items.json', import.meta.url
 
 const ТЕСТ = `
 import { renderToStaticMarkup } from 'react-dom/server'
-import { ItemPicker } from '@/components/ItemPicker.tsx'
+import { readFileSync } from 'node:fs'
+import { ItemPicker, EffectChoices } from '@/components/ItemPicker.tsx'
 import { GearStack } from '@/components/GearStack.tsx'
+import { equip } from '@/lib/slots.ts'
 import { SLOTS } from '@/types.ts'
 import { предметы } from './данные.mjs'
 
@@ -76,6 +78,37 @@ const пикерОружия = renderToStaticMarkup(
 есть('название оружия в списке', пикерОружия, сSA.name)
 // Грейда S в базе нет: если он всплывёт в фильтре, это старая привычка.
 нет('грейда S в фильтре нет', пикерОружия, '>S<span class="chip-count"')
+
+/* --- SA и редкий эффект: выбор при надевании оружия. --- */
+
+const двуручныйSA = предметы.find((i) => i.slot === 'r_hand' && i.twoHanded && i.saEffects?.length)
+const сRare = предметы.find((i) => i.slot === 'r_hand' && i.rareEffect)
+const выборSA = renderToStaticMarkup(
+  <EffectChoices item={двуручныйSA} sa={null} rare={false} onSa={() => {}} onRare={() => {}} />,
+)
+есть('в выборе SA есть радиокнопки', выборSA, 'type="radio"')
+есть('можно остаться без SA', выборSA, 'Без SA')
+// Плюс пункт «Без SA»: выбрать можно ровно один эффект.
+равно('SA выбирается только один', (выборSA.match(/type="radio"/g) || []).length, двуручныйSA.saEffects.length + 1)
+есть('описание SA видно', выборSA, двуручныйSA.saEffects[1].description)
+
+const выборRare = renderToStaticMarkup(
+  <EffectChoices item={сRare} sa={null} rare={false} onSa={() => {}} onRare={() => {}} />,
+)
+есть('есть галочка редкого эффекта', выборRare, 'type="checkbox"')
+есть('редкий эффект подписан', выборRare, 'Редкий эффект')
+есть('описание редкого эффекта видно', выборRare, сRare.rareEffect.description)
+
+// Выбор — часть надетой вещи: при надевании он попадает в ячейку,
+// а у двуручного предмета — и во вторую половину.
+const слотыSA = пустыеСлоты()
+equip({ slots: слотыSA }, 'rhand', 0, двуручныйSA, { sa: 'Haste' })
+равно('SA записан в ячейку', слотыSA.rhand[0]?.sa, 'Haste')
+равно('вторая половина получает тот же SA', слотыSA.lhand[0]?.sa, 'Haste')
+
+const слотыRare = пустыеСлоты()
+equip({ slots: слотыRare }, 'rhand', 0, сRare, { rare: true })
+равно('редкий эффект записан в ячейку', слотыRare.rhand[0]?.rare, true)
 
 /* --- Пикер бижутерии: свой фильтр типа. --- */
 
@@ -140,7 +173,7 @@ const призракПарное = призрак(стекПарное)
 есть('призрак второй половины виден', призракПарное, 'cell-ghost-mark')
 нет('у призрака нет кнопок заточки', призракПарное, 'mod-btn')
 нет('у призрака нет кнопки снятия', призракПарное, 'Снять')
-нет('у призрака нет счётчика заточки', призракПарное, 'cell-mod')
+нет('у призрака нет счётчика заточки', призракПарное, 'cell-enchant')
 
 /* --- Двуручное оружие: та же вторая половина. --- */
 
@@ -177,10 +210,25 @@ const стекОбычное = renderToStaticMarkup(
 )
 есть('у обычного предмета есть кнопки заточки', стекОбычное, 'mod-btn')
 есть('у обычного предмета есть кнопка снятия', стекОбычное, 'Снять')
-есть('заточка стоит слева', стекОбычное, 'cell-enchant')
-// Плюс должен быть выше минуса: иначе человек ищет нужную кнопку вслепую.
-равно('плюс выше минуса', стекОбычное.indexOf('>+</button>') < стекОбычное.indexOf('>−</button>'), true)
-есть('кнопка снятия видна без наведения', стекОбычное, 'cell-remove')
+есть('заточка стоит до кнопки снятия', стекОбычное, 'cell-enchant')
+// Сначала число заточки, справа от него кнопки — так ячейка читается слева направо.
+равно('цифра заточки перед кнопками', стекОбычное.indexOf('mod-value') < стекОбычное.indexOf('mod-btn'), true)
+равно('плюс перед минусом', стекОбычное.indexOf('>+</button>') < стекОбычное.indexOf('>−</button>'), true)
+равно('заточка раньше снятия', стекОбычное.indexOf('cell-enchant') < стекОбычное.indexOf('cell-remove'), true)
+// Выбранные SA и редкий эффект видны в ячейке, а не только в подсказке.
+const сЭффектами = предметы.find((i) => i.slot === 'r_hand' && i.saEffects?.length)
+const слотыЭффект = пустыеСлоты()
+слотыЭффект.rhand[0] = { itemId: сЭффектами.id, sa: 'Haste', rare: true }
+const стекЭффект = renderToStaticMarkup(
+  <GearStack ветка={ветка} слоты={слотыЭффект} catalog={каталог} правый={true} onPick={() => {}} />,
+)
+есть('SA виден в ячейке', стекЭффект, 'cell-effect')
+есть('редкий эффект виден в ячейке', стекЭффект, 'cell-effect rare')
+// Крестик появляется при наведении, а в покое скрыт, но место занимает.
+const стили = readFileSync('src/styles.css', 'utf8')
+есть('кнопка снятия показывается по наведению', стили, '.gear-cell.filled:hover .cell-remove')
+const правилоСнятия = стили.slice(стили.indexOf('.cell-remove {'), стили.indexOf('}', стили.indexOf('.cell-remove {')))
+есть('без наведения кнопка снятия скрыта', правилоСнятия, 'opacity: 0')
 нет('у призрака нет кнопки снятия', призракПарное, 'cell-remove')
 
 /* --- Чужой персонаж: кнопок нет, предмет виден. --- */

@@ -6,6 +6,7 @@ import {
   affiliationLabel,
   type Affiliation,
   type Char,
+  type ItemEffectChoice,
   type SlotKey,
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
@@ -255,12 +256,13 @@ function SlotPicker({
   catalog: CatalogApi
   onClose: () => void
 }) {
-  const onPick = (itemId: number) => {
+  const onPick = (itemId: number, choice?: ItemEffectChoice) => {
     const chosen = catalog.byId(itemId)
     if (!chosen) return
     // Правила занятости живут в store: двуручное оружие освобождает
-    // левую руку, цельная броня — низ.
-    equipItem(target, target.slot, target.index, chosen)
+    // левую руку, цельная броня — низ. Выбранные SA и редкий эффект
+    // сохраняются вместе с вещью в ячейке.
+    equipItem(target, target.slot, target.index, chosen, choice)
     onClose()
   }
 

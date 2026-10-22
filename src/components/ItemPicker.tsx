@@ -5,6 +5,7 @@ import {
   JEWELRY_TYPE_OPTIONS,
   WEAPON_TYPE_LABELS,
   type CatalogItem,
+  type ItemEffectChoice,
   type SlotDef,
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
@@ -33,7 +34,11 @@ interface Props {
   /** Для мест без слота — казны и целей: просто ограничение по типу. */
   accepts?: (item: CatalogItem) => boolean
   title?: string
-  onPick: (itemId: number) => void
+  /**
+   * Выбор предмета. Вторым аргументом приходят только выбранные свойства:
+   * один SA-эффект и отметка редкого. Для казны и целей он не нужен.
+   */
+  onPick: (itemId: number, choice?: ItemEffectChoice) => void
   /**
    * Режим множественного выбора.
    *
@@ -424,7 +429,7 @@ function Row({
   chosen?: boolean
   /** Потолок выбора достигнут — строка гасится, но не исчезает. */
   blocked?: boolean
-  onPick: (itemId: number) => void
+  onPick: (itemId: number, choice?: ItemEffectChoice) => void
   onClose: () => void
 }) {
   const stats: string[] = []
@@ -437,7 +442,21 @@ function Row({
   if (it.fullbody) stats.push('цельное')
 
   const [effectsOpen, setEffectsOpen] = useState(false)
+  const [sa, setSa] = useState<string | null>(null)
+  const [rare, setRare] = useState(false)
   const естьЭффекты = (it.saEffects?.length ?? 0) > 0 || !!it.rareEffect
+  /*
+   * У оружия с SA или редким эффектом один клик по строке не надевает вещь:
+   * сначала нужно выбрать эффект. Поэтому строка раскрывает выбор, а вещь
+   * надевается кнопкой «Выбрать». В множественном выборе (цели) свойства не
+   * нужны — там клик по-прежнему просто отмечает предмет.
+   */
+  const выбираетЭффекты = !multi && естьЭффекты
+
+  const выбрать = () => {
+    onPick(it.id, { sa: sa ?? undefined, rare: rare || undefined })
+    if (!multi) onClose()
+  }
 
   return (
     /*
@@ -453,17 +472,18 @@ function Row({
       tabIndex={0}
       className={`picker-row ${inApp ? 'in-app' : ''} ${multi ? 'multi' : ''} ${chosen ? 'chosen' : ''} ${blocked ? 'blocked' : ''}`}
       onClick={() => {
-        onPick(it.id)
-        // В множественном режиме список остаётся открытым: закрывать его после
-        // каждой отметки значило бы выбирать пятнадцать предметов пятнадцать
-        // разными заходами.
-        if (!multi) onClose()
+        if (выбираетЭффекты) {
+          setEffectsOpen(true)
+          return
+        }
+        выбрать()
       }}
       title={[
         it.set,
         it.weaponClass,
         ...stats,
         blocked ? 'Потолок выбора — снимите что-нибудь' : '',
+        выбираетЭффекты && !effectsOpen ? 'Нажми, чтобы выбрать SA и редкий эффект' : '',
       ]
         .filter(Boolean)
         .join(' · ')}
@@ -505,22 +525,108 @@ function Row({
     </div>
     {effectsOpen && естьЭффекты && (
       <div className="picker-effects">
-        {it.saEffects?.map((sa, i) => (
-          <div key={i} className="picker-effect">
-            <span className="picker-effect-name">{sa.name}</span>
-            <span className="picker-effect-desc">{sa.description}</span>
-          </div>
-        ))}
-        {it.rareEffect && (
-          <div className="picker-effect rare">
-            <span className="picker-effect-name">{it.rareEffect.name || 'Rare'}</span>
-            {it.rareEffect.description && (
-              <span className="picker-effect-desc">{it.rareEffect.description}</span>
+        {выбираетЭффекты ? (
+          <>
+            <EffectChoices item={it} sa={sa} rare={rare} onSa={setSa} onRare={setRare} />
+            <div className="picker-effects-actions">
+              <button className="btn primary" onClick={выбрать}>
+                Выбрать
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            {it.saEffects?.map((sa, i) => (
+              <div key={i} className="picker-effect">
+                <span className="picker-effect-name">{sa.name}</span>
+                <span className="picker-effect-desc">{sa.description}</span>
+              </div>
+            ))}
+            {it.rareEffect && (
+              <div className="picker-effect rare">
+                <span className="picker-effect-name">{it.rareEffect.name || 'Rare'}</span>
+                {it.rareEffect.description && (
+                  <span className="picker-effect-desc">{it.rareEffect.description}</span>
+                )}
+              </div>
             )}
-          </div>
+          </>
         )}
       </div>
     )}
+    </>
+  )
+}
+
+/**
+ * Выбор свойств оружия: один SA-эффект из списка и галочка редкого эффекта.
+ *
+ * Вынесено отдельным компонентом, чтобы разметку можно было проверить без
+ * раскрытия строки: у строки выбор появляется только после клика, а проверка
+ * собирает статический HTML.
+ */
+export function EffectChoices({
+  item,
+  sa,
+  rare,
+  onSa,
+  onRare,
+}: {
+  item: CatalogItem
+  sa: string | null
+  rare: boolean
+  onSa: (name: string | null) => void
+  onRare: (on: boolean) => void
+}) {
+  const эффекты = item.saEffects ?? []
+  if (эффекты.length === 0 && !item.rareEffect) return null
+
+  return (
+    <>
+      {эффекты.length > 0 && (
+        <div className="picker-choice-group" role="radiogroup" aria-label="SA эффект">
+          <div className="picker-choice-head">SA эффект — можно выбрать один</div>
+          <label className="picker-choice">
+            <input
+              type="radio"
+              name={`sa-${item.id}`}
+              checked={sa === null}
+              onChange={() => onSa(null)}
+            />
+            <span className="picker-effect-name">Без SA</span>
+            <span className="picker-effect-desc">Эффект не выбран</span>
+          </label>
+          {эффекты.map((э, i) => {
+            const имя = э.name ?? ''
+            return (
+              <label className="picker-choice" key={i}>
+                <input
+                  type="radio"
+                  name={`sa-${item.id}`}
+                  checked={sa === имя}
+                  onChange={() => onSa(имя || null)}
+                />
+                <span className="picker-effect-name">{имя || 'SA'}</span>
+                <span className="picker-effect-desc">{э.description}</span>
+              </label>
+            )
+          })}
+        </div>
+      )}
+      {item.rareEffect && (
+        <label className="picker-choice rare">
+          <input
+            type="checkbox"
+            checked={rare}
+            onChange={(e) => onRare(e.target.checked)}
+          />
+          <span className="picker-effect-name">Редкий эффект</span>
+          <span className="picker-effect-desc">
+            {item.rareEffect.name ? `${item.rareEffect.name}: ` : ''}
+            {item.rareEffect.description}
+          </span>
+        </label>
+      )}
     </>
   )
 }

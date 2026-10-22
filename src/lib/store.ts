@@ -20,6 +20,7 @@ import {
   type PrimeWindow,
   type Schedule,
   type SetDef,
+  type ItemEffectChoice,
   type SlotEntry,
   type SlotKey,
   type Sub,
@@ -238,7 +239,10 @@ function слепокИстории(сырое: unknown): (ВещьВИстор�
       out.push(null)
       continue
     }
-    out.push({ itemId, mod: Math.max(0, Math.trunc(Number(в.mod)) || 0) })
+    const вещь: ВещьВИстории = { itemId, mod: Math.max(0, Math.trunc(Number(в.mod)) || 0) }
+    if (typeof в.sa === 'string' && в.sa) вещь.sa = в.sa
+    if (в.rare === true) вещь.rare = true
+    out.push(вещь)
   }
   return out
 }
@@ -257,7 +261,12 @@ function normalizeSlots(сырое: unknown): Char['slots'] {
     for (let i = 0; i < SLOT_MAX[k]; i++) {
       const e = src[i]
       if (e && typeof e.itemId === 'number') {
-        arr[i] = { itemId: e.itemId, mod: modOf(e), spans: e.spans }
+        const entry: SlotEntry = { itemId: e.itemId, mod: modOf(e), spans: e.spans }
+        // SA и редкий эффект — часть надетой вещи, а не справочника:
+        // без переноса они терялись бы при каждой загрузке базы.
+        if (typeof e.sa === 'string' && e.sa) entry.sa = e.sa
+        if (e.rare === true) entry.rare = true
+        arr[i] = entry
       }
     }
     slots[k] = arr
@@ -724,11 +733,17 @@ function diffChar(было: Char, стало: Char, кто: string): Измен�
 function слепокЯчеек(ячейки: (SlotEntry | null)[] | undefined): (ВещьВИстории | null)[] {
   const out: (ВещьВИстории | null)[] = []
   for (const вещь of ячейки ?? []) {
-    out.push(
-      вещь
-        ? { itemId: вещь.itemId, mod: Math.max(0, Math.trunc(вещь.mod ?? 0) || 0) }
-        : null,
-    )
+    if (!вещь) {
+      out.push(null)
+      continue
+    }
+    const слепок: ВещьВИстории = {
+      itemId: вещь.itemId,
+      mod: Math.max(0, Math.trunc(вещь.mod ?? 0) || 0),
+    }
+    if (вещь.sa) слепок.sa = вещь.sa
+    if (вещь.rare) слепок.rare = true
+    out.push(слепок)
   }
   return out
 }
@@ -742,7 +757,11 @@ function слепкиРавны(
   return один.every(
     (вещь, i) =>
       (вещь === null) === (два[i] === null) &&
-      (вещь === null || (вещь.itemId === два[i]!.itemId && вещь.mod === два[i]!.mod)),
+      (вещь === null ||
+        (вещь.itemId === два[i]!.itemId &&
+          вещь.mod === два[i]!.mod &&
+          вещь.sa === два[i]!.sa &&
+          !!вещь.rare === !!два[i]!.rare)),
   )
 }
 
@@ -815,13 +834,14 @@ export function equipItem(
   slot: SlotKey,
   index: number,
   item: CatalogItem,
+  choice?: ItemEffectChoice,
 ): string[] {
   const char = findChar(target.charId)
   if (!char || !hasSub(char, target.subId)) return []
 
   let displaced: string[] = []
   const copy = withGear(char, target.subId, (h) => {
-    displaced = equip(h, slot, index, item)
+    displaced = equip(h, slot, index, item, choice)
   })
   commitChar(target.charId, copy)
   return displaced

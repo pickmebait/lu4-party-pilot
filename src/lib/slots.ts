@@ -2,6 +2,7 @@ import {
   SLOTS,
   type CatalogItem,
   type Char,
+  type ItemEffectChoice,
   type SlotEntry,
   type SlotKey,
 } from '@/types'
@@ -94,7 +95,13 @@ function spansTogether(holder: GearHolder, a: SlotKey, b: SlotKey): boolean {
  * Надевает предмет. Возвращает подписи слотов, которые пришлось занять
  * заново, чтобы интерфейс мог об этом сказать.
  */
-export function equip(holder: GearHolder, slot: SlotKey, index: number, item: CatalogItem): string[] {
+export function equip(
+  holder: GearHolder,
+  slot: SlotKey,
+  index: number,
+  item: CatalogItem,
+  choice?: ItemEffectChoice,
+): string[] {
   const displaced: string[] = []
 
   for (const key of conflictsFor(holder, slot, item)) {
@@ -103,6 +110,8 @@ export function equip(holder: GearHolder, slot: SlotKey, index: number, item: Ca
   }
 
   const entry: SlotEntry = { itemId: item.id }
+  if (choice?.sa) entry.sa = choice.sa
+  if (choice?.rare) entry.rare = true
   const own = [...(holder.slots[slot] ?? blank(SLOTS[slot].max))]
   const previous = own[index]
   if (previous && !previous.spans) displaced.push(SLOTS[slot].label)

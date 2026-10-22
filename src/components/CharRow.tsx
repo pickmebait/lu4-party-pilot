@@ -252,7 +252,7 @@ function SlotIcon({
 }: {
   catalog: CatalogApi
   slot: SlotKey
-  entry: { itemId: number; mod?: number; spans?: boolean } | null
+  entry: { itemId: number; mod?: number; spans?: boolean; sa?: string; rare?: boolean } | null
   правый: boolean
   onPick: () => void
 }) {
@@ -286,6 +286,8 @@ function SlotIcon({
         item?.gradeName ? `ранг ${item.gradeName}` : '',
         `№${entry.itemId}`,
         `заточка +${mod} из ${MAX_MOD}`,
+        entry.sa ? `SA: ${entry.sa}` : '',
+        entry.rare ? 'редкий эффект' : '',
         entry.spans ? 'занимает два слота' : '',
         правый ? '' : 'только просмотр',
       ]

@@ -2361,10 +2361,9 @@ body {
   filter: grayscale(0.4);
 }
 
-/* Метка «оба» стоит на месте заточки — слева, чтобы было видно, что вторая
-   половина предмета управляется через первую. */
+/* Метка «оба» стоит на месте заточки — перед кнопкой снятия. */
 .cell-ghost-mark {
-  align-self: stretch;
+  align-self: center;
   display: grid;
   place-items: center;
   font-size: 10px;
@@ -2752,6 +2751,31 @@ body {
   flex: 1;
 }
 
+/* Метки выбранных свойств оружия: SA и редкий эффект. */
+.cell-effects {
+  flex: none;
+  display: flex;
+  gap: 2px;
+}
+
+.cell-effect {
+  padding: 0 4px;
+  border: 1px solid var(--accent-line);
+  border-radius: 3px;
+  background: var(--accent-deep);
+  color: var(--accent-2);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 13px;
+  letter-spacing: 0.3px;
+}
+
+.cell-effect.rare {
+  border-color: #6d4b86;
+  background: #241a2e;
+  color: #d7a8f2;
+}
+
 /* Номер предмета: нужен складу и комплектам. В ячейке персонажа он уехал
    в подсказку — название в ячейке и без него обрезано. */
 .cell-id {
@@ -2760,23 +2784,19 @@ body {
 }
 
 /*
- * Заточка — колонкой слева: плюс сверху, минус под ним, под ними значение.
- * Вертикально, потому что в ячейке мало ширины, а ряд кнопок справа
- * наезжал на название и появлялся только по наведению — его не было видно.
+ * Заточка — одной строкой: сначала число, справа кнопки «+» и «−».
+ * Стоит перед снятием, чтобы управление вещью было в одном месте.
  */
 .cell-enchant {
   flex: none;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 1px;
-  align-self: stretch;
-  justify-content: center;
+  gap: 3px;
 }
 
 .cell-enchant .mod-btn {
   width: 16px;
-  height: 15px;
+  height: 16px;
   font-size: 11px;
 }
 
@@ -2817,12 +2837,12 @@ body {
 }
 
 /*
- * Кнопка снятия — видимая, у правого края. Крестик нарисован, а не набран
- * символом шрифта: на строке в 14 пикселей символ рисовался ниже рамки.
+ * Кнопка снятия — по наведению на ячейку. Место под неё занято всегда,
+ * поэтому название не прыгает. На сенсорном экране наведения нет —
+ * там крестик виден постоянно.
  */
 .cell-remove {
   flex: none;
-  margin-left: auto;
   width: 18px;
   height: 18px;
   padding: 0;
@@ -2833,6 +2853,22 @@ body {
   border-radius: 4px;
   color: var(--muted-dim);
   cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease;
+}
+
+.gear-cell.filled:hover .cell-remove,
+.gear-cell.filled:focus-within .cell-remove {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (hover: none) {
+  .cell-remove {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 
 .cell-remove:hover {
@@ -3286,6 +3322,45 @@ body {
 
 .picker-effect.rare .picker-effect-name {
   color: var(--accent);
+}
+
+/* Выбор SA и редкого эффекта: список radio и галочка. */
+.picker-choice-group {
+  display: grid;
+  gap: 5px;
+}
+
+.picker-choice-head {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--muted-dim);
+}
+
+.picker-choice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 92px) 1fr;
+  gap: 8px;
+  align-items: start;
+  font-size: 12px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.picker-choice input {
+  margin: 3px 0 0;
+  accent-color: var(--accent);
+}
+
+.picker-choice.rare {
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+}
+
+.picker-effects-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 3px;
 }
 
 /* Иконка предмета: картинка или первая буква, если файла нет. */

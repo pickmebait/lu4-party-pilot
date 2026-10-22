@@ -216,8 +216,16 @@ export const SLOT_MAX: Record<SlotKey, number> = SLOT_KEYS.reduce(
 /** Наибольшая заточка в игре: +16. */
 export const MAX_MOD = 16
 
+/** Выбранные свойства оружия: один SA-эффект и отметка редкого. */
+export interface ItemEffectChoice {
+  /** Название выбранного SA-эффекта; пусто — без SA. */
+  sa?: string
+  /** Есть ли у вещи редкий эффект. */
+  rare?: boolean
+}
+
 /** Одна вещь, надетое на персонажа. */
-export interface SlotEntry {
+export interface SlotEntry extends ItemEffectChoice {
   itemId: number
   /**
    * Заточка: от 0 до 16, то есть +0…+16.
@@ -474,6 +482,10 @@ export interface ВещьВИстории {
   itemId: number
   /** Заточка; 0 — вещь без усиления. */
   mod: number
+  /** Выбранный SA-эффект, если был. */
+  sa?: string
+  /** Был ли отмечен редкий эффект. */
+  rare?: boolean
 }
 
 /**
