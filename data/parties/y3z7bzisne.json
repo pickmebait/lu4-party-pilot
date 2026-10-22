@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:26:07.283Z",
+    "updatedAt": "2026-10-22T15:26:18.076Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -19,12 +19,14 @@
           "rhand": [
             {
               "itemId": 236,
-              "sa": "Focus",
-              "mod": 3
+              "mod": 3,
+              "sa": "Focus"
             }
           ],
           "lhand": [
-            null
+            {
+              "itemId": 110
+            }
           ],
           "head": [
             {
@@ -3584,6 +3586,23 @@
             "itemId": 236,
             "mod": 3,
             "sa": "Focus"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:26:16.265Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 110,
+            "mod": 0
           }
         ]
       }
