@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:14:07.686Z",
+    "updatedAt": "2026-10-22T15:14:14.919Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -88,8 +88,48 @@
           "realName": "Боря",
           "telegram": "@crnrs"
         },
-        "subUnlocked": false,
-        "subs": [],
+        "subUnlocked": true,
+        "subs": [
+          {
+            "id": "smvjolwxp1w64im",
+            "cls": "",
+            "level": 0,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          }
+        ],
         "away": {},
         "pa": {
           "from": "2026-09-29",
