@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:17:01.003Z",
+    "updatedAt": "2026-10-22T15:17:06.547Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -137,12 +137,14 @@
               "rhand": [
                 {
                   "itemId": 7893,
-                  "sa": "Acumen",
-                  "mod": 4
+                  "mod": 4,
+                  "sa": "Acumen"
                 }
               ],
               "lhand": [
-                null
+                {
+                  "itemId": 673
+                }
               ],
               "head": [
                 null
@@ -1882,6 +1884,23 @@
             "itemId": 7893,
             "mod": 4,
             "sa": "Acumen"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:17:04.746Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": "smvjom1e73m4i48",
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 673,
+            "mod": 0
           }
         ]
       }
