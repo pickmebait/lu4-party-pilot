@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T21:01:13.407Z",
-    "updatedBy": "DaintyWilder",
+    "updatedAt": "2026-10-22T21:04:10.972Z",
+    "updatedBy": "DOKTOP",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -963,30 +963,47 @@
       {
         "id": "cmvjpdktjft6xe4",
         "name": "DOKTOP",
-        "cls": "",
+        "cls": "Bounty Hunter",
         "level": 0,
-        "affil": "roster",
+        "affil": "decade",
         "slots": {
           "rhand": [
-            null
+            {
+              "itemId": 234,
+              "sa": "Critical Damage",
+              "mod": 3
+            }
           ],
           "lhand": [
-            null
+            {
+              "itemId": 673
+            }
           ],
           "head": [
-            null
+            {
+              "itemId": 547
+            }
           ],
           "chest": [
-            null
+            {
+              "itemId": 2393
+            }
           ],
           "legs": [
-            null
+            {
+              "itemId": 2393,
+              "spans": true
+            }
           ],
           "gloves": [
-            null
+            {
+              "itemId": 5769
+            }
           ],
           "feet": [
-            null
+            {
+              "itemId": 5781
+            }
           ],
           "neck": [
             null
