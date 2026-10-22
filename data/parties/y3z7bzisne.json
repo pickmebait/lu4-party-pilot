@@ -70,7 +70,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:41:06.816Z",
+    "updatedAt": "2026-10-22T15:41:11.422Z",
     "updatedBy": "Nortrom",
     "chars": [
       {
@@ -592,7 +592,9 @@
             }
           ],
           "feet": [
-            null
+            {
+              "itemId": 5780
+            }
           ],
           "neck": [
             null
