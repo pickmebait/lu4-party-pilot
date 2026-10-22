@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:26:18.076Z",
+    "updatedAt": "2026-10-22T15:29:16.560Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -301,6 +301,50 @@
           "from": "2026-09-29",
           "days": 30
         }
+      },
+      {
+        "id": "cmvjp58n81jv6ki",
+        "name": "PigWithBigDick",
+        "cls": "",
+        "level": 0,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
       }
     ],
     "warehouse": {
