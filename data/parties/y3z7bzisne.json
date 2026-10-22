@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T21:04:10.972Z",
+    "updatedAt": "2026-10-22T21:04:14.878Z",
     "updatedBy": "DOKTOP",
     "chars": [
       {
@@ -970,8 +970,8 @@
           "rhand": [
             {
               "itemId": 234,
-              "sa": "Critical Damage",
-              "mod": 3
+              "mod": 3,
+              "sa": "Critical Damage"
             }
           ],
           "lhand": [
@@ -1017,7 +1017,7 @@
             null
           ]
         },
-        "subUnlocked": false,
+        "subUnlocked": true,
         "subs": [],
         "away": {}
       },
