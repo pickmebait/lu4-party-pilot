@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:20:37.653Z",
+    "updatedAt": "2026-10-22T15:20:44.978Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -19,6 +19,7 @@
           "rhand": [
             {
               "itemId": 236,
+              "mod": 3,
               "sa": "Focus"
             }
           ],
@@ -3098,6 +3099,72 @@
           {
             "itemId": 110,
             "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:20:41.673Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 236,
+            "mod": 0,
+            "sa": "Focus"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 236,
+            "mod": 1,
+            "sa": "Focus"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:20:41.918Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 236,
+            "mod": 1,
+            "sa": "Focus"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 236,
+            "mod": 2,
+            "sa": "Focus"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:20:42.100Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 236,
+            "mod": 2,
+            "sa": "Focus"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 236,
+            "mod": 3,
+            "sa": "Focus"
           }
         ]
       }
