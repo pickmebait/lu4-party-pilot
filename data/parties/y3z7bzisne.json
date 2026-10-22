@@ -70,7 +70,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:40:47.495Z",
+    "updatedAt": "2026-10-22T15:41:02.741Z",
     "updatedBy": "Nortrom",
     "chars": [
       {
@@ -576,10 +576,15 @@
             }
           ],
           "chest": [
-            null
+            {
+              "itemId": 2382
+            }
           ],
           "legs": [
-            null
+            {
+              "itemId": 2382,
+              "spans": true
+            }
           ],
           "gloves": [
             null
