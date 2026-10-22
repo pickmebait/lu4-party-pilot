@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-22T15:16:16.444Z",
+    "updatedAt": "2026-10-22T15:16:27.580Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -219,7 +219,9 @@
                 }
               ],
               "ear": [
-                null,
+                {
+                  "itemId": 851
+                },
                 null
               ],
               "ring": [
@@ -1695,6 +1697,25 @@
         "стало": [
           {
             "itemId": 885,
+            "mod": 0
+          },
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-22T15:16:25.752Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "ear",
+        "subId": "smvjom2r34az0e1",
+        "было": [
+          null,
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 851,
             "mod": 0
           },
           null
