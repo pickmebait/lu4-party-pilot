@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-23T08:52:42.261Z",
+    "updatedAt": "2026-10-23T08:52:57.641Z",
     "updatedBy": "godswe",
     "chars": [
       {
@@ -553,7 +553,9 @@
             }
           ],
           "neck": [
-            null
+            {
+              "itemId": 926
+            }
           ],
           "ear": [
             null,
