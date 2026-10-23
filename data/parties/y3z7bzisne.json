@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T21:04:57.796Z",
+    "updatedAt": "2026-10-23T21:22:53.903Z",
     "updatedBy": "Sargor",
     "chars": [
       {
@@ -1426,7 +1426,11 @@
         },
         "subUnlocked": false,
         "subs": [],
-        "away": {}
+        "away": {},
+        "pa": {
+          "from": "2026-08-08",
+          "days": 100
+        }
       }
     ],
     "warehouse": {
