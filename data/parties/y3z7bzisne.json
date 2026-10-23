@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-23T00:18:08.641Z",
+    "updatedAt": "2026-10-23T00:18:33.067Z",
     "updatedBy": "DOKTOP",
     "chars": [
       {
@@ -1025,7 +1025,7 @@
           {
             "id": "smvk1459a1mr82g",
             "cls": "Bishop",
-            "level": 0,
+            "level": 25,
             "slots": {
               "rhand": [
                 null
