@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T10:07:05.995Z",
+    "updatedAt": "2026-10-23T10:07:25.206Z",
     "updatedBy": "DOKTOP",
     "chars": [
       {
@@ -1244,10 +1244,15 @@
         "extraWeaponSets": [
           {
             "rhand": [
-              null
+              {
+                "itemId": 34903
+              }
             ],
             "lhand": [
-              null
+              {
+                "itemId": 34903,
+                "spans": true
+              }
             ]
           }
         ],
