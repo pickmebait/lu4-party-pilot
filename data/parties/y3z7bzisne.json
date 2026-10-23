@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T10:07:48.200Z",
-    "updatedBy": "DOKTOP",
+    "updatedAt": "2026-10-23T10:08:59.578Z",
+    "updatedBy": "band1tos",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1003,8 +1003,8 @@
         "subs": [
           {
             "id": "smvkssgkl1mttje",
-            "cls": "",
-            "level": 0,
+            "cls": "Overlord",
+            "level": 75,
             "slots": {
               "rhand": [
                 null
