@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T09:51:02.323Z",
-    "updatedBy": "DOKTOP",
+    "updatedAt": "2026-10-23T09:58:59.793Z",
+    "updatedBy": "band1tos",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -999,7 +999,7 @@
             null
           ]
         },
-        "subUnlocked": false,
+        "subUnlocked": true,
         "subs": [],
         "away": {}
       },
