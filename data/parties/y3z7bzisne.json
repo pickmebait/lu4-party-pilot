@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T19:16:27.765Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-23T21:04:57.796Z",
+    "updatedBy": "Sargor",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1387,8 +1387,8 @@
       {
         "id": "cmvjpene6hj7ony",
         "name": "Sargor",
-        "cls": "",
-        "level": 0,
+        "cls": "Bishop",
+        "level": 75,
         "affil": "roster",
         "slots": {
           "rhand": [
