@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T21:26:42.684Z",
+    "updatedAt": "2026-10-23T21:29:26.458Z",
     "updatedBy": "Sargor",
     "chars": [
       {
@@ -1479,6 +1479,9 @@
             ]
           }
         ],
+        "contacts": {
+          "telegram": "@Sarg0r"
+        },
         "subUnlocked": false,
         "subs": [],
         "away": {},
