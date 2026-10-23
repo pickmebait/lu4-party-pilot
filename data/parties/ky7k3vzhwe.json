@@ -5,16 +5,67 @@
   "masterHash": "eb849ee8569dbf18a504287c16a39c3489e47b5e725817bad65d7b23b15864ae",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-23T13:58:57.834Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 10,
+    "updatedAt": "2026-10-23T14:10:57.739Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "cmvl1sd9c1tr1jj",
+        "name": "Murzyaka",
+        "cls": "Shillien Elder",
+        "level": 66,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
     "goals": [],
     "sets": [],
-    "customNames": {}
+    "customNames": {},
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    },
+    "history": []
   }
 }
