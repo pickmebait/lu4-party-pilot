@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T14:10:57.739Z",
+    "updatedAt": "2026-10-23T14:11:29.768Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -51,7 +51,11 @@
         },
         "subUnlocked": false,
         "subs": [],
-        "away": {}
+        "away": {},
+        "pa": {
+          "from": "2026-10-21",
+          "days": 100
+        }
       }
     ],
     "warehouse": {
