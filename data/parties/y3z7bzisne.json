@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T10:06:05.905Z",
-    "updatedBy": "band1tos",
+    "updatedAt": "2026-10-23T10:06:10.136Z",
+    "updatedBy": "DOKTOP",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1241,6 +1241,16 @@
             }
           ]
         },
+        "extraWeaponSets": [
+          {
+            "rhand": [
+              null
+            ],
+            "lhand": [
+              null
+            ]
+          }
+        ],
         "subUnlocked": true,
         "subs": [
           {
