@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T21:24:09.464Z",
+    "updatedAt": "2026-10-23T21:24:15.619Z",
     "updatedBy": "Sargor",
     "chars": [
       {
@@ -1430,6 +1430,16 @@
             null
           ]
         },
+        "extraWeaponSets": [
+          {
+            "rhand": [
+              null
+            ],
+            "lhand": [
+              null
+            ]
+          }
+        ],
         "subUnlocked": false,
         "subs": [],
         "away": {},
