@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-23T08:53:30.354Z",
+    "updatedAt": "2026-10-23T08:53:38.371Z",
     "updatedBy": "godswe",
     "chars": [
       {
@@ -567,7 +567,9 @@
             }
           ],
           "ring": [
-            null,
+            {
+              "itemId": 895
+            },
             null
           ]
         },
