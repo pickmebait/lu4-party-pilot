@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-23T08:53:38.371Z",
+    "updatedAt": "2026-10-23T08:53:49.740Z",
     "updatedBy": "godswe",
     "chars": [
       {
@@ -570,7 +570,9 @@
             {
               "itemId": 895
             },
-            null
+            {
+              "itemId": 895
+            }
           ]
         },
         "subUnlocked": false,
