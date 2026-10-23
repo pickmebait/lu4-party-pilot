@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-23T00:17:50.710Z",
+    "updatedAt": "2026-10-23T00:18:08.641Z",
     "updatedBy": "DOKTOP",
     "chars": [
       {
@@ -1020,11 +1020,11 @@
             null
           ]
         },
-        "subUnlocked": false,
+        "subUnlocked": true,
         "subs": [
           {
             "id": "smvk1459a1mr82g",
-            "cls": "",
+            "cls": "Bishop",
             "level": 0,
             "slots": {
               "rhand": [
