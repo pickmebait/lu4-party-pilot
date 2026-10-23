@@ -1,0 +1,20 @@
+{
+  "partyId": "ky7k3vzhwe",
+  "name": "22",
+  "createdAt": "2026-10-23T13:58:57.834Z",
+  "masterHash": "eb849ee8569dbf18a504287c16a39c3489e47b5e725817bad65d7b23b15864ae",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-23T13:58:57.834Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "goals": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
