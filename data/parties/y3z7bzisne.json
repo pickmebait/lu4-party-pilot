@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-23T08:52:08.916Z",
+    "updatedAt": "2026-10-23T08:52:26.245Z",
     "updatedBy": "godswe",
     "chars": [
       {
@@ -532,10 +532,15 @@
             }
           ],
           "chest": [
-            null
+            {
+              "itemId": 2383
+            }
           ],
           "legs": [
-            null
+            {
+              "itemId": 2383,
+              "spans": true
+            }
           ],
           "gloves": [
             null
