@@ -76,9 +76,9 @@
     }
   ],
   "db": {
-    "version": 9,
-    "updatedAt": "2026-10-23T08:55:41.141Z",
-    "updatedBy": "godswe",
+    "version": 10,
+    "updatedAt": "2026-10-23T09:27:10.521Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -154,6 +154,16 @@
             }
           ]
         },
+        "extraWeaponSets": [
+          {
+            "rhand": [
+              null
+            ],
+            "lhand": [
+              null
+            ]
+          }
+        ],
         "contacts": {
           "realName": "Боря",
           "phone": "+79112332191",
