@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T09:49:02.427Z",
+    "updatedAt": "2026-10-23T09:49:16.774Z",
     "updatedBy": "DOKTOP",
     "chars": [
       {
@@ -1112,7 +1112,10 @@
             {
               "itemId": 887
             },
-            null
+            {
+              "itemId": 887,
+              "mod": 3
+            }
           ]
         },
         "subUnlocked": true,
