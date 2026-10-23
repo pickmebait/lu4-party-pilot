@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-23T00:14:25.224Z",
+    "updatedAt": "2026-10-23T00:15:41.805Z",
     "updatedBy": "DOKTOP",
     "chars": [
       {
@@ -1020,7 +1020,7 @@
             null
           ]
         },
-        "subUnlocked": false,
+        "subUnlocked": true,
         "subs": [
           {
             "id": "smvk1459a1mr82g",
@@ -1140,7 +1140,11 @@
             }
           }
         ],
-        "away": {}
+        "away": {
+          "2026-10-26": {
+            "whole": true
+          }
+        }
       },
       {
         "id": "cmvjpene6hj7ony",
