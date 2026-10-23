@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T10:07:25.206Z",
+    "updatedAt": "2026-10-23T10:07:33.951Z",
     "updatedBy": "DOKTOP",
     "chars": [
       {
@@ -1245,12 +1245,14 @@
           {
             "rhand": [
               {
-                "itemId": 34903
+                "itemId": 34903,
+                "mod": 3
               }
             ],
             "lhand": [
               {
                 "itemId": 34903,
+                "mod": 3,
                 "spans": true
               }
             ]
