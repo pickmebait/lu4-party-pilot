@@ -1,5 +1,5 @@
-import type { Char, Db, SetDef, SlotEntry, SlotKey } from '@/types'
-import { SLOT_KEYS, affiliationOrder } from '@/types'
+import type { Char, Db, SetDef, SlotEntry, SlotKey, WeaponSet } from '@/types'
+import { SLOT_KEYS, affiliationOrder, WEAPON_SLOTS } from '@/types'
 import { статусЦели, цельВыполнена } from './goals'
 
 /**
@@ -48,19 +48,32 @@ export interface SetProgress {
  * одинаково — двуручный меч занимает обе руки и у основной профессии, и у
  * саба, — и переписывать их для сабов значило бы держать две копии.
  */
-export function branchesOf(char: Char): Char['slots'][] {
-  return [char.slots, ...char.subs.map((s) => s.slots)]
+export interface ВеткаСлотов {
+  slots: Char['slots']
+  extraWeaponSets?: readonly WeaponSet[]
+}
+
+export function branchesOf(char: Char): ВеткаСлотов[] {
+  return [
+    { slots: char.slots, extraWeaponSets: char.extraWeaponSets },
+    ...char.subs.map((s) => ({ slots: s.slots, extraWeaponSets: s.extraWeaponSets })),
+  ]
 }
 
 /** Все id предметов, которые сейчас надеты — на ком угодно и в какой ветке. */
 export function equippedItemIds(db: Db): Set<number> {
   const out = new Set<number>()
   for (const c of db.chars) {
-    for (const слоты of branchesOf(c)) {
+    for (const ветка of branchesOf(c)) {
       for (const k of SLOT_KEYS) {
-        for (const e of слоты[k] ?? []) {
+        for (const e of ветка.slots[k] ?? []) {
           const entry = e as SlotEntry | null
           if (entry) out.add(entry.itemId)
+        }
+      }
+      for (const набор of ветка.extraWeaponSets ?? []) {
+        for (const k of WEAPON_SLOTS) {
+          for (const e of набор[k] ?? []) if (e) out.add(e.itemId)
         }
       }
     }
@@ -120,13 +133,23 @@ export function computeSets(db: Db): SetProgress[] {
  * намеренная, но нигде не была названа, и следующий правлящий счёл бы её как
  * ошибку.
  */
-export function слотыВетки(слоты: Char['slots']): { занято: number; всего: number } {
+export function слотыВетки(
+  слоты: Char['slots'],
+  extraWeaponSets: readonly WeaponSet[] = [],
+): { занято: number; всего: number } {
   let занято = 0
   let всего = 0
   for (const k of SLOT_KEYS as readonly SlotKey[]) {
     const ячейки = слоты[k] ?? []
     всего += ячейки.length
     for (const e of ячейки) if (e) занято += 1
+  }
+  for (const набор of extraWeaponSets) {
+    for (const k of WEAPON_SLOTS) {
+      const ячейки = набор[k] ?? []
+      всего += ячейки.length
+      for (const e of ячейки) if (e) занято += 1
+    }
   }
   return { занято, всего }
 }
@@ -142,7 +165,7 @@ export function слотыПерсонажа(char: Char): { занято: number
   let занято = 0
   let всего = 0
   for (const ветка of branchesOf(char)) {
-    const счёт = слотыВетки(ветка)
+    const счёт = слотыВетки(ветка.slots, ветка.extraWeaponSets)
     занято += счёт.занято
     всего += счёт.всего
   }

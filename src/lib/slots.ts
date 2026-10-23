@@ -1,10 +1,13 @@
 import {
+  MAX_WEAPON_SETS,
   SLOTS,
+  WEAPON_SLOTS,
   type CatalogItem,
   type Char,
   type ItemEffectChoice,
   type SlotEntry,
   type SlotKey,
+  type WeaponSet,
 } from '@/types'
 
 /**
@@ -32,6 +35,42 @@ export function emptySlots(): Char['slots'] {
     slots[key] = new Array(SLOTS[key].max).fill(null)
   }
   return slots
+}
+
+/** Пустой дополнительный набор оружия — две руки по одной ячейке. */
+export function emptyWeaponSet(): WeaponSet {
+  return {
+    rhand: new Array(SLOTS.rhand.max).fill(null),
+    lhand: new Array(SLOTS.lhand.max).fill(null),
+  }
+}
+
+/**
+ * Все наборы оружия ветки: первый — из обычных слотов, остальные — из
+ * extraWeaponSets. Наборы всегда одного вида, поэтому карточка, строка и
+ * подсчёт слотов не разбирают, откуда взялся второй.
+ */
+export function weaponSetsOf(
+  слоты: Char['slots'],
+  extraWeaponSets: readonly WeaponSet[] = [],
+): WeaponSet[] {
+  const первый: WeaponSet = {
+    rhand: слоты.rhand ?? new Array(SLOTS.rhand.max).fill(null),
+    lhand: слоты.lhand ?? new Array(SLOTS.lhand.max).fill(null),
+  }
+  return [первый, ...extraWeaponSets]
+    .slice(0, MAX_WEAPON_SETS)
+    .map((набор) => ({
+      rhand: набор.rhand ?? new Array(SLOTS.rhand.max).fill(null),
+      lhand: набор.lhand ?? new Array(SLOTS.lhand.max).fill(null),
+    }))
+}
+
+/** Слоты одного дополнительного набора в виде обычного набора слотов. */
+export function weaponSetSlots(набор: WeaponSet): Char['slots'] {
+  const слоты: Char['slots'] = {}
+  for (const key of WEAPON_SLOTS) слоты[key] = набор[key]
+  return слоты
 }
 
 /** Слот, который предмет занимает вместе с указанным. */

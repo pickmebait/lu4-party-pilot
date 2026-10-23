@@ -61,7 +61,7 @@ export function SubBar({
                 if (char.subUnlocked) onSelect(null)
               }}
             >
-              {char.subUnlocked ? '✓ Саб' : '✕ Саб'}
+              {char.subUnlocked ? '✓ Квест на саб' : '✕ Квест на саб'}
             </button>
 
             {/*

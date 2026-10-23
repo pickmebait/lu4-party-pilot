@@ -1,43 +1,124 @@
-import { SLOT_GROUPS, SLOTS, setLabel, type Char, type SlotKey } from '@/types'
+import {
+  MAX_WEAPON_SETS,
+  SLOT_GROUPS,
+  SLOTS,
+  WEAPON_SLOTS,
+  setLabel,
+  type Char,
+  type SlotEntry,
+  type SlotKey,
+  type WeaponSet,
+} from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
-import { setSlotMod, unequipItem, type Branch } from '@/lib/store'
+import { weaponSetsOf } from '@/lib/slots'
+import {
+  addWeaponSet,
+  removeWeaponSet,
+  setSlotMod,
+  unequipItem,
+  type Branch,
+} from '@/lib/store'
 import { ItemIcon } from './ItemIcon'
 import { IconClose } from './Icons'
 
 export function GearStack({
   ветка,
   слоты,
+  допНаборы = [],
   catalog,
   правый,
   onPick,
 }: {
   ветка: Branch
   слоты: Char['slots']
+  /** Второй и третий наборы оружия: первый уже лежит в слотах. */
+  допНаборы?: readonly WeaponSet[]
   catalog: CatalogApi
   /** Можно ли править эту ветку. У чужого персонажа — только смотреть. */
   правый: boolean
   onPick: (target: Branch, slot: SlotKey, index: number) => void
 }) {
+  const наборы = weaponSetsOf(слоты, допНаборы)
+  const основа: Branch = { charId: ветка.charId, subId: ветка.subId }
+
   return (
     <div className="gear-stack">
-      {SLOT_GROUPS.map((group) => (
-        <section key={group.key} className={`stack-row stack-${group.key}`}>
-          <h4>{group.label}</h4>
-          <div className="stack-slots">
-            {group.slots.map((key) => (
-              <SlotCells
-                key={key}
-                ветка={ветка}
-                слоты={слоты}
-                catalog={catalog}
-                slot={key}
-                правый={правый}
-                onPick={(index) => onPick(ветка, key, index)}
-              />
-            ))}
-          </div>
-        </section>
-      ))}
+      {SLOT_GROUPS.flatMap((group) => {
+        if (group.key === 'weapon') {
+          return наборы.map((набор, i) => {
+            const веткаНабора: Branch =
+              i === 0 ? основа : { ...основа, weaponSet: i }
+            return (
+              <section
+                key={`weapon-${i}`}
+                className={`stack-row stack-weapon${i > 0 ? ' extra' : ''}`}
+              >
+                <div className="stack-head">
+                  <h4>
+                    {наборы.length > 1 ? `Набор оружия ${i + 1}` : 'Оружие'}
+                  </h4>
+                  {правый && (
+                    <div className="stack-actions">
+                      {i === наборы.length - 1 && наборы.length < MAX_WEAPON_SETS && (
+                        <button
+                          type="button"
+                          className="btn tiny"
+                          title="Добавить ещё один набор оружия"
+                          onClick={() => addWeaponSet(основа)}
+                        >
+                          Добавить набор
+                        </button>
+                      )}
+                      {наборы.length > 1 && (
+                        <button
+                          type="button"
+                          className="btn tiny danger"
+                          title={`Удалить набор оружия ${i + 1}`}
+                          onClick={() => removeWeaponSet(основа, i)}
+                        >
+                          Удалить набор
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div className="stack-slots">
+                  {WEAPON_SLOTS.map((key) => (
+                    <SlotCells
+                      key={key}
+                      ветка={веткаНабора}
+                      cells={набор[key]}
+                      catalog={catalog}
+                      slot={key}
+                      правый={правый}
+                      onPick={(index) => onPick(веткаНабора, key, index)}
+                    />
+                  ))}
+                </div>
+              </section>
+            )
+          })
+        }
+
+        return (
+          <section key={group.key} className={`stack-row stack-${group.key}`}>
+            <h4>{group.label}</h4>
+            <div className="stack-slots">
+              {group.slots.map((key) => (
+                <SlotCells
+                  key={key}
+                  ветка={основа}
+                  cells={слоты[key] ?? []}
+                  catalog={catalog}
+                  slot={key}
+                  правый={правый}
+                  onPick={(index) => onPick(основа, key, index)}
+                />
+              ))}
+            </div>
+          </section>
+        )
+      })}
     </div>
   )
 }
@@ -51,21 +132,21 @@ export function GearStack({
  */
 function SlotCells({
   ветка,
-  слоты,
+  cells,
   catalog,
   slot,
   правый,
   onPick,
 }: {
   ветка: Branch
-  слоты: Char['slots']
+  cells: readonly (SlotEntry | null)[]
   catalog: CatalogApi
   slot: SlotKey
   правый: boolean
   onPick: (index: number) => void
 }) {
   const def = SLOTS[slot]
-  const arr = слоты[slot] ?? []
+  const arr = cells
 
   return (
     <div className="gear-slot">

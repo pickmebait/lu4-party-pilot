@@ -3,6 +3,7 @@ import {
   MAX_MOD,
   SLOTS,
   SLOT_GROUPS,
+  WEAPON_SLOTS,
   affiliationLabel,
   type Char,
   type SlotKey,
@@ -10,6 +11,7 @@ import {
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
 import { removeChar, removeSub, updateChar, updateSub, type Branch } from '@/lib/store'
+import { weaponSetsOf } from '@/lib/slots'
 import { ItemIcon } from './ItemIcon'
 import { useПерсонаж } from '@/lib/useChar'
 import { CharEditForm } from './CharEditForm'
@@ -50,8 +52,9 @@ export function CharRow({
   onPick: (ветка: Branch, slot: SlotKey, index: number) => void
 }) {
   // Как и на карточке: ветка, права и счётчик слотов выводит общий хук.
-  const { сабы, саб, выбратьСаб: setВыбранный, ветка, слоты, cls, level, правый, свой, счётчик } =
+  const { сабы, саб, выбратьСаб: setВыбранный, ветка, слоты, допНаборы, cls, level, правый, свой, счётчик } =
     useПерсонаж(char)
+  const наборы = weaponSetsOf(слоты, допНаборы)
   const занято = счётчик.занято
   const всего = счётчик.всего
 
@@ -150,20 +153,41 @@ export function CharRow({
       */}
       <div className="row-gear">
         {SLOT_GROUPS.map((group, gi) => (
-          <div key={group.key} className="row-gear-group" title={group.label}>
+          <div
+            key={group.key}
+            className="row-gear-group"
+            title={group.key === 'weapon' && наборы.length > 1 ? 'Наборы оружия' : group.label}
+          >
             {gi > 0 && <span className="row-gear-gap" />}
-            {group.slots.flatMap((key) =>
-              (слоты[key] ?? []).map((entry, i) => (
-                <SlotIcon
-                  key={key + i}
-                  catalog={catalog}
-                  slot={key}
-                  entry={entry}
-                  правый={правый}
-                  onPick={() => onPick(ветка, key, i)}
-                />
-              )),
-            )}
+            {group.key === 'weapon'
+              ? наборы.flatMap((набор, наборIndex) => {
+                  const веткаНабора =
+                    наборIndex === 0 ? ветка : { ...ветка, weaponSet: наборIndex }
+                  return WEAPON_SLOTS.flatMap((key) =>
+                    (набор[key] ?? []).map((entry, i) => (
+                      <SlotIcon
+                        key={`weapon-${наборIndex}-${key}-${i}`}
+                        catalog={catalog}
+                        slot={key}
+                        entry={entry}
+                        правый={правый}
+                        onPick={() => onPick(веткаНабора, key, i)}
+                      />
+                    )),
+                  )
+                })
+              : group.slots.flatMap((key) =>
+                  (слоты[key] ?? []).map((entry, i) => (
+                    <SlotIcon
+                      key={key + i}
+                      catalog={catalog}
+                      slot={key}
+                      entry={entry}
+                      правый={правый}
+                      onPick={() => onPick(ветка, key, i)}
+                    />
+                  )),
+                )}
           </div>
         ))}
       </div>

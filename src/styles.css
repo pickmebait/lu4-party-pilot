@@ -2676,6 +2676,14 @@ body {
  * ячейками ширина целиком уходит под названия предметов, а три подписи
  * стоят 14 пикселей высоты каждый.
  */
+.stack-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-bottom: 4px;
+}
+
 .stack-row h4 {
   margin: 0 0 4px;
   font-size: 9px;
@@ -2684,6 +2692,23 @@ body {
   color: var(--muted);
   font-weight: 600;
   white-space: nowrap;
+}
+
+.stack-head h4 {
+  margin: 0;
+}
+
+.stack-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.stack-actions .btn.tiny {
+  padding: 2px 7px;
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .stack-slots {

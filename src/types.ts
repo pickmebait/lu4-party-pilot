@@ -213,8 +213,11 @@ export const SLOTS: Record<string, SlotDef> = {
   },
 }
 
+/** Слоты, из которых состоит один набор оружия. */
+export const WEAPON_SLOTS = ['rhand', 'lhand'] as const
+
 export const SLOT_GROUPS = [
-  { key: 'weapon', label: 'Оружие', slots: ['rhand', 'lhand'] },
+  { key: 'weapon', label: 'Оружие', slots: WEAPON_SLOTS },
   { key: 'armor', label: 'Броня', slots: ['head', 'chest', 'legs', 'gloves', 'feet'] },
   { key: 'jewelry', label: 'Бижутерия', slots: ['neck', 'ear', 'ring'] },
 ] as const
@@ -260,6 +263,21 @@ export interface SlotEntry extends ItemEffectChoice {
    */
   spans?: boolean
 }
+
+/**
+ * Один дополнительный набор оружия.
+ *
+ * Первый набор живёт в обычных слотах rhand/lhand: его видно во всех старых
+ * базах, и он не требует отдельного поля. Здесь лежат только второй и третий
+ * наборы, по две ячейки в каждом.
+ */
+export interface WeaponSet {
+  rhand: (SlotEntry | null)[]
+  lhand: (SlotEntry | null)[]
+}
+
+/** Сколько наборов оружия можно завести на одну ветку. */
+export const MAX_WEAPON_SETS = 3
 
 /**
  * Контакты персонажа вне игры.
@@ -322,6 +340,11 @@ export interface Sub {
   level: number
   /** Экипировка саб-класса — свои слоты, основная от этого не страдает. */
   slots: Partial<Record<SlotKey, (SlotEntry | null)[]>>
+  /**
+   * Второй и третий наборы оружия. Первый лежит в slots.rhand/lhand.
+   * Отсутствие поля значит один набор.
+   */
+  extraWeaponSets?: WeaponSet[]
 }
 
 /** Сколько сабов можно добавить на персонажа. */
@@ -340,6 +363,11 @@ export interface Char {
   affil: Affiliation
   /** Ключи слотов массивом, где null = пустой слот. */
   slots: Partial<Record<SlotKey, (SlotEntry | null)[]>>
+  /**
+   * Второй и третий наборы оружия. Первый лежит в slots.rhand/lhand.
+   * Отсутствие поля значит один набор.
+   */
+  extraWeaponSets?: WeaponSet[]
   /** Контакты вне игры. Отсутствует, если их не заполняли. */
   contacts?: Contacts
   /**
@@ -529,6 +557,13 @@ export type Изменение =
       слот: SlotKey
       /** id саб-класса, если это его слоты; null — основная профессия. */
       subId: string | null
+      /**
+       * Номер дополнительного набора оружия: 1 или 2.
+       *
+       * У первого набора поля нет — так старые записи истории остаются
+       * прежними, а аналитика читает их без отдельного случая.
+       */
+      weaponSet?: number
       /**
        * Слот целиком, по ячейкам.
        *
