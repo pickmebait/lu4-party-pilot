@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T14:12:58.550Z",
+    "updatedAt": "2026-10-23T14:13:18.845Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -26,7 +26,9 @@
             null
           ],
           "head": [
-            null
+            {
+              "itemId": 2416
+            }
           ],
           "chest": [
             null
@@ -89,6 +91,23 @@
             "itemId": 316,
             "mod": 0,
             "sa": "Acumen"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-23T14:13:16.515Z",
+        "кто": "Мастер",
+        "charId": "cmvl1sd9c1tr1jj",
+        "вид": "слот",
+        "слот": "head",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 2416,
+            "mod": 0
           }
         ]
       }
