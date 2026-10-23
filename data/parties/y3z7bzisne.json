@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T21:24:42.032Z",
+    "updatedAt": "2026-10-23T21:24:48.155Z",
     "updatedBy": "Sargor",
     "chars": [
       {
@@ -1435,12 +1435,14 @@
             "rhand": [
               {
                 "itemId": 7886,
-                "sa": "Acumen",
-                "mod": 7
+                "mod": 7,
+                "sa": "Acumen"
               }
             ],
             "lhand": [
-              null
+              {
+                "itemId": 629
+              }
             ]
           },
           {
