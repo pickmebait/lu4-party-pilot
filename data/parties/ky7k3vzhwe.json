@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T14:11:29.768Z",
+    "updatedAt": "2026-10-23T14:12:58.550Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -17,7 +17,10 @@
         "affil": "roster",
         "slots": {
           "rhand": [
-            null
+            {
+              "itemId": 316,
+              "sa": "Acumen"
+            }
           ],
           "lhand": [
             null
@@ -70,6 +73,25 @@
       "offs": [],
       "checklist": []
     },
-    "history": []
+    "history": [
+      {
+        "ts": "2026-10-23T14:12:56.179Z",
+        "кто": "Мастер",
+        "charId": "cmvl1sd9c1tr1jj",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 316,
+            "mod": 0,
+            "sa": "Acumen"
+          }
+        ]
+      }
+    ]
   }
 }
