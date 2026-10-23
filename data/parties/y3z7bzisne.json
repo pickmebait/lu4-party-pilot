@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-23T00:18:41.262Z",
-    "updatedBy": "DOKTOP",
+    "updatedAt": "2026-10-23T08:51:41.847Z",
+    "updatedBy": "godswe",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -517,7 +517,10 @@
         "affil": "roster",
         "slots": {
           "rhand": [
-            null
+            {
+              "itemId": 268,
+              "sa": "Health"
+            }
           ],
           "lhand": [
             null
