@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-23T08:54:14.846Z",
+    "updatedAt": "2026-10-23T08:55:04.414Z",
     "updatedBy": "godswe",
     "chars": [
       {
@@ -512,8 +512,8 @@
       {
         "id": "cmvjp9lub5osa0i",
         "name": "godswe",
-        "cls": "",
-        "level": 0,
+        "cls": "Tyrant",
+        "level": 73,
         "affil": "roster",
         "slots": {
           "rhand": [
@@ -617,7 +617,11 @@
             }
           }
         ],
-        "away": {}
+        "away": {},
+        "pa": {
+          "from": "2026-08-11",
+          "days": 100
+        }
       },
       {
         "id": "cmvjpah777383dy",
