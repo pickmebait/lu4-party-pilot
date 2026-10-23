@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T09:49:16.774Z",
+    "updatedAt": "2026-10-23T09:49:22.354Z",
     "updatedBy": "DOKTOP",
     "chars": [
       {
@@ -1110,7 +1110,8 @@
           ],
           "ring": [
             {
-              "itemId": 887
+              "itemId": 887,
+              "mod": 3
             },
             {
               "itemId": 887,
