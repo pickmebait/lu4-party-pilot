@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T21:25:50.247Z",
+    "updatedAt": "2026-10-23T21:25:56.301Z",
     "updatedBy": "Sargor",
     "chars": [
       {
@@ -1435,7 +1435,9 @@
             }
           ],
           "ear": [
-            null,
+            {
+              "itemId": 864
+            },
             null
           ],
           "ring": [
