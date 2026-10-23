@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T09:27:38.096Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-23T09:48:33.078Z",
+    "updatedBy": "DOKTOP",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1099,7 +1099,9 @@
             }
           ],
           "ear": [
-            null,
+            {
+              "itemId": 856
+            },
             null
           ],
           "ring": [
