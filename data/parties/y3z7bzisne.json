@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T10:03:22.467Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-23T10:06:05.905Z",
+    "updatedBy": "band1tos",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1119,7 +1119,11 @@
             }
           }
         ],
-        "away": {}
+        "away": {},
+        "pa": {
+          "from": "2026-08-13",
+          "days": 100
+        }
       },
       {
         "id": "cmvjpcx8wdx14b9",
