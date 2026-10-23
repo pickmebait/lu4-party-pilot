@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T10:08:59.578Z",
+    "updatedAt": "2026-10-23T10:10:21.158Z",
     "updatedBy": "band1tos",
     "chars": [
       {
@@ -1042,8 +1042,8 @@
           },
           {
             "id": "smvkst8w11rsged",
-            "cls": "",
-            "level": 0,
+            "cls": "Prophet",
+            "level": 44,
             "slots": {
               "rhand": [
                 null
