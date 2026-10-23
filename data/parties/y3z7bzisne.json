@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 9,
-    "updatedAt": "2026-10-23T00:15:47.871Z",
+    "updatedAt": "2026-10-23T00:15:51.435Z",
     "updatedBy": "DOKTOP",
     "chars": [
       {
@@ -1140,7 +1140,11 @@
             }
           }
         ],
-        "away": {}
+        "away": {
+          "2026-10-26": {
+            "whole": true
+          }
+        }
       },
       {
         "id": "cmvjpene6hj7ony",
