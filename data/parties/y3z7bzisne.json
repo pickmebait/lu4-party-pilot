@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T09:59:42.404Z",
+    "updatedAt": "2026-10-23T09:59:49.661Z",
     "updatedBy": "band1tos",
     "chars": [
       {
@@ -1042,6 +1042,45 @@
           },
           {
             "id": "smvkst8w11rsged",
+            "cls": "",
+            "level": 0,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "id": "smvkstegi20atel",
             "cls": "",
             "level": 0,
             "slots": {
