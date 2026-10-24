@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-24T10:14:06.807Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-24T10:18:26.134Z",
+    "updatedBy": "band1tos",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1047,6 +1047,12 @@
               "itemId": 886
             }
           ]
+        },
+        "contacts": {
+          "realName": "Сергей",
+          "phone": "+79317128488",
+          "telegram": "@Sergey_Tikhanov",
+          "discord": "banditos"
         },
         "subUnlocked": true,
         "subs": [
