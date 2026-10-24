@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T21:29:26.458Z",
-    "updatedBy": "Sargor",
+    "updatedAt": "2026-10-24T08:21:45.182Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1468,14 +1468,6 @@
               {
                 "itemId": 629
               }
-            ]
-          },
-          {
-            "rhand": [
-              null
-            ],
-            "lhand": [
-              null
             ]
           }
         ],
