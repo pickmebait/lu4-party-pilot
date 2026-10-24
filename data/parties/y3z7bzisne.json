@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-24T10:08:46.605Z",
+    "updatedAt": "2026-10-24T10:09:25.884Z",
     "updatedBy": "band1tos",
     "chars": [
       {
@@ -974,20 +974,23 @@
           "rhand": [
             {
               "itemId": 92,
-              "sa": "Acumen",
-              "mod": 4
+              "mod": 4,
+              "sa": "Acumen"
             }
           ],
           "lhand": [
             {
               "itemId": 92,
-              "sa": "Acumen",
+              "mod": 4,
               "spans": true,
-              "mod": 4
+              "sa": "Acumen"
             }
           ],
           "head": [
-            null
+            {
+              "itemId": 2415,
+              "rare": true
+            }
           ],
           "chest": [
             null
