@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-24T10:38:05.302Z",
+    "updatedAt": "2026-10-24T10:38:20.570Z",
     "updatedBy": "band1tos",
     "chars": [
       {
@@ -1076,7 +1076,7 @@
           {
             "id": "smvkssgkl1mttje",
             "cls": "Overlord",
-            "level": 64,
+            "level": 75,
             "slots": {
               "rhand": [
                 {
