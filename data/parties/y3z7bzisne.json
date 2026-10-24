@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-24T10:20:12.372Z",
+    "updatedAt": "2026-10-24T10:20:20.617Z",
     "updatedBy": "band1tos",
     "chars": [
       {
@@ -1051,10 +1051,17 @@
         "extraWeaponSets": [
           {
             "rhand": [
-              null
+              {
+                "itemId": 195,
+                "sa": "Empower"
+              }
             ],
             "lhand": [
-              null
+              {
+                "itemId": 195,
+                "sa": "Empower",
+                "spans": true
+              }
             ]
           }
         ],
