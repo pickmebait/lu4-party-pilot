@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-24T10:07:26.376Z",
+    "updatedAt": "2026-10-24T10:07:47.739Z",
     "updatedBy": "band1tos",
     "chars": [
       {
@@ -1075,7 +1075,10 @@
                 {
                   "itemId": 895
                 },
-                null
+                {
+                  "itemId": 886,
+                  "mod": 5
+                }
               ]
             }
           },
