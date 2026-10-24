@@ -12,7 +12,7 @@ import { APP_NAME } from './lib/brand'
 import { startCatalogLoad, useCatalog } from './lib/catalog'
 import { computeSummary, usedItemIds, type Summary } from './lib/derived'
 import { openSession } from './lib/api'
-import { signOut, updateSession, useDb, useSession } from './lib/store'
+import { migrateGear, signOut, updateSession, useDb, useSession } from './lib/store'
 import type { Db } from './types'
 import { applyPalette, loadPalette } from './lib/palette'
 import { plural } from './lib/util'
@@ -78,6 +78,23 @@ export default function App() {
 
   // Считаем сводку до раннего выхода, чтобы порядок хуков не зависел от сессии.
   const sum = computeSummary(db)
+
+  /*
+   * Миграция снаряжения, которой нужен справочник.
+   *
+   * Запускается только мастер: токен персонажа не имеет права сохранять
+   * чужие ветки, а миграция правит сразу всех. Ждём загрузки items.json —
+   * до неё не отличить кастет от другого оружия.
+   *
+   * db в зависимостях намеренно: после загрузки серверной базы её надо
+   * прогнать ещё раз, а повторный вызов на уже исправленной базе ничего
+   * не сохраняет.
+   */
+  const items = catalog.catalog?.items
+  useEffect(() => {
+    if (session?.role !== 'master' || !items?.length) return
+    migrateGear(items)
+  }, [items, db, session?.role])
 
   /*
    * Сохранённая сессия проверяется, а не принимается на веру.

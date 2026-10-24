@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T14:31:12.967Z",
+  "generatedAt": "2026-10-23T09:32:36.993Z",
   "source": "masterwork.wiki · Lu4: Gamma · оружие, бижутерия, доспехи и комплекты",
   "posts": [
     {
@@ -634,6 +634,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_vipers_canine_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 29,
       "atkMag": 17
     },
@@ -1230,6 +1231,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_iron_glove_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 16,
       "atkMag": 10
     },
@@ -1291,6 +1293,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_foxs_nail_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 21,
       "atkMag": 12
     },
@@ -1569,6 +1572,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_iron_glove_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 13,
       "atkMag": 9
     },
@@ -2619,6 +2623,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_spike_glove_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 10,
       "atkMag": 6
     },
@@ -3033,6 +3038,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_vipers_canine_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 38,
       "atkMag": 21
     },
@@ -3515,6 +3521,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_baghnakh_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 49,
       "atkMag": 26
     },
@@ -3723,6 +3730,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_bichhwa_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 96,
       "atkMag": 47,
       "saEffects": [
@@ -7914,6 +7922,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_scallop_jamadhr_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 112,
       "atkMag": 54,
       "saEffects": [
@@ -8022,6 +8031,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_single-edged_jamadhr_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 62,
       "atkMag": 32
     },
@@ -8925,6 +8935,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_triple-edged_jamadhr_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 78,
       "atkMag": 39,
       "saEffects": [
@@ -9922,6 +9933,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_chakram_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 130,
       "atkMag": 61,
       "saEffects": [
@@ -11704,6 +11716,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_fist_blade_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 169,
       "atkMag": 76,
       "saEffects": [
@@ -12088,6 +12101,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_great_pata_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 190,
       "atkMag": 83,
       "saEffects": [
@@ -12734,6 +12748,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_knuckle_dust_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 148,
       "atkMag": 68,
       "saEffects": [
@@ -15541,6 +15556,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_arthro_nail_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 213,
       "atkMag": 91,
       "saEffects": [
@@ -16172,6 +16188,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_bellion_cestus_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 236,
       "atkMag": 99,
       "saEffects": [
@@ -20947,6 +20964,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_blood_tornado_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 259,
       "atkMag": 107,
       "saEffects": [
@@ -22337,6 +22355,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_dragon_grinder_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 282,
       "atkMag": 114,
       "saEffects": [
@@ -24133,6 +24152,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_sobekk_hurricane_i00.png",
       "weaponClass": "Кастеты",
       "weaponType": "Кастеты",
+      "twoHanded": true,
       "atkPhys": 305,
       "atkMag": 121,
       "saEffects": [

@@ -20,11 +20,16 @@ import {
   addChar,
   addSub,
   addWeaponSet,
+  emptyChar,
+  emptyDb,
   equipItem,
   getDb,
+  migrateGear,
   removeWeaponSet,
+  replaceDb,
   setSubUnlocked,
 } from '@/lib/store.ts'
+import { fistIds, migrateFistHands } from '@/lib/migrations.ts'
 import { levelForInput, levelToSave, LEVEL_MIN, LEVEL_MAX } from '@/lib/classes.ts'
 import { привестиНик, написаноБезПробелов, НИК_МАКС } from '@/lib/nick.ts'
 
@@ -166,6 +171,168 @@ removeWeaponSet(main, 1)
 равно('последний набор не удаляется', 1 + наборы().length, 1)
 равно('вещь в последнем наборе осталась', сейчас().slots.rhand[0].itemId, 102)
 равно('удаление на основной не трогает саб', наборыСаба().length, 1)
+
+/* ------------------------------------------------------ миграция кастетов */
+
+/*
+ * Кастеты стали двуручными. Миграция должна не просто дорисовать вторую
+ * руку, а сохранить всё, что было надето слева: вещь уходит в казну с
+ * заточкой, SA и редким эффектом, а не пропадает.
+ */
+const idКастета = 268
+const idsКастетов = fistIds([
+  { id: idКастета, weaponClass: 'Кастеты' },
+  { id: 9999, weaponClass: 'Меч' },
+])
+равно('кастет находится по классу оружия', [...idsКастетов], [idКастета])
+
+const кастет = (mod = 10) => ({ itemId: idКастета, mod, sa: 'Health' })
+const вРуке = (item) => ({ rhand: [item], lhand: [null] })
+const базаСКастетом = (slots, extra = {}) => ({
+  ...emptyDb(),
+  chars: [{ ...emptyChar(), id: 'fist', name: 'Кулак', slots, ...extra }],
+})
+const момент = '2026-10-24T00:00:00.000Z'
+
+const исходная = базаСКастетом(вРуке(кастет()))
+const раз = migrateFistHands(исходная, idsКастетов, момент)
+равно('кастет мигрировал', раз.changed, true)
+равно('правая рука без spans', раз.db.chars[0].slots.rhand, [кастет()])
+равно(
+  'левая рука — вторая ячейка кастета',
+  раз.db.chars[0].slots.lhand,
+  [{ ...кастет(), spans: true }],
+)
+равно('при пустой левой руке в казну ничего не ушло', раз.moved, [])
+равно('казна не тронута', раз.db.warehouse, исходная.warehouse)
+
+const повтор = migrateFistHands(раз.db, idsКастетов, момент)
+равно('повторная миграция ничего не меняет', повтор.changed, false)
+правда('повторная миграция возвращает ту же базу', повтор.db === раз.db)
+
+const сЩитом = базаСКастетом({
+  rhand: [кастет()],
+  lhand: [{ itemId: 100, mod: 5, sa: 'Health', rare: true }],
+})
+сЩитом.warehouse = { stacks: [{ itemId: 100, count: 2 }], log: [] }
+const снят = migrateFistHands(сЩитом, idsКастетов, момент)
+равно('снятая вещь отмечена', снят.moved, [100])
+равно(
+  'снятая вещь добавлена в существующую стопку',
+  снят.db.warehouse.stacks,
+  [{ itemId: 100, count: 3 }],
+)
+равно(
+  'в левой руке теперь кастет',
+  снят.db.chars[0].slots.lhand,
+  [{ ...кастет(), spans: true }],
+)
+const запись = снят.db.warehouse.log[0]
+равно(
+  'запись в журнале от миграции',
+  { who: запись.who, dir: запись.dir, itemId: запись.itemId, count: запись.count, ts: запись.ts },
+  { who: 'Миграция', dir: 'in', itemId: 100, count: 1, ts: момент },
+)
+правда(
+  'в журнале сохранены свойства снятой вещи',
+  запись.note.includes('заточка +5') &&
+    запись.note.includes('SA: Health') &&
+    запись.note.includes('редкий эффект'),
+)
+
+const сНовым = базаСКастетом({
+  rhand: [кастет()],
+  lhand: [{ itemId: 101 }],
+})
+const новый = migrateFistHands(сНовым, idsКастетов, момент)
+равно('новая вещь в казне одной штукой', новый.db.warehouse.stacks, [
+  { itemId: 101, count: 1 },
+])
+
+/*
+ * Миграция проходит по всем веткам: основная профессия, сабы и наборы
+ * оружия. Иначе мастер поправил бы только первый набор, а в остальных
+ * кастет остался бы односторонним.
+ */
+const ветки = базаСКастетом(
+  { rhand: [кастет()], lhand: [null] },
+  {
+    subUnlocked: true,
+    subs: [
+      { id: 's1', cls: 'Paladin', level: 80, slots: { rhand: [кастет(5)], lhand: [{ itemId: 200 }] } },
+    ],
+    extraWeaponSets: [
+      { rhand: [кастет(7)], lhand: [null] },
+      { rhand: [кастет(8)], lhand: [{ itemId: 201, sa: 'Haste' }] },
+    ],
+  },
+)
+const поВсемВеткам = migrateFistHands(ветки, idsКастетов, момент)
+равно(
+  'в сабе вторая рука занята',
+  поВсемВеткам.db.chars[0].subs[0].slots.lhand,
+  [{ ...кастет(5), spans: true }],
+)
+равно(
+  'во втором наборе вторая рука занята',
+  поВсемВеткам.db.chars[0].extraWeaponSets[0].lhand,
+  [{ ...кастет(7), spans: true }],
+)
+равно(
+  'в третьем наборе вещь ушла в казну',
+  поВсемВеткам.db.chars[0].extraWeaponSets[1].lhand,
+  [{ ...кастет(8), spans: true }],
+)
+равно(
+  'из саба и набора сняты обе вещи',
+  [...поВсемВеткам.moved].sort((a, b) => a - b),
+  [200, 201],
+)
+
+// Второй кастет в левой руке — отдельная вещь, а не пара: её тоже в казну.
+const двеВещи = базаСКастетом({
+  rhand: [кастет()],
+  lhand: [кастет(3)],
+})
+const однаВещь = migrateFistHands(двеВещи, idsКастетов, момент)
+равно('второй кастет не пропал', однаВещь.moved, [idКастета])
+равно('второй кастет лёг в казну', однаВещь.db.warehouse.stacks, [
+  { itemId: idКастета, count: 1 },
+])
+
+const готово = базаСКастетом({
+  rhand: [кастет()],
+  lhand: [{ ...кастет(), spans: true }],
+})
+равно('исправленная база не переписывается', migrateFistHands(готово, idsКастетов).changed, false)
+
+const неКастет = базаСКастетом({
+  rhand: [{ itemId: 5 }],
+  lhand: [{ itemId: 6 }],
+})
+const безКастетов = migrateFistHands(неКастет, idsКастетов)
+равно('обычное оружие не трогается', безКастетов.changed, false)
+правда('база без кастетов возвращается как есть', безКастетов.db === неКастет)
+равно('пустой набор кастетов ничего не делает', migrateFistHands(исходная, new Set()).changed, false)
+
+// Обёртка хранилища — то, что запускает приложение после загрузки справочника.
+const стараяБаза = базаСКастетом(вРуке(кастет()))
+replaceDb(стараяБаза)
+равно(
+  'обёртка мигрирует базу',
+  migrateGear([{ id: idКастета, weaponClass: 'Кастеты' }]),
+  true,
+)
+равно(
+  'обёртка записала вторую руку',
+  getDb().chars[0].slots.lhand,
+  [{ ...кастет(), spans: true }],
+)
+равно(
+  'повторный запуск обёртки молчит',
+  migrateGear([{ id: idКастета, weaponClass: 'Кастеты' }]),
+  false,
+)
 
 /* -------------------------------------------------------------- уровень */
 

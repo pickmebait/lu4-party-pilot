@@ -57,6 +57,7 @@ import {
 } from './schedule'
 import { uid } from './util'
 import { привестиНик } from './nick'
+import { fistIds, migrateFistHands } from './migrations'
 
 /**
  * Версия 10: у персонажа и саба появились дополнительные наборы оружия.
@@ -630,6 +631,23 @@ function commit(next: Db): void {
 
 export function getDb(): Db {
   return db
+}
+
+/**
+ * Миграция снаряжения, которой нужен справочник предметов.
+ *
+ * Кастеты занимают обе руки, но по одному itemId этого не видно: признак
+ * лежит в справочнике, а не в базе пати. Поэтому такая миграция запускается
+ * после его загрузки, а не при чтении базы.
+ *
+ * Сохраняем только когда есть что менять: иначе каждая загрузка страницы
+ * двигала бы updatedAt, и база уезжала бы на сервер без единой правки.
+ */
+export function migrateGear(items: readonly CatalogItem[]): boolean {
+  const итог = migrateFistHands(db, fistIds(items))
+  if (!итог.changed) return false
+  commit(итог.db)
+  return true
 }
 
 /* ---------------------------------------------------------------- персонажи */
