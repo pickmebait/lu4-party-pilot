@@ -1,0 +1,20 @@
+{
+  "partyId": "9sgityitf9",
+  "name": "tttttttttttt",
+  "createdAt": "2026-10-24T11:38:47.084Z",
+  "masterHash": "a66177b5c67f4376bba949cec15c06170624b05da5833c2115b61c818a0cb397",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-24T11:38:47.084Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "goals": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
