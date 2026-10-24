@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-24T10:19:57.260Z",
+    "updatedAt": "2026-10-24T10:20:02.451Z",
     "updatedBy": "band1tos",
     "chars": [
       {
@@ -1140,12 +1140,14 @@
               {
                 "rhand": [
                   {
-                    "itemId": 34933
+                    "itemId": 34933,
+                    "mod": 4
                   }
                 ],
                 "lhand": [
                   {
                     "itemId": 34933,
+                    "mod": 4,
                     "spans": true
                   }
                 ]
