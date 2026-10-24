@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-24T10:09:37.633Z",
+    "updatedAt": "2026-10-24T10:09:48.388Z",
     "updatedBy": "band1tos",
     "chars": [
       {
@@ -1012,7 +1012,10 @@
             }
           ],
           "feet": [
-            null
+            {
+              "itemId": 5732,
+              "rare": true
+            }
           ],
           "neck": [
             null
