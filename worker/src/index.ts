@@ -111,6 +111,19 @@ export default {
 
       return json({ error: 'Неизвестный адрес' }, 404, cors)
     } catch (e) {
+      /*
+       * Лимит запросов GitHub — это не поломка сервера, а известное состояние:
+       * лимит общий на токен и восстанавливается сам. Отвечаем 429 и говорим,
+       * когда можно повторить. Клиент по этому ответу отступает, а не долбит
+       * сохранение каждые полторы секунды, тратя остаток лимита.
+       */
+      if (e instanceof GitHubRateLimitError) {
+        return json(
+          { error: e.message, retryAfter: e.retryAfterSec, resetAt: e.resetAt },
+          429,
+          { ...cors, 'Retry-After': String(e.retryAfterSec) },
+        )
+      }
       return json({ error: e instanceof Error ? e.message : 'Внутренняя ошибка' }, 500, cors)
     }
   },
@@ -151,6 +164,18 @@ function пауза(мс: number): Promise<void> {
 
 /** Сколько ждём раздачи записанного, не дольше. */
 const ЖДАТЬ_СВЕЖЕСТИ_МС = 4000
+
+/**
+ * Первая и последняя пауза между чтениями при ожидании свежести.
+ *
+ * Раньше здесь стояло 250 мс на каждое чтение: за четыре секунды ожидания
+ * уходило до шестнадцати запросов к GitHub. Лимит общий на токен, и такая
+ * проверка съедала его быстрее, чем сами записи. Первое чтение по-прежнему
+ * раннее — обычная свежесть наступает за доли секунды, — а дальше пауза
+ * растёт: если GitHub ещё не раздал новое, спешить всё равно некуда.
+ */
+const ПАУЗА_СВЕЖЕСТИ_МС = 250
+const ПАУЗА_СВЕЖЕСТИ_ПРЕДЕЛ_МС = 1000
 
 /**
  * Чем прерывать запрос к GitHub, если он завис.
@@ -207,20 +232,42 @@ async function readFile(
 async function дождатьсяСвежести(env: Env, partyId: string, sha: string): Promise<void> {
   if (!sha) return
   const конец = Date.now() + ЖДАТЬ_СВЕЖЕСТИ_МС
+  let паузаМс = ПАУЗА_СВЕЖЕСТИ_МС
   while (Date.now() < конец) {
-    const чтение = await readFile(env, partyId, 2000)
+    /*
+     * Запись уже прошла, и если чтение упёрлось в лимит, ждать нечего:
+     * данные в репозитории, а каждое следующее чтение только расходует
+     * остаток лимита. Пусть клиент узнает о лимите из следующего запроса,
+     * который и так случится не раньше сброса.
+     */
+    let чтение: RepoFile | { error: string }
+    try {
+      чтение = await readFile(env, partyId, 2000)
+    } catch (e) {
+      if (e instanceof GitHubRateLimitError) return
+      throw e
+    }
     if (!('error' in чтение) && чтение.sha === sha) return
-    await пауза(250)
+    await пауза(паузаМс)
+    паузаМс = Math.min(паузаМс * 2, ПАУЗА_СВЕЖЕСТИ_ПРЕДЕЛ_МС)
   }
 }
 
 /** Ждёт, пока файл действительно исчез. Тот же лаг, что и после записи. */
 async function дождатьсяИсчезновения(env: Env, partyId: string): Promise<void> {
   const конец = Date.now() + ЖДАТЬ_СВЕЖЕСТИ_МС
+  let паузаМс = ПАУЗА_СВЕЖЕСТИ_МС
   while (Date.now() < конец) {
-    const чтение = await readFile(env, partyId, 2000)
+    let чтение: RepoFile | { error: string }
+    try {
+      чтение = await readFile(env, partyId, 2000)
+    } catch (e) {
+      if (e instanceof GitHubRateLimitError) return
+      throw e
+    }
     if (!('error' in чтение) && чтение.data === null) return
-    await пауза(250)
+    await пауза(паузаМс)
+    паузаМс = Math.min(паузаМс * 2, ПАУЗА_СВЕЖЕСТИ_ПРЕДЕЛ_МС)
   }
 }
 
@@ -321,6 +368,89 @@ async function deleteFile(
   return { ok: true }
 }
 
+/**
+ * GitHub отказал по лимиту, а не по правам.
+ *
+ * Оба случая приходят с кодом 403, и по коду их не различить. Различают
+ * заголовки: x-ratelimit-remaining: 0 — кончился часовой лимит, retry-after —
+ * GitHub просит подождать (вторичный лимит). Текст ответа говорит о том же,
+ * но на него одного полагаться нельзя: GitHub меняет формулировки.
+ *
+ * Отдельный класс нужен верхнему обработчику: по нему он отвечает 429 и
+ * называет время, когда можно повторить. Клиент по этому ответу отступает,
+ * вместо того чтобы повторять сохранение каждые полторы секунды.
+ */
+class GitHubRateLimitError extends Error {
+  readonly retryAfterSec: number
+  readonly resetAt: string | null
+
+  constructor(retryAfterSec: number, resetAt: string | null, detail: string) {
+    super(сообщениеОЛимите(retryAfterSec, resetAt, detail))
+    this.name = 'GitHubRateLimitError'
+    this.retryAfterSec = retryAfterSec
+    this.resetAt = resetAt
+  }
+}
+
+/**
+ * Узнаёт лимит по ответу GitHub. Возвращает null, если это обычный отказ.
+ *
+ * detail передаётся, когда тело уже прочитано (describe). В githubFetch тело
+ * не трогаем: там достаточно заголовков, а тело ещё пригодится вызывающему.
+ */
+function лимитGitHub(res: Response, detail = ''): GitHubRateLimitError | null {
+  if (res.status !== 403 && res.status !== 429) return null
+
+  const осталось = res.headers.get('x-ratelimit-remaining')
+  const retryAfter = res.headers.get('retry-after')
+  const reset = res.headers.get('x-ratelimit-reset')
+  const поЗаголовкам = осталось === '0' || retryAfter !== null
+  const поТексту = /rate limit|abuse detection/i.test(detail)
+  if (!поЗаголовкам && !поТексту) return null
+
+  const сейчас = Date.now()
+  const сбросМс = reset ? Number(reset) * 1000 : NaN
+  const естьСброс = Number.isFinite(сбросМс) && сбросМс > сейчас
+  const поReset = естьСброс ? Math.ceil((сбросМс - сейчас) / 1000) : 0
+  const поЗаголовку = retryAfter ? Math.max(0, Math.ceil(Number(retryAfter))) : 0
+
+  return new GitHubRateLimitError(
+    поReset || поЗаголовку || 60,
+    естьСброс ? new Date(сбросМс).toISOString() : null,
+    detail,
+  )
+}
+
+function сообщениеОЛимите(секунд: number, resetAt: string | null, detail: string): string {
+  const когда = resetAt
+    ? `Лимит сбросится в ${utcЧчМм(resetAt)}, через ${длительность(секунд)}.`
+    : `Повторить можно через ${длительность(секунд)}.`
+  const ответGitHub = detail ? ` Ответ GitHub: ${detail.slice(0, 240)}` : ''
+  return (
+    'GitHub отказывает: сработал лимит запросов. ' +
+    `${когда} Это ограничение GitHub, а не права токена — после сброса сохранение пройдёт само.` +
+    ответGitHub
+  )
+}
+
+function utcЧчМм(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return 'неизвестно когда'
+  const ч = String(d.getUTCHours()).padStart(2, '0')
+  const м = String(d.getUTCMinutes()).padStart(2, '0')
+  return `${ч}:${м} UTC`
+}
+
+function длительность(секунд: number): string {
+  const с = Math.max(1, Math.ceil(секунд))
+  if (с < 90) return `${с} с`
+  const мин = Math.ceil(с / 60)
+  if (мин < 90) return `${мин} мин`
+  const ч = Math.floor(мин / 60)
+  const остаток = мин % 60
+  return остаток ? `${ч} ч ${остаток} мин` : `${ч} ч`
+}
+
 async function githubFetch(
   env: Env,
   url: string,
@@ -363,7 +493,15 @@ async function githubFetch(
   }
 
   try {
-    return await fetch(url, { ...init, headers, signal: отмена.signal })
+    const res = await fetch(url, { ...init, headers, signal: отмена.signal })
+    /*
+     * Лимит виден уже по заголовкам. Бросаем здесь, не читая тело: иначе
+     * пришлось бы клонировать ответ, а вызывающему он уже не нужен — это
+     * отказ, а не данные.
+     */
+    const лимит = лимитGitHub(res)
+    if (лимит) throw лимит
+    return res
   } catch (e) {
     // Обрыв по таймауту — это тоже сетевая ошибка, и о ней честнее сказать
     // прямо: «не дождались ответа», а не «GitHub ответил 500».
@@ -383,6 +521,16 @@ async function describe(res: Response): Promise<string> {
   } catch {
     detail = text.slice(0, 200)
   }
+
+  /*
+   * Лимит бывает виден только в тексте: заголовки не всегда доходят, а
+   * вторичный лимит GitHub умеет отдавать 403 без x-ratelimit-remaining.
+   * Проверяем до подсказки о правах, иначе человеку советуют чинить токен,
+   * который в порядке, и он ищет причину не там.
+   */
+  const лимит = лимитGitHub(res, detail)
+  if (лимит) throw лимит
+
   const hint =
     res.status === 401 || res.status === 403
       ? ' Проверь токен сервера: у него должно быть право Contents: Read and write на этот репозиторий.'

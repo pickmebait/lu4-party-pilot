@@ -36,6 +36,10 @@ const ОТСТАВАНИЕ = 2
 const прежнее = new Map()
 const отставание = new Map()
 const запросы = []
+let лимитGitHub = false
+/** Лимит, который включается только на чтениях после успешной записи. */
+let лимитПослеЗаписи = false
+let записьБыла = false
 const b64 = (текст) => Buffer.from(текст, 'utf8').toString('base64')
 const настоящийFetch = globalThis.fetch
 
@@ -44,6 +48,31 @@ globalThis.fetch = async (url, init = {}) => {
   запросы.push(`${init.method ?? 'GET'} ${адрес.replace('https://api.github.com/repos/', '')}`)
 
   if (!адрес.startsWith('https://api.github.com/')) return настоящийFetch(url, init)
+
+  /*
+   * Лимит GitHub: 403 с остатком 0 и сроком сброса. Проверяется отдельно в
+   * конце, когда обычные сценарии уже прошли.
+   */
+  if (лимитGitHub) {
+    return new Response(JSON.stringify({ message: 'API rate limit exceeded for user ID 1' }), {
+      status: 403,
+      headers: {
+        'x-ratelimit-remaining': '0',
+        'x-ratelimit-reset': String(Math.floor(Date.now() / 1000) + 120),
+        'retry-after': '120',
+      },
+    })
+  }
+
+  if (лимитПослеЗаписи && записьБыла && (init.method ?? 'GET') === 'GET') {
+    return new Response(JSON.stringify({ message: 'API rate limit exceeded for user ID 1' }), {
+      status: 403,
+      headers: {
+        'x-ratelimit-remaining': '0',
+        'x-ratelimit-reset': String(Math.floor(Date.now() / 1000) + 120),
+      },
+    })
+  }
 
   const путь = decodeURIComponent(адрес.split('/contents/')[1].split('?')[0])
   const запись = репозиторий.get(путь) ?? null
@@ -84,6 +113,7 @@ globalThis.fetch = async (url, init = {}) => {
     прежнее.set(путь, запись)
     отставание.set(путь, ОТСТАВАНИЕ)
     репозиторий.set(путь, { sha, content: тело.content })
+    if (лимитПослеЗаписи) записьБыла = true
     return new Response(JSON.stringify({ content: { sha } }), { status: 200 })
   }
 
@@ -834,6 +864,91 @@ const удаление = await call('/api/party', { method: 'DELETE', token: м�
 )
 const послеУдаления = await call('/api/session', { method: 'POST', body: { token: мастер2 } })
 шаг(послеУдаления.status === 401, 'после удаления пати токен не входит', послеУдаления.status)
+
+/* ------------------------------------- лимит пришёл уже после успешной записи */
+
+/*
+ * Запись могла пройти, а следующее за ней чтение свежести — упереться в
+ * лимит. Это не повод говорить «не сохранено»: данные уже в репозитории, а
+ * повтор клиента создал бы ложный конфликт с собственной записью. Проверяем,
+ * что сервер в этом случае отвечает успехом и не ждёт впустую.
+ */
+const поСлеЗаписи = await call('/api/party', {
+  method: 'POST',
+  body: { name: 'Лимит после записи' },
+})
+const токенПослеЗаписи = поСлеЗаписи.json.token
+const поСлеЗаписиId = поСлеЗаписи.json.partyId
+const данныеДо = await call('/api/party/data', { token: токенПослеЗаписи })
+const данныеПосле = structuredClone(данныеДо.json)
+данныеПосле.chars.push(НОВЫЙ('limitChar', 'После записи'))
+лимитПослеЗаписи = true
+const записьПриЛимите = await call('/api/party/data', {
+  method: 'PUT',
+  token: токенПослеЗаписи,
+  body: { db: данныеПосле, baseUpdatedAt: данныеДо.json.updatedAt },
+})
+шаг(
+  записьПриЛимите.status === 200,
+  'лимит на чтении после записи не превращает сохранение в отказ',
+  записьПриЛимите.json?.error ?? записьПриЛимите.status,
+)
+const файлПослеЗаписи = JSON.parse(
+  Buffer.from(репозиторий.get(`data/parties/${поСлеЗаписиId}.json`).content, 'base64').toString(),
+)
+шаг(
+  файлПослеЗаписи.db.chars.some((c) => c.id === 'limitChar'),
+  'запись при этом действительно легла в репозиторий',
+)
+лимитПослеЗаписи = false
+записьБыла = false
+
+/* ------------------------------------------------------- лимит запросов GitHub */
+
+/*
+ * Лимит — не поломка сервера и не нехватка прав. Проверяем все три вещи,
+ * которые важны клиенту: код 429, срок повтора и отсутствие ложного совета
+ * про токен. Без этого приложение снова начало бы долбить GitHub каждые
+ * полторы секунды и тратить остаток лимита.
+ */
+лимитGitHub = true
+const ответЛимита = await call('/api/session', { method: 'POST', body: { token: мастер2 } })
+шаг(ответЛимита.status === 429, 'лимит GitHub превращается в 429, а не в 500', ответЛимита.status)
+шаг(
+  typeof ответЛимита.json?.retryAfter === 'number' && ответЛимита.json.retryAfter >= 100,
+  'сервер называет, через сколько повторять',
+  ответЛимита.json?.retryAfter,
+)
+шаг(
+  typeof ответЛимита.json?.resetAt === 'string' && !Number.isNaN(Date.parse(ответЛимита.json.resetAt)),
+  'сервер называет время сброса лимита',
+  ответЛимита.json?.resetAt,
+)
+шаг(
+  /Лимит сбросится|Повторить можно/.test(ответЛимита.json?.error ?? ''),
+  'в сообщении есть когда ждать',
+  ответЛимита.json?.error,
+)
+шаг(
+  !/Проверь токен сервера/.test(ответЛимита.json?.error ?? ''),
+  'лимит не выдаётся за нехватку прав',
+  ответЛимита.json?.error,
+)
+
+const сыройЛимит = await worker.fetch(
+  new Request(BASE + '/api/session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: мастер2 }),
+  }),
+  окружение,
+)
+шаг(
+  сыройЛимит.headers.get('Retry-After') !== null,
+  'клиент может узнать срок повтора и из заголовка',
+  сыройЛимит.headers.get('Retry-After'),
+)
+лимитGitHub = false
 
 console.log('')
 console.log(`Запросов к GitHub: ${запросы.length}`)

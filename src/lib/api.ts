@@ -79,6 +79,11 @@ export type ApiResult<T> =
        * сейчас лежит на сервере.
        */
       forbidden?: { db: Db }
+      /**
+       * Пришло при 429: сервер просит подождать, обычно из-за лимита GitHub.
+       * Сколько секунд ждать, считает сервер — у него те же часы, что у GitHub.
+       */
+      retryAfter?: number
     }
 
 /** Не выкидываем текст ошибки от сервера в пользовательский интерфейс как есть. */
@@ -255,8 +260,27 @@ async function однаПопытка<T>(url: string, init: CallInit, headers: R
         },
       }
     }
+    if (res.status === 429) {
+      const retryAfter = Number(json?.retryAfter)
+      return {
+        обрыв: false,
+        ответ: {
+          ok: false,
+          статус: res.status,
+          error: json?.error ?? 'Сервер просит подождать и повторить позже',
+          ...(Number.isFinite(retryAfter) && retryAfter > 0 ? { retryAfter } : {}),
+        },
+      }
+    }
     if (!res.ok) {
-      return { обрыв: false, ответ: { ok: false, error: json?.error ?? `Сервер ответил ${res.status}` } }
+      return {
+        обрыв: false,
+        ответ: {
+          ok: false,
+          статус: res.status,
+          error: json?.error ?? `Сервер ответил ${res.status}`,
+        },
+      }
     }
     return { обрыв: false, ответ: { ok: true, value: json as T, попыток: 1, статус: res.status } }
   } catch (e) {
