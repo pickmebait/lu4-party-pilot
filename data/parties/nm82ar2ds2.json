@@ -5,16 +5,67 @@
   "masterHash": "b3f73a9763c2ecafc707604115ae6e55efee3051be708009ee4ec553db84542e",
   "tokens": [],
   "db": {
-    "version": 1,
-    "updatedAt": "2026-10-25T19:04:09.980Z",
-    "updatedBy": "",
-    "chars": [],
+    "version": 10,
+    "updatedAt": "2026-10-25T19:04:54.117Z",
+    "updatedBy": "Мастер",
+    "chars": [
+      {
+        "id": "cmvo760en1knaxr",
+        "name": "lolo",
+        "cls": "Warlord",
+        "level": 61,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      }
+    ],
     "warehouse": {
       "stacks": [],
       "log": []
     },
     "goals": [],
     "sets": [],
-    "customNames": {}
+    "customNames": {},
+    "schedule": {
+      "prime": {},
+      "offs": [],
+      "checklist": []
+    },
+    "history": []
   }
 }
