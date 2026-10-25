@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-25T09:09:53.763Z",
+    "updatedAt": "2026-10-25T09:10:01.049Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -90,7 +90,7 @@
           "rhand": [
             {
               "itemId": 236,
-              "mod": 4,
+              "mod": 3,
               "sa": "Focus"
             }
           ],
@@ -5909,6 +5909,28 @@
           {
             "itemId": 236,
             "mod": 4,
+            "sa": "Focus"
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-25T09:09:58.902Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 236,
+            "mod": 4,
+            "sa": "Focus"
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 236,
+            "mod": 3,
             "sa": "Focus"
           }
         ]
