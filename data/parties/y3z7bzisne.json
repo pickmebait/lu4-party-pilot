@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-25T08:34:34.325Z",
+    "updatedAt": "2026-10-25T08:51:34.545Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -96,7 +96,8 @@
           ],
           "lhand": [
             {
-              "itemId": 110
+              "itemId": 110,
+              "mod": 1
             }
           ],
           "head": [
@@ -544,8 +545,8 @@
             {
               "itemId": 268,
               "mod": 10,
-              "sa": "Health",
-              "spans": true
+              "spans": true,
+              "sa": "Health"
             }
           ],
           "head": [
@@ -5848,6 +5849,26 @@
           {
             "itemId": 5734,
             "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-25T08:51:32.470Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 110,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 110,
+            "mod": 1
           }
         ]
       }
