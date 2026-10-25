@@ -26,6 +26,34 @@ type WeaponCells = {
 }
 
 /**
+ * Одна и та же вещь в ячейке.
+ *
+ * Сравнивать через JSON.stringify нельзя: порядок полей зависит от того, кто
+ * собрал объект. normalizeSlotCells кладёт spans перед sa, а миграция собирала
+ * sa перед spans — и уже исправленная база каждый раз считалась изменённой.
+ * Отсюда бесконечное сохранение: новая метка времени, новый коммит, снова
+ * миграция.
+ *
+ * Поэтому сравниваем по смыслу: значения полей, а не их порядок. Отсутствие
+ * заточки и +0, пустой SA и его отсутствие — одно и то же.
+ */
+const таЖеЯчейка = (a: SlotEntry | null, b: SlotEntry | null): boolean => {
+  if (!a || !b) return a === b
+  return (
+    a.itemId === b.itemId &&
+    (a.mod ?? 0) === (b.mod ?? 0) &&
+    (a.sa ?? '') === (b.sa ?? '') &&
+    (a.rare === true) === (b.rare === true) &&
+    (a.spans === true) === (b.spans === true)
+  )
+}
+
+const теЖеЯчейки = (
+  a: readonly (SlotEntry | null)[],
+  b: readonly (SlotEntry | null)[],
+): boolean => a.length === b.length && a.every((ячейка, i) => таЖеЯчейка(ячейка, b[i] ?? null))
+
+/**
  * Кастеты — двуручное оружие.
  *
  * В старой базе кастет мог лежать только в правой руке, а слева — щит или
@@ -103,8 +131,8 @@ export function migrateFistHands(
     const новыеЛевая = [левый]
 
     const совпало =
-      JSON.stringify(src.rhand ?? []) === JSON.stringify(новыеПравая) &&
-      JSON.stringify(src.lhand ?? []) === JSON.stringify(новыеЛевая)
+      теЖеЯчейки(src.rhand ?? [], новыеПравая) &&
+      теЖеЯчейки(src.lhand ?? [], новыеЛевая)
     if (совпало) return null
 
     changed = true
