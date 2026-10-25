@@ -1,0 +1,20 @@
+{
+  "partyId": "nm82ar2ds2",
+  "name": "Моя пати",
+  "createdAt": "2026-10-25T19:04:09.980Z",
+  "masterHash": "b3f73a9763c2ecafc707604115ae6e55efee3051be708009ee4ec553db84542e",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-25T19:04:09.980Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "goals": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
