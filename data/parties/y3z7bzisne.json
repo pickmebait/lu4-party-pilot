@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:31:26.184Z",
+    "updatedAt": "2026-10-26T17:31:34.123Z",
     "updatedBy": "DaintyWilder",
     "chars": [
       {
@@ -580,29 +580,15 @@
                 }
               ],
               "neck": [
-                {
-                  "itemId": 924
-                }
+                null
               ],
               "ear": [
-                {
-                  "itemId": 864,
-                  "mod": 3
-                },
-                {
-                  "itemId": 864,
-                  "mod": 3
-                }
+                null,
+                null
               ],
               "ring": [
-                {
-                  "itemId": 895,
-                  "mod": 3
-                },
-                {
-                  "itemId": 895,
-                  "mod": 3
-                }
+                null,
+                null
               ]
             },
             "extraWeaponSets": [
