@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:32:27.863Z",
-    "updatedBy": "DaintyWilder",
+    "updatedAt": "2026-10-26T17:49:35.239Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -620,45 +620,6 @@
                 ]
               }
             ]
-          },
-          {
-            "id": "smvpiqbod2s2x8t",
-            "cls": "",
-            "level": 0,
-            "slots": {
-              "rhand": [
-                null
-              ],
-              "lhand": [
-                null
-              ],
-              "head": [
-                null
-              ],
-              "chest": [
-                null
-              ],
-              "legs": [
-                null
-              ],
-              "gloves": [
-                null
-              ],
-              "feet": [
-                null
-              ],
-              "neck": [
-                null
-              ],
-              "ear": [
-                null,
-                null
-              ],
-              "ring": [
-                null,
-                null
-              ]
-            }
           }
         ],
         "away": {
