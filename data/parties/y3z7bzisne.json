@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:06:35.685Z",
+    "updatedAt": "2026-10-26T17:06:41.371Z",
     "updatedBy": "DaintyWilder",
     "chars": [
       {
@@ -500,30 +500,19 @@
                 null
               ],
               "head": [
-                {
-                  "itemId": 547
-                }
+                null
               ],
               "chest": [
-                {
-                  "itemId": 2382
-                }
+                null
               ],
               "legs": [
-                {
-                  "itemId": 2382,
-                  "spans": true
-                }
+                null
               ],
               "gloves": [
-                {
-                  "itemId": 5769
-                }
+                null
               ],
               "feet": [
-                {
-                  "itemId": 5780
-                }
+                null
               ],
               "neck": [
                 {
@@ -556,16 +545,16 @@
                 "rhand": [
                   {
                     "itemId": 70,
-                    "sa": "Focus",
-                    "mod": 4
+                    "mod": 4,
+                    "sa": "Focus"
                   }
                 ],
                 "lhand": [
                   {
                     "itemId": 70,
-                    "sa": "Focus",
+                    "mod": 4,
                     "spans": true,
-                    "mod": 4
+                    "sa": "Focus"
                   }
                 ]
               }
