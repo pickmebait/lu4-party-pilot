@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T18:10:16.755Z",
+    "updatedAt": "2026-10-26T18:10:24.109Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -408,6 +408,7 @@
           "rhand": [
             {
               "itemId": 79,
+              "mod": 3,
               "sa": "Health",
               "rare": true
             }
@@ -8082,6 +8083,78 @@
           {
             "itemId": 2425,
             "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-26T18:10:21.427Z",
+        "кто": "Мастер",
+        "charId": "cmvjp58n81jv6ki",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 79,
+            "mod": 0,
+            "sa": "Health",
+            "rare": true
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 79,
+            "mod": 1,
+            "sa": "Health",
+            "rare": true
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-26T18:10:21.614Z",
+        "кто": "Мастер",
+        "charId": "cmvjp58n81jv6ki",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 79,
+            "mod": 1,
+            "sa": "Health",
+            "rare": true
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 79,
+            "mod": 2,
+            "sa": "Health",
+            "rare": true
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-26T18:10:22.200Z",
+        "кто": "Мастер",
+        "charId": "cmvjp58n81jv6ki",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 79,
+            "mod": 2,
+            "sa": "Health",
+            "rare": true
+          }
+        ],
+        "стало": [
+          {
+            "itemId": 79,
+            "mod": 3,
+            "sa": "Health",
+            "rare": true
           }
         ]
       }
