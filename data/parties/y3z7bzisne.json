@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:04:32.652Z",
+    "updatedAt": "2026-10-26T17:04:42.144Z",
     "updatedBy": "DaintyWilder",
     "chars": [
       {
@@ -599,7 +599,9 @@
                 }
               ],
               "feet": [
-                null
+                {
+                  "itemId": 5780
+                }
               ],
               "neck": [
                 null
