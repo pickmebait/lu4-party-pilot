@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:05:07.333Z",
+    "updatedAt": "2026-10-26T17:05:15.869Z",
     "updatedBy": "DaintyWilder",
     "chars": [
       {
@@ -618,7 +618,9 @@
                 {
                   "itemId": 895
                 },
-                null
+                {
+                  "itemId": 895
+                }
               ]
             }
           }
