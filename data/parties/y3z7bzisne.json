@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:07:52.083Z",
+    "updatedAt": "2026-10-26T17:08:42.007Z",
     "updatedBy": "DaintyWilder",
     "chars": [
       {
@@ -446,7 +446,7 @@
         "id": "cmvjp83fc32841q",
         "name": "DaintyWilder",
         "cls": "Swordsinger",
-        "level": 75,
+        "level": 0,
         "affil": "roster",
         "slots": {
           "rhand": [
@@ -568,78 +568,6 @@
                 ]
               }
             ]
-          },
-          {
-            "id": "smvpi8occ1ibkq2",
-            "cls": "",
-            "level": 0,
-            "slots": {
-              "rhand": [
-                {
-                  "itemId": 34934,
-                  "mod": 3,
-                  "rare": true
-                }
-              ],
-              "lhand": [
-                {
-                  "itemId": 34934,
-                  "mod": 3,
-                  "spans": true,
-                  "rare": true
-                }
-              ],
-              "head": [
-                {
-                  "itemId": 547
-                }
-              ],
-              "chest": [
-                {
-                  "itemId": 2382
-                }
-              ],
-              "legs": [
-                {
-                  "itemId": 2382,
-                  "spans": true
-                }
-              ],
-              "gloves": [
-                {
-                  "itemId": 5768
-                }
-              ],
-              "feet": [
-                {
-                  "itemId": 5780
-                }
-              ],
-              "neck": [
-                {
-                  "itemId": 924
-                }
-              ],
-              "ear": [
-                {
-                  "itemId": 864
-                },
-                {
-                  "itemId": 864,
-                  "mod": 3
-                }
-              ],
-              "ring": [
-                {
-                  "itemId": 895,
-                  "mod": 5
-                },
-                {
-                  "itemId": 895,
-                  "mod": 5
-                }
-              ]
-            }
           }
         ],
         "away": {}
