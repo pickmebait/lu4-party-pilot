@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T16:04:20.780Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-10-26T17:00:09.588Z",
+    "updatedBy": "DaintyWilder",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -445,8 +445,8 @@
       {
         "id": "cmvjp83fc32841q",
         "name": "DaintyWilder",
-        "cls": "",
-        "level": 0,
+        "cls": "Swordsinger",
+        "level": 75,
         "affil": "roster",
         "slots": {
           "rhand": [
