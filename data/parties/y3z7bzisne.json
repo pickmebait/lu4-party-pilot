@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:16:19.962Z",
+    "updatedAt": "2026-10-26T17:18:10.335Z",
     "updatedBy": "DaintyWilder",
     "chars": [
       {
@@ -528,6 +528,14 @@
                 "itemId": 110
               }
             ]
+          },
+          {
+            "rhand": [
+              null
+            ],
+            "lhand": [
+              null
+            ]
           }
         ],
         "contacts": {
@@ -535,7 +543,7 @@
           "telegram": "@neprefit",
           "discord": "Otmun"
         },
-        "subUnlocked": false,
+        "subUnlocked": true,
         "subs": [
           {
             "id": "smvk1047y1mv177",
