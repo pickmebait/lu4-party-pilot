@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:32:16.228Z",
+    "updatedAt": "2026-10-26T17:32:27.863Z",
     "updatedBy": "DaintyWilder",
     "chars": [
       {
@@ -596,7 +596,9 @@
                 {
                   "itemId": 882
                 },
-                null
+                {
+                  "itemId": 882
+                }
               ]
             },
             "extraWeaponSets": [
