@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:49:35.239Z",
+    "updatedAt": "2026-10-26T17:49:54.295Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -1528,45 +1528,6 @@
             "id": "smvk1459a1mr82g",
             "cls": "Bishop",
             "level": 25,
-            "slots": {
-              "rhand": [
-                null
-              ],
-              "lhand": [
-                null
-              ],
-              "head": [
-                null
-              ],
-              "chest": [
-                null
-              ],
-              "legs": [
-                null
-              ],
-              "gloves": [
-                null
-              ],
-              "feet": [
-                null
-              ],
-              "neck": [
-                null
-              ],
-              "ear": [
-                null,
-                null
-              ],
-              "ring": [
-                null,
-                null
-              ]
-            }
-          },
-          {
-            "id": "smvk7vaik3f5d0t",
-            "cls": "",
-            "level": 0,
             "slots": {
               "rhand": [
                 null
