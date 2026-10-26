@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:09:15.341Z",
+    "updatedAt": "2026-10-26T17:09:19.356Z",
     "updatedBy": "DaintyWilder",
     "chars": [
       {
@@ -458,12 +458,14 @@
           "lhand": [
             {
               "itemId": 34934,
-              "spans": true,
-              "mod": 4
+              "mod": 4,
+              "spans": true
             }
           ],
           "head": [
-            null
+            {
+              "itemId": 547
+            }
           ],
           "chest": [
             null
