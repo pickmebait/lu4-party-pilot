@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:14:54.354Z",
+    "updatedAt": "2026-10-26T17:15:49.233Z",
     "updatedBy": "DaintyWilder",
     "chars": [
       {
@@ -514,6 +514,16 @@
             }
           ]
         },
+        "extraWeaponSets": [
+          {
+            "rhand": [
+              null
+            ],
+            "lhand": [
+              null
+            ]
+          }
+        ],
         "contacts": {
           "realName": "Серый",
           "telegram": "@neprefit",
