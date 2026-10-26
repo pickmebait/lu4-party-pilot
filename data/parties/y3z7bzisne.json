@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:05:38.450Z",
+    "updatedAt": "2026-10-26T17:06:00.889Z",
     "updatedBy": "DaintyWilder",
     "chars": [
       {
@@ -490,7 +490,10 @@
             "level": 25,
             "slots": {
               "rhand": [
-                null
+                {
+                  "itemId": 297,
+                  "sa": "Guidance"
+                }
               ],
               "lhand": [
                 null
