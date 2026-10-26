@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:16:07.223Z",
+    "updatedAt": "2026-10-26T17:16:11.704Z",
     "updatedBy": "DaintyWilder",
     "chars": [
       {
@@ -519,12 +519,14 @@
             "rhand": [
               {
                 "itemId": 127,
-                "sa": "Health",
-                "mod": 5
+                "mod": 5,
+                "sa": "Health"
               }
             ],
             "lhand": [
-              null
+              {
+                "itemId": 110
+              }
             ]
           }
         ],
