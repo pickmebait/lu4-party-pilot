@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:09:58.024Z",
+    "updatedAt": "2026-10-26T17:10:11.074Z",
     "updatedBy": "DaintyWilder",
     "chars": [
       {
@@ -495,17 +495,23 @@
           ],
           "ear": [
             {
-              "itemId": 864
+              "itemId": 864,
+              "mod": 3
             },
             {
-              "itemId": 864
+              "itemId": 864,
+              "mod": 3
             }
           ],
           "ring": [
             {
-              "itemId": 895
+              "itemId": 895,
+              "mod": 5
             },
-            null
+            {
+              "itemId": 895,
+              "mod": 5
+            }
           ]
         },
         "subUnlocked": true,
