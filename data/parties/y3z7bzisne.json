@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-25T09:10:01.049Z",
+    "updatedAt": "2026-10-26T16:04:20.780Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -248,7 +248,7 @@
           {
             "id": "smvjom1e73m4i48",
             "cls": "Spellhowler",
-            "level": 62,
+            "level": 63,
             "slots": {
               "rhand": [
                 {
