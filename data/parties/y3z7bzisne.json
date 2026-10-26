@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:00:54.940Z",
+    "updatedAt": "2026-10-26T17:01:12.164Z",
     "updatedBy": "DaintyWilder",
     "chars": [
       {
@@ -492,20 +492,22 @@
               "rhand": [
                 {
                   "itemId": 34934,
-                  "rare": true,
-                  "mod": 4
+                  "mod": 4,
+                  "rare": true
                 }
               ],
               "lhand": [
                 {
                   "itemId": 34934,
-                  "rare": true,
+                  "mod": 4,
                   "spans": true,
-                  "mod": 4
+                  "rare": true
                 }
               ],
               "head": [
-                null
+                {
+                  "itemId": 547
+                }
               ],
               "chest": [
                 null
