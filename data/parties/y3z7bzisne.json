@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:50:01.527Z",
+    "updatedAt": "2026-10-26T17:59:44.667Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -438,7 +438,7 @@
             null
           ]
         },
-        "subUnlocked": false,
+        "subUnlocked": true,
         "subs": [],
         "away": {}
       },
