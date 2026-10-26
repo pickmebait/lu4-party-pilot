@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:01:12.164Z",
+    "updatedAt": "2026-10-26T17:01:20.780Z",
     "updatedBy": "DaintyWilder",
     "chars": [
       {
@@ -510,10 +510,15 @@
                 }
               ],
               "chest": [
-                null
+                {
+                  "itemId": 2382
+                }
               ],
               "legs": [
-                null
+                {
+                  "itemId": 2382,
+                  "spans": true
+                }
               ],
               "gloves": [
                 null
