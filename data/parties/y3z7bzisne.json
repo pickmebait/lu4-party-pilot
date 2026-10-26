@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-26T17:01:44.334Z",
+    "updatedAt": "2026-10-26T17:01:50.768Z",
     "updatedBy": "DaintyWilder",
     "chars": [
       {
@@ -536,7 +536,9 @@
                 }
               ],
               "ear": [
-                null,
+                {
+                  "itemId": 864
+                },
                 null
               ],
               "ring": [
