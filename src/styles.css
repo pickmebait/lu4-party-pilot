@@ -161,6 +161,47 @@ body {
   padding: 20px 20px 60px;
 }
 
+/*
+ * Расписание живёт в один экран.
+ *
+ * Остальные вкладки — это списки, которые растут вниз, и прокрутка там
+ * нормальна. У расписания главное — увидеть месяц и правку одного дня
+ * одновременно. Поэтому вкладка забирает высоту окна целиком, а прокрутка
+ * остаётся только внутри правой колонки и у длинных списков.
+ *
+ * max-width шире общего: календарь из семи колонок на 1280 пикселях
+ * оставлял бы в клетке по сто сорок, а на широком мониторе места хватает
+ * и календарю, и правой колонке.
+ */
+.app-schedule {
+  height: 100dvh;
+  max-width: 1720px;
+  padding: 10px 18px 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app-schedule .top {
+  flex: none;
+  padding-bottom: 8px;
+}
+
+.app-schedule .tabs {
+  flex: none;
+  margin: 8px 0 10px;
+}
+
+.app-schedule main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}
+
+.app-schedule .foot {
+  display: none;
+}
+
 /* ------------------------------------------------------------------ шапка */
 
 .top {
@@ -1051,6 +1092,7 @@ body {
 .cal-head {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
+  flex: none;
   background: var(--bg-3);
   border-bottom: 1px solid var(--line);
 }
@@ -1086,7 +1128,7 @@ body {
   align-items: stretch;
   gap: 2px;
   min-height: 62px;
-  padding: 4px 5px;
+  padding: 4px 6px;
   background: var(--bg-2);
   border: none;
   border-left: 2px solid transparent;
@@ -1101,9 +1143,25 @@ body {
   background: var(--surface-lit);
 }
 
+.cal-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  min-height: 18px;
+}
+
+.cal-marks {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
 .cal-num {
-  font-size: 13px;
-  line-height: 1.2;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Соседний месяц — гасим, но оставляем нажимаемым: диапазон, начавшийся
@@ -1152,7 +1210,7 @@ body {
 }
 
 .cal-mark {
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1;
   color: var(--accent);
 }
@@ -1168,12 +1226,15 @@ body {
  */
 .cal-prime {
   margin-top: auto;
-  font-size: 11px;
+  padding-top: 2px;
+  font-size: 12px;
+  font-weight: 600;
   line-height: 1.2;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
 }
 
 /*
@@ -1185,6 +1246,130 @@ body {
 .cal-prime.off {
   color: var(--accent-2);
   font-weight: 600;
+}
+
+/*
+ * События сервера в клетке.
+ *
+ * Цвет у каждого события свой и не зависит от палитры: корона, капля, пламя,
+ * щит и башня должны узнаваться в любой теме. Фон и рамка собираются из
+ * этого же цвета через color-mix, поэтому плашка остаётся тёмной и не
+ * перетягивает взгляд с прайма.
+ */
+.cal-events {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.event-badge {
+  --ev: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 1px 5px;
+  border: 1px solid color-mix(in srgb, var(--ev) 32%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--ev) 13%, transparent);
+  color: var(--ev);
+  font-size: 10.5px;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.event-badge svg {
+  flex: none;
+}
+
+.event-badge-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+}
+
+.event-badge-time {
+  color: color-mix(in srgb, var(--ev) 70%, var(--muted));
+  font-variant-numeric: tabular-nums;
+}
+
+.event-badge.full {
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 11.5px;
+}
+
+.tone-queen {
+  --ev: #e8c15a;
+}
+
+.tone-water {
+  --ev: #6fb3e8;
+}
+
+.tone-fire {
+  --ev: #ef8a5a;
+}
+
+.tone-kh {
+  --ev: #b48ae0;
+}
+
+.tone-castle {
+  --ev: #6ec79f;
+}
+
+/*
+ * Легенда событий под календарём.
+ *
+ * Без неё значки в клетках пришлось бы расшифровывать наведением на каждую
+ * дату. Здесь же видно и день недели, и время: событие повторяется, и
+ * «ближайшее» — это не единственное, что о нём надо знать.
+ */
+.cal-event-legend {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  padding: 0 2px;
+  font-size: 11px;
+}
+
+.event-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.event-legend svg {
+  color: var(--ev);
+}
+
+.event-legend-time {
+  color: var(--muted-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Строка выделения и расшифровка дней под календарём — одной полосой. */
+.cal-tools {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+
+.cal-tools .cal-pick,
+.cal-tools .cal-legend {
+  margin-top: 0;
 }
 
 .cal-legend {
@@ -1452,19 +1637,6 @@ body {
   width: 96px;
   padding: 5px 7px;
 }
-
-/*
- * Подсказка про выделение — под легендой, над редактором.
- *
- * Держится на месте всегда, а не только когда ничего не выбрано: она
- * короткая, а без неё забывают про второй способ выделить дни — зажать и
- * протянуть.
- */
-.cal-hint {
-  margin: 9px 0 0;
-  color: var(--muted-dim);
-}
-
 
 
 
@@ -3652,76 +3824,467 @@ body {
   }
 }
 /*
- * Раскладка правой колонки раздела «Расписание»: сводка по дню, чеклист и
- * месячный список отсутствий.
+ * Раскладка раздела «Расписание».
+ *
+ * Календарь тянется слева на всю оставшуюся высоту, а справа стоит колонка
+ * со сводкой, чеклистом и правкой. Раньше всё это лежало друг под другом:
+ * выбрал дни — и кнопки оказывались ниже экрана, хотя править надо именно
+ * сейчас.
  */
-.cal-layout {
+.schedule-view {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.schedule-view > .view-head {
+  flex: none;
+  margin-bottom: 8px;
+}
+
+.schedule-view > .readonly-note {
+  flex: none;
+}
+
+.schedule-board {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   gap: 12px;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
-.cal-layout > div {
+.schedule-main {
   flex: 1 1 auto;
   min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
 }
 
-.cal-side {
-  flex: 0 0 300px;
-  max-height: calc(100vh - 150px);
-  overflow-y: auto;
+.schedule-main .cal {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+ * Дни делят высоту календаря поровну: в месяце из шести недель клетки ниже,
+ * из пяти — выше. Так календарь заполняет экран, вместо того чтобы
+ * оставлять под собой пустое поле.
+ */
+.schedule-main .cal-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  grid-auto-rows: minmax(0, 1fr);
+}
+
+/* В клетке не остаётся запаса по высоте: всё лишнее режется строкой
+   отсутствующих, а не растягивает календарь за экран. */
+.schedule-main .cal-day {
+  min-height: 0;
+}
+
+/*
+ * Месяц из шести недель на невысоком экране.
+ *
+ * В нём на строку больше, и клетка на 1366×768 выходит 65 пикселей вместо
+ * 78. Прежние отступы и кегль в неё не влезали: строки событий, отсутствий
+ * и прайма сжимались ниже line-height и наезжали друг на друга. Ужимаем
+ * только такие месяцы и только там, где клетка действительно низкая: на
+ * 1920×1080 ноябрьская клетка в 116 пикселей остаётся с крупным текстом.
+ */
+@media (max-height: 850px) {
+  .cal.cal-six .cal-day {
+    gap: 1px;
+    padding: 2px 5px;
+  }
+
+  .cal.cal-six .cal-top {
+    min-height: 15px;
+  }
+
+  .cal.cal-six .cal-num {
+    font-size: 14px;
+    line-height: 1.1;
+  }
+
+  .cal.cal-six .event-badge {
+    gap: 2px;
+    padding: 0 4px;
+    font-size: 10px;
+    line-height: 1.2;
+  }
+
+  .cal.cal-six .event-badge svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .cal.cal-six .cal-away {
+    font-size: 10px;
+    line-height: 1.15;
+  }
+
+  .cal.cal-six .cal-prime {
+    padding-top: 1px;
+    font-size: 10.5px;
+    line-height: 1.15;
+  }
+}
+
+.schedule-side {
+  flex: 0 0 420px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/*
+ * Подвкладки правой колонки.
+ *
+ * Сводка и чеклист — разные вопросы, и держать их одновременно открытыми
+ * значило отдать каждому по половине и без того невысокой колонки. Теперь
+ * открыт один, зато целиком.
+ */
+.side-tabs {
+  flex: none;
+  display: flex;
+  gap: 3px;
+  padding: 3px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 9px 10px;
 }
 
-.cal-side h4 {
-  margin: 0 0 6px;
-  font-size: 13px;
-  color: var(--muted);
+.side-tab {
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  justify-content: center;
   gap: 6px;
+  padding: 6px 8px;
+  background: none;
+  border: none;
+  border-radius: 7px;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.side-tab:hover {
+  background: var(--bg-3);
+  color: var(--text);
+}
+
+.side-tab.on {
+  background: var(--accent-deep);
+  box-shadow: inset 0 0 0 1px var(--accent-line);
+  color: var(--accent-2);
+}
+
+.side-tab-count {
+  min-width: 17px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--bg-3);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 16px;
+  text-align: center;
+}
+
+.side-tab.on .side-tab-count {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--accent-2);
+}
+
+/* Прокручивается только содержимое подвкладки, а не вся страница. */
+.side-scroll {
+  flex: 1 1 auto;
+  min-height: 90px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.side-scroll::-webkit-scrollbar,
+.schedule-side .cal-editor::-webkit-scrollbar {
+  width: 9px;
+}
+
+.side-scroll::-webkit-scrollbar-thumb,
+.schedule-side .cal-editor::-webkit-scrollbar-thumb {
+  background: var(--line-2);
+  border-radius: 6px;
+}
+
+.side-scroll::-webkit-scrollbar-track,
+.schedule-side .cal-editor::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Правка всегда внизу колонки: выбрал дни — и она уже на экране. */
+.schedule-side .cal-editor {
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: 66%;
+  margin-top: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px 10px 9px;
+}
+
+.side-empty {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px dashed var(--line-2);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.side-empty strong {
+  color: var(--text);
+  font-size: 13px;
+}
+
+/*
+ * Редактор в правой колонке.
+ *
+ * Прайм и отсутствие стоят рядом: это два независимых действия, и держать их
+ * друг под другом значило отдать форме всю высоту колонки, оставив сводке
+ * узкую полоску. В 420 пикселях каждому блоку достаётся по 195 — полям
+ * времени и кнопкам этого хватает. Кнопки внутри блока идут сеткой: главная
+ * во всю ширину, две второстепенные — половинками.
+ */
+.schedule-side .editor-what {
+  gap: 6px;
+  flex-wrap: wrap;
+  padding-bottom: 6px;
+  font-size: 13px;
+}
+
+.schedule-side .editor-count,
+.schedule-side .editor-now {
+  font-size: 10.5px;
+}
+
+.schedule-side .editor-now {
+  margin-left: auto;
+}
+
+.schedule-side .editor-grid {
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.schedule-side .editor-block h4 {
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+.schedule-side .cal-editor .row {
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.schedule-side .cal-editor label {
+  font-size: 11px;
+}
+
+.schedule-side .cal-editor .input.time {
+  width: 86px;
+  padding: 3px 6px;
+  font-size: 13px;
+}
+
+.schedule-side .block-head {
+  min-height: 24px;
+  margin-bottom: 5px;
+}
+
+.schedule-side .block-head h4 {
+  margin: 0;
+}
+
+.schedule-side .block-head .who,
+.schedule-side .block-head .who-fixed {
+  max-width: 60%;
+  padding: 3px 6px;
+  font-size: 12px;
+}
+
+.schedule-side .segment {
+  margin-top: 4px;
+}
+
+.schedule-side .cal-editor .seg {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.schedule-side .cal-editor .editor-block > .row:not(.time-row) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.schedule-side .cal-editor .editor-block > .row:not(.time-row) > .btn {
+  padding: 5px 7px;
+  font-size: 11.5px;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.schedule-side .cal-editor .editor-block > .row:not(.time-row) > .btn.primary:first-child {
+  grid-column: 1 / -1;
 }
 
 /*
  * Сводка по дню.
  *
- * Время прайма вынесено крупно: это то, ради чего сводку и открывают, а
- * «кто придёт» читается уже следом, мелким.
+ * Сначала отвечает на вопрос «когда собираемся», потом «что сегодня в игре»,
+ * потом «сколько нас». Время прайма крупное: это то, ради чего сводку и
+ * открывают. Счётчики стоят плитками — по ним видно состав до чтения имён.
  */
 .day-sum {
-  padding-bottom: 10px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid var(--line);
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: none;
 }
 
 .sum-date {
-  font-size: 12px;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 3px;
+  font-size: 13px;
   color: var(--muted);
-  margin-bottom: 2px;
+}
+
+.sum-selected {
+  color: var(--muted-dim);
+  font-size: 10px;
 }
 
 .sum-prime {
-  font-size: 18px;
-  font-weight: 600;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
   color: var(--accent-2);
-  margin-bottom: 8px;
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
 }
 
 .sum-prime.off {
   color: var(--muted);
+  font-size: 21px;
+}
+
+.sum-prime-hours {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.sum-events {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.sum-events .event-badge {
+  padding: 2px 7px;
+  font-size: 11.5px;
+}
+
+.sum-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.sum-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 5px 8px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.25;
+}
+
+.sum-stat b {
+  color: var(--text);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.sum-stat.bad b {
+  color: #ff9d9d;
+}
+
+/* Полоса явки: доля состава, который придёт. */
+.sum-bar,
+.checklist-bar {
+  height: 5px;
+  margin-top: 7px;
+  overflow: hidden;
+  background: var(--bg-3);
+  border-radius: 999px;
+}
+
+.sum-bar > span,
+.checklist-bar > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-radius: inherit;
+  transition: width 0.2s;
 }
 
 .sum-block {
-  margin-bottom: 8px;
+  margin-top: 10px;
 }
 
 .sum-title {
-  font-size: 12px;
+  margin-bottom: 4px;
   color: var(--muted);
-  margin-bottom: 3px;
+  font-size: 11.5px;
+  font-weight: 600;
 }
 
 .sum-list {
@@ -3735,8 +4298,13 @@ body {
   justify-content: space-between;
   align-items: baseline;
   gap: 8px;
+  padding: 2.5px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 45%, transparent);
   font-size: 12px;
-  padding: 2px 0;
+}
+
+.sum-list li:last-child {
+  border-bottom: none;
 }
 
 /* Ник и подпись под ним одной группой: без группы «профессия · уровень»
@@ -3778,17 +4346,17 @@ body {
   padding-top: 0;
 }
 
-.checklist h4 {
-  margin: 0 0 7px;
-  font-size: 13px;
-  color: var(--muted);
+.checklist-head {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  /* Перенос нужен из-за счётчика: «3 из 3 · только в этой вкладке» в
-     283 пикселя не помещается рядом с заголовком и без него сжимает
-     заголовок в две строки. */
-  flex-wrap: wrap;
+  margin-bottom: 7px;
+}
+
+.checklist-head h4 {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
 }
 
 .checklist-count {
@@ -3796,6 +4364,14 @@ body {
   font-size: 11px;
   color: var(--muted-dim);
   white-space: nowrap;
+}
+
+.checklist-bar {
+  margin: 0 0 8px;
+}
+
+.checklist-note {
+  margin-top: 8px;
 }
 
 /*
@@ -3880,117 +4456,37 @@ body {
 /*
  * Отсутствующие в клетке дня.
  *
- * Список, а не уголок с одной буквой: буква от буквы ничего не говорила, а
- * полные имена читаются сразу. В потоке, а не абсолютным положением — иначе
- * длинное имя наезжало бы на номер дня и время прайма.
- *
- * За край клетки не выходит: имя обрезается многоточием, лишние сворачиваются
- * в «ещё N». Без обрезки неделя с отпуском растянула бы весь календарь.
- */
-/*
- * Отсутствующие — в правом верхнем углу клетки, именами столбиком.
- *
- * Угол, а не поток: номер дня стоит слева, время прайма внизу, и список между
- * ними забирал бы место и там, и там. В углу он ничего не занимает, а день
- * остаётся читаемым, сколько бы народу ни отсутствовало.
- *
- * Имена полные: буква от буквы ничего не говорила, а в пати встречаются два
- * Ирока. Не влезающие обрезаются многоточием — растягивать клетку нельзя,
- * иначе одна неделя с отпуском поднимет весь календарь.
+ * Имена полные и в одну строку: в пати встречаются два Ирока, и по «И» не
+ * понять, кого именно не ждать. Строка не переносится — в клетке уже стоят
+ * значки событий и время прайма, и третий этаж вытеснил бы их. Не влезшие
+ * имена сворачиваются в «ещё N», полный список с временем ухода лежит в
+ * подсказке клетки и в сводке справа.
  */
 .cal-away {
-  position: absolute;
-  top: 3px;
-  right: 4px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1px;
-  max-width: 72%;
-  font-size: 10px;
-  line-height: 1.2;
-  text-align: right;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
   color: #ffb3b3;
+  font-size: 10.5px;
+  line-height: 1.3;
+  white-space: nowrap;
 }
 
 .cal-away-name {
-  max-width: 100%;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-/*
- * «Ещё N» и окошко со всем списком.
- *
- * Окошко на самом наведении: состояние в React для этого не нужно, а при уходе
- * мыши оно само схлопывается. Поверх соседних клеток поднимается z-index —
- * иначе список уходил бы под них и читался обрывками.
- */
-.cal-away-more {
-  position: relative;
-  color: #d98a8a;
-  cursor: default;
-}
-
-.cal-away-pop {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  z-index: 30;
-  min-width: 150px;
-  margin-top: 3px;
-  padding: 5px 7px;
-  display: none;
-  flex-direction: column;
-  gap: 2px;
-  background: var(--surface-lit, #1b2130);
-  border: 1px solid var(--line-2);
-  border-radius: 6px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
-  font-size: 11px;
-  line-height: 1.35;
-  text-align: left;
-  color: var(--text);
-}
-
-.cal-away-more:hover .cal-away-pop {
-  display: flex;
-}
-
-.cal-away-pop-row {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  white-space: nowrap;
-}
-
-.cal-away-pop-when {
-  margin-left: auto;
-  color: var(--muted-dim);
-  font-size: 10px;
-}
-
-/* Клетка при наведении на «ещё» поднимается над соседями, иначе окошко
-   окажется под ними. */
-.cal-away-more:hover {
-  z-index: 31;
-}
-
-
-.cal-away-name {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.cal-away-name + .cal-away-name::before {
+  content: ', ';
 }
 
 .cal-away-more {
+  flex: none;
   color: #d98a8a;
-}
-
-.cal-day {
-  position: relative;
 }
 
 .cal-legend .off::before {
@@ -4587,5 +5083,248 @@ body {
 @media (max-width: 560px) {
   .goal-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/*
+ * Широкий, но низкий экран (1280×720).
+ *
+ * Раскладка ещё помещается целиком, но клетке достаётся 63 пикселя вместо
+ * 78, и содержимое сжимается ниже line-height. Здесь ужимаются не дни, а
+ * служебные полосы: шапка, вкладки, легенда и строка выделения. Плюс
+ * компактный кегль внутри клетки — он всё равно крупнее подсказки, зато
+ * номер, событие, имена и прайм остаются целыми строками.
+ */
+@media (min-width: 1221px) and (min-height: 621px) and (max-height: 650px) {
+  .app-schedule {
+    padding: 8px 14px 10px;
+  }
+
+  .app-schedule .top {
+    padding-bottom: 6px;
+  }
+
+  .app-schedule .tabs {
+    margin: 6px 0 8px;
+  }
+
+  .app-schedule .tabs button {
+    padding: 6px 12px;
+  }
+
+  .schedule-view > .view-head {
+    margin-bottom: 6px;
+  }
+
+  /*
+   * В правой колонке те же 628 пикселей делят сводка и правка. Ужимаем
+   * отступы, а не поля и кнопки: сводка успевает показать счётчики, а все
+   * действия правки остаются на месте.
+   */
+  .side-tabs {
+    padding: 2px;
+  }
+
+  .side-tab {
+    padding: 5px 8px;
+  }
+
+  .side-scroll {
+    padding: 8px 10px;
+  }
+
+  .sum-prime {
+    margin-bottom: 4px;
+    font-size: 24px;
+  }
+
+  .sum-events {
+    margin-top: 5px;
+  }
+
+  .sum-events .event-badge {
+    padding: 1px 6px;
+    font-size: 10.5px;
+  }
+
+  .sum-stats {
+    gap: 5px;
+    margin-top: 7px;
+  }
+
+  .sum-stat {
+    padding: 4px 7px;
+  }
+
+  .sum-stat b {
+    font-size: 17px;
+  }
+
+  .sum-bar {
+    margin-top: 5px;
+  }
+
+  .sum-block {
+    margin-top: 8px;
+  }
+
+  .schedule-side .cal-editor {
+    padding: 6px 9px 7px;
+  }
+
+  .schedule-side .editor-what {
+    padding-bottom: 4px;
+  }
+
+  .schedule-side .editor-grid {
+    padding-top: 6px;
+  }
+
+  .schedule-side .cal-editor .row {
+    margin-top: 4px;
+  }
+
+  .schedule-side .editor-block h4 {
+    margin-bottom: 3px;
+  }
+
+  .cal-head div {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  /*
+   * Строка выделения и легенда раньше не помещались в 788 пикселей и
+   * переносились на вторую строку, отнимая у календаря 24 пикселя. Без
+   * подписи «Выделить» кнопки и легенда укладываются в одну полосу.
+   */
+  .cal-tools {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
+  .cal-tools .cal-pick {
+    flex: 0 1 auto;
+    flex-wrap: nowrap;
+  }
+
+  .cal-pick-label {
+    display: none;
+  }
+
+  .cal-tools .cal-legend {
+    flex-wrap: nowrap;
+    gap: 9px;
+    font-size: 11px;
+  }
+
+  .cal-event-legend {
+    gap: 3px 10px;
+    font-size: 10.5px;
+  }
+
+  .schedule-main .cal-day {
+    gap: 1px;
+    padding: 2px 5px;
+  }
+
+  .schedule-main .cal-top {
+    min-height: 15px;
+  }
+
+  .schedule-main .cal-num {
+    font-size: 14px;
+    line-height: 1.1;
+  }
+
+  .schedule-main .event-badge {
+    gap: 2px;
+    padding: 0 4px;
+    font-size: 10px;
+    line-height: 1.2;
+  }
+
+  .schedule-main .event-badge svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .schedule-main .cal-away {
+    font-size: 10px;
+    line-height: 1.15;
+  }
+
+  .schedule-main .cal-prime {
+    padding-top: 1px;
+    font-size: 10.5px;
+    line-height: 1.15;
+  }
+
+  /* Шесть недель на низком экране — самый тесный случай: убираем ещё
+     строку отступа сверху и снизу, чтобы содержимое не резалось. */
+  .cal.cal-six .cal-day {
+    gap: 0;
+    padding: 1px 4px;
+  }
+}
+
+/*
+ * Узкий или низкий экран: расписание перестаёт помещаться в один экран.
+ *
+ * В этом случае лучше честная прокрутка, чем клетки по сорок пикселей, в
+ * которые не влезает ни событие, ни имя. Порог по ширине — 1220: правая
+ * колонка занимает 420, и ниже этого календарю остаётся меньше сотни
+ * пикселей на день. Порог по высоте — ниже 620: на 1366×768 вкладка ещё
+ * помещается целиком, а в окне ноутбука с панелями браузера уже нет.
+ */
+@media (max-width: 1220px), (max-height: 620px) {
+  .app-schedule {
+    height: auto;
+    max-width: 1280px;
+    min-height: 100vh;
+    padding: 16px 16px 40px;
+    overflow: visible;
+  }
+
+  .app-schedule main {
+    display: block;
+  }
+
+  .app-schedule .foot {
+    display: block;
+  }
+
+  .schedule-view {
+    height: auto;
+  }
+
+  .schedule-board,
+  .schedule-main {
+    display: block;
+  }
+
+  .schedule-main .cal {
+    display: block;
+  }
+
+  .schedule-main .cal-day {
+    min-height: 62px;
+  }
+
+  .schedule-main .cal-grid {
+    grid-auto-rows: minmax(62px, auto);
+  }
+
+  .schedule-side {
+    flex-basis: auto;
+    margin-top: 12px;
+  }
+
+  .side-scroll {
+    max-height: 420px;
+  }
+
+  .schedule-side .cal-editor {
+    max-height: none;
   }
 }

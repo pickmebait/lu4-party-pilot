@@ -11,15 +11,25 @@ import {
   formatDay,
   formatMinutes,
   formatMonth,
+  formatWeekday,
   isoToday,
   monthGrid,
   parseKey,
+  primeHours,
   primeOf,
   weekDays,
   weekendKeys,
   type DayAbsent,
   type DayCell,
 } from '@/lib/schedule'
+import {
+  GAME_EVENTS,
+  eventSchedule,
+  eventTitle,
+  eventsByDay,
+  eventsOn,
+  type GameEvent,
+} from '@/lib/l2events'
 import {
   addChecklistItem,
   removeChecklistItem,
@@ -29,26 +39,25 @@ import {
 import { isMarked, toggleChecklist, useChecklistMarks } from '@/lib/checklistSession'
 import { useAccess, useOwnCharName } from '@/lib/access'
 import { РедакторДней } from './ScheduleEditor'
-import { IconClose } from './Icons'
+import { IconCastle, IconClose, IconCrown, IconDrop, IconFlame, IconShield } from './Icons'
 import { ScheduleNote } from './ReadOnlyNote'
 
-/**
- * Переключатель из двух вариантов — «на весь день» или «на окно».
- *
- * Обычный флажок прятал за собой всё, что появлялось при его снятии: чтобы
- * добраться до времени ухода, надо было сначала догадаться, что флажок
- * вообще снимается, и только потом увидеть поля. Здесь оба варианта видны
- * сразу, и выбранный отмечен.
- */
-
-
 /*
- * Сколько имён влезает в угол клетки дня.
+ * Сколько имён влезает в клетку дня.
  *
- * Три: угол узкий, а четыре строки в него уже не входят. Остальные сворачиваются
- * в «ещё N», и наведение на него раскрывает весь список.
+ * Клетки стали крупнее, но строка отсутствующих должна оставаться одной:
+ * три имени столбиком уже наезжали на значки событий и время прайма. Два
+ * имени читаются, остальные сворачиваются в «ещё N», а полный список с
+ * временем ухода остаётся в подсказке клетки и в сводке справа.
  */
-const ИМЁН_В_ЯЧЕЙКЕ = 3
+const ИМЁН_В_ЯЧЕЙКЕ = 2
+
+/** Месяц в шапке: часы прайма и число выходных. */
+function месяцСловами(часов: number, выходных: number): string {
+  const прайм = часов > 0 ? `${String(часов).replace('.', ',')} ч прайма` : 'прайм не назначен'
+  const отдых = выходных > 0 ? `выходных: ${выходных}` : 'выходных нет'
+  return `${прайм} · ${отдых}`
+}
 
 export function ScheduleView() {
   const db = useDb()
@@ -68,6 +77,7 @@ export function ScheduleView() {
   const [выбор, setВыбор] = useState<string[]>([])
   const [якорь, setЯкорь] = useState<string | null>(null)
   const [кто, setКто] = useState('')
+  const [вкладка, setВкладка] = useState<'день' | 'чеклист'>('день')
   const тянем = useRef(false)
 
   /*
@@ -80,6 +90,12 @@ export function ScheduleView() {
   const герой = мастер ? (кто || db.chars[0]?.id || '') : (свойId ?? '')
 
   const клетки = useMemo(() => monthGrid(месяц), [месяц])
+  /*
+   * В месяце из шести недель строк на одну больше, и клеткам достаётся
+   * меньше высоты. Класс позволяет ужать только такие месяцы: в пятинедельных
+   * номер, события и прайм остаются крупными.
+   */
+  const шестьНедель = клетки.length > 35
   const выбрано = new Set(выбор)
   const границы = выбор.length > 0 ? [выбор[0], выбор[выбор.length - 1]] : null
 
@@ -88,10 +104,13 @@ export function ScheduleView() {
     setВыбор(daysBetween(якорь, key))
   }
 
+  const открытьДень = () => setВкладка('день')
+
   const начать = (клетка: DayCell) => {
     тянем.current = true
     setЯкорь(клетка.key)
     setВыбор([клетка.key])
+    открытьДень()
   }
 
   const закончитьВыбор = () => {
@@ -112,9 +131,18 @@ export function ScheduleView() {
     return (свой || клетки.find((к) => !к.чужой))?.key ?? сегодня
   }, [выбор, клетки, сегодня])
 
-  const выделитьНеделю = () => setВыбор(weekDays(опора))
-  const выделитьВыходные = () => setВыбор(weekendKeys(клетки.filter((к) => !к.чужой).map((к) => к.key)))
-  const выделитьМесяц = () => setВыбор(клетки.filter((к) => !к.чужой).map((к) => к.key))
+  const выделитьНеделю = () => {
+    setВыбор(weekDays(опора))
+    открытьДень()
+  }
+  const выделитьВыходные = () => {
+    setВыбор(weekendKeys(клетки.filter((к) => !к.чужой).map((к) => к.key)))
+    открытьДень()
+  }
+  const выделитьМесяц = () => {
+    setВыбор(клетки.filter((к) => !к.чужой).map((к) => к.key))
+    открытьДень()
+  }
 
   // Кто отсутствует в дни показанного месяца — для метки в клетке.
   const отсутствия = useMemo(
@@ -122,19 +150,21 @@ export function ScheduleView() {
     [db.chars, клетки],
   )
 
+  // Осады и эпические боссы в клетках: общее расписание сервера, не база пати.
+  const события = useMemo(() => eventsByDay(клетки.map((к) => к.key)), [клетки])
+
   const выходныхВМесяце = useMemo(
     () => клетки.filter((к) => !к.чужой && db.schedule.offs.includes(к.key)).length,
     [клетки, db.schedule.offs],
   )
+  const часовПрайма = primeHours(db.schedule, месяц)
 
   return (
-    <section className="view" onMouseUp={закончитьВыбор} onMouseLeave={закончитьВыбор}>
+    <section className="view schedule-view" onMouseUp={закончитьВыбор} onMouseLeave={закончитьВыбор}>
       <div className="view-head">
         <h2>
           Расписание
-          {выходныхВМесяце > 0 && (
-            <span className="head-note">выходных: {выходныхВМесяце}</span>
-          )}
+          <span className="head-note">{месяцСловами(часовПрайма, выходныхВМесяце)}</span>
         </h2>
         <div className="cal-nav">
           <button className="icon-btn" title="Предыдущий месяц" onClick={() => setМесяц(addMonths(месяц, -1))}>
@@ -158,9 +188,9 @@ export function ScheduleView() {
 
       {!мастер && <ScheduleNote имя={имяСвоего} />}
 
-      <div className="cal-layout">
-        <div>
-          <div className="cal">
+      <div className="schedule-board">
+        <div className="schedule-main">
+          <div className={`cal${шестьНедель ? ' cal-six' : ''}`}>
             <div className="cal-head">
               {ДНИ_НЕДЕЛИ.map((д) => (
                 <div key={д} className={д === 'Сб' || д === 'Вс' ? 'weekend' : ''}>
@@ -176,6 +206,7 @@ export function ScheduleView() {
                   клетка={клетка}
                   прайм={primeOf(db.schedule, клетка.key)}
                   отсутствуют={отсутствия.get(клетка.key) ?? []}
+                  события={события.get(клетка.key) ?? []}
                   взят={выбрано.has(клетка.key)}
                   onStart={начать}
                   onEnter={выделитьДо}
@@ -185,105 +216,139 @@ export function ScheduleView() {
           </div>
 
           {/*
-           * Заготовки выделения.
-           *
-           * Мышь остаётся для произвольных диапазонов, но месяц ею обводить
-           * неудобно: двадцать с лишним нажатий и промах на границе, а прайм
-           * обычно ставят сразу на неделю, на выходные или на месяц.
-           */}
-          <div className="cal-pick">
-            <span className="cal-pick-label">Выделить</span>
-            <button
-              className="chip pick"
-              onClick={выделитьНеделю}
-              title="Неделя вокруг последнего выделенного дня, иначе вокруг сегодняшнего"
-            >
-              неделю
-            </button>
-            <button
-              className="chip pick"
-              onClick={выделитьВыходные}
-              title="Субботы и воскресенья показанного месяца"
-            >
-              выходные
-            </button>
-            <button className="chip pick" onClick={выделитьМесяц} title="Все дни показанного месяца">
-              месяц
-            </button>
-            {выбор.length > 0 && (
-              <button className="chip pick" onClick={() => setВыбор([])} title="Снять выделение">
-                снять
+            Легенда событий стоит под календарём, а не в подсказке: значки в
+            клетках должны читаться без наведения на каждую дату по очереди.
+          */}
+          <div className="cal-event-legend" aria-label="События сервера">
+            {GAME_EVENTS.map((event) => (
+              <span
+                key={event.id}
+                className={`event-legend tone-${event.tone}`}
+                title={`${eventTitle(event)} · ${eventSchedule(event)}`}
+              >
+                <EventIcon event={event} />
+                <span>{event.name}</span>
+                <span className="event-legend-time">{event.time}</span>
+              </span>
+            ))}
+          </div>
+
+          {/*
+            Заготовки выделения и расшифровка дней в одной строке: календарь
+            занимает почти весь экран, и ещё две высокие строки под ним
+            заставляли бы прокручивать страницу.
+          */}
+          <div className="cal-tools">
+            <div className="cal-pick">
+              <span
+                className="cal-pick-label"
+                title="Зажмите день и протяните до последнего — или выберите готовый диапазон"
+              >
+                Выделить
+              </span>
+              <button
+                className="chip pick"
+                onClick={выделитьНеделю}
+                title="Неделя вокруг последнего выделенного дня, иначе вокруг сегодняшнего"
+              >
+                неделю
               </button>
+              <button
+                className="chip pick"
+                onClick={выделитьВыходные}
+                title="Субботы и воскресенья показанного месяца"
+              >
+                выходные
+              </button>
+              <button className="chip pick" onClick={выделитьМесяц} title="Все дни показанного месяца">
+                месяц
+              </button>
+              {выбор.length > 0 && (
+                <button className="chip pick" onClick={() => setВыбор([])} title="Снять выделение">
+                  снять
+                </button>
+              )}
+            </div>
+
+            <div className="cal-legend">
+              <span className="legend workday" title="Рабочий день, объявленный на выходном, и сокращённый предпраздничный день">
+                рабочий
+              </span>
+              <span className="legend weekend">выходной</span>
+              <span className="legend holiday">праздник</span>
+              <span className="legend off">выходной пати</span>
+              <span className="legend away">кто-то отсутствует</span>
+            </div>
+          </div>
+        </div>
+
+        <aside className="schedule-side">
+          {/*
+            Сводка и чеклист — две подвкладки одного блока. Раньше они стояли
+            друг под другом и делили высоту, из-за чего обе были тесными, а
+            блок правки уезжал ниже экрана.
+          */}
+          <div className="side-tabs" role="tablist" aria-label="Блок расписания">
+            <button
+              className={`side-tab${вкладка === 'день' ? ' on' : ''}`}
+              role="tab"
+              aria-selected={вкладка === 'день'}
+              onClick={() => setВкладка('день')}
+            >
+              Сводка
+            </button>
+            <button
+              className={`side-tab${вкладка === 'чеклист' ? ' on' : ''}`}
+              role="tab"
+              aria-selected={вкладка === 'чеклист'}
+              onClick={() => setВкладка('чеклист')}
+            >
+              Чеклист
+              {db.schedule.checklist.length > 0 && (
+                <span className="side-tab-count">{db.schedule.checklist.length}</span>
+              )}
+            </button>
+          </div>
+
+          <div className="side-scroll" role="tabpanel">
+            {вкладка === 'день' ? (
+              <DaySummary
+                день={выбор.length > 0 ? выбор[0] : сегодня}
+                выбрано={выбор.length}
+                chars={db.chars}
+                schedule={db.schedule}
+              />
+            ) : (
+              <Checklist />
             )}
           </div>
 
           {/*
-           * Легенда идёт в порядке «рабочий — выходной — праздник»: чем ближе к
-           * началу, тем реже день встречается и тем он обычнее.
-           */}
-          <div className="cal-legend">
-            <span className="legend workday" title="Рабочий день, объявленный на выходном, и сокращённый предпраздничный день">
-              рабочий
-            </span>
-            <span className="legend weekend">выходной</span>
-            <span className="legend holiday">праздник</span>
-            <span className="legend off">выходной пати</span>
-            <span className="legend away">кто-то отсутствует</span>
-          </div>
-
-          {/*
-            Подсказка про выделение всегда на месте, а не только когда пусто:
-            она короткая, а без неё забывают про второй способ — зажать и
-            протянуть.
+            Правка живёт в правой колонке, а не под всей раскладкой. Выбрал
+            дни — блок уже на экране, и не надо прокручивать страницу вниз,
+            чтобы назначить прайм. Сводка над ним прокручивается внутри своей
+            области, поэтому форма не уезжает за край.
           */}
-          <p className="hint cal-hint">
-            Выделите дни: зажмите на первом и проведите до последнего. Одиночный клик
-            выбирает один день.
-          </p>
-        </div>
-
-        <aside className="cal-side">
-          <DaySummary
-            день={выбор.length > 0 ? выбор[0] : сегодня}
-            выбрано={выбор.length}
-            chars={db.chars}
-            schedule={db.schedule}
-          />
-
-          <Checklist />
+          {(мастер || свойId) && границы ? (
+            <РедакторДней
+              выбор={выбор}
+              герой={герой}
+              chars={db.chars}
+              мастер={мастер}
+              onСменаГероя={setКто}
+              onСнятьВыделение={() => setВыбор([])}
+            />
+          ) : (
+            <div className="side-empty">
+              <strong>Выберите дни</strong>
+              <span>
+                Зажмите день в календаре и протяните до последнего — здесь появятся прайм и
+                отметка отсутствия.
+              </span>
+            </div>
+          )}
         </aside>
       </div>
-
-      {/*
-        Редактор — под календарём, где он и стоял, но на всю ширину.
-
-        Правая колонка оказалась для него тесной: блоков два, а места в трёхстах
-        пикселях — одно поле в ряд, и каждый второй ряд уезжал на третью
-        строку. В колонке под календарём чуть лучше, но не хватает: на блок
-        выходило по 377 пикселей, и готовые окна прайма с полями в одну строку
-        не влезали, а три кнопки переносились на третью строку.
-
-        Поэтому панель лежит под всей раскладкой, а не под одной колонкой.
-        Для календаря это то же самое место — он слева и выше, — но оба блока
-        получают по половине экрана и укладываются в два ряда.
-
-        Порядок блоков неслучаен: слева прайм — его ставят чаще, и он первым
-        попадает под курсор после выделения дней; справа отсутствие, которым
-        пользуются реже и по другому поводу.
-
-        Появляется редактор и под токеном персонажа: там он состоит из одного
-        блока и занимает всю ширину, а не половину.
-      */}
-    {(мастер || свойId) && границы && (
-      <РедакторДней
-        выбор={выбор}
-        герой={герой}
-        chars={db.chars}
-        мастер={мастер}
-        onСменаГероя={setКто}
-        onСнятьВыделение={() => setВыбор([])}
-      />
-    )}
     </section>
   )
 }
@@ -305,6 +370,7 @@ function DayBox({
   клетка,
   прайм,
   отсутствуют,
+  события,
   взят,
   onStart,
   onEnter,
@@ -312,6 +378,7 @@ function DayBox({
   клетка: DayCell
   прайм: ReturnType<typeof primeOf>
   отсутствуют: DayAbsent[]
+  события: GameEvent[]
   взят: boolean
   onStart: (к: DayCell) => void
   onEnter: (key: string) => void
@@ -331,15 +398,17 @@ function DayBox({
   if (клетка.сегодня) классы.push('today')
   if (взят) классы.push('picked')
   if (прайм.kind === 'выходной') классы.push('off')
+  if (события.length > 0) классы.push('with-event')
 
   return (
     <button
       className={классы.join(' ')}
       title={[
-        клетка.key,
+        `${formatWeekday(клетка.key)}, ${formatDay(клетка.key, true)}`,
         инфо.праздник ? holidayName(клетка.дата) : '',
         инфо.рабочий ? 'рабочий день, объявленный на выходном' : '',
         инфо.сокращённый ? 'сокращённый рабочий день' : '',
+        ...события.map((e) => `${eventTitle(e)} (${eventSchedule(e)})`),
         прайм.kind === 'окно'
           ? `прайм ${formatMinutes(прайм.window.from)}–${formatMinutes(прайм.window.to)}`
           : прайм.kind === 'выходной'
@@ -352,27 +421,35 @@ function DayBox({
       onMouseDown={() => onStart(клетка)}
       onMouseEnter={() => onEnter(клетка.key)}
     >
-      <span className="cal-num">{клетка.дата.getDate()}</span>
-      {инфо.праздник && (
-        <span className="cal-mark" title={holidayName(клетка.дата)}>
-          ★
+      <span className="cal-top">
+        <span className="cal-num">{клетка.дата.getDate()}</span>
+        <span className="cal-marks">
+          {инфо.праздник && (
+            <span className="cal-mark" title={holidayName(клетка.дата)}>
+              ★
+            </span>
+          )}
+          {инфо.сокращённый && (
+            <span className="cal-mark short" title="Сокращённый предпраздничный день">
+              •
+            </span>
+          )}
+        </span>
+      </span>
+
+      {события.length > 0 && (
+        <span className="cal-events">
+          {события.map((event) => (
+            <EventBadge key={event.id} event={event} />
+          ))}
         </span>
       )}
-      {инфо.сокращённый && (
-        <span className="cal-mark short" title="Сокращённый предпраздничный день">
-          •
-        </span>
-      )}
+
       {/*
-        Имена отсутствующих — целиком, столбиком.
-
-        Раньше в клетке стояла первая буква, а на нескольких людях — счётчик
-        «−3». Буква ничего не говорила: в пати встречаются два Ирока, и по И
-        нельзя было понять, кого именно не ждать. Полные имена читаются сразу.
-
-        Длинные имена и длинные списки уходят за край: имя обрезается
-        многоточием, лишние сворачиваются в «ещё N», а полный список остаётся
-        в подсказке. Без обрезки неделя с отпуском растянула бы календарь.
+        Имена отсутствующих — полные, а не первая буква: в пати встречаются
+        два Ирока, и по «И» нельзя понять, кого именно не ждать. Строка одна:
+        лишние сворачиваются в «ещё N», полный список с временем ухода
+        остаётся в подсказке клетки и в сводке.
       */}
       {отсутствуют.length > 0 && (
         <span className="cal-away" title={`Отсутствуют: ${подписьСписка(отсутствуют)}`}>
@@ -382,30 +459,12 @@ function DayBox({
             </span>
           ))}
 
-          {/*
-            Остальные — за «ещё N», и по наведению на него раскрывается весь
-            список: в угол помещается три, а пати собирается всей, и молча
-            сворачивать шестерых в «ещё 3» значило бы не сказать, кто именно.
-          */}
           {отсутствуют.length > ИМЁН_В_ЯЧЕЙКЕ && (
-            <span className="cal-away-more">
-              ещё {отсутствуют.length - ИМЁН_В_ЯЧЕЙКЕ}
-              <span className="cal-away-pop">
-                {отсутствуют.map((a) => (
-                  <span key={a.charId} className="cal-away-pop-row">
-                    {a.имя}
-                    {!a.absence.whole && (
-                      <span className="cal-away-pop-when">
-                        {formatMinutes(a.absence.window!.from)}–{formatMinutes(a.absence.window!.to)}
-                      </span>
-                    )}
-                  </span>
-                ))}
-              </span>
-            </span>
+            <span className="cal-away-more">ещё {отсутствуют.length - ИМЁН_В_ЯЧЕЙКЕ}</span>
           )}
         </span>
       )}
+
       {прайм.kind === 'окно' && (
         <span className="cal-prime">
           {formatMinutes(прайм.window.from)}–{formatMinutes(прайм.window.to)}
@@ -416,12 +475,45 @@ function DayBox({
   )
 }
 
+/*
+ * Значок и подпись события.
+ *
+ * В клетке достаточно короткого имени и времени; полное название, вид и
+ * повтор остаются в подсказке. В сводке, где места больше, выводится полное
+ * имя — там событие и открывают, чтобы понять, что сегодня вечером.
+ */
+function EventBadge({ event, full = false }: { event: GameEvent; full?: boolean }) {
+  return (
+    <span className={`event-badge tone-${event.tone}${full ? ' full' : ''}`} title={eventTitle(event)}>
+      <EventIcon event={event} />
+      <span className="event-badge-name">{full ? event.name : event.short}</span>
+      <span className="event-badge-time">{event.time}</span>
+    </span>
+  )
+}
+
+function EventIcon({ event, size = 11 }: { event: GameEvent; size?: number }) {
+  switch (event.tone) {
+    case 'queen':
+      return <IconCrown size={size} />
+    case 'water':
+      return <IconDrop size={size} />
+    case 'fire':
+      return <IconFlame size={size} />
+    case 'kh':
+      return <IconShield size={size} />
+    case 'castle':
+      return <IconCastle size={size} />
+  }
+}
+
 /**
- * Сводка по дню: когда прайм, кто не придёт и кто пойдёт из состава.
+ * Сводка по дню: когда прайм, что происходит в игре, кто не придёт и сколько
+ * состава остаётся.
  *
  * Считается по выбранному дню, а если ничего не выбрано — по сегодняшнему.
- * Отдельный список «кто пойдёт» нужен, потому что отсутствия отмечены у
- * немногих, а вопрос «кого я жду вечером» — это про всех остальных.
+ * Список «пойдут» нужен, потому что отсутствия отмечены у немногих, а вопрос
+ * «кого я жду вечером» — это про всех остальных.
  */
 function DaySummary({
   день,
@@ -435,25 +527,60 @@ function DaySummary({
   schedule: Schedule
 }) {
   const прайм = primeOf(schedule, день)
+  const события = eventsOn(день)
+  const состав = chars.filter((c) => c.affil === 'roster')
   const уходят = chars.filter((c) => c.away?.[день])
-  const пойдут = chars.filter((c) => c.affil === 'roster' && !c.away?.[день])
+  const пойдут = состав.filter((c) => !c.away?.[день])
+  const процент = состав.length ? Math.round((пойдут.length / состав.length) * 100) : 0
+  const длительность = прайм.kind === 'окно' ? прайм.window.to - прайм.window.from : 0
 
   return (
     <div className="day-sum">
-      <h4>Сводка по дню</h4>
       <div className="sum-date">
-        {выбрано > 1 ? `выбранные дни · ${выбрано} шт.` : formatDay(день, true)}
+        {formatWeekday(день)}, {formatDay(день, true)}
+        {выбрано > 1 && <span className="sum-selected">первый из {выбрано}</span>}
       </div>
 
       <div className={`sum-prime${прайм.kind === 'выходной' ? ' off' : ''}`}>
         {прайм.kind === 'окно'
           ? `${formatMinutes(прайм.window.from)}–${formatMinutes(прайм.window.to)}`
           : прайм.kind === 'выходной'
-            ? 'выходной'
+            ? 'выходной пати'
             : 'время не назначено'}
+        {длительность > 0 && (
+          <span className="sum-prime-hours">{String(Math.round(длительность / 6) / 10).replace('.', ',')} ч</span>
+        )}
       </div>
 
-<div className="sum-block">
+      {события.length > 0 && (
+        <div className="sum-events">
+          {события.map((event) => (
+            <EventBadge key={event.id} event={event} full />
+          ))}
+        </div>
+      )}
+
+      <div className="sum-stats">
+        <span className="sum-stat">
+          <b>{пойдут.length}</b> придут
+        </span>
+        <span className={`sum-stat${уходят.length > 0 ? ' bad' : ''}`}>
+          <b>{уходят.length}</b> не придут
+        </span>
+        <span className="sum-stat">
+          <b>{состав.length}</b> в составе
+        </span>
+      </div>
+
+      <div
+        className="sum-bar"
+        title={`Придут ${пойдут.length} из ${состав.length} состава`}
+        aria-label={`Придут ${пойдут.length} из ${состав.length} состава`}
+      >
+        <span style={{ width: `${процент}%` }} />
+      </div>
+
+      <div className="sum-block">
         <div className="sum-title">Не придут: {уходят.length}</div>
         {уходят.length === 0 ? (
           <p className="hint">все на месте</p>
@@ -474,7 +601,9 @@ function DaySummary({
 
       <div className="sum-block">
         <div className="sum-title">Пойдут из состава: {пойдут.length}</div>
-        {пойдут.length === 0 ? (
+        {chars.length === 0 ? (
+          <p className="hint">в пати пока никого нет</p>
+        ) : пойдут.length === 0 ? (
           <p className="hint">в составе никого не осталось</p>
         ) : (
           <ul className="sum-list">
@@ -491,9 +620,9 @@ function DaySummary({
 /**
  * Строка обоих списков сводки: ник, а под ним профессия с уровнем.
  *
- * Одна на оба списка. Списки про об одном составе, и разъезжаться им
- * незачем: если «Не придут» подробнее, а «Пойдут» с одним ником, то
- * непонятно, где вообще смотреть подробности.
+ * Одна на оба списка. Списки про одном составе, и разъезжаться им незачем:
+ * если «Не придут» подробнее, а «Пойдут» с одним ником, то непонятно, где
+ * вообще смотреть подробности.
  *
  * Ник, профессия и уровень идут тремя строками фактов. Одного ника мало: в
  * пати есть два Ироки, и по списку не понять, кого именно спрашивать.
@@ -525,17 +654,14 @@ function СтрокаСводки({
   )
 }
 
-
-
 /*
  * Чеклист к прайму.
  *
- * Стоит под календарйем, а не рядом со сводкой по дню, потому что он не
- * про конкретный день: список «что проверить перед входом» один на всех и
- * каждый день, а рядом со сводкой он читался как часть того дня.
- *
- * Пункты общие для пати, отметки — только в этой вкладке. Иначе выходит,
- * что один человек отметил всё и остальным показалось, что уже готово.
+ * Живёт во второй подвкладке правого блока: список «что проверить перед
+ * входом» один на всех и каждый день, а рядом со сводкой по дню он читался
+ * как часть конкретного дня. Пункты общие для пати, отметки — только в этой
+ * вкладке. Иначе выходит, что один человек отметил всё и остальным
+ * показалось, что уже готово.
  */
 function Checklist() {
   const db = useDb()
@@ -546,6 +672,7 @@ function Checklist() {
   const пункты = db.schedule.checklist
   useChecklistMarks()
   const готово = пункты.filter((i) => isMarked(i.id)).length
+  const процент = пункты.length ? Math.round((готово / пункты.length) * 100) : 0
 
   const добавить = () => {
     if (!новый.trim()) return
@@ -555,14 +682,24 @@ function Checklist() {
 
   return (
     <div className="checklist">
-      <h4>
-        Чеклист к прайму
+      <div className="checklist-head">
+        <h4>Чеклист к прайму</h4>
         {пункты.length > 0 && (
           <span className="checklist-count">
-            {готово} из {пункты.length} · только в этой вкладке
+            {готово} из {пункты.length}
           </span>
         )}
-      </h4>
+      </div>
+
+      {пункты.length > 0 && (
+        <div
+          className="checklist-bar"
+          title={`Отмечено ${готово} из ${пункты.length}`}
+          aria-label={`Отмечено ${готово} из ${пункты.length}`}
+        >
+          <span style={{ width: `${процент}%` }} />
+        </div>
+      )}
 
       {пункты.length === 0 ? (
         <p className="hint">Пусто. Добавьте, что нужно проверить перед праймом.</p>
@@ -614,6 +751,8 @@ function Checklist() {
           </button>
         </div>
       )}
+
+      <p className="hint checklist-note">Отметки живут только в этой вкладке и не сохраняются в пати.</p>
     </div>
   )
 }

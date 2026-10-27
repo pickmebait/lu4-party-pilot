@@ -296,6 +296,12 @@ export function formatDay(key: string, withYear = false): string {
   return withYear ? `${база} ${d.getFullYear()}` : база
 }
 
+/** День недели полностью: «понедельник». */
+export function formatWeekday(key: string): string {
+  const дни = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота']
+  return дни[parseKey(key).getDay()]
+}
+
 /**
  * «выходной» или «выходные» — по числу выбранных дней.
  *

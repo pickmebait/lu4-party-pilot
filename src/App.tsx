@@ -143,7 +143,7 @@ export default function App() {
   if (!session) return <Login onDone={() => undefined} />
 
   return (
-    <div className="app">
+    <div className={`app${tab === 'schedule' ? ' app-schedule' : ''}`}>
       <header className="top">
         <div className="brand">
           <span className="logo">⚔</span>
