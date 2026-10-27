@@ -1,0 +1,20 @@
+{
+  "partyId": "v2zd6rc5gf",
+  "name": "WWWW",
+  "createdAt": "2026-10-27T04:37:13.674Z",
+  "masterHash": "5ab85dc1eece8fde76a0d3808a351ee7270d35c424c9455bab649d7fa658ee02",
+  "tokens": [],
+  "db": {
+    "version": 1,
+    "updatedAt": "2026-10-27T04:37:13.674Z",
+    "updatedBy": "",
+    "chars": [],
+    "warehouse": {
+      "stacks": [],
+      "log": []
+    },
+    "goals": [],
+    "sets": [],
+    "customNames": {}
+  }
+}
