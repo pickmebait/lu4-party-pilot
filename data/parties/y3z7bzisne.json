@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-27T07:39:52.230Z",
+    "updatedAt": "2026-10-28T17:57:46.943Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -263,56 +263,30 @@
                 }
               ],
               "head": [
-                {
-                  "itemId": 2415,
-                  "mod": 3
-                }
+                null
               ],
               "chest": [
-                {
-                  "itemId": 2406,
-                  "mod": 4
-                }
+                null
               ],
               "legs": [
-                {
-                  "itemId": 2406,
-                  "mod": 4,
-                  "spans": true
-                }
+                null
               ],
               "gloves": [
-                {
-                  "itemId": 5716,
-                  "mod": 3
-                }
+                null
               ],
               "feet": [
-                {
-                  "itemId": 5732,
-                  "mod": 3
-                }
+                null
               ],
               "neck": [
-                {
-                  "itemId": 918
-                }
+                null
               ],
               "ear": [
-                {
-                  "itemId": 856
-                },
-                {
-                  "itemId": 856
-                }
+                null,
+                null
               ],
               "ring": [
-                {
-                  "itemId": 887
-                },
-                {
-                  "itemId": 887
-                }
+                null,
+                null
               ]
             }
           },
@@ -8156,6 +8130,196 @@
             "sa": "Health",
             "rare": true
           }
+        ]
+      },
+      {
+        "ts": "2026-10-28T17:57:39.310Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "head",
+        "subId": "smvjom1e73m4i48",
+        "было": [
+          {
+            "itemId": 2415,
+            "mod": 3
+          }
+        ],
+        "стало": [
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-28T17:57:40.075Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "chest",
+        "subId": "smvjom1e73m4i48",
+        "было": [
+          {
+            "itemId": 2406,
+            "mod": 4
+          }
+        ],
+        "стало": [
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-28T17:57:40.075Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "legs",
+        "subId": "smvjom1e73m4i48",
+        "было": [
+          {
+            "itemId": 2406,
+            "mod": 4
+          }
+        ],
+        "стало": [
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-28T17:57:40.800Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "gloves",
+        "subId": "smvjom1e73m4i48",
+        "было": [
+          {
+            "itemId": 5716,
+            "mod": 3
+          }
+        ],
+        "стало": [
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-28T17:57:41.411Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "feet",
+        "subId": "smvjom1e73m4i48",
+        "было": [
+          {
+            "itemId": 5732,
+            "mod": 3
+          }
+        ],
+        "стало": [
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-28T17:57:42.287Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "neck",
+        "subId": "smvjom1e73m4i48",
+        "было": [
+          {
+            "itemId": 918,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-28T17:57:42.750Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "ear",
+        "subId": "smvjom1e73m4i48",
+        "было": [
+          {
+            "itemId": 856,
+            "mod": 0
+          },
+          {
+            "itemId": 856,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          null,
+          {
+            "itemId": 856,
+            "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-28T17:57:43.197Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "ear",
+        "subId": "smvjom1e73m4i48",
+        "было": [
+          null,
+          {
+            "itemId": 856,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          null,
+          null
+        ]
+      },
+      {
+        "ts": "2026-10-28T17:57:43.740Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "ring",
+        "subId": "smvjom1e73m4i48",
+        "было": [
+          {
+            "itemId": 887,
+            "mod": 0
+          },
+          {
+            "itemId": 887,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          null,
+          {
+            "itemId": 887,
+            "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-10-28T17:57:44.149Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "ring",
+        "subId": "smvjom1e73m4i48",
+        "было": [
+          null,
+          {
+            "itemId": 887,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          null,
+          null
         ]
       }
     ]
