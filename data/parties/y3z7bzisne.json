@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-28T18:04:21.856Z",
+    "updatedAt": "2026-10-29T00:52:17.249Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -1762,7 +1762,42 @@
       "stacks": [],
       "log": []
     },
-    "goals": [],
+    "goals": [
+      {
+        "id": "gmvstwbvg1",
+        "items": [
+          {
+            "itemId": 5772,
+            "mod": 6,
+            "count": 1,
+            "готово": false
+          },
+          {
+            "itemId": 5784,
+            "mod": 6,
+            "count": 1,
+            "готово": false
+          },
+          {
+            "itemId": 2418,
+            "mod": 6,
+            "count": 1,
+            "готово": false
+          },
+          {
+            "itemId": 2394,
+            "mod": 6,
+            "count": 1,
+            "готово": false
+          }
+        ],
+        "priority": 2,
+        "seeker": "Мастер",
+        "forCharId": "cmvjobl1z1pc1lm",
+        "создатель": "Мастер",
+        "note": "нужны рецы, куски и точки"
+      }
+    ],
     "sets": [],
     "customNames": {},
     "schedule": {
