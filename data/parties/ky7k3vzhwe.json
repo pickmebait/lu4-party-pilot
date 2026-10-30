@@ -6,7 +6,7 @@
   "tokens": [],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-23T14:14:01.881Z",
+    "updatedAt": "2026-10-30T09:22:00.826Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -91,8 +91,15 @@
     "sets": [],
     "customNames": {},
     "schedule": {
-      "prime": {},
-      "offs": [],
+      "prime": {
+        "2026-10-31": {
+          "from": 1260,
+          "to": 1410
+        }
+      },
+      "offs": [
+        "2026-10-30"
+      ],
       "checklist": []
     },
     "history": [
