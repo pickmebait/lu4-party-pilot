@@ -417,6 +417,34 @@ const игрок = выдан.json.token
   файл().tokens.length === 1 && файл().tokens[0].charId === 'charTwo',
   'в файле появилась запись о выданном токене',
 )
+шаг(!файл().tokens[0].lastUsedAt, 'у нового токена ещё нет отметки о входе')
+
+/*
+ * Отметка о входе ставится только по явному входу. Проверка сохранённой
+ * сессии при открытии страницы идёт без touch и не должна переписывать файл
+ * пати на каждую перезагрузку.
+ */
+const входБезОтметки = await call('/api/session', { method: 'POST', body: { token: игрок } })
+шаг(
+  входБезОтметки.status === 200 && !файл().tokens[0].lastUsedAt,
+  'проверка сессии без явного входа не ставит отметку',
+  входБезОтметки.status,
+)
+const входСТокеном = await call('/api/session', {
+  method: 'POST',
+  body: { token: игрок, touch: true },
+})
+шаг(
+  входСТокеном.status === 200 && typeof файл().tokens[0].lastUsedAt === 'string',
+  'явный вход записывает время последнего входа',
+  файл().tokens[0].lastUsedAt,
+)
+const отметкаВхода = файл().tokens[0].lastUsedAt
+шаг(
+  /^\d{4}-\d{2}-\d{2}T/.test(отметкаВхода),
+  'время входа хранится полной датой',
+  отметкаВхода,
+)
 
 const неТотПерсонаж = await call('/api/party/tokens', {
   method: 'POST',
@@ -455,6 +483,11 @@ const метаМ = await call('/api/party/meta', { token: мастер })
 шаг(метаМ.json?.tokens?.length === 1, 'мастер видит список выпущенных токенов')
 шаг(метаМ.json?.tokens?.[0]?.hash === undefined, 'в списке токенов нет отпечатков')
 шаг(метаМ.json?.tokens?.[0]?.charName === 'Второй', 'в списке видно имя персонажа')
+шаг(
+  метаМ.json?.tokens?.[0]?.lastUsedAt === отметкаВхода,
+  'мастер видит время последнего входа по токену',
+  метаМ.json?.tokens?.[0]?.lastUsedAt,
+)
 
 const метаИ = await call('/api/party/meta', { token: игрок })
 шаг(

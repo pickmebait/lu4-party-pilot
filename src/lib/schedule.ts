@@ -200,6 +200,62 @@ export function clearPrime(prime: Record<string, PrimeWindow>, keys: string[]): 
 }
 
 /**
+ * Сколько символов помещается в тему прайма.
+ *
+ * Двадцать — предел, после которого подпись перестаёт быть темой и
+ * превращается в заметку: в клетке календаря она всё равно обрежется, а в
+ * сводке займёт строку целиком.
+ */
+export const MAX_PRIME_THEME = 20
+
+/**
+ * Тема прайма в том виде, в котором её можно хранить и показывать.
+ *
+ * Края обрезаются, повторные пробелы схлопываются: человек вставляет тему из
+ * чата, а переносы строк и двойные пробелы в клетке выглядят как поломка.
+ * Длина считается по символам, а не по единицам UTF-16: эмодзи и составные
+ * буквы не должны разрезаться пополам.
+ */
+export function cleanPrimeTheme(value: unknown): string {
+  if (typeof value !== 'string') return ''
+  const текст = value.trim().replace(/\s+/g, ' ')
+  return Array.from(текст).slice(0, MAX_PRIME_THEME).join('')
+}
+
+/**
+ * Записывает тему на дни. Пустая тема удаляет подпись: «стереть» и
+ * «оставить как было» — разные действия, и второе здесь не нужно.
+ */
+export function setPrimeTheme(
+  themes: Record<string, string>,
+  keys: string[],
+  value: unknown,
+): Record<string, string> {
+  const тема = cleanPrimeTheme(value)
+  const out = { ...themes }
+  for (const k of keys) {
+    if (тема) out[k] = тема
+    else delete out[k]
+  }
+  return out
+}
+
+/** Снимает темы с дней вместе с их праймом. */
+export function clearPrimeTheme(
+  themes: Record<string, string>,
+  keys: string[],
+): Record<string, string> {
+  const out = { ...themes }
+  for (const k of keys) delete out[k]
+  return out
+}
+
+/** Тема прайма на день; пустая строка, если её нет. */
+export function primeThemeOf(schedule: Schedule, key: string): string {
+  return schedule.primeTheme?.[key] ?? ''
+}
+
+/**
  * Все семь дней недели, в которую попал день.
  *
  * Заготовка под выделение целой недели: месяц мышью обводить — двадцать с

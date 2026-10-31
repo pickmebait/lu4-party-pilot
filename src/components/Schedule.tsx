@@ -17,6 +17,7 @@ import {
   parseKey,
   primeHours,
   primeOf,
+  primeThemeOf,
   weekDays,
   weekendKeys,
   type DayAbsent,
@@ -39,7 +40,7 @@ import {
 import { isMarked, toggleChecklist, useChecklistMarks } from '@/lib/checklistSession'
 import { useAccess, useOwnCharName } from '@/lib/access'
 import { РедакторДней } from './ScheduleEditor'
-import { IconCastle, IconClose, IconCrown, IconDrop, IconFlame, IconShield } from './Icons'
+import { IconClose, IconEvent } from './Icons'
 import { ScheduleNote } from './ReadOnlyNote'
 
 /*
@@ -205,6 +206,7 @@ export function ScheduleView() {
                   key={клетка.key}
                   клетка={клетка}
                   прайм={primeOf(db.schedule, клетка.key)}
+                  тема={primeThemeOf(db.schedule, клетка.key)}
                   отсутствуют={отсутствия.get(клетка.key) ?? []}
                   события={события.get(клетка.key) ?? []}
                   взят={выбрано.has(клетка.key)}
@@ -223,10 +225,10 @@ export function ScheduleView() {
             {GAME_EVENTS.map((event) => (
               <span
                 key={event.id}
-                className={`event-legend tone-${event.tone}`}
+                className="event-legend"
                 title={`${eventTitle(event)} · ${eventSchedule(event)}`}
               >
-                <EventIcon event={event} />
+                <EventIcon />
                 <span>{event.name}</span>
                 <span className="event-legend-time">{event.time}</span>
               </span>
@@ -369,6 +371,7 @@ function подписьСписка(список: DayAbsent[]): string {
 function DayBox({
   клетка,
   прайм,
+  тема,
   отсутствуют,
   события,
   взят,
@@ -377,6 +380,7 @@ function DayBox({
 }: {
   клетка: DayCell
   прайм: ReturnType<typeof primeOf>
+  тема: string
   отсутствуют: DayAbsent[]
   события: GameEvent[]
   взят: boolean
@@ -410,7 +414,7 @@ function DayBox({
         инфо.сокращённый ? 'сокращённый рабочий день' : '',
         ...события.map((e) => `${eventTitle(e)} (${eventSchedule(e)})`),
         прайм.kind === 'окно'
-          ? `прайм ${formatMinutes(прайм.window.from)}–${formatMinutes(прайм.window.to)}`
+          ? `прайм ${formatMinutes(прайм.window.from)}–${formatMinutes(прайм.window.to)}${тема ? `, тема: ${тема}` : ''}`
           : прайм.kind === 'выходной'
             ? 'выходной пати'
             : 'прайм не назначен',
@@ -437,11 +441,33 @@ function DayBox({
         </span>
       </span>
 
+      {/*
+        Выходной пати — сразу под номером, а не последней строкой клетки.
+        Внизу он стоял на месте времени и читался как ещё одно значение дня;
+        рядом с числом видно, что это решение про весь день, а не про вечер.
+      */}
+      {прайм.kind === 'выходной' && (
+        <span className="cal-off" title="Выходной пати — в этот день не собираемся">
+          выходной
+        </span>
+      )}
+
       {события.length > 0 && (
         <span className="cal-events">
           {события.map((event) => (
             <EventBadge key={event.id} event={event} />
           ))}
+        </span>
+      )}
+
+      {/*
+        Тема прайма — одна строка с обрезкой. Полный текст остаётся в
+        подсказке: двадцать символов в клетку помещаются не всегда, а
+        переносить подпись на вторую строку значит вытеснить отсутствия.
+      */}
+      {прайм.kind === 'окно' && тема && (
+        <span className="cal-theme" title={`Тема прайма: ${тема}`}>
+          {тема}
         </span>
       )}
 
@@ -470,7 +496,6 @@ function DayBox({
           {formatMinutes(прайм.window.from)}–{formatMinutes(прайм.window.to)}
         </span>
       )}
-      {прайм.kind === 'выходной' && <span className="cal-prime off">выходной</span>}
     </button>
   )
 }
@@ -484,27 +509,24 @@ function DayBox({
  */
 function EventBadge({ event, full = false }: { event: GameEvent; full?: boolean }) {
   return (
-    <span className={`event-badge tone-${event.tone}${full ? ' full' : ''}`} title={eventTitle(event)}>
-      <EventIcon event={event} />
+    <span className={`event-badge${full ? ' full' : ''}`} title={eventTitle(event)}>
+      <EventIcon />
       <span className="event-badge-name">{full ? event.name : event.short}</span>
       <span className="event-badge-time">{event.time}</span>
     </span>
   )
 }
 
-function EventIcon({ event, size = 11 }: { event: GameEvent; size?: number }) {
-  switch (event.tone) {
-    case 'queen':
-      return <IconCrown size={size} />
-    case 'water':
-      return <IconDrop size={size} />
-    case 'fire':
-      return <IconFlame size={size} />
-    case 'kh':
-      return <IconShield size={size} />
-    case 'castle':
-      return <IconCastle size={size} />
-  }
+/*
+ * Значок события один на все виды.
+ *
+ * Раньше у королевы была корона, у Орфена капля, у Кора пламя, у осад щит и
+ * башня. Пять разных рисунков в маленькой клетке читались как пять разных
+ * категорий, хотя это одно и то же — «сегодня вечером событие сервера».
+ * Общая звезда уравнивает их и оставляет название главным.
+ */
+function EventIcon({ size = 11 }: { size?: number }) {
+  return <IconEvent size={size} />
 }
 
 /**
@@ -527,6 +549,7 @@ function DaySummary({
   schedule: Schedule
 }) {
   const прайм = primeOf(schedule, день)
+  const тема = primeThemeOf(schedule, день)
   const события = eventsOn(день)
   const состав = chars.filter((c) => c.affil === 'roster')
   const уходят = chars.filter((c) => c.away?.[день])
@@ -550,6 +573,11 @@ function DaySummary({
         {длительность > 0 && (
           <span className="sum-prime-hours">{String(Math.round(длительность / 6) / 10).replace('.', ',')} ч</span>
         )}
+        {прайм.kind === 'окно' && тема && (
+          <span className="sum-theme" title={`Тема прайма: ${тема}`}>
+            {тема}
+          </span>
+        )}
       </div>
 
       {события.length > 0 && (
@@ -561,14 +589,17 @@ function DaySummary({
       )}
 
       <div className="sum-stats">
-        <span className="sum-stat">
-          <b>{пойдут.length}</b> придут
+        <span className="sum-stat ok" title="Сколько человек из состава придёт">
+          <b>{пойдут.length}</b>
+          <span>Придут</span>
         </span>
-        <span className={`sum-stat${уходят.length > 0 ? ' bad' : ''}`}>
-          <b>{уходят.length}</b> не придут
+        <span className={`sum-stat bad${уходят.length > 0 ? ' has' : ''}`} title="Сколько человек отметилось об отсутствии">
+          <b>{уходят.length}</b>
+          <span>Не придут</span>
         </span>
-        <span className="sum-stat">
-          <b>{состав.length}</b> в составе
+        <span className="sum-stat all" title="Весь состав пати">
+          <b>{состав.length}</b>
+          <span>В составе</span>
         </span>
       </div>
 
@@ -580,8 +611,11 @@ function DaySummary({
         <span style={{ width: `${процент}%` }} />
       </div>
 
-      <div className="sum-block">
-        <div className="sum-title">Не придут: {уходят.length}</div>
+      <div className="sum-block sum-block-bad">
+        <div className="sum-title">
+          <span>Не придут</span>
+          <span className="sum-count">{уходят.length}</span>
+        </div>
         {уходят.length === 0 ? (
           <p className="hint">все на месте</p>
         ) : (
@@ -599,8 +633,11 @@ function DaySummary({
         )}
       </div>
 
-      <div className="sum-block">
-        <div className="sum-title">Пойдут из состава: {пойдут.length}</div>
+      <div className="sum-block sum-block-ok">
+        <div className="sum-title">
+          <span>Придут</span>
+          <span className="sum-count">{пойдут.length}</span>
+        </div>
         {chars.length === 0 ? (
           <p className="hint">в пати пока никого нет</p>
         ) : пойдут.length === 0 ? (

@@ -36,7 +36,7 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
     setBusy(true)
     setError(null)
 
-    const res = await openSession(API_URL, t)
+    const res = await openSession(API_URL, t, true)
     if (!res.ok) {
       setBusy(false)
       setError(res.error)

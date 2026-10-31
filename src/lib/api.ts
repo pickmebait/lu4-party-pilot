@@ -18,6 +18,8 @@ export interface TokenInfo {
   /** Имя персонажа на момент чтения: могло смениться после выпуска. */
   charName: string
   createdAt: string
+  /** Когда токеном последний раз входили; null — входа ещё не было. */
+  lastUsedAt?: string | null
 }
 
 export interface PartyInfo {
@@ -447,13 +449,23 @@ export async function createParty(apiUrl: string, name: string): Promise<ApiResu
   })
 }
 
-/** Проверяет токен и узнаёт, в какую пати и с каким правом он ведёт. */
-export async function openSession(apiUrl: string, token: string): Promise<ApiResult<PartyInfo>> {
+/**
+ * Проверяет токен и узнаёт, в какую пати и с каким правом он ведёт.
+ *
+ * touch — отметить вход в списке токенов мастера. Ставится только при явном
+ * входе по токену: проверка сохранённой сессии при открытии страницы идёт
+ * без отметки, иначе каждая перезагрузка переписывала бы файл пати.
+ */
+export async function openSession(
+  apiUrl: string,
+  token: string,
+  touch = false,
+): Promise<ApiResult<PartyInfo>> {
   return call<PartyInfo>(apiUrl, '/api/session', {
     method: 'POST',
     повторяемая: true,
     дубль: true,
-    body: JSON.stringify({ token }),
+    body: JSON.stringify({ token, touch }),
   })
 }
 

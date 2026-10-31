@@ -43,6 +43,13 @@ interface IssuedToken {
   /** Имя на момент выпуска: персонажа могли переименовать. */
   charName: string
   createdAt: string
+  /**
+   * Когда этим токеном последний раз входили.
+   *
+   * Пишется только при явном входе, а не при каждом чтении: иначе каждый
+   * запрос страницы переписывал бы файл пати.
+   */
+  lastUsedAt?: string
 }
 
 interface PartyFile {
@@ -300,7 +307,8 @@ function isIssuedToken(t: unknown): t is IssuedToken {
     typeof v.id === 'string' &&
     typeof v.hash === 'string' &&
     typeof v.charId === 'string' &&
-    typeof v.createdAt === 'string'
+    typeof v.createdAt === 'string' &&
+    (v.lastUsedAt === undefined || typeof v.lastUsedAt === 'string')
   )
 }
 
@@ -311,6 +319,7 @@ async function writeFile(
   party: PartyFile,
   sha: string,
   message: string,
+  waitFresh = true,
 ): Promise<{ ok: true; sha: string } | { error: string; conflict?: boolean }> {
   const r = repo(env)
   const body: Record<string, unknown> = {
@@ -340,8 +349,11 @@ async function writeFile(
    * токену, версия для проверки конфликта, — получит прежнее и откажет по
    * ошибке. Поэтому запись не считается законченной, пока чтение не
    * совпадёт с записанным.
+   *
+   * Отметке о входе ждать незачем: она не влияет на доступ, и задерживать
+   * вход ради того, чтобы список токенов обновился секундой раньше, нельзя.
    */
-  await дождатьсяСвежести(env, partyId, shaОтвет)
+  if (waitFresh) await дождатьсяСвежести(env, partyId, shaОтвет)
 
   return { ok: true, sha: shaОтвет }
 }
@@ -848,6 +860,33 @@ async function openSession(request: Request, env: Env, cors: Cors): Promise<Resp
     )
   }
 
+  /*
+   * Отметка о входе.
+   *
+   * Только при явном входе по токену: проверка сохранённой сессии при каждом
+   * открытии страницы идёт без неё, иначе файл пати переписывался бы на
+   * каждую перезагрузку. Ошибку записи глотаем: вход важнее отметки, а
+   * список токенов просто покажет прежнее время.
+   */
+  if (body?.touch === true) {
+    const сейчас = new Date().toISOString()
+    const tokens = file.data.tokens.map((t) =>
+      t.id === выпущен.id ? { ...t, lastUsedAt: сейчас } : t,
+    )
+    try {
+      await writeFile(
+        env,
+        parsed.partyId,
+        { ...file.data, tokens },
+        file.sha,
+        `${file.data.name}: вход по токену «${выпущен.charName}»`,
+        false,
+      )
+    } catch {
+      // Отметка не должна мешать входу.
+    }
+  }
+
   return json(
     {
       partyId: file.data.partyId,
@@ -891,6 +930,7 @@ async function readMeta(request: Request, env: Env, cors: Cors): Promise<Respons
       charId: t.charId,
       charName: charName(access.file.db, t.charId) ?? t.charName,
       createdAt: t.createdAt,
+      lastUsedAt: t.lastUsedAt ?? null,
     }))
   }
 

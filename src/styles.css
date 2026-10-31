@@ -582,13 +582,19 @@ main {
   margin-bottom: 8px;
 }
 
-/* Список выпущенных токенов: имя, сколько живёт, две кнопки. */
+/* Строка токена: имя и кнопки сверху, две даты — под ними. */
 .party-token {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.party-token-main {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 0;
-  border-bottom: 1px solid var(--line);
 }
 
 /* Имя в списке токенов — целиком, как везде: длина ограничена правилом игры. */
@@ -599,10 +605,23 @@ main {
   font-size: 13px;
 }
 
-.party-token-ago {
-  font-size: 11px;
+.party-token-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  font-size: 10.5px;
   color: var(--muted-dim);
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+
+.party-token-dates span {
   white-space: nowrap;
+}
+
+.party-token-dates .muted {
+  color: var(--muted-dim);
+  opacity: 0.75;
 }
 
 .party-actions {
@@ -1206,9 +1225,22 @@ main {
   border-left-color: var(--line-2);
 }
 
+/*
+ * Сегодняшний день — круг вокруг номера, а не подчёркивание под ним.
+ * Подчёркивание терялось среди звёздочек праздников и точек сокращённых
+ * дней, а заливка круга читается сразу: это «сегодня», а не ещё одна метка.
+ */
 .cal-day.today .cal-num {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 700;
 }
 
 .cal-day.picked {
@@ -1224,6 +1256,42 @@ main {
 
 .cal-mark.short {
   color: var(--muted);
+}
+
+/*
+ * Выходной пати стоит сразу под номером дня.
+ *
+ * Раньше он был последней строкой клетки, на месте времени, и читался как
+ * ещё одно значение вечера. Здесь он рядом с числом: это решение про весь
+ * день, а не про прайм.
+ */
+.cal-off {
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent-deep);
+  color: var(--accent-2);
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/*
+ * Тема прайма в клетке. Одна строка: полный текст лежит в подсказке, а
+ * перенос вытеснил бы из клетки отсутствующих.
+ */
+.cal-theme {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--accent-2);
+  font-size: 10.5px;
+  line-height: 1.25;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /*
@@ -1245,23 +1313,13 @@ main {
 }
 
 /*
- * Выходной пати — это значение на месте времени, а не пустое место, поэтому
- * стоит тем же шрифтом и на том же месте, что и «20:00–23:00». Раньше день
- * гасился целиком и слово зачёркивалось — читалось как «сломанная запись»,
- * а не как «в этот день не собираемся».
- */
-.cal-prime.off {
-  color: var(--accent-2);
-  font-weight: 600;
-}
-
-/*
  * События сервера в клетке.
  *
- * Цвет у каждого события свой и не зависит от палитры: корона, капля, пламя,
- * щит и башня должны узнаваться в любой теме. Фон и рамка собираются из
- * этого же цвета через color-mix, поэтому плашка остаётся тёмной и не
- * перетягивает взгляд с прайма.
+ * Цвет один на все события: КХ, замки и эпические боссы — это одна и та же
+ * категория «сегодня вечером что-то есть», и разные оттенки заставляли
+ * искать в них смысл, которого нет. Фон и рамка собираются из акцента через
+ * color-mix, поэтому плашка остаётся тёмной и не перетягивает взгляд с
+ * прайма.
  */
 .cal-events {
   display: flex;
@@ -1272,7 +1330,7 @@ main {
 }
 
 .event-badge {
-  --ev: var(--muted);
+  --ev: var(--accent-2);
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -1310,26 +1368,6 @@ main {
   font-size: 11.5px;
 }
 
-.tone-queen {
-  --ev: #e8c15a;
-}
-
-.tone-water {
-  --ev: #6fb3e8;
-}
-
-.tone-fire {
-  --ev: #ef8a5a;
-}
-
-.tone-kh {
-  --ev: #b48ae0;
-}
-
-.tone-castle {
-  --ev: #6ec79f;
-}
-
 /*
  * Легенда событий под календарём.
  *
@@ -1356,7 +1394,7 @@ main {
 }
 
 .event-legend svg {
-  color: var(--ev);
+  color: var(--accent-2);
 }
 
 .event-legend-time {
@@ -2253,8 +2291,22 @@ main {
  */
 .chip.pa {
   flex: none;
+  font-family: inherit;
   font-size: 10px;
   padding: 0 7px;
+  cursor: pointer;
+  appearance: none;
+  transition: border-color 0.1s, background 0.1s, color 0.1s;
+}
+
+.chip.pa:hover {
+  border-color: var(--line-2);
+  color: var(--text);
+}
+
+.chip.pa:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .chip.pa.low {
@@ -3923,6 +3975,18 @@ main {
     line-height: 1.1;
   }
 
+  .cal.cal-six .cal-day.today .cal-num {
+    min-width: 22px;
+    height: 22px;
+    padding: 0 4px;
+  }
+
+  .cal.cal-six .cal-off,
+  .cal.cal-six .cal-theme {
+    font-size: 9.5px;
+    line-height: 1.15;
+  }
+
   .cal.cal-six .event-badge {
     gap: 2px;
     padding: 0 4px;
@@ -4126,6 +4190,30 @@ main {
   font-size: 13px;
 }
 
+/* Тема — на всю ширину блока: она длиннее времени и переноситься не должна. */
+.schedule-side .cal-editor .theme-field {
+  margin-top: 6px;
+}
+
+.schedule-side .cal-editor .theme-field .input {
+  width: 100%;
+  padding: 3px 6px;
+  font-size: 12px;
+}
+
+.theme-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.theme-count {
+  color: var(--muted-dim);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
 .schedule-side .block-head {
   min-height: 24px;
   margin-bottom: 5px;
@@ -4221,6 +4309,23 @@ main {
   letter-spacing: 0;
 }
 
+/* Тема прайма рядом со временем: подпись, а не второе время. */
+.sum-theme {
+  max-width: 100%;
+  padding: 2px 8px;
+  overflow: hidden;
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+  background: var(--accent-deep);
+  color: var(--accent-2);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .sum-events {
   display: flex;
   flex-wrap: wrap;
@@ -4240,29 +4345,59 @@ main {
   margin-top: 10px;
 }
 
+/*
+ * Счётчики — плитки с цветом по смыслу.
+ *
+ * Раньше цифра и подпись стояли в одной строке мелким шрифтом, и «сколько
+ * придёт» приходилось вычитывать. Теперь цифра крупная и первая, а цвет
+ * плитки отвечает за смысл до чтения: зелёная — придут, красная — не придут,
+ * нейтральная — весь состав.
+ */
 .sum-stat {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 5px 8px;
+  gap: 3px;
+  padding: 7px 8px 6px;
   background: var(--bg-2);
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: 8px;
   color: var(--muted);
-  font-size: 10.5px;
-  line-height: 1.25;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .sum-stat b {
   color: var(--text);
-  font-size: 19px;
+  font-size: 24px;
   font-weight: 700;
   line-height: 1;
+  letter-spacing: 0;
   font-variant-numeric: tabular-nums;
 }
 
-.sum-stat.bad b {
+.sum-stat.ok {
+  background: color-mix(in srgb, var(--ok) 9%, var(--bg-2));
+  border-color: color-mix(in srgb, var(--ok) 30%, var(--line));
+}
+
+.sum-stat.ok b {
+  color: var(--ok);
+}
+
+.sum-stat.bad.has {
+  background: color-mix(in srgb, #ff9d9d 8%, var(--bg-2));
+  border-color: color-mix(in srgb, #ff9d9d 32%, var(--line));
+}
+
+.sum-stat.bad.has b {
   color: #ff9d9d;
+}
+
+.sum-stat.all {
+  background: var(--bg-3);
 }
 
 /* Полоса явки: доля состава, который придёт. */
@@ -4284,15 +4419,78 @@ main {
   transition: width 0.2s;
 }
 
+/*
+ * Списки явки — карточками, а не голым текстом.
+ *
+ * Заголовок с цветной точкой и счётчиком отделяет «не придут» от «придут»,
+ * а рамка не даёт двум спискам слиться в один. Цвет повторяет плитки:
+ * красный — отсутствия, зелёный — те, кого ждут.
+ */
 .sum-block {
   margin-top: 10px;
+  padding: 8px 9px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.sum-block-bad {
+  border-color: color-mix(in srgb, #ff9d9d 26%, var(--line));
+}
+
+.sum-block-ok {
+  border-color: color-mix(in srgb, var(--ok) 24%, var(--line));
 }
 
 .sum-title {
-  margin-bottom: 4px;
-  color: var(--muted);
-  font-size: 11.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+  color: var(--text);
+  font-size: 12px;
   font-weight: 600;
+}
+
+.sum-title::before {
+  content: '';
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.sum-block-bad .sum-title::before {
+  background: #ff9d9d;
+}
+
+.sum-block-ok .sum-title::before {
+  background: var(--ok);
+}
+
+.sum-count {
+  min-width: 20px;
+  margin-left: auto;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--bg-3);
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 17px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.sum-block-bad .sum-count {
+  background: color-mix(in srgb, #ff9d9d 16%, transparent);
+  color: #ffb3b3;
+}
+
+.sum-block-ok .sum-count {
+  background: color-mix(in srgb, var(--ok) 14%, transparent);
+  color: var(--ok);
 }
 
 .sum-list {
@@ -4306,13 +4504,17 @@ main {
   justify-content: space-between;
   align-items: baseline;
   gap: 8px;
-  padding: 2.5px 0;
+  padding: 4px 0;
   border-bottom: 1px solid color-mix(in srgb, var(--line) 45%, transparent);
-  font-size: 12px;
+  font-size: 12.5px;
 }
 
 .sum-list li:last-child {
   border-bottom: none;
+}
+
+.sum-block-bad .sum-who > span:first-child {
+  color: #ffb3b3;
 }
 
 /* Ник и подпись под ним одной группой: без группы «профессия · уровень»
@@ -4322,6 +4524,10 @@ main {
   flex-direction: column;
   gap: 1px;
   min-width: 0;
+}
+
+.sum-who > span:first-child {
+  font-weight: 600;
 }
 
 .sum-char {
@@ -4448,17 +4654,12 @@ main {
 
 
 /*
- * Сегодняшний день — рамкой по всей клетке. Раньше было подчёркивание под
- * номером, а номер терялся среди звёздочек праздников и точек сокращённых
- * дней: их в клетке может быть и то и другое.
+ * Сегодняшний день — рамкой по всей клетке. Круг вокруг номера стоит в
+ * базовых правилах, а рамка добавляет день к остальным меткам клетки, не
+ * споря с праздником и выделением.
  */
 .cal-day.today {
   box-shadow: inset 0 0 0 2px var(--accent);
-}
-
-.cal-day.today .cal-num {
-  color: var(--accent-2);
-  font-weight: 700;
 }
 
 /*

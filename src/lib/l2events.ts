@@ -25,8 +25,6 @@ export interface GameEvent {
   nearest: string
   /** Через сколько дней повторяется. */
   everyDays: number
-  /** Цвет плашки. Отдельно от названия, чтобы палитра не решала за событие. */
-  tone: 'queen' | 'water' | 'fire' | 'kh' | 'castle'
 }
 
 export const GAME_EVENTS: readonly GameEvent[] = [
@@ -38,7 +36,6 @@ export const GAME_EVENTS: readonly GameEvent[] = [
     time: '20:00',
     nearest: '2026-10-26',
     everyDays: 7,
-    tone: 'queen',
   },
   {
     id: 'orfen',
@@ -48,7 +45,6 @@ export const GAME_EVENTS: readonly GameEvent[] = [
     time: '20:00',
     nearest: '2026-10-28',
     everyDays: 14,
-    tone: 'water',
   },
   {
     id: 'core',
@@ -58,7 +54,6 @@ export const GAME_EVENTS: readonly GameEvent[] = [
     time: '20:00',
     nearest: '2026-11-04',
     everyDays: 14,
-    tone: 'fire',
   },
   {
     id: 'kh-siege',
@@ -68,7 +63,6 @@ export const GAME_EVENTS: readonly GameEvent[] = [
     time: '20:00',
     nearest: '2026-11-05',
     everyDays: 14,
-    tone: 'kh',
   },
   {
     id: 'castle-siege',
@@ -78,7 +72,6 @@ export const GAME_EVENTS: readonly GameEvent[] = [
     time: '18:00',
     nearest: '2026-11-08',
     everyDays: 14,
-    tone: 'castle',
   },
 ]
 

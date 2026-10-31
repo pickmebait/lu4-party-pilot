@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Absence, Char, PrimeWindow } from '@/types'
 import {
+  MAX_PRIME_THEME,
+  cleanPrimeTheme,
   formatDay,
   formatMinutes,
   minutesForField,
@@ -8,6 +10,7 @@ import {
   offWord,
   primeOf,
   primeOn,
+  primeThemeOf,
 } from '@/lib/schedule'
 import {
   assignPrime,
@@ -101,6 +104,8 @@ export function РедакторДней({
   const [окно, setОкно] = useState<PrimeWindow>(ПО_УМОЛЧАНИЮ)
   const [окноУхода, setОкноУхода] = useState<PrimeWindow>(УХОД_ПО_УМОЛЧАНИЮ)
   const [весьДень, setВесьДень] = useState(true)
+  /** Тема прайма, которая уйдёт на выделенные дни вместе со временем. */
+  const [тема, setТема] = useState('')
 
   const первый = выбор[0]
 
@@ -126,6 +131,7 @@ export function РедакторДней({
     const текущее = primeOf(schedule, первый)
     if (текущее.kind === 'окно') setОкно(текущее.window)
     else if (текущее.kind === 'нет') setОкно(ПО_УМОЛЧАНИЮ)
+    setТема(primeThemeOf(schedule, первый))
     const его = все.find((c) => c.id === герой)?.away?.[первый]
     if (его) {
       setВесьДень(его.whole)
@@ -186,13 +192,9 @@ export function РедакторДней({
    * кнопка обещает снять то, чего нет, и привыкает, что она всегда жмётся:
    * человек перестаёт смотреть и однажды нажмёт не туда.
    */
-  const { выходныхВВыборе, естьЧтоОчистить } = useMemo(() => {
-    const { schedule } = getDb()
-    return {
-      выходныхВВыборе: выбор.filter((k) => schedule.offs.includes(k)).length,
-      естьЧтоОчистить: primeOn(schedule, выбор),
-    }
-  }, [выбор])
+  const { schedule: сейчас } = getDb()
+  const выходныхВВыборе = выбор.filter((k) => сейчас.offs.includes(k)).length
+  const естьЧтоОчистить = primeOn(сейчас, выбор)
 
   /*
    * Действия больше не сбрасывают выделение.
@@ -202,9 +204,23 @@ export function РедакторДней({
    * Оставляем дни выделенными: результат виден по клеткам сам собой, а под
    * заголовком редактора написано, что там сейчас стоит.
    */
-  const назначитьПрайм = () => assignPrime(выбор, окно)
-  const очистить = () => clearPrime(выбор)
-  const отметитьВыходной = () => markOffs(выбор)
+  const назначитьПрайм = () => assignPrime(выбор, окно, тема)
+  /*
+   * Вместе с праймом и выходным стирается и поле темы.
+   *
+   * Магазин снимает тему с дней, но поле — отдельное состояние редактора, и
+   * оно перечитывается только при смене выделения. Без этого после
+   * «Назначить выходной» в поле оставалась прежняя подпись, и следующее
+   * «Назначить прайм» возвращало тему, которую человек уже убрал.
+   */
+  const очистить = () => {
+    clearPrime(выбор)
+    setТема('')
+  }
+  const отметитьВыходной = () => {
+    markOffs(выбор)
+    setТема('')
+  }
   const снятьВыходной = () => unmarkOffs(выбор)
 
   const отметитьОтсутствие = () => {
@@ -258,6 +274,8 @@ export function РедакторДней({
             выбор={выбор}
             окно={окно}
             setОкно={setОкно}
+            тема={тема}
+            setТема={setТема}
             выходныхВВыборе={выходныхВВыборе}
             естьЧтоОчистить={естьЧтоОчистить}
             onНазначить={назначитьПрайм}
@@ -292,6 +310,8 @@ function ПраймБлок({
   выбор,
   окно,
   setОкно,
+  тема,
+  setТема,
   выходныхВВыборе,
   естьЧтоОчистить,
   onНазначить,
@@ -302,6 +322,8 @@ function ПраймБлок({
   выбор: string[]
   окно: PrimeWindow
   setОкно: (окно: PrimeWindow) => void
+  тема: string
+  setТема: (тема: string) => void
   выходныхВВыборе: number
   естьЧтоОчистить: boolean
   onНазначить: () => void
@@ -336,6 +358,36 @@ function ПраймБлок({
       </div>
 
       {/*
+        Тема — короткая подпись к прайму: «КХ», «фарм», «осада». Сохраняется
+        вместе со временем: это одна запись о дне, и отдельная кнопка «только
+        тему» заставляла бы гадать, применилась ли правка.
+
+        Счётчик стоит в подписи, а не под полем: двадцать символов — предел,
+        после которого подпись перестаёт помещаться в клетку, и видеть
+        оставшееся место надо до того, как упрёшься в обрезку.
+      */}
+      <label className="theme-field" title="Короткая тема прайма: до 20 символов">
+        <span className="theme-label">
+          тема прайма
+          <span className="theme-count">
+            {Array.from(тема).length}/{MAX_PRIME_THEME}
+          </span>
+        </span>
+        <input
+          className="input"
+          value={тема}
+          maxLength={MAX_PRIME_THEME}
+          placeholder="например, КХ"
+          onChange={(e) => setТема(e.target.value)}
+          onBlur={() => setТема(cleanPrimeTheme(тема))}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !перевёрнуто) onНазначить()
+            e.stopPropagation()
+          }}
+        />
+      </label>
+
+      {/*
         Порядок кнопок — по тому, чем пользуются: назначить прайм,
         объявить выходной, снять всё.
 
@@ -347,7 +399,7 @@ function ПраймБлок({
         назначает, — ровно как не говорило назначение прайма.
       */}
       <div className="row">
-        <button className="btn primary" disabled={перевёрнуто} onClick={onНазначить}>
+        <button className="btn primary" disabled={перевёрнуто} onClick={onНазначить} title="Сохранить время и тему на выбранные дни">
           Назначить прайм
         </button>
         {выходныхВВыборе === выбор.length ? (

@@ -54,17 +54,22 @@ import {
 } from './slots'
 import {
   addOffs,
+  cleanPrimeTheme,
   clearPrime as clearPrimeRule,
+  clearPrimeTheme,
   daysBetween,
   isDateKey,
   removeOffs,
   setPrime,
+  setPrimeTheme,
 } from './schedule'
 import { uid } from './util'
 import { привестиНик } from './nick'
 import { fistIds, migrateFistHands } from './migrations'
 
 /**
+ * Версия 11: у дней расписания появилась короткая тема прайма.
+ *
  * Версия 10: у персонажа и саба появились дополнительные наборы оружия.
  *
  * Версия 8: у персонажа появился платный аккаунт.
@@ -83,7 +88,7 @@ import { fistIds, migrateFistHands } from './migrations'
  * необязательно — но её рост виден в базе, и по нему понятно, какие данные
  * приложение уже умеет читать.
  */
-export const DB_VERSION = 10
+export const DB_VERSION = 11
 
 /**
  * Сколько записей об изменении хранится.
@@ -144,7 +149,7 @@ export function emptyDb(): Db {
 
 /** Расписание без праймов — чтобы правила создания не расходились. */
 export function emptySchedule(): Schedule {
-  return { prime: {}, offs: [], checklist: [] }
+  return { prime: {}, primeTheme: {}, offs: [], checklist: [] }
 }
 
 function normalizeDb(raw: unknown): Db {
@@ -403,6 +408,20 @@ function normalizeSchedule(сырое: unknown): Schedule {
     out.offs = [
       ...new Set(offs.filter((k): k is string => typeof k === 'string' && isDateKey(k))),
     ].sort()
+  }
+
+  /*
+   * Темы прайма. Оставляем только непустые подписи на днях, где прайм
+   * действительно есть: тема без времени — это подпись к пустоте, и в
+   * клетке она выглядела бы как событие, которого никто не назначал.
+   */
+  const themes = s.primeTheme
+  if (themes && typeof themes === 'object' && !Array.isArray(themes)) {
+    for (const [key, value] of Object.entries(themes as Record<string, unknown>)) {
+      if (!isDateKey(key) || !(key in out.prime)) continue
+      const тема = cleanPrimeTheme(value)
+      if (тема) out.primeTheme[key] = тема
+    }
   }
 
   /*
@@ -1457,13 +1476,14 @@ export function setSlotMod(
  * записываются», хотя запись была. Сказать «в этот день играем с 20:00» и
  * оставить рядом «выходной» — противоречие, и лучше снимать тот, кто слабее.
  */
-export function assignPrime(days: string[], window: PrimeWindow): void {
+export function assignPrime(days: string[], window: PrimeWindow, theme = ''): void {
   const s = db.schedule
   commit({
     ...db,
     schedule: {
       ...s,
       prime: setPrime(s.prime, days, window),
+      primeTheme: setPrimeTheme(s.primeTheme, days, theme),
       offs: removeOffs(s.offs, days),
     },
   })
@@ -1480,13 +1500,27 @@ export function clearPrime(days: string[]): void {
   const s = db.schedule
   commit({
     ...db,
-    schedule: { ...s, prime: clearPrimeRule(s.prime, days), offs: removeOffs(s.offs, days) },
+    schedule: {
+      ...s,
+      prime: clearPrimeRule(s.prime, days),
+      primeTheme: clearPrimeTheme(s.primeTheme, days),
+      offs: removeOffs(s.offs, days),
+    },
   })
 }
 
 export function markOffs(days: string[]): void {
   const s = db.schedule
-  commit({ ...db, schedule: { ...s, offs: addOffs(s.offs, days) } })
+  commit({
+    ...db,
+    schedule: {
+      ...s,
+      offs: addOffs(s.offs, days),
+      // Выходной отменяет прайм на день, а тема прайма без прайма не значит
+      // ничего: оставлять её скрытой до снятия выходного — хранить загадку.
+      primeTheme: clearPrimeTheme(s.primeTheme, days),
+    },
+  })
 }
 
 /** Снимает выходной. Прайм, назначенный на этот день, остаётся. */

@@ -11,7 +11,7 @@ import {
   type TokenInfo,
 } from '@/lib/api'
 import { getSession, signIn, signOut, updateSession, useDb } from '@/lib/store'
-import { formatAgo } from '@/lib/util'
+import { formatAgo, formatStamp } from '@/lib/util'
 import { ConfirmModal, ПАУЗА_ПАТИ_СЕКУНД } from './ConfirmModal'
 import { TokenModal } from './TokenModal'
 
@@ -309,26 +309,47 @@ export function PartyMenu() {
 
               {токены.map((t) => (
                 <div className="party-token" key={t.id}>
-                  <span className="party-token-name">{t.charName}</span>
-                  <span className="party-token-ago" title={t.createdAt}>
-                    {formatAgo(t.createdAt)}
-                  </span>
-                  <button
-                    className="btn tiny"
-                    disabled={busy === t.id}
-                    title="Выпустить новый токен; прежний перестанет работать"
-                    onClick={() => перевыпустить(t)}
-                  >
-                    Перевыпустить
-                  </button>
-                  <button
-                    className="icon-btn tiny danger"
-                    disabled={busy === t.id}
-                    title="Отозвать токен"
-                    onClick={() => отозвать(t)}
-                  >
-                    ✕
-                  </button>
+                  <div className="party-token-main">
+                    <span className="party-token-name">{t.charName}</span>
+                    <button
+                      className="btn tiny"
+                      disabled={busy === t.id}
+                      title="Выпустить новый токен; прежний перестанет работать"
+                      onClick={() => перевыпустить(t)}
+                    >
+                      Перевыпустить
+                    </button>
+                    <button
+                      className="icon-btn tiny danger"
+                      disabled={busy === t.id}
+                      title="Отозвать токен"
+                      onClick={() => отозвать(t)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  {/*
+                    Даты стоят под именем, а не в одной строке с кнопками:
+                    «создан» и «вход» — по шестнадцать символов каждый, и
+                    рядом с именем и двумя кнопками они вылезали за панель.
+                    Время точное: по нему видно, пользовались ли токеном
+                    вообще, а «два дня назад» на этот вопрос не отвечает.
+                  */}
+                  <div className="party-token-dates">
+                    <span title={`Токен выпущен ${formatAgo(t.createdAt)}`}>
+                      создан {formatStamp(t.createdAt)}
+                    </span>
+                    <span
+                      className={t.lastUsedAt ? undefined : 'muted'}
+                      title={
+                        t.lastUsedAt
+                          ? `Последний вход ${formatAgo(t.lastUsedAt)}`
+                          : 'Этим токеном ещё ни разу не входили'
+                      }
+                    >
+                      {t.lastUsedAt ? `вход ${formatStamp(t.lastUsedAt)}` : 'входов не было'}
+                    </span>
+                  </div>
                 </div>
               ))}
 
