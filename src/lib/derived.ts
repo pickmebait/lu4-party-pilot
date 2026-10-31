@@ -1,5 +1,5 @@
-import type { Char, Db, SetDef, SlotEntry, SlotKey, WeaponSet } from '@/types'
-import { SLOT_KEYS, affiliationOrder, WEAPON_SLOTS } from '@/types'
+import type { ArmorSet, Char, Db, SetDef, SlotEntry, SlotKey, WeaponSet } from '@/types'
+import { ARMOR_SLOTS, SLOT_KEYS, affiliationOrder, WEAPON_SLOTS } from '@/types'
 import { статусЦели, цельВыполнена } from './goals'
 
 /**
@@ -51,12 +51,21 @@ export interface SetProgress {
 export interface ВеткаСлотов {
   slots: Char['slots']
   extraWeaponSets?: readonly WeaponSet[]
+  extraArmorSets?: readonly ArmorSet[]
 }
 
 export function branchesOf(char: Char): ВеткаСлотов[] {
   return [
-    { slots: char.slots, extraWeaponSets: char.extraWeaponSets },
-    ...char.subs.map((s) => ({ slots: s.slots, extraWeaponSets: s.extraWeaponSets })),
+    {
+      slots: char.slots,
+      extraWeaponSets: char.extraWeaponSets,
+      extraArmorSets: char.extraArmorSets,
+    },
+    ...char.subs.map((s) => ({
+      slots: s.slots,
+      extraWeaponSets: s.extraWeaponSets,
+      extraArmorSets: s.extraArmorSets,
+    })),
   ]
 }
 
@@ -73,6 +82,11 @@ export function equippedItemIds(db: Db): Set<number> {
       }
       for (const набор of ветка.extraWeaponSets ?? []) {
         for (const k of WEAPON_SLOTS) {
+          for (const e of набор[k] ?? []) if (e) out.add(e.itemId)
+        }
+      }
+      for (const набор of ветка.extraArmorSets ?? []) {
+        for (const k of ARMOR_SLOTS) {
           for (const e of набор[k] ?? []) if (e) out.add(e.itemId)
         }
       }
@@ -136,6 +150,7 @@ export function computeSets(db: Db): SetProgress[] {
 export function слотыВетки(
   слоты: Char['slots'],
   extraWeaponSets: readonly WeaponSet[] = [],
+  extraArmorSets: readonly ArmorSet[] = [],
 ): { занято: number; всего: number } {
   let занято = 0
   let всего = 0
@@ -146,6 +161,13 @@ export function слотыВетки(
   }
   for (const набор of extraWeaponSets) {
     for (const k of WEAPON_SLOTS) {
+      const ячейки = набор[k] ?? []
+      всего += ячейки.length
+      for (const e of ячейки) if (e) занято += 1
+    }
+  }
+  for (const набор of extraArmorSets) {
+    for (const k of ARMOR_SLOTS) {
       const ячейки = набор[k] ?? []
       всего += ячейки.length
       for (const e of ячейки) if (e) занято += 1
@@ -165,7 +187,7 @@ export function слотыПерсонажа(char: Char): { занято: number
   let занято = 0
   let всего = 0
   for (const ветка of branchesOf(char)) {
-    const счёт = слотыВетки(ветка.slots, ветка.extraWeaponSets)
+    const счёт = слотыВетки(ветка.slots, ветка.extraWeaponSets, ветка.extraArmorSets)
     занято += счёт.занято
     всего += счёт.всего
   }

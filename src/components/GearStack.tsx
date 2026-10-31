@@ -1,18 +1,23 @@
 import {
+  ARMOR_SLOTS,
+  MAX_ARMOR_SETS,
   MAX_WEAPON_SETS,
   SLOT_GROUPS,
   SLOTS,
   WEAPON_SLOTS,
   setLabel,
+  type ArmorSet,
   type Char,
   type SlotEntry,
   type SlotKey,
   type WeaponSet,
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
-import { weaponSetsOf } from '@/lib/slots'
+import { armorSetsOf, weaponSetsOf } from '@/lib/slots'
 import {
+  addArmorSet,
   addWeaponSet,
+  removeArmorSet,
   removeWeaponSet,
   setSlotMod,
   unequipItem,
@@ -25,6 +30,7 @@ export function GearStack({
   ветка,
   слоты,
   допНаборы = [],
+  допБроня = [],
   catalog,
   правый,
   onPick,
@@ -33,12 +39,15 @@ export function GearStack({
   слоты: Char['slots']
   /** Второй и третий наборы оружия: первый уже лежит в слотах. */
   допНаборы?: readonly WeaponSet[]
+  /** Второй и третий наборы брони: первый уже лежит в слотах. */
+  допБроня?: readonly ArmorSet[]
   catalog: CatalogApi
   /** Можно ли править эту ветку. У чужого персонажа — только смотреть. */
   правый: boolean
   onPick: (target: Branch, slot: SlotKey, index: number) => void
 }) {
   const наборы = weaponSetsOf(слоты, допНаборы)
+  const броня = armorSetsOf(слоты, допБроня)
   const основа: Branch = { charId: ветка.charId, subId: ветка.subId }
 
   return (
@@ -84,6 +93,62 @@ export function GearStack({
                 </div>
                 <div className="stack-slots">
                   {WEAPON_SLOTS.map((key) => (
+                    <SlotCells
+                      key={key}
+                      ветка={веткаНабора}
+                      cells={набор[key]}
+                      catalog={catalog}
+                      slot={key}
+                      правый={правый}
+                      onPick={(index) => onPick(веткаНабора, key, index)}
+                    />
+                  ))}
+                </div>
+              </section>
+            )
+          })
+        }
+
+        if (group.key === 'armor') {
+          return броня.map((набор, i) => {
+            const веткаНабора: Branch =
+              i === 0 ? основа : { ...основа, armorSet: i }
+            return (
+              <section
+                key={`armor-${i}`}
+                className={`stack-row stack-armor${i > 0 ? ' extra' : ''}`}
+              >
+                <div className="stack-head">
+                  <h4>
+                    {броня.length > 1 ? `Набор брони ${i + 1}` : 'Броня'}
+                  </h4>
+                  {правый && (
+                    <div className="stack-actions">
+                      {i === броня.length - 1 && броня.length < MAX_ARMOR_SETS && (
+                        <button
+                          type="button"
+                          className="btn tiny"
+                          title="Добавить ещё один набор брони"
+                          onClick={() => addArmorSet(основа)}
+                        >
+                          Добавить набор
+                        </button>
+                      )}
+                      {броня.length > 1 && (
+                        <button
+                          type="button"
+                          className="btn tiny danger"
+                          title={`Удалить набор брони ${i + 1}`}
+                          onClick={() => removeArmorSet(основа, i)}
+                        >
+                          Удалить набор
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div className="stack-slots">
+                  {ARMOR_SLOTS.map((key) => (
                     <SlotCells
                       key={key}
                       ветка={веткаНабора}

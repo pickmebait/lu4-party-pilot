@@ -1,7 +1,9 @@
 import { useSyncExternalStore } from 'react'
 import {
   AFFILIATIONS,
+  ARMOR_SLOTS,
   DEFAULT_AFFILIATION,
+  MAX_ARMOR_SETS,
   MAX_MOD,
   MAX_SUBS,
   MAX_WEAPON_SETS,
@@ -11,6 +13,7 @@ import {
   WEAPON_SLOTS,
   type Affiliation,
   type Absence,
+  type ArmorSet,
   type CatalogItem,
   type Char,
   type ChecklistItem,
@@ -39,6 +42,8 @@ import {
   type Goal,
 } from './goals'
 import {
+  armorSetSlots,
+  emptyArmorSet,
   emptySlots,
   emptyWeaponSet,
   equip,
@@ -214,6 +219,14 @@ function normalizeHistory(сырое: unknown): Изменение[] {
         Number.isFinite(номерНабора) && номерНабора > 0 && номерНабора < MAX_WEAPON_SETS
           ? номерНабора
           : undefined
+      const номерБрони = Math.trunc(Number(з.armorSet))
+      const armorSet =
+        Number.isFinite(номерБрони) &&
+        номерБрони > 0 &&
+        номерБрони < MAX_ARMOR_SETS &&
+        (ARMOR_SLOTS as readonly string[]).includes(з.слот)
+          ? номерБрони
+          : undefined
       out.push({
         ts: з.ts,
         кто,
@@ -222,6 +235,7 @@ function normalizeHistory(сырое: unknown): Изменение[] {
         слот: з.слот as SlotKey,
         subId: typeof з.subId === 'string' ? з.subId : null,
         ...(weaponSet ? { weaponSet } : {}),
+        ...(armorSet ? { armorSet } : {}),
         было: слепокИстории(з.было),
         стало: слепокИстории(з.стало),
       })
@@ -311,6 +325,28 @@ function normalizeExtraWeaponSets(сырое: unknown): WeaponSet[] | undefined 
     .map((набор) => ({
       rhand: normalizeSlotCells('rhand', набор.rhand),
       lhand: normalizeSlotCells('lhand', набор.lhand),
+    }))
+  return out.length > 0 ? out : undefined
+}
+
+/**
+ * Дополнительные наборы брони: второй и третий.
+ *
+ * Приходят из сети, поэтому принимаем только массив объектов и не больше
+ * двух наборов. Пустой набор — это тоже набор: человек нажал «Добавить»,
+ * и прятать его при следующей загрузке значило бы отменять действие.
+ */
+function normalizeExtraArmorSets(сырое: unknown): ArmorSet[] | undefined {
+  if (!Array.isArray(сырое)) return undefined
+  const out = сырое
+    .filter((набор): набор is Record<string, unknown> => !!набор && typeof набор === 'object')
+    .slice(0, MAX_ARMOR_SETS - 1)
+    .map((набор) => ({
+      head: normalizeSlotCells('head', набор.head),
+      chest: normalizeSlotCells('chest', набор.chest),
+      legs: normalizeSlotCells('legs', набор.legs),
+      gloves: normalizeSlotCells('gloves', набор.gloves),
+      feet: normalizeSlotCells('feet', набор.feet),
     }))
   return out.length > 0 ? out : undefined
 }
@@ -431,6 +467,7 @@ function normalizeChar(c: Partial<Char>): Char {
     affil: affilOf(c.affil),
     slots: normalizeSlots(c.slots),
     extraWeaponSets: normalizeExtraWeaponSets(c.extraWeaponSets),
+    extraArmorSets: normalizeExtraArmorSets(c.extraArmorSets),
     contacts: contactsOf(c.contacts),
     // Сабы есть только у тех, кто прошёл квест. Отметка ставится, когда
     // добавлен первый саб: иначе в старой базе с сабами отметка была бы
@@ -472,6 +509,7 @@ function normalizeSub(s: Partial<Sub>): Sub {
     level: Math.max(0, Math.trunc(Number(s.level)) || 0),
     slots: normalizeSlots(s.slots),
     extraWeaponSets: normalizeExtraWeaponSets(s.extraWeaponSets),
+    extraArmorSets: normalizeExtraArmorSets(s.extraArmorSets),
   }
 }
 
@@ -707,6 +745,11 @@ export type Branch = {
    * который лежит в обычных слотах rhand/lhand.
    */
   weaponSet?: number
+  /**
+   * Номер дополнительного набора брони: 1 или 2. Не задан — первый набор,
+   * который лежит в обычных слотах head/chest/legs/gloves/feet.
+   */
+  armorSet?: number
 }
 
 function findChar(charId: string): Char | undefined {
@@ -725,24 +768,36 @@ function extraWeaponSetsOf(char: Char, subId: string | null): WeaponSet[] | unde
   return char.subs.find((s) => s.id === subId)?.extraWeaponSets
 }
 
+/** Дополнительные наборы брони ветки. */
+function extraArmorSetsOf(char: Char, subId: string | null): ArmorSet[] | undefined {
+  if (!subId) return char.extraArmorSets
+  return char.subs.find((s) => s.id === subId)?.extraArmorSets
+}
+
 /**
- * Копия персонажа с новыми слотами и наборами оружия.
+ * Копия персонажа с новыми слотами, наборами оружия и наборами брони.
  *
- * Обе части лежат в одном месте — у основной профессии или у выбранного
- * саба, — поэтому менять их надо вместе: иначе удаление набора, сдвинувшее
- * первый набор на место второго, оставило бы старые слоты в другой ветке.
+ * Всё лежит в одном месте — у основной профессии или у выбранного саба, —
+ * поэтому менять части надо вместе: иначе удаление набора, сдвинувшее первый
+ * набор на место второго, оставило бы старые слоты в другой ветке.
  */
 function withGearParts(
   char: Char,
   subId: string | null,
   slots: Char['slots'],
   extraWeaponSets: WeaponSet[] | undefined,
+  extraArmorSets: ArmorSet[] | undefined,
 ): Char {
-  const extra = extraWeaponSets && extraWeaponSets.length > 0 ? extraWeaponSets : undefined
-  if (!subId) return { ...char, slots, extraWeaponSets: extra }
+  const оружие = extraWeaponSets && extraWeaponSets.length > 0 ? extraWeaponSets : undefined
+  const броня = extraArmorSets && extraArmorSets.length > 0 ? extraArmorSets : undefined
+  if (!subId) {
+    return { ...char, slots, extraWeaponSets: оружие, extraArmorSets: броня }
+  }
   return {
     ...char,
-    subs: char.subs.map((s) => (s.id === subId ? { ...s, slots, extraWeaponSets: extra } : s)),
+    subs: char.subs.map((s) =>
+      s.id === subId ? { ...s, slots, extraWeaponSets: оружие, extraArmorSets: броня } : s,
+    ),
   }
 }
 
@@ -751,13 +806,15 @@ function withGearParts(
  *
  * Правила надевания работают с GearHolder — любым набором слотов, — и
  * правят его на месте. Осталось разложить результат обратно: в основную
- * профессию или в нужного саба, в первый набор или в дополнительный.
+ * профессию или в нужного саба, в первый набор, в дополнительный набор
+ * оружия или в дополнительный набор брони.
  */
 function withGear(
   char: Char,
   subId: string | null,
   mutate: (h: GearHolder) => void,
   weaponSet = 0,
+  armorSet = 0,
 ): Char {
   if (weaponSet > 0) {
     const sets = [...(extraWeaponSetsOf(char, subId) ?? [])]
@@ -774,12 +831,54 @@ function withGear(
       rhand: holder.slots.rhand ?? new Array(SLOTS.rhand.max).fill(null),
       lhand: holder.slots.lhand ?? new Array(SLOTS.lhand.max).fill(null),
     }
-    return withGearParts(char, subId, slotsOf(char, subId), sets)
+    return withGearParts(
+      char,
+      subId,
+      slotsOf(char, subId),
+      sets,
+      extraArmorSetsOf(char, subId),
+    )
+  }
+
+  if (armorSet > 0) {
+    const sets = [...(extraArmorSetsOf(char, subId) ?? [])]
+    const набор = sets[armorSet - 1]
+    if (!набор) return char
+    const holder: GearHolder = {
+      slots: armorSetSlots({
+        head: [...набор.head],
+        chest: [...набор.chest],
+        legs: [...набор.legs],
+        gloves: [...набор.gloves],
+        feet: [...набор.feet],
+      }),
+    }
+    mutate(holder)
+    sets[armorSet - 1] = {
+      head: holder.slots.head ?? new Array(SLOTS.head.max).fill(null),
+      chest: holder.slots.chest ?? new Array(SLOTS.chest.max).fill(null),
+      legs: holder.slots.legs ?? new Array(SLOTS.legs.max).fill(null),
+      gloves: holder.slots.gloves ?? new Array(SLOTS.gloves.max).fill(null),
+      feet: holder.slots.feet ?? new Array(SLOTS.feet.max).fill(null),
+    }
+    return withGearParts(
+      char,
+      subId,
+      slotsOf(char, subId),
+      extraWeaponSetsOf(char, subId),
+      sets,
+    )
   }
 
   const holder: GearHolder = { slots: { ...slotsOf(char, subId) } }
   mutate(holder)
-  return withGearParts(char, subId, holder.slots, extraWeaponSetsOf(char, subId))
+  return withGearParts(
+    char,
+    subId,
+    holder.slots,
+    extraWeaponSetsOf(char, subId),
+    extraArmorSetsOf(char, subId),
+  )
 }
 
 /** Есть ли у персонажа такой саб. Иначе правка ушла бы в никуда. */
@@ -787,15 +886,22 @@ function hasSub(char: Char, subId: string | null): boolean {
   return subId === null || char.subs.some((s) => s.id === subId)
 }
 
-/** Слоты выбранного набора: первого или дополнительного. */
+/** Слоты выбранного набора: первого, дополнительного оружия или брони. */
 function cellsOf(
   char: Char,
   target: Branch,
 ): Partial<Record<SlotKey, (SlotEntry | null)[]>> {
-  const номер = target.weaponSet ?? 0
-  if (номер <= 0) return slotsOf(char, target.subId)
-  const набор = (extraWeaponSetsOf(char, target.subId) ?? [])[номер - 1]
-  return набор ? weaponSetSlots(набор) : {}
+  const номерОружия = target.weaponSet ?? 0
+  if (номерОружия > 0) {
+    const набор = (extraWeaponSetsOf(char, target.subId) ?? [])[номерОружия - 1]
+    return набор ? weaponSetSlots(набор) : {}
+  }
+  const номерБрони = target.armorSet ?? 0
+  if (номерБрони > 0) {
+    const набор = (extraArmorSetsOf(char, target.subId) ?? [])[номерБрони - 1]
+    return набор ? armorSetSlots(набор) : {}
+  }
+  return slotsOf(char, target.subId)
 }
 
 /**
@@ -821,19 +927,43 @@ function diffChar(было: Char, стало: Char, кто: string): Измен�
     subId: string | null
     slots: Char['slots']
     extraWeaponSets?: readonly WeaponSet[]
+    extraArmorSets?: readonly ArmorSet[]
   }
 
   const ветки: ВеткаДляСравнения[] = [
-    { subId: null, slots: было.slots, extraWeaponSets: было.extraWeaponSets },
-    ...было.subs.map((s) => ({ subId: s.id, slots: s.slots, extraWeaponSets: s.extraWeaponSets })),
+    {
+      subId: null,
+      slots: было.slots,
+      extraWeaponSets: было.extraWeaponSets,
+      extraArmorSets: было.extraArmorSets,
+    },
+    ...было.subs.map((s) => ({
+      subId: s.id,
+      slots: s.slots,
+      extraWeaponSets: s.extraWeaponSets,
+      extraArmorSets: s.extraArmorSets,
+    })),
   ]
   const новыеВетки = new Map<string | null, ВеткаДляСравнения>([
-    [null, { subId: null, slots: стало.slots, extraWeaponSets: стало.extraWeaponSets }],
+    [
+      null,
+      {
+        subId: null,
+        slots: стало.slots,
+        extraWeaponSets: стало.extraWeaponSets,
+        extraArmorSets: стало.extraArmorSets,
+      },
+    ],
     ...стало.subs.map(
       (s) =>
         [
           s.id,
-          { subId: s.id, slots: s.slots, extraWeaponSets: s.extraWeaponSets },
+          {
+            subId: s.id,
+            slots: s.slots,
+            extraWeaponSets: s.extraWeaponSets,
+            extraArmorSets: s.extraArmorSets,
+          },
         ] as [string, ВеткаДляСравнения],
     ),
   ])
@@ -880,6 +1010,36 @@ function diffChar(было: Char, стало: Char, кто: string): Измен�
           слот,
           subId: ветка.subId,
           weaponSet: i + 1,
+          было: прежде,
+          стало: теперь,
+        })
+      }
+    }
+
+    /*
+     * Наборы брони сравниваются так же, как наборы оружия: у них нет
+     * собственных слотов в SLOT_KEYS, но броня в них — такая же часть
+     * экипировки, и без этого история молчала бы о правках второго и
+     * третьего наборов. Номер набора отдельный от weaponSet: номера
+     * наборов брони и оружия независимы.
+     */
+    const стараяБроня = ветка.extraArmorSets ?? []
+    const новаяБроня = после?.extraArmorSets ?? []
+    const количествоБрони = Math.max(стараяБроня.length, новаяБроня.length)
+    for (let i = 0; i < количествоБрони; i++) {
+      for (const слот of ARMOR_SLOTS) {
+        const пустые = new Array(SLOT_MAX[слот]).fill(null)
+        const прежде = слепокЯчеек(стараяБроня[i]?.[слот] ?? пустые)
+        const теперь = слепокЯчеек(новаяБроня[i]?.[слот] ?? пустые)
+        if (слепкиРавны(прежде, теперь)) continue
+        записи.push({
+          ts,
+          кто,
+          charId: стало.id,
+          вид: 'слот',
+          слот,
+          subId: ветка.subId,
+          armorSet: i + 1,
           было: прежде,
           стало: теперь,
         })
@@ -1008,7 +1168,13 @@ export function addWeaponSet(target: Branch): number | null {
   const следующие = [...наборы, emptyWeaponSet()]
   commitChar(
     target.charId,
-    withGearParts(char, target.subId, slotsOf(char, target.subId), следующие),
+    withGearParts(
+      char,
+      target.subId,
+      slotsOf(char, target.subId),
+      следующие,
+      extraArmorSetsOf(char, target.subId),
+    ),
   )
   return следующие.length
 }
@@ -1039,7 +1205,13 @@ export function removeWeaponSet(target: Branch, weaponSet: number): void {
     }
     commitChar(
       target.charId,
-      withGearParts(char, target.subId, слоты, остальные),
+      withGearParts(
+        char,
+        target.subId,
+        слоты,
+        остальные,
+        extraArmorSetsOf(char, target.subId),
+      ),
     )
     return
   }
@@ -1049,7 +1221,95 @@ export function removeWeaponSet(target: Branch, weaponSet: number): void {
   наборы.splice(индекс, 1)
   commitChar(
     target.charId,
-    withGearParts(char, target.subId, slotsOf(char, target.subId), наборы),
+    withGearParts(
+      char,
+      target.subId,
+      slotsOf(char, target.subId),
+      наборы,
+      extraArmorSetsOf(char, target.subId),
+    ),
+  )
+}
+
+/**
+ * Добавляет пустой набор брони и возвращает его номер.
+ *
+ * Номер — тот же, что ждёт Branch.armorSet: 1 у второго набора, 2 у
+ * третьего. Первый набор существует всегда и создаётся вместе с веткой.
+ * Отказ здесь, а не только в кнопке: база могла обновиться с сервера, пока
+ * человек смотрел на карточку.
+ */
+export function addArmorSet(target: Branch): number | null {
+  const char = findChar(target.charId)
+  if (!char || !hasSub(char, target.subId)) return null
+  const наборы = extraArmorSetsOf(char, target.subId) ?? []
+  if (1 + наборы.length >= MAX_ARMOR_SETS) return null
+  const следующие = [...наборы, emptyArmorSet()]
+  commitChar(
+    target.charId,
+    withGearParts(
+      char,
+      target.subId,
+      slotsOf(char, target.subId),
+      extraWeaponSetsOf(char, target.subId),
+      следующие,
+    ),
+  )
+  return следующие.length
+}
+
+/**
+ * Удаляет набор брони. Последний набор не удаляется.
+ *
+ * Если удаляют первый, на его место встаёт второй: первый набор — это
+ * обычные слоты брони, и оставлять их пустыми, сдвигая остальные, значило
+ * бы потерять доспех без всякой причины.
+ */
+export function removeArmorSet(target: Branch, armorSet: number): void {
+  const char = findChar(target.charId)
+  if (!char || !hasSub(char, target.subId)) return
+  const наборы = [...(extraArmorSetsOf(char, target.subId) ?? [])]
+  if (1 + наборы.length <= 1) return
+
+  const номер = Math.trunc(armorSet)
+  if (!Number.isFinite(номер) || номер < 0) return
+
+  if (номер === 0) {
+    const [первый, ...остальные] = наборы
+    if (!первый) return
+    const слоты = {
+      ...slotsOf(char, target.subId),
+      head: первый.head,
+      chest: первый.chest,
+      legs: первый.legs,
+      gloves: первый.gloves,
+      feet: первый.feet,
+    }
+    commitChar(
+      target.charId,
+      withGearParts(
+        char,
+        target.subId,
+        слоты,
+        extraWeaponSetsOf(char, target.subId),
+        остальные,
+      ),
+    )
+    return
+  }
+
+  const индекс = номер - 1
+  if (!наборы[индекс]) return
+  наборы.splice(индекс, 1)
+  commitChar(
+    target.charId,
+    withGearParts(
+      char,
+      target.subId,
+      slotsOf(char, target.subId),
+      extraWeaponSetsOf(char, target.subId),
+      наборы,
+    ),
   )
 }
 
@@ -1069,6 +1329,9 @@ export function equipItem(
   if ((target.weaponSet ?? 0) > 0 && !WEAPON_SLOTS.includes(slot as (typeof WEAPON_SLOTS)[number])) {
     return []
   }
+  if ((target.armorSet ?? 0) > 0 && !ARMOR_SLOTS.includes(slot as (typeof ARMOR_SLOTS)[number])) {
+    return []
+  }
 
   let displaced: string[] = []
   const copy = withGear(
@@ -1078,6 +1341,7 @@ export function equipItem(
       displaced = equip(h, slot, index, item, choice)
     },
     target.weaponSet ?? 0,
+    target.armorSet ?? 0,
   )
   commitChar(target.charId, copy)
   return displaced
@@ -1090,6 +1354,9 @@ export function unequipItem(target: Branch, slot: SlotKey, index: number): void 
   if ((target.weaponSet ?? 0) > 0 && !WEAPON_SLOTS.includes(slot as (typeof WEAPON_SLOTS)[number])) {
     return
   }
+  if ((target.armorSet ?? 0) > 0 && !ARMOR_SLOTS.includes(slot as (typeof ARMOR_SLOTS)[number])) {
+    return
+  }
   commitChar(
     target.charId,
     withGear(
@@ -1097,6 +1364,7 @@ export function unequipItem(target: Branch, slot: SlotKey, index: number): void 
       target.subId,
       (h) => unequip(h, slot, index),
       target.weaponSet ?? 0,
+      target.armorSet ?? 0,
     ),
   )
 }
@@ -1147,6 +1415,9 @@ export function setSlotMod(
   if ((target.weaponSet ?? 0) > 0 && !WEAPON_SLOTS.includes(slot as (typeof WEAPON_SLOTS)[number])) {
     return
   }
+  if ((target.armorSet ?? 0) > 0 && !ARMOR_SLOTS.includes(slot as (typeof ARMOR_SLOTS)[number])) {
+    return
+  }
   const cur = cellsOf(char, target)[slot]?.[index]
   if (!cur) return
 
@@ -1169,6 +1440,7 @@ export function setSlotMod(
       }
     },
     target.weaponSet ?? 0,
+    target.armorSet ?? 0,
   )
 
   commitChar(target.charId, copy)

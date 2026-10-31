@@ -74,6 +74,20 @@ export default function App() {
   const session = useSession()
   const [tab, setTab] = useState<Tab>('chars')
 
+  /*
+   * Переключение вкладки начинается сверху.
+   *
+   * Раньше страница прокручивалась целиком, и после «Персонажей» вкладка
+   * «Расписание» открывалась на той же глубине: шапка с меню уезжала вверх,
+   * а человек оказывался в середине чужого раздела. Теперь рамка держит
+   * шапку на месте, но сброс всё равно нужен: содержимое вкладки живёт в
+   * собственной прокрутке, и вернувшись в раздел, его надо показать сначала.
+   */
+  const сменитьВкладку = (next: Tab) => {
+    setTab(next)
+    window.scrollTo(0, 0)
+  }
+
   const catalog = useCatalog(useMemo(() => usedItemIds(db), [db]), db.customNames)
 
   // Считаем сводку до раннего выхода, чтобы порядок хуков не зависел от сессии.
@@ -158,7 +172,7 @@ export default function App() {
 
       <nav className="tabs">
         {TABS.map((t) => (
-          <button key={t.key} className={tab === t.key ? 'on' : ''} onClick={() => setTab(t.key)}>
+          <button key={t.key} className={tab === t.key ? 'on' : ''} onClick={() => сменитьВкладку(t.key)}>
             <span className="tab-label">{t.label}</span>
             <span className="tab-note">{заметка(t.key, sum, db)}</span>
           </button>

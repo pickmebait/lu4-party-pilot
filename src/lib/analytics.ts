@@ -16,6 +16,7 @@
  * предел, расчёты помечают это прямо, иначе вывод читался бы как точный.
  */
 import type {
+  ArmorSet,
   Char,
   Db,
   SetDef,
@@ -24,7 +25,7 @@ import type {
   ВещьВИстории,
   Изменение,
 } from '@/types'
-import { SLOT_KEYS, SLOT_MAX, WEAPON_SLOTS, type SlotKey } from '@/types'
+import { ARMOR_SLOTS, SLOT_KEYS, SLOT_MAX, WEAPON_SLOTS, type SlotKey } from '@/types'
 import { isoKey, parseKey } from './schedule'
 import { branchesOf, computeSets } from './derived'
 import { закрытаВ, цельВыполнена } from './goals'
@@ -386,20 +387,27 @@ function модыЯчеек(ячейки: (SlotEntry | null)[] | undefined): num
  * можно, но ценой отдельной записи в базе, а выигрыш — одна строка в сводке.
  */
 function модыНа(char: Char, история: Изменение[], когда: string): number[] {
-  const ключ = (subId: string | null, слот: SlotKey, weaponSet = 0) =>
-    `${subId ?? ''}|${weaponSet}|${слот}`
+  const ключ = (subId: string | null, слот: SlotKey, weaponSet = 0, armorSet = 0) =>
+    `${subId ?? ''}|w${weaponSet}|a${armorSet}|${слот}`
   const состояние = new Map<string, number[]>()
 
   const ветки: {
     subId: string | null
     slots: Char['slots']
     extraWeaponSets?: readonly WeaponSet[]
+    extraArmorSets?: readonly ArmorSet[]
   }[] = [
-    { subId: null, slots: char.slots, extraWeaponSets: char.extraWeaponSets },
+    {
+      subId: null,
+      slots: char.slots,
+      extraWeaponSets: char.extraWeaponSets,
+      extraArmorSets: char.extraArmorSets,
+    },
     ...char.subs.map((s) => ({
       subId: s.id,
       slots: s.slots,
       extraWeaponSets: s.extraWeaponSets,
+      extraArmorSets: s.extraArmorSets,
     })),
   ]
   for (const ветка of ветки) {
@@ -411,11 +419,19 @@ function модыНа(char: Char, история: Изменение[], когд
         состояние.set(ключ(ветка.subId, слот, i + 1), модыЯчеек(набор[слот]))
       }
     }
+    for (const [i, набор] of (ветка.extraArmorSets ?? []).entries()) {
+      for (const слот of ARMOR_SLOTS) {
+        состояние.set(ключ(ветка.subId, слот, 0, i + 1), модыЯчеек(набор[слот]))
+      }
+    }
   }
 
   for (const з of позже(история, char.id, когда)) {
     if (з.вид !== 'слот') continue
-    состояние.set(ключ(з.subId, з.слот, з.weaponSet ?? 0), модыСлепка(з.было))
+    состояние.set(
+      ключ(з.subId, з.слот, з.weaponSet ?? 0, з.armorSet ?? 0),
+      модыСлепка(з.было),
+    )
   }
 
   return [...состояние.values()].flat()
@@ -423,20 +439,27 @@ function модыНа(char: Char, история: Изменение[], когд
 
 /** Сколько ячеек слота пусто на заданный день. */
 function пустыхНа(char: Char, история: Изменение[], когда: string): number {
-  const ключ = (subId: string | null, слот: SlotKey, weaponSet = 0) =>
-    `${subId ?? ''}|${weaponSet}|${слот}`
+  const ключ = (subId: string | null, слот: SlotKey, weaponSet = 0, armorSet = 0) =>
+    `${subId ?? ''}|w${weaponSet}|a${armorSet}|${слот}`
   const занято = new Map<string, number>()
 
   const ветки: {
     subId: string | null
     slots: Char['slots']
     extraWeaponSets?: readonly WeaponSet[]
+    extraArmorSets?: readonly ArmorSet[]
   }[] = [
-    { subId: null, slots: char.slots, extraWeaponSets: char.extraWeaponSets },
+    {
+      subId: null,
+      slots: char.slots,
+      extraWeaponSets: char.extraWeaponSets,
+      extraArmorSets: char.extraArmorSets,
+    },
     ...char.subs.map((s) => ({
       subId: s.id,
       slots: s.slots,
       extraWeaponSets: s.extraWeaponSets,
+      extraArmorSets: s.extraArmorSets,
     })),
   ]
   for (const ветка of ветки) {
@@ -448,11 +471,19 @@ function пустыхНа(char: Char, история: Изменение[], ко
         занято.set(ключ(ветка.subId, слот, i + 1), модыЯчеек(набор[слот]).length)
       }
     }
+    for (const [i, набор] of (ветка.extraArmorSets ?? []).entries()) {
+      for (const слот of ARMOR_SLOTS) {
+        занято.set(ключ(ветка.subId, слот, 0, i + 1), модыЯчеек(набор[слот]).length)
+      }
+    }
   }
 
   for (const з of позже(история, char.id, когда)) {
     if (з.вид !== 'слот') continue
-    занято.set(ключ(з.subId, з.слот, з.weaponSet ?? 0), модыСлепка(з.было).length)
+    занято.set(
+      ключ(з.subId, з.слот, з.weaponSet ?? 0, з.armorSet ?? 0),
+      модыСлепка(з.было).length,
+    )
   }
 
   let пустых = 0
@@ -463,6 +494,11 @@ function пустыхНа(char: Char, история: Изменение[], ко
     for (let i = 0; i < (ветка.extraWeaponSets ?? []).length; i++) {
       for (const слот of WEAPON_SLOTS) {
         пустых += SLOT_MAX[слот] - (занято.get(ключ(ветка.subId, слот, i + 1)) ?? 0)
+      }
+    }
+    for (let i = 0; i < (ветка.extraArmorSets ?? []).length; i++) {
+      for (const слот of ARMOR_SLOTS) {
+        пустых += SLOT_MAX[слот] - (занято.get(ключ(ветка.subId, слот, 0, i + 1)) ?? 0)
       }
     }
   }
@@ -676,15 +712,16 @@ function заточка(entry: { mod?: number } | null | undefined): number {
 }
 
 /**
- * Ячейки ветки вместе с дополнительными наборами оружия.
+ * Ячейки ветки вместе с дополнительными наборами оружия и брони.
  *
- * В обычных слотах лежит первый набор, в extraWeaponSets — остальные. Для
- * расчёта готовности это одни и те же слоты rhand/lhand, поэтому наборы не
- * различаются: важно, что вещь надета на персонаже.
+ * В обычных слотах лежат первые наборы, в extraWeaponSets и extraArmorSets —
+ * остальные. Для расчёта готовности это одни и те же слоты, поэтому наборы
+ * не различаются: важно, что вещь надета на персонаже.
  */
 function ячейкиВетки(ветка: {
   slots: Char['slots']
   extraWeaponSets?: readonly WeaponSet[]
+  extraArmorSets?: readonly ArmorSet[]
 }): { slot: SlotKey; cells: (SlotEntry | null)[] }[] {
   const out: { slot: SlotKey; cells: (SlotEntry | null)[] }[] = []
   for (const слот of SLOT_KEYS as readonly SlotKey[]) {
@@ -692,6 +729,9 @@ function ячейкиВетки(ветка: {
   }
   for (const набор of ветка.extraWeaponSets ?? []) {
     for (const слот of WEAPON_SLOTS) out.push({ slot: слот, cells: набор[слот] ?? [] })
+  }
+  for (const набор of ветка.extraArmorSets ?? []) {
+    for (const слот of ARMOR_SLOTS) out.push({ slot: слот, cells: набор[слот] ?? [] })
   }
   return out
 }

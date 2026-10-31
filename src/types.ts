@@ -216,9 +216,12 @@ export const SLOTS: Record<string, SlotDef> = {
 /** Слоты, из которых состоит один набор оружия. */
 export const WEAPON_SLOTS = ['rhand', 'lhand'] as const
 
+/** Слоты, из которых состоит один набор брони. */
+export const ARMOR_SLOTS = ['head', 'chest', 'legs', 'gloves', 'feet'] as const
+
 export const SLOT_GROUPS = [
   { key: 'weapon', label: 'Оружие', slots: WEAPON_SLOTS },
-  { key: 'armor', label: 'Броня', slots: ['head', 'chest', 'legs', 'gloves', 'feet'] },
+  { key: 'armor', label: 'Броня', slots: ARMOR_SLOTS },
   { key: 'jewelry', label: 'Бижутерия', slots: ['neck', 'ear', 'ring'] },
 ] as const
 
@@ -278,6 +281,25 @@ export interface WeaponSet {
 
 /** Сколько наборов оружия можно завести на одну ветку. */
 export const MAX_WEAPON_SETS = 3
+
+/**
+ * Один дополнительный набор брони.
+ *
+ * Первый набор живёт в обычных слотах head/chest/legs/gloves/feet: его видно
+ * во всех старых базах, и он не требует отдельного поля. Здесь лежат только
+ * второй и третий наборы. Бижутерия в набор не входит — её не переодевают
+ * вместе с доспехом, и она остаётся общей для всех наборов.
+ */
+export interface ArmorSet {
+  head: (SlotEntry | null)[]
+  chest: (SlotEntry | null)[]
+  legs: (SlotEntry | null)[]
+  gloves: (SlotEntry | null)[]
+  feet: (SlotEntry | null)[]
+}
+
+/** Сколько наборов брони можно завести на одну ветку. */
+export const MAX_ARMOR_SETS = 3
 
 /**
  * Контакты персонажа вне игры.
@@ -345,6 +367,11 @@ export interface Sub {
    * Отсутствие поля значит один набор.
    */
   extraWeaponSets?: WeaponSet[]
+  /**
+   * Второй и третий наборы брони. Первый лежит в slots.head/chest/legs/
+   * gloves/feet. Отсутствие поля значит один набор.
+   */
+  extraArmorSets?: ArmorSet[]
 }
 
 /** Сколько сабов можно добавить на персонажа. */
@@ -368,6 +395,11 @@ export interface Char {
    * Отсутствие поля значит один набор.
    */
   extraWeaponSets?: WeaponSet[]
+  /**
+   * Второй и третий наборы брони. Первый лежит в slots.head/chest/legs/
+   * gloves/feet. Отсутствие поля значит один набор.
+   */
+  extraArmorSets?: ArmorSet[]
   /** Контакты вне игры. Отсутствует, если их не заполняли. */
   contacts?: Contacts
   /**
@@ -564,6 +596,14 @@ export type Изменение =
        * прежними, а аналитика читает их без отдельного случая.
        */
       weaponSet?: number
+      /**
+       * Номер дополнительного набора брони: 1 или 2.
+       *
+       * Поле отдельное от weaponSet: номера наборов брони и оружия
+       * независимы, и один и тот же второй набор может быть только у одного
+       * вида снаряжения.
+       */
+      armorSet?: number
       /**
        * Слот целиком, по ячейкам.
        *

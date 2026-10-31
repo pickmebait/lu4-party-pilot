@@ -156,46 +156,51 @@ body {
 }
 
 .app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 20px 20px 60px;
-}
-
-/*
- * Расписание живёт в один экран.
- *
- * Остальные вкладки — это списки, которые растут вниз, и прокрутка там
- * нормальна. У расписания главное — увидеть месяц и правку одного дня
- * одновременно. Поэтому вкладка забирает высоту окна целиком, а прокрутка
- * остаётся только внутри правой колонки и у длинных списков.
- *
- * max-width шире общего: календарь из семи колонок на 1280 пикселях
- * оставлял бы в клетке по сто сорок, а на широком мониторе места хватает
- * и календарю, и правой колонке.
- */
-.app-schedule {
   height: 100dvh;
   max-width: 1720px;
+  margin: 0 auto;
   padding: 10px 18px 12px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.app-schedule .top {
-  flex: none;
+/*
+ * Общая рамка всех вкладок.
+ *
+ * Шапка и меню стоят на месте, а содержимое раздела живёт в main и
+ * прокручивается внутри него. Раньше страница прокручивалась целиком, и при
+ * переходе на «Расписание» — единственную вкладку с другой шириной и
+ * фиксированной высотой — шапка с меню прыгала вверх и вбок. Теперь ширина,
+ * отступы и положение шапки одинаковы везде, а высота раздела не зависит от
+ * длины списка.
+ *
+ * main — общий контейнер: расписание заполняет его целиком и прокручивает
+ * только свои колонки, остальные вкладки прокручиваются в .view.
+ */
+main {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+}
+
+.view {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding-bottom: 8px;
 }
 
-.app-schedule .tabs {
-  flex: none;
-  margin: 8px 0 10px;
-}
-
+/*
+ * Расписание не прокручивает main: у него собственные прокручиваемые
+ * области — календарь и правая колонка. Внешняя прокрутка здесь только
+ * дублировала бы полосы и уводила шапку из вида.
+ */
 .app-schedule main {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
+  overflow: hidden;
 }
 
 .app-schedule .foot {
@@ -205,12 +210,13 @@ body {
 /* ------------------------------------------------------------------ шапка */
 
 .top {
+  flex: none;
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 16px;
+  padding-bottom: 8px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -650,9 +656,10 @@ body {
 /* -------------------------------------------------------------------- табы */
 
 .tabs {
+  flex: none;
   display: flex;
   gap: 4px;
-  margin: 16px 0 20px;
+  margin: 8px 0 10px;
   border-bottom: 1px solid var(--line);
   flex-wrap: wrap;
 }
@@ -3674,8 +3681,9 @@ body {
 /* ------------------------------------------------------------------- подвал */
 
 .foot {
-  margin-top: 40px;
-  padding-top: 14px;
+  flex: none;
+  margin-top: 8px;
+  padding-top: 6px;
   border-top: 1px solid var(--line);
   font-size: 12px;
   color: var(--muted-dim);
@@ -5096,19 +5104,24 @@ body {
  * номер, событие, имена и прайм остаются целыми строками.
  */
 @media (min-width: 1221px) and (min-height: 621px) and (max-height: 650px) {
-  .app-schedule {
+  /*
+   * Ужимается вся рамка, а не только расписание: шапка и меню должны стоять
+   * на одном месте во всех вкладках. Иначе при переходе на «Расписание» они
+   * сдвигались бы на пару пикселей и выглядели как прыжок.
+   */
+  .app {
     padding: 8px 14px 10px;
   }
 
-  .app-schedule .top {
+  .top {
     padding-bottom: 6px;
   }
 
-  .app-schedule .tabs {
+  .tabs {
     margin: 6px 0 8px;
   }
 
-  .app-schedule .tabs button {
+  .tabs button {
     padding: 6px 12px;
   }
 
@@ -5278,18 +5291,12 @@ body {
  * помещается целиком, а в окне ноутбука с панелями браузера уже нет.
  */
 @media (max-width: 1220px), (max-height: 620px) {
-  .app-schedule {
-    height: auto;
-    max-width: 1280px;
-    min-height: 100vh;
-    padding: 16px 16px 40px;
-    overflow: visible;
-  }
-
-  .app-schedule main {
-    display: block;
-  }
-
+  /*
+   * Расписание перестаёт помещаться в один экран и складывается в колонку,
+   * но рамка остаётся общей: шапка, меню и подвал стоят там же, где у других
+   * вкладок, а прокручивается .view. Раньше здесь отпускалась вся страница,
+   * и при переходе на расписание шапка уезжала вверх вместе с прокруткой.
+   */
   .app-schedule .foot {
     display: block;
   }

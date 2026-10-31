@@ -1,7 +1,10 @@
 import {
+  ARMOR_SLOTS,
+  MAX_ARMOR_SETS,
   MAX_WEAPON_SETS,
   SLOTS,
   WEAPON_SLOTS,
+  type ArmorSet,
   type CatalogItem,
   type Char,
   type ItemEffectChoice,
@@ -70,6 +73,51 @@ export function weaponSetsOf(
 export function weaponSetSlots(набор: WeaponSet): Char['slots'] {
   const слоты: Char['slots'] = {}
   for (const key of WEAPON_SLOTS) слоты[key] = набор[key]
+  return слоты
+}
+
+/** Пустой дополнительный набор брони — пять слотов по одной ячейке. */
+export function emptyArmorSet(): ArmorSet {
+  return {
+    head: new Array(SLOTS.head.max).fill(null),
+    chest: new Array(SLOTS.chest.max).fill(null),
+    legs: new Array(SLOTS.legs.max).fill(null),
+    gloves: new Array(SLOTS.gloves.max).fill(null),
+    feet: new Array(SLOTS.feet.max).fill(null),
+  }
+}
+
+/**
+ * Все наборы брони ветки: первый — из обычных слотов, остальные — из
+ * extraArmorSets. Наборы всегда одного вида, поэтому карточка, строка и
+ * подсчёт слотов не разбирают, откуда взялся второй.
+ */
+export function armorSetsOf(
+  слоты: Char['slots'],
+  extraArmorSets: readonly ArmorSet[] = [],
+): ArmorSet[] {
+  const первый: ArmorSet = {
+    head: слоты.head ?? new Array(SLOTS.head.max).fill(null),
+    chest: слоты.chest ?? new Array(SLOTS.chest.max).fill(null),
+    legs: слоты.legs ?? new Array(SLOTS.legs.max).fill(null),
+    gloves: слоты.gloves ?? new Array(SLOTS.gloves.max).fill(null),
+    feet: слоты.feet ?? new Array(SLOTS.feet.max).fill(null),
+  }
+  return [первый, ...extraArmorSets]
+    .slice(0, MAX_ARMOR_SETS)
+    .map((набор) => ({
+      head: набор.head ?? new Array(SLOTS.head.max).fill(null),
+      chest: набор.chest ?? new Array(SLOTS.chest.max).fill(null),
+      legs: набор.legs ?? new Array(SLOTS.legs.max).fill(null),
+      gloves: набор.gloves ?? new Array(SLOTS.gloves.max).fill(null),
+      feet: набор.feet ?? new Array(SLOTS.feet.max).fill(null),
+    }))
+}
+
+/** Слоты одного дополнительного набора брони в виде обычного набора слотов. */
+export function armorSetSlots(набор: ArmorSet): Char['slots'] {
+  const слоты: Char['slots'] = {}
+  for (const key of ARMOR_SLOTS) слоты[key] = набор[key]
   return слоты
 }
 

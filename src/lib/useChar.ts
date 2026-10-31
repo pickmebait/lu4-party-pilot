@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Char, Sub, WeaponSet } from '@/types'
+import type { ArmorSet, Char, Sub, WeaponSet } from '@/types'
 import { useAccess } from '@/lib/access'
 import { слотыВетки } from '@/lib/derived'
 import type { Branch } from '@/lib/store'
@@ -23,6 +23,8 @@ export interface СостояниеПерсонажа {
   слоты: Char['slots']
   /** Второй и третий наборы оружия выбранной ветки. */
   допНаборы: WeaponSet[]
+  /** Второй и третий наборы брони выбранной ветки. */
+  допБроня: ArmorSet[]
   cls: string
   level: number
   /** Вправе ли этот пользователь править персонажа. */
@@ -45,6 +47,7 @@ export function useПерсонаж(char: Char): СостояниеПерсон�
   const саб = выбранный ? (сабы.find((s) => s.id === выбранный) ?? null) : null
   const правый = canEditChar(char.id)
   const допНаборы = саб ? (саб.extraWeaponSets ?? []) : (char.extraWeaponSets ?? [])
+  const допБроня = саб ? (саб.extraArmorSets ?? []) : (char.extraArmorSets ?? [])
 
   return {
     сабы,
@@ -53,10 +56,11 @@ export function useПерсонаж(char: Char): СостояниеПерсон�
     ветка: { charId: char.id, subId: саб?.id ?? null },
     слоты: саб ? саб.slots : char.slots,
     допНаборы,
+    допБроня,
     cls: саб ? саб.cls : char.cls,
     level: саб ? саб.level : char.level,
     правый,
     свой: правый && ownCharId === char.id,
-    счётчик: слотыВетки(саб ? саб.slots : char.slots, допНаборы),
+    счётчик: слотыВетки(саб ? саб.slots : char.slots, допНаборы, допБроня),
   }
 }
