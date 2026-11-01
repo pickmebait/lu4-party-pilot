@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-01T17:16:37.638Z",
+    "updatedAt": "2026-11-01T17:16:48.130Z",
     "updatedBy": "Sargor",
     "chars": [
       {
@@ -1749,7 +1749,7 @@
         "contacts": {
           "telegram": "@Sarg0r"
         },
-        "subUnlocked": true,
+        "subUnlocked": false,
         "subs": [
           {
             "id": "smvy3dgzy1ks5uj",
