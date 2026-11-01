@@ -1149,10 +1149,11 @@ main {
  * подсказку.
  */
 .cal-day {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 2px;
+  gap: 3px;
   min-height: 62px;
   padding: 4px 6px;
   background: var(--bg-2);
@@ -1162,6 +1163,7 @@ main {
   color: var(--text);
   text-align: left;
   cursor: pointer;
+  overflow: hidden;
   transition: background 0.1s;
 }
 
@@ -1177,8 +1179,36 @@ main {
   min-height: 18px;
 }
 
+/*
+ * Номер дня и подпись «сегодня» стоят рядом.
+ *
+ * Подпись занимает место только у сегодняшнего дня: у остальных клетка
+ * начинается сразу с числа, как и раньше. Обрезается она, а не выталкивает
+ * звёздочку праздника за край.
+ */
+.cal-daynum {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cal-today {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--accent-2);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .cal-marks {
   display: flex;
+  flex: none;
   align-items: center;
   gap: 2px;
 }
@@ -1226,21 +1256,27 @@ main {
 }
 
 /*
- * Сегодняшний день — круг вокруг номера, а не подчёркивание под ним.
- * Подчёркивание терялось среди звёздочек праздников и точек сокращённых
- * дней, а заливка круга читается сразу: это «сегодня», а не ещё одна метка.
+ * Сегодняшний день — акцентная полоса по верхнему краю и подпись у номера.
+ *
+ * Круг вокруг числа спорил с заливкой выбранных дней и выглядел как ещё одна
+ * метка в клетке. Полоса по краю показывает день, не занимая места в тексте,
+ * а слово «сегодня» у числа отвечает на вопрос без расшифровки цвета.
  */
-.cal-day.today .cal-num {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 5px;
-  border-radius: 999px;
+.cal-day.today {
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-2));
+}
+
+.cal-day.today::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
   background: var(--accent);
-  color: var(--bg);
-  font-weight: 700;
+}
+
+.cal-day.today .cal-num {
+  color: var(--accent-2);
+  font-weight: 800;
 }
 
 .cal-day.picked {
@@ -1281,9 +1317,39 @@ main {
 }
 
 /*
- * Тема прайма в клетке. Одна строка: полный текст лежит в подсказке, а
- * перенос вытеснил бы из клетки отсутствующих.
+ * План вечера — время и тема одной карточкой.
+ *
+ * Раньше тема стояла под номером дня, время — у нижнего края, а между ними
+ * лежали событие и отсутствия. Чтобы понять «во сколько и что», приходилось
+ * собирать две строки с разных концов клетки. Теперь это один блок с общей
+ * акцентной чертой: время сверху, тема под ним. Блок прижат к низу, поэтому
+ * время идёт одной линией во всей неделе.
  */
+.cal-plan {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  padding: 2px 6px 3px;
+  border-left: 2px solid var(--accent);
+  border-radius: 0 3px 3px 0;
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+.cal-prime {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Тема — вторая строка плана. Полный текст остаётся в подсказке. */
 .cal-theme {
   min-width: 0;
   overflow: hidden;
@@ -1295,32 +1361,21 @@ main {
 }
 
 /*
- * Время прайма в клетке. Своё время на день помечено точкой: отличить
- * «перенесли этот вечер» от «общего диапазона» по подсказке пришлось бы
- * наводиться на каждый день по очереди.
+ * События и отсутствия — вторая ступень после плана.
+ *
+ * Раньше события были яркими плашками в цвет акцента и спорили с праймом за
+ * внимание. Теперь это спокойная строка: один нейтральный цвет на все виды,
+ * без рамки и без кнопочного вида. Название события остаётся главным, время
+ * приглушено.
  */
-.cal-prime {
-  margin-top: auto;
-  padding-top: 2px;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.2;
-  color: var(--text);
-  white-space: nowrap;
+.cal-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  font-variant-numeric: tabular-nums;
 }
 
-/*
- * События сервера в клетке.
- *
- * Цвет один на все события: КХ, замки и эпические боссы — это одна и та же
- * категория «сегодня вечером что-то есть», и разные оттенки заставляли
- * искать в них смысл, которого нет. Фон и рамка собираются из акцента через
- * color-mix, поэтому плашка остаётся тёмной и не перетягивает взгляд с
- * прайма.
- */
 .cal-events {
   display: flex;
   flex-wrap: nowrap;
@@ -1330,24 +1385,24 @@ main {
 }
 
 .event-badge {
-  --ev: var(--accent-2);
+  --ev: color-mix(in srgb, var(--text) 72%, var(--muted));
   display: inline-flex;
   align-items: center;
   gap: 3px;
   min-width: 0;
   max-width: 100%;
-  padding: 1px 5px;
-  border: 1px solid color-mix(in srgb, var(--ev) 32%, transparent);
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--ev) 13%, transparent);
+  padding: 0 4px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--text) 9%, transparent);
   color: var(--ev);
   font-size: 10.5px;
-  line-height: 1.35;
+  line-height: 1.4;
   white-space: nowrap;
 }
 
 .event-badge svg {
   flex: none;
+  color: var(--accent-2);
 }
 
 .event-badge-name {
@@ -1358,7 +1413,7 @@ main {
 }
 
 .event-badge-time {
-  color: color-mix(in srgb, var(--ev) 70%, var(--muted));
+  opacity: 0.72;
   font-variant-numeric: tabular-nums;
 }
 
@@ -3975,16 +4030,19 @@ main {
     line-height: 1.1;
   }
 
-  .cal.cal-six .cal-day.today .cal-num {
-    min-width: 22px;
-    height: 22px;
-    padding: 0 4px;
+  .cal.cal-six .cal-today {
+    font-size: 8.5px;
   }
 
   .cal.cal-six .cal-off,
   .cal.cal-six .cal-theme {
     font-size: 9.5px;
     line-height: 1.15;
+  }
+
+  .cal.cal-six .cal-plan {
+    gap: 0;
+    padding: 1px 4px 2px;
   }
 
   .cal.cal-six .event-badge {
@@ -4005,8 +4063,7 @@ main {
   }
 
   .cal.cal-six .cal-prime {
-    padding-top: 1px;
-    font-size: 10.5px;
+    font-size: 10px;
     line-height: 1.15;
   }
 }
@@ -4658,10 +4715,6 @@ main {
  * базовых правилах, а рамка добавляет день к остальным меткам клетки, не
  * споря с праздником и выделением.
  */
-.cal-day.today {
-  box-shadow: inset 0 0 0 2px var(--accent);
-}
-
 /*
  * Отсутствующие в клетке дня.
  *
@@ -5030,6 +5083,50 @@ main {
 @media (max-width: 560px) {
   .sum-big {
     font-size: 26px;
+  }
+
+  /*
+   * На телефоне семь колонок дают по сорок пять пикселей — в такую клетку не
+   * влезает ни событие, ни время прайма. Вместо обрезки всего подряд календарь
+   * прокручивается вбок: шапка и сетка едут вместе, а день остаётся читаемым.
+   */
+  .schedule-main .cal {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .schedule-main .cal-head,
+  .schedule-main .cal-grid {
+    min-width: 620px;
+  }
+
+  /*
+   * В клетке шириной восемьдесят восемь пикселей событие с временем в одну
+   * строку не влезает. Название остаётся на первой строке, время уходит под
+   * него: так видно и что сегодня, и во сколько, без обрезки до «Ant…».
+   */
+  .schedule-main .event-badge {
+    flex-wrap: wrap;
+    row-gap: 0;
+    padding: 0 3px;
+  }
+
+  .schedule-main .event-badge-time {
+    flex-basis: 100%;
+    padding-left: 12px;
+    line-height: 1.15;
+  }
+
+  .schedule-main .cal-plan {
+    padding: 1px 3px 2px;
+  }
+
+  .schedule-main .cal-prime {
+    font-size: 10.5px;
+  }
+
+  .schedule-main .cal-theme {
+    font-size: 9.5px;
   }
 }
 
@@ -5451,6 +5548,20 @@ main {
     line-height: 1.1;
   }
 
+  .schedule-main .cal-today {
+    font-size: 8.5px;
+  }
+
+  .schedule-main .cal-plan {
+    gap: 0;
+    padding: 1px 4px 2px;
+  }
+
+  .schedule-main .cal-theme {
+    font-size: 9.5px;
+    line-height: 1.15;
+  }
+
   .schedule-main .event-badge {
     gap: 2px;
     padding: 0 4px;
@@ -5469,7 +5580,6 @@ main {
   }
 
   .schedule-main .cal-prime {
-    padding-top: 1px;
     font-size: 10.5px;
     line-height: 1.15;
   }

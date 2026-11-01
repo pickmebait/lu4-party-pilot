@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { Char, Schedule } from '@/types'
 import { dayInfo, holidayName } from '@/lib/holidays'
 import {
@@ -79,7 +79,31 @@ export function ScheduleView() {
   const [якорь, setЯкорь] = useState<string | null>(null)
   const [кто, setКто] = useState('')
   const [вкладка, setВкладка] = useState<'день' | 'чеклист'>('день')
+  /** Счётчик прокруток к сегодняшнему дню: нужен, когда месяц не меняется. */
+  const [кСегодня, setКСегодня] = useState(0)
   const тянем = useRef(false)
+  const календарь = useRef<HTMLDivElement>(null)
+
+  /*
+   * На телефоне календарь прокручивается вбок, и сегодняшний день мог
+   * оказаться за правым краем: неделя начинается с понедельника, а сегодня
+   * бывает воскресенье. Прокручиваем к нему до отрисовки, чтобы «сегодня» не
+   * приходилось искать вручную. На широком экране прокрутки нет, и эффект
+   * ничего не делает.
+   */
+  useLayoutEffect(() => {
+    const cal = календарь.current
+    if (!cal) return
+    const today = cal.querySelector<HTMLElement>('.cal-day.today')
+    if (!today) {
+      cal.scrollLeft = 0
+      return
+    }
+    if (cal.scrollWidth <= cal.clientWidth + 1) return
+    const рамка = cal.getBoundingClientRect()
+    const день = today.getBoundingClientRect()
+    cal.scrollLeft += день.left - рамка.left - (cal.clientWidth - день.width) / 2
+  }, [месяц, кСегодня])
 
   /*
    * Кто отмечает отсутствие.
@@ -180,6 +204,7 @@ export function ScheduleView() {
             onClick={() => {
               const d = parseKey(сегодня)
               setМесяц(new Date(d.getFullYear(), d.getMonth(), 1))
+              setКСегодня((n) => n + 1)
             }}
           >
             Сегодня
@@ -191,7 +216,7 @@ export function ScheduleView() {
 
       <div className="schedule-board">
         <div className="schedule-main">
-          <div className={`cal${шестьНедель ? ' cal-six' : ''}`}>
+          <div className={`cal${шестьНедель ? ' cal-six' : ''}`} ref={календарь}>
             <div className="cal-head">
               {ДНИ_НЕДЕЛИ.map((д) => (
                 <div key={д} className={д === 'Сб' || д === 'Вс' ? 'weekend' : ''}>
@@ -426,7 +451,10 @@ function DayBox({
       onMouseEnter={() => onEnter(клетка.key)}
     >
       <span className="cal-top">
-        <span className="cal-num">{клетка.дата.getDate()}</span>
+        <span className="cal-daynum">
+          <span className="cal-num">{клетка.дата.getDate()}</span>
+          {клетка.сегодня && <span className="cal-today">сегодня</span>}
+        </span>
         <span className="cal-marks">
           {инфо.праздник && (
             <span className="cal-mark" title={holidayName(клетка.дата)}>
@@ -452,48 +480,60 @@ function DayBox({
         </span>
       )}
 
-      {события.length > 0 && (
-        <span className="cal-events">
-          {события.map((event) => (
-            <EventBadge key={event.id} event={event} />
-          ))}
-        </span>
-      )}
-
       {/*
-        Тема прайма — одна строка с обрезкой. Полный текст остаётся в
-        подсказке: двадцать символов в клетку помещаются не всегда, а
-        переносить подпись на вторую строку значит вытеснить отсутствия.
+        События и отсутствия — вторая ступень после плана вечера. Они стоят
+        одной колонкой: так строка «Ant Queen 20:00» не спорит за место с
+        временем прайма, а красные имена не теряются между ними.
       */}
-      {прайм.kind === 'окно' && тема && (
-        <span className="cal-theme" title={`Тема прайма: ${тема}`}>
-          {тема}
-        </span>
-      )}
-
-      {/*
-        Имена отсутствующих — полные, а не первая буква: в пати встречаются
-        два Ирока, и по «И» нельзя понять, кого именно не ждать. Строка одна:
-        лишние сворачиваются в «ещё N», полный список с временем ухода
-        остаётся в подсказке клетки и в сводке.
-      */}
-      {отсутствуют.length > 0 && (
-        <span className="cal-away" title={`Отсутствуют: ${подписьСписка(отсутствуют)}`}>
-          {отсутствуют.slice(0, ИМЁН_В_ЯЧЕЙКЕ).map((a) => (
-            <span key={a.charId} className="cal-away-name" title={a.имя}>
-              {a.имя}
+      {(события.length > 0 || отсутствуют.length > 0) && (
+        <span className="cal-notes">
+          {события.length > 0 && (
+            <span className="cal-events">
+              {события.map((event) => (
+                <EventBadge key={event.id} event={event} />
+              ))}
             </span>
-          ))}
+          )}
 
-          {отсутствуют.length > ИМЁН_В_ЯЧЕЙКЕ && (
-            <span className="cal-away-more">ещё {отсутствуют.length - ИМЁН_В_ЯЧЕЙКЕ}</span>
+          {/*
+            Имена отсутствующих — полные, а не первая буква: в пати встречаются
+            два Ирока, и по «И» нельзя понять, кого именно не ждать. Строка одна:
+            лишние сворачиваются в «ещё N», полный список с временем ухода
+            остаётся в подсказке клетки и в сводке.
+          */}
+          {отсутствуют.length > 0 && (
+            <span className="cal-away" title={`Отсутствуют: ${подписьСписка(отсутствуют)}`}>
+              {отсутствуют.slice(0, ИМЁН_В_ЯЧЕЙКЕ).map((a) => (
+                <span key={a.charId} className="cal-away-name" title={a.имя}>
+                  {a.имя}
+                </span>
+              ))}
+
+              {отсутствуют.length > ИМЁН_В_ЯЧЕЙКЕ && (
+                <span className="cal-away-more">ещё {отсутствуют.length - ИМЁН_В_ЯЧЕЙКЕ}</span>
+              )}
+            </span>
           )}
         </span>
       )}
 
+      {/*
+        План вечера — один блок. Время и тема раньше стояли на разных краях
+        клетки, между ними лежали событие и отсутствия, и приходилось собирать
+        «во сколько и что» из двух строк. Теперь это карточка с общей акцентной
+        чертой: сверху время, под ним тема. Блок прижат к низу, поэтому время
+        читается по одной линии во всей неделе.
+      */}
       {прайм.kind === 'окно' && (
-        <span className="cal-prime">
-          {formatMinutes(прайм.window.from)}–{formatMinutes(прайм.window.to)}
+        <span className="cal-plan">
+          <span className="cal-prime">
+            {formatMinutes(прайм.window.from)}–{formatMinutes(прайм.window.to)}
+          </span>
+          {тема && (
+            <span className="cal-theme" title={`Тема прайма: ${тема}`}>
+              {тема}
+            </span>
+          )}
         </span>
       )}
     </button>
