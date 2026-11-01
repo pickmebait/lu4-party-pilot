@@ -2984,17 +2984,75 @@ main {
   margin: 0;
 }
 
+/*
+ * Действия стоят сразу за вкладками, а не у правого края: «Добавить» и
+ * крестик относятся к открытому набору, и разрывать их от вкладок длинным
+ * пустым промежутком незачем.
+ */
 .stack-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin-left: auto;
 }
 
 .stack-actions .btn.tiny {
   padding: 2px 7px;
   font-size: 11px;
   line-height: 1.4;
+}
+
+/*
+ * Вкладки наборов.
+ *
+ * Номер вместо подписи «Набор оружия 2»: подпись группы уже стоит слева, а
+ * три полных названия не помещаются в карточку. Полное имя набора осталось
+ * в подсказке вкладки.
+ */
+.set-tabs {
+  flex: none;
+  border-radius: 6px;
+}
+
+.set-tabs button {
+  min-width: 24px;
+  padding: 2px 7px;
+  font-size: 11px;
+  line-height: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Удаление открытого набора — квадратная кнопка с крестиком.
+ *
+ * Текстовая «Удалить набор» стояла у каждого набора и занимала половину
+ * шапки. Здесь действие одно и относится к открытой вкладке, поэтому места
+ * хватает крестику. Пока набор единственный, кнопка выключена: удалять
+ * последний нельзя.
+ */
+.set-del {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid #5a2a2a;
+  border-radius: 6px;
+  background: #3a1d1d;
+  color: #ffb3b3;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.set-del:hover:not(:disabled) {
+  background: #4a2222;
+  border-color: #7a3535;
+  color: #ffd0d0;
+}
+
+.set-del:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .stack-slots {

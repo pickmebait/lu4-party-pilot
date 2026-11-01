@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   ARMOR_SLOTS,
   MAX_ARMOR_SETS,
@@ -50,119 +51,129 @@ export function GearStack({
   const броня = armorSetsOf(слоты, допБроня)
   const основа: Branch = { charId: ветка.charId, subId: ветка.subId }
 
+  /*
+   * Открытый набор у оружия и брони свой: переключение доспеха не должно
+   * перелистывать оружие. Номер хранится как индекс, а не как Branch: база
+   * могла обновиться с сервера и наборов стать меньше — тогда индекс просто
+   * подрезается до последнего существующего.
+   */
+  const [открытыйНабор, setОткрытыйНабор] = useState(0)
+  const [открытаяБроня, setОткрытаяБроня] = useState(0)
+
+  /*
+   * При смене саба наборы принадлежат уже другой ветке. Открытым снова
+   * становится первый: третий набор основы не должен показываться на сабе,
+   * где его никогда не было.
+   */
+  useEffect(() => {
+    setОткрытыйНабор(0)
+    setОткрытаяБроня(0)
+  }, [ветка.charId, ветка.subId])
+
+  const номерНабора = Math.min(открытыйНабор, наборы.length - 1)
+  const номерБрони = Math.min(открытаяБроня, броня.length - 1)
+  const набор = наборы[номерНабора]
+  const доспех = броня[номерБрони]
+  const веткаНабора: Branch =
+    номерНабора === 0 ? основа : { ...основа, weaponSet: номерНабора }
+  const веткаБрони: Branch =
+    номерБрони === 0 ? основа : { ...основа, armorSet: номерБрони }
+
+  const добавитьНабор = () => {
+    const номер = addWeaponSet(основа)
+    if (номер !== null) setОткрытыйНабор(номер)
+  }
+
+  const удалитьНабор = () => {
+    if (наборы.length <= 1) return
+    removeWeaponSet(основа, номерНабора)
+    // Открытым становится соседний набор: предыдущий, если убрали последний,
+    // иначе тот, что встал на освободившееся место.
+    setОткрытыйНабор(Math.min(номерНабора, наборы.length - 2))
+  }
+
+  const добавитьБроню = () => {
+    const номер = addArmorSet(основа)
+    if (номер !== null) setОткрытаяБроня(номер)
+  }
+
+  const удалитьБроню = () => {
+    if (броня.length <= 1) return
+    removeArmorSet(основа, номерБрони)
+    setОткрытаяБроня(Math.min(номерБрони, броня.length - 2))
+  }
+
   return (
     <div className="gear-stack">
-      {SLOT_GROUPS.flatMap((group) => {
+      {SLOT_GROUPS.map((group) => {
         if (group.key === 'weapon') {
-          return наборы.map((набор, i) => {
-            const веткаНабора: Branch =
-              i === 0 ? основа : { ...основа, weaponSet: i }
-            return (
-              <section
-                key={`weapon-${i}`}
-                className={`stack-row stack-weapon${i > 0 ? ' extra' : ''}`}
+          return (
+            <section key={group.key} className="stack-row stack-weapon">
+              <SetTabs
+                подпись="Оружие"
+                набор="оружия"
+                количество={наборы.length}
+                открытый={номерНабора}
+                предел={MAX_WEAPON_SETS}
+                правый={правый}
+                onSelect={setОткрытыйНабор}
+                onAdd={добавитьНабор}
+                onRemove={удалитьНабор}
+              />
+              <div
+                className="stack-slots"
+                role="tabpanel"
+                aria-label={`Набор оружия ${номерНабора + 1}`}
               >
-                <div className="stack-head">
-                  <h4>
-                    {наборы.length > 1 ? `Набор оружия ${i + 1}` : 'Оружие'}
-                  </h4>
-                  {правый && (
-                    <div className="stack-actions">
-                      {i === наборы.length - 1 && наборы.length < MAX_WEAPON_SETS && (
-                        <button
-                          type="button"
-                          className="btn tiny"
-                          title="Добавить ещё один набор оружия"
-                          onClick={() => addWeaponSet(основа)}
-                        >
-                          Добавить набор
-                        </button>
-                      )}
-                      {наборы.length > 1 && (
-                        <button
-                          type="button"
-                          className="btn tiny danger"
-                          title={`Удалить набор оружия ${i + 1}`}
-                          onClick={() => removeWeaponSet(основа, i)}
-                        >
-                          Удалить набор
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <div className="stack-slots">
-                  {WEAPON_SLOTS.map((key) => (
-                    <SlotCells
-                      key={key}
-                      ветка={веткаНабора}
-                      cells={набор[key]}
-                      catalog={catalog}
-                      slot={key}
-                      правый={правый}
-                      onPick={(index) => onPick(веткаНабора, key, index)}
-                    />
-                  ))}
-                </div>
-              </section>
-            )
-          })
+                {WEAPON_SLOTS.map((key) => (
+                  <SlotCells
+                    key={key}
+                    ветка={веткаНабора}
+                    cells={набор[key]}
+                    catalog={catalog}
+                    slot={key}
+                    правый={правый}
+                    onPick={(index) => onPick(веткаНабора, key, index)}
+                  />
+                ))}
+              </div>
+            </section>
+          )
         }
 
         if (group.key === 'armor') {
-          return броня.map((набор, i) => {
-            const веткаНабора: Branch =
-              i === 0 ? основа : { ...основа, armorSet: i }
-            return (
-              <section
-                key={`armor-${i}`}
-                className={`stack-row stack-armor${i > 0 ? ' extra' : ''}`}
+          return (
+            <section key={group.key} className="stack-row stack-armor">
+              <SetTabs
+                подпись="Броня"
+                набор="брони"
+                количество={броня.length}
+                открытый={номерБрони}
+                предел={MAX_ARMOR_SETS}
+                правый={правый}
+                onSelect={setОткрытаяБроня}
+                onAdd={добавитьБроню}
+                onRemove={удалитьБроню}
+              />
+              <div
+                className="stack-slots"
+                role="tabpanel"
+                aria-label={`Набор брони ${номерБрони + 1}`}
               >
-                <div className="stack-head">
-                  <h4>
-                    {броня.length > 1 ? `Набор брони ${i + 1}` : 'Броня'}
-                  </h4>
-                  {правый && (
-                    <div className="stack-actions">
-                      {i === броня.length - 1 && броня.length < MAX_ARMOR_SETS && (
-                        <button
-                          type="button"
-                          className="btn tiny"
-                          title="Добавить ещё один набор брони"
-                          onClick={() => addArmorSet(основа)}
-                        >
-                          Добавить набор
-                        </button>
-                      )}
-                      {броня.length > 1 && (
-                        <button
-                          type="button"
-                          className="btn tiny danger"
-                          title={`Удалить набор брони ${i + 1}`}
-                          onClick={() => removeArmorSet(основа, i)}
-                        >
-                          Удалить набор
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <div className="stack-slots">
-                  {ARMOR_SLOTS.map((key) => (
-                    <SlotCells
-                      key={key}
-                      ветка={веткаНабора}
-                      cells={набор[key]}
-                      catalog={catalog}
-                      slot={key}
-                      правый={правый}
-                      onPick={(index) => onPick(веткаНабора, key, index)}
-                    />
-                  ))}
-                </div>
-              </section>
-            )
-          })
+                {ARMOR_SLOTS.map((key) => (
+                  <SlotCells
+                    key={key}
+                    ветка={веткаБрони}
+                    cells={доспех[key]}
+                    catalog={catalog}
+                    slot={key}
+                    правый={правый}
+                    onPick={(index) => onPick(веткаБрони, key, index)}
+                  />
+                ))}
+              </div>
+            </section>
+          )
         }
 
         return (
@@ -184,6 +195,88 @@ export function GearStack({
           </section>
         )
       })}
+    </div>
+  )
+}
+
+/**
+ * Вкладки наборов и действия над ними.
+ *
+ * Раньше каждый набор рисовался отдельным блоком друг под другом: к третьему
+ * набору карточка вырастала так, что в экран помещался один персонаж. Теперь
+ * у группы одна панель и полоска вкладок — номера наборов рядом с подписью,
+ * а справа добавление и удаление открытого. Удалять последний набор нельзя:
+ * хотя бы один должен остаться, иначе ветке некуда надевать оружие.
+ */
+function SetTabs({
+  подпись,
+  набор,
+  количество,
+  открытый,
+  предел,
+  правый,
+  onSelect,
+  onAdd,
+  onRemove,
+}: {
+  подпись: string
+  /** Родительный падеж: «набор оружия», «набор брони». */
+  набор: string
+  количество: number
+  открытый: number
+  предел: number
+  правый: boolean
+  onSelect: (index: number) => void
+  onAdd: () => void
+  onRemove: () => void
+}) {
+  return (
+    <div className="stack-head">
+      <h4>{подпись}</h4>
+      <div className="segmented set-tabs" role="tablist" aria-label={`Наборы ${набор}`}>
+        {Array.from({ length: количество }, (_, i) => (
+          <button
+            key={i}
+            type="button"
+            role="tab"
+            className={i === открытый ? 'on' : ''}
+            aria-selected={i === открытый}
+            aria-label={`Набор ${набор} ${i + 1}`}
+            title={`Набор ${набор} ${i + 1}`}
+            onClick={() => onSelect(i)}
+          >
+            {i + 1}
+          </button>
+        ))}
+      </div>
+      {правый && (
+        <div className="stack-actions">
+          {количество < предел && (
+            <button
+              type="button"
+              className="btn tiny"
+              title={`Добавить ещё один набор ${набор}`}
+              onClick={onAdd}
+            >
+              + Добавить
+            </button>
+          )}
+          <button
+            type="button"
+            className="set-del"
+            disabled={количество <= 1}
+            aria-label={`Удалить открытый набор ${набор}`}
+            title={
+              количество <= 1
+                ? `Нельзя удалить последний набор ${набор}`
+                : `Удалить открытый набор ${набор}`
+            }
+            onClick={onRemove}
+          >
+            <IconClose size={10} />
+          </button>
+        </div>
+      )}
     </div>
   )
 }
