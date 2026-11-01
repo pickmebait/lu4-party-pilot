@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-01T20:42:53.781Z",
-    "updatedBy": "DaintyWilder",
+    "updatedAt": "2026-11-01T22:45:45.115Z",
+    "updatedBy": "Sargor",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1833,45 +1833,6 @@
             "id": "smvy3dgzy1ks5uj",
             "cls": "Phantom Summoner",
             "level": 49,
-            "slots": {
-              "rhand": [
-                null
-              ],
-              "lhand": [
-                null
-              ],
-              "head": [
-                null
-              ],
-              "chest": [
-                null
-              ],
-              "legs": [
-                null
-              ],
-              "gloves": [
-                null
-              ],
-              "feet": [
-                null
-              ],
-              "neck": [
-                null
-              ],
-              "ear": [
-                null,
-                null
-              ],
-              "ring": [
-                null,
-                null
-              ]
-            }
-          },
-          {
-            "id": "smvy3du2m2j2edx",
-            "cls": "",
-            "level": 0,
             "slots": {
               "rhand": [
                 null
