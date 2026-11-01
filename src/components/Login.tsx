@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { createParty, fetchDb, openSession, type PartyInfo } from '@/lib/api'
 import { API_URL, CONFIGURED } from '@/lib/config'
-import { APP_NAME } from '@/lib/brand'
 import { replaceDb, signIn, signOut } from '@/lib/store'
+import { AppTitle } from './AppTitle'
 import { PaletteBar } from './PaletteBar'
 import { Tagline } from './Tagline'
 
@@ -150,7 +150,7 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
         <div className="login-brand">
           <span className="logo">⚔</span>
           <div>
-            <h1>{APP_NAME}</h1>
+            <AppTitle />
             <Tagline />
           </div>
           {/* Палитра действует на всё приложение, значит её можно выбрать и

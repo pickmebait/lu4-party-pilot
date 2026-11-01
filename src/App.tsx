@@ -8,7 +8,7 @@ import { GoalsView } from './components/Goals'
 import { ScheduleView } from './components/Schedule'
 import { SummaryView } from './components/Summary'
 import { Tagline } from './components/Tagline'
-import { APP_NAME } from './lib/brand'
+import { AppTitle } from './components/AppTitle'
 import { startCatalogLoad, useCatalog } from './lib/catalog'
 import { computeSummary, usedItemIds, type Summary } from './lib/derived'
 import { openSession } from './lib/api'
@@ -162,7 +162,7 @@ export default function App() {
         <div className="brand">
           <span className="logo">⚔</span>
           <div>
-            <h1>{APP_NAME}</h1>
+            <AppTitle />
             <Tagline />
           </div>
           <PaletteBar />
@@ -186,13 +186,6 @@ export default function App() {
         {tab === 'warehouse' && <WarehouseView catalog={catalog} />}
         {tab === 'wishes' && <GoalsView catalog={catalog} />}
       </main>
-
-      <footer className="foot">
-        <span>
-          Данные лежат в этом браузере. Общая база пати — на сервере, доступ по
-          токену.
-        </span>
-      </footer>
     </div>
   )
 }

@@ -302,7 +302,6 @@ export function ScheduleView() {
                 рабочий
               </span>
               <span className="legend weekend">выходной</span>
-              <span className="legend holiday">праздник</span>
               <span className="legend off">выходной пати</span>
               <span className="legend away">кто-то отсутствует</span>
             </div>
