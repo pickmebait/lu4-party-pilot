@@ -77,7 +77,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-01T16:58:48.260Z",
+    "updatedAt": "2026-11-01T17:02:58.950Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -1931,7 +1931,9 @@
       "primeTheme": {
         "2026-10-31": "сабы"
       },
-      "offs": [],
+      "offs": [
+        "2026-11-06"
+      ],
       "checklist": [
         {
           "id": "ckmvjpw65cjkjybw",
