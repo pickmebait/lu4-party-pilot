@@ -77,8 +77,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-01T18:09:03.055Z",
-    "updatedBy": "Sargor",
+    "updatedAt": "2026-11-01T20:42:53.781Z",
+    "updatedBy": "DaintyWilder",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -625,7 +625,7 @@
           "telegram": "@neprefit",
           "discord": "Otmun"
         },
-        "subUnlocked": true,
+        "subUnlocked": false,
         "subs": [
           {
             "id": "smvk1047y1mv177",
@@ -709,6 +709,84 @@
                 ]
               }
             ]
+          },
+          {
+            "id": "smvpiqbod2s2x8t",
+            "cls": "",
+            "level": 0,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "id": "smvyar15h1ab6dk",
+            "cls": "",
+            "level": 0,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
           }
         ],
         "away": {
