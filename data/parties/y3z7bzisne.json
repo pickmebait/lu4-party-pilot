@@ -70,8 +70,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-01T22:45:45.115Z",
-    "updatedBy": "Sargor",
+    "updatedAt": "2026-11-02T23:54:16.390Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -618,7 +618,7 @@
           "telegram": "@neprefit",
           "discord": "Otmun"
         },
-        "subUnlocked": false,
+        "subUnlocked": true,
         "subs": [
           {
             "id": "smvk1047y1mv177",
@@ -816,125 +816,6 @@
         },
         "pa": {
           "from": "2026-09-24",
-          "days": 100
-        }
-      },
-      {
-        "id": "cmvjp9lub5osa0i",
-        "name": "godswe",
-        "cls": "Tyrant",
-        "level": 73,
-        "affil": "roster",
-        "slots": {
-          "rhand": [
-            {
-              "itemId": 268,
-              "mod": 10,
-              "sa": "Health"
-            }
-          ],
-          "lhand": [
-            {
-              "itemId": 268,
-              "mod": 10,
-              "spans": true,
-              "sa": "Health"
-            }
-          ],
-          "head": [
-            {
-              "itemId": 2419
-            }
-          ],
-          "chest": [
-            {
-              "itemId": 2383
-            }
-          ],
-          "legs": [
-            {
-              "itemId": 2383,
-              "spans": true
-            }
-          ],
-          "gloves": [
-            {
-              "itemId": 5774
-            }
-          ],
-          "feet": [
-            {
-              "itemId": 5786
-            }
-          ],
-          "neck": [
-            {
-              "itemId": 926,
-              "mod": 3
-            }
-          ],
-          "ear": [
-            {
-              "itemId": 864
-            },
-            {
-              "itemId": 864
-            }
-          ],
-          "ring": [
-            {
-              "itemId": 895
-            },
-            {
-              "itemId": 895
-            }
-          ]
-        },
-        "subUnlocked": true,
-        "subs": [
-          {
-            "id": "smvkqh2qs1r5l9o",
-            "cls": "",
-            "level": 0,
-            "slots": {
-              "rhand": [
-                null
-              ],
-              "lhand": [
-                null
-              ],
-              "head": [
-                null
-              ],
-              "chest": [
-                null
-              ],
-              "legs": [
-                null
-              ],
-              "gloves": [
-                null
-              ],
-              "feet": [
-                null
-              ],
-              "neck": [
-                null
-              ],
-              "ear": [
-                null,
-                null
-              ],
-              "ring": [
-                null,
-                null
-              ]
-            }
-          }
-        ],
-        "away": {},
-        "pa": {
-          "from": "2026-08-11",
           "days": 100
         }
       },
