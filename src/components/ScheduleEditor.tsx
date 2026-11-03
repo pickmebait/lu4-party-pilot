@@ -550,7 +550,7 @@ function БлокОтсутствия({
 
       <div className="row">
         <button className="btn primary" disabled={!герой} onClick={onОтметить}>
-          Отметить отсутствие
+          Назначить отсутствие
         </button>
         <button
           className="btn"

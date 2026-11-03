@@ -44,10 +44,10 @@ interface IssuedToken {
   charName: string
   createdAt: string
   /**
-   * Когда этим токеном последний раз входили.
+   * Когда этим токеном последний раз пользовались.
    *
-   * Пишется только при явном входе, а не при каждом чтении: иначе каждый
-   * запрос страницы переписывал бы файл пати.
+   * Пишется при явном входе и при успешной записи базы, а не при каждом
+   * чтении: иначе каждый запрос страницы переписывал бы файл пати.
    */
   lastUsedAt?: string
 }
@@ -636,10 +636,40 @@ async function hashHex(value: string): Promise<string> {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
+/**
+ * Отмечает токен как использованный.
+ *
+ * Время ставится и при явном входе, и при успешной записи базы: мастеру важно
+ * видеть, что персонаж не просто открыл приложение, а действительно работал.
+ * Возвращается копия файла, чтобы отметка ушла одним PUT вместе с базой.
+ */
+function отметитьТокен(file: PartyFile, tokenId: string, when: string): PartyFile {
+  return {
+    ...file,
+    tokens: file.tokens.map((t) => (t.id === tokenId ? { ...t, lastUsedAt: when } : t)),
+  }
+}
+
 /** Проверка доступа по файлу пати. Возвращает, чем именно вход. */
 type Access =
-  | { ok: true; partyId: string; file: PartyFile; sha: string; master: true; charId: null }
-  | { ok: true; partyId: string; file: PartyFile; sha: string; master: false; charId: string }
+  | {
+      ok: true
+      partyId: string
+      file: PartyFile
+      sha: string
+      master: true
+      charId: null
+      tokenId: null
+    }
+  | {
+      ok: true
+      partyId: string
+      file: PartyFile
+      sha: string
+      master: false
+      charId: string
+      tokenId: string
+    }
   | { ok: false; error: string; status: number }
 
 async function authorize(env: Env, request: Request): Promise<Access> {
@@ -667,6 +697,7 @@ async function authorize(env: Env, request: Request): Promise<Access> {
       sha: file.sha,
       master: true,
       charId: null,
+      tokenId: null,
     }
   }
 
@@ -681,6 +712,7 @@ async function authorize(env: Env, request: Request): Promise<Access> {
     sha: file.sha,
     master: false,
     charId: parsed.charId,
+    tokenId: выпущен.id,
   }
 }
 
@@ -870,14 +902,11 @@ async function openSession(request: Request, env: Env, cors: Cors): Promise<Resp
    */
   if (body?.touch === true) {
     const сейчас = new Date().toISOString()
-    const tokens = file.data.tokens.map((t) =>
-      t.id === выпущен.id ? { ...t, lastUsedAt: сейчас } : t,
-    )
     try {
       await writeFile(
         env,
         parsed.partyId,
-        { ...file.data, tokens },
+        отметитьТокен(file.data, выпущен.id, сейчас),
         file.sha,
         `${file.data.name}: вход по токену «${выпущен.charName}»`,
         false,
@@ -1031,10 +1060,19 @@ async function writeData(request: Request, env: Env, cors: Cors): Promise<Respon
   const now = new Date().toISOString()
   const updatedAt = now > (current.updatedAt ?? '') ? now : bumpMs(current.updatedAt ?? now)
 
-  const party: PartyFile = {
-    ...access.file,
-    db: { ...(incoming as object), updatedAt },
-  }
+  const db = { ...(incoming as object), updatedAt }
+
+  /*
+   * Сохранение базы — тоже активность токена.
+   *
+   * Мастеру важно видеть не только явный вход с экрана, но и работу: иначе
+   * у персонажа, который каждый день правит своего героя, в списке токенов
+   * висит «активности не было». Отметка уходит тем же PUT, что и база, так
+   * что отдельной записи в репозиторий не появляется.
+   */
+  const party: PartyFile = access.master
+    ? { ...access.file, db }
+    : отметитьТокен({ ...access.file, db }, access.tokenId, now)
 
   const who = party.db && typeof party.db === 'object' ? (party.db as { updatedBy?: string }).updatedBy : ''
   const saved = await writeFile(
