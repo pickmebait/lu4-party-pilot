@@ -123,3 +123,49 @@ export function IconEvent({ size = 12 }: Props) {
     </svg>
   )
 }
+
+/*
+ * Значки пикера предметов. Рисуются линиями, а не заливкой: они стоят
+ * рядом с мелким текстом (поиск, фильтры, разворот), и плотные фигуры
+ * перевешивали бы подпись. Цвет наследуется от кнопки или поля, поэтому
+ * значки сами меняются вместе с палитрой и состоянием наведения.
+ */
+
+/** Лупа в поле поиска. */
+export function IconSearch({ size = 15 }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="7" cy="7" r="4.8" stroke="currentColor" strokeWidth="1.5" />
+      <path d="m10.6 10.6 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+/** Воронка фильтров. */
+export function IconFilter({ size = 13 }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M2.5 3.2h11L9.6 8.1v4.2l-3.2 1.5V8.1z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+/** Уголок «развернуть»: поворот задаёт состояние кнопки. */
+export function IconChevron({ size = 10 }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <path
+        d="m2.5 4.5 3.5 3.5 3.5-3.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}

@@ -14,6 +14,7 @@ import {
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
 import { normalize } from '@/lib/util'
+import { IconChevron, IconClose, IconFilter, IconSearch } from './Icons'
 import { ItemIcon } from './ItemIcon'
 
 /** Сколько предметов показывать на одной странице. */
@@ -76,6 +77,7 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
   const [grade, setGrade] = useState<string | null>(null)
   const [page, setPage] = useState(0)
   const [pageSize, setPageSize] = useState<number>(20)
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
 
@@ -125,6 +127,14 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
 
   const typeField =
     filters.type === 'weapon' ? 'weaponType' : filters.type === 'armor' ? 'armorType' : filters.type === 'jewelry' ? 'jewelryType' : null
+  const typeFilterLabel =
+    filters.type === 'weapon' || filters.type === 'armor' || filters.type === 'jewelry'
+      ? filters.type === 'weapon'
+        ? 'Тип оружия'
+        : filters.type === 'armor'
+          ? 'Тип брони'
+          : 'Тип бижутерии'
+      : 'Тип'
 
   const typeOptions = useMemo(() => {
     if (filters.type === 'weapon') return WEAPON_TYPE_LABELS.map((v) => ({ value: v, label: v }))
@@ -217,6 +227,36 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
   const onItemType = reset(setItemType)
   const onGrade = reset(setGrade)
 
+  /*
+   * Активные условия показываются чипами над списком. Это быстрее, чем
+   * открывать панель фильтров, чтобы вспомнить, почему список короткий,
+   * и снять одно условие, не трогая остальные.
+   */
+  const активные: { key: string; label: string; clear: () => void }[] = []
+  if (type) {
+    const метка = typeOptions.find((o) => o.value === type)?.label ?? type
+    активные.push({ key: 'type', label: `${typeFilterLabel}: ${метка}`, clear: () => onType(null) })
+  }
+  if (itemType) {
+    const метка = itemTypeOptions.find((o) => o.value === itemType)?.label ?? itemType
+    активные.push({ key: 'itemType', label: `Тип предмета: ${метка}`, clear: () => onItemType(null) })
+  }
+  if (grade) активные.push({ key: 'grade', label: `Грейд: ${grade}`, clear: () => onGrade(null) })
+
+  const сброситьВсё = () => {
+    setType(null)
+    setItemType(null)
+    setGrade(null)
+    setQ('')
+    setPage(0)
+    listRef.current?.scrollTo({ top: 0 })
+  }
+  const естьУсловия = q.length > 0 || активные.length > 0
+  const естьФильтры = показыватьТип || показыватьТипПредмета || !!filters.grade
+
+  const итог = filtered ? `Найдено ${results.length} из ${total}` : `Всего ${total}`
+  const диапазон = results.length > 0 ? ` · ${from}–${to}` : ''
+
   const goTo = (n: number) => {
     setPage(n)
     listRef.current?.scrollTo({ top: 0 })
@@ -225,36 +265,99 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
   const onPageSize = (n: number) => {
     setPageSize(n)
     setPage(0)
+    listRef.current?.scrollTo({ top: 0 })
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div className="modal-backdrop picker-backdrop" onClick={onClose}>
       <div
-        className="modal"
+        className="modal picker-modal"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
+        aria-modal="true"
         aria-label={title ?? slot?.label ?? 'выбор предмета'}
       >
-        <div className="modal-head">
-          <h3>{title ?? slot?.label ?? 'Выбери предмет'}</h3>
-          <button className="icon-btn" onClick={onClose} aria-label="Закрыть">
-            ✕
+        <header className="picker-head">
+          <div className="picker-head-text">
+            <h3>{title ?? slot?.label ?? 'Выбери предмет'}</h3>
+            <p
+              className="picker-sub"
+              title={catalog.source ? `Источник: ${catalog.source}` : undefined}
+            >
+              Справочник: {catalog.count} предметов · список закрытый
+            </p>
+          </div>
+          <button className="icon-btn picker-close" onClick={onClose} aria-label="Закрыть">
+            <IconClose size={12} />
           </button>
+        </header>
+
+        <div className="picker-search">
+          <IconSearch size={15} />
+          <input
+            ref={inputRef}
+            className="picker-search-input"
+            placeholder="Поиск: название, техническое имя или номер…"
+            aria-label="Поиск предмета"
+            value={q}
+            onChange={(e) => onQuery(e.target.value)}
+          />
+          {q.length > 0 && (
+            <button
+              className="picker-search-clear"
+              onClick={() => {
+                onQuery('')
+                inputRef.current?.focus()
+              }}
+              aria-label="Очистить поиск"
+              title="Очистить поиск"
+            >
+              <IconClose size={9} />
+            </button>
+          )}
         </div>
 
-        <input
-          ref={inputRef}
-          className="input"
-          placeholder="Поиск: название, техническое имя или номер…"
-          value={q}
-          onChange={(e) => onQuery(e.target.value)}
-        />
+        {естьФильтры && (
+          <div className="picker-toolbar">
+            <button
+              className={`picker-filter-btn ${filtersOpen ? 'on' : ''}`}
+              onClick={() => setFiltersOpen((v) => !v)}
+              aria-expanded={filtersOpen}
+            >
+              <IconFilter size={13} />
+              Фильтры
+              {активные.length > 0 && <span className="picker-filter-count">{активные.length}</span>}
+              <span className={`picker-caret${filtersOpen ? ' up' : ''}`} aria-hidden="true">
+                <IconChevron size={9} />
+              </span>
+            </button>
 
-        {(показыватьТип || показыватьТипПредмета || filters.grade) && (
-          <div className="filters">
+            {активные.length > 0 && (
+              <div className="picker-active-chips">
+                {активные.map((ф) => (
+                  <span className="picker-active-chip" key={ф.key}>
+                    {ф.label}
+                    <button onClick={ф.clear} aria-label={`Снять фильтр «${ф.label}»`} title="Снять фильтр">
+                      <IconClose size={8} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {естьУсловия && (
+              <button className="link-btn picker-reset" onClick={сброситьВсё}>
+                Сбросить всё
+              </button>
+            )}
+          </div>
+        )}
+
+        {естьФильтры && (
+          <div className={`filters${filtersOpen ? ' open' : ''}`}>
             {показыватьТип && (
               <FilterRow
-                label={filters.type === 'weapon' ? 'Тип оружия' : filters.type === 'armor' ? 'Тип брони' : 'Тип бижутерии'}
+                label={typeFilterLabel}
                 options={typeOptions}
                 value={type}
                 total={total}
@@ -285,36 +388,16 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
           </div>
         )}
 
-        <div className="picker-count">
-          <span>
-            {filtered ? `Подходит ${results.length} из ${total}` : `Всего в слоте: ${total}`}
-            {results.length > 0 && ` · показано ${from}–${to}`}
-          </span>
-          {(type || itemType || grade || query) && (
-            <button
-              className="link-btn"
-              onClick={() => {
-                setType(null)
-                setItemType(null)
-                setGrade(null)
-                setQ('')
-                setPage(0)
-                listRef.current?.scrollTo({ top: 0 })
-              }}
-            >
-              Сбросить всё
-            </button>
-          )}
-        </div>
-
-        <div className="picker-list scroll tall" ref={listRef}>
+        <div className="picker-list" ref={listRef}>
           {results.length === 0 && (
-            <p className="hint">
-              {filtered
-                ? 'Под эти условия не подошёл ни один предмет.'
-                : 'Справочник ещё загружается или пуст.'}{' '}
-              {filtered && 'Попробуй снять часть фильтров или упростить запрос.'}
-            </p>
+            <div className="picker-empty">
+              <p className="hint">
+                {filtered
+                  ? 'Под эти условия не подошёл ни один предмет.'
+                  : 'Справочник ещё загружается или пуст.'}{' '}
+                {filtered && 'Попробуй снять часть фильтров или упростить запрос.'}
+              </p>
+            </div>
           )}
           {shown.map((it) => (
             <Row
@@ -330,43 +413,61 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
           ))}
         </div>
 
-        {pages > 1 && (
-          <div className="pager">
-            <button className="pg" onClick={() => goTo(pageNo - 1)} disabled={pageNo === 0}>
-              ‹ Назад
-            </button>
-            <div className="pager-mid">
-              <span className="pg-num">
-                Страница {pageNo + 1} из {pages}
+        <footer className="picker-footer">
+          <div className="picker-foot-main">
+            <span className="picker-foot-info">
+              {итог}
+              {диапазон}
+            </span>
+            <div className="picker-pager">
+              <button
+                className="pg"
+                onClick={() => goTo(pageNo - 1)}
+                disabled={pageNo === 0}
+                aria-label="Предыдущая страница"
+                title="Предыдущая страница"
+              >
+                ‹
+              </button>
+              <span className="pg-num" aria-live="polite">
+                {pageNo + 1} / {pages}
               </span>
+              <button
+                className="pg"
+                onClick={() => goTo(pageNo + 1)}
+                disabled={pageNo >= pages - 1}
+                aria-label="Следующая страница"
+                title="Следующая страница"
+              >
+                ›
+              </button>
               <div className="pg-size" role="group" aria-label="Предметов на странице">
                 {PAGE_SIZES.map((n) => (
                   <button
                     key={n}
                     className={`pg-size-btn ${pageSize === n ? 'on' : ''}`}
                     onClick={() => onPageSize(n)}
+                    title={`${n} предметов на странице`}
                   >
                     {n}
                   </button>
                 ))}
               </div>
             </div>
-            <button
-              className="pg"
-              onClick={() => goTo(pageNo + 1)}
-              disabled={pageNo >= pages - 1}
-            >
-              Вперёд ›
-            </button>
           </div>
-        )}
 
-        <div className="picker-foot">
-          {множественный ? (
-            <>
+          <div className="picker-foot-extra">
+            <span
+              className="picker-foot-note"
+              title={catalog.source ? `Источник: ${catalog.source}` : undefined}
+            >
+              Справочник: {catalog.count} предметов
+              {catalog.source ? ` · ${catalog.source}` : ''}
+            </span>
+            {множественный && (
               <div className="picker-multi">
                 <span>
-                  выбрано {отмечено.length} из {МНОЖЕСТВЕННЫЙ_ПОТОЛОК}
+                  Выбрано {отмечено.length} из {МНОЖЕСТВЕННЫЙ_ПОТОЛОК}
                   {полный && ' — больше не поместится'}
                 </span>
                 <button
@@ -377,20 +478,9 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
                   Добавить выбранное
                 </button>
               </div>
-              <div className="picker-foot-note">
-                Справочник: {catalog.count} предметов
-                {catalog.source ? ` · ${catalog.source}` : ''}. Список закрытый — предмет
-                выбирается только из него.
-              </div>
-            </>
-          ) : (
-            <>
-              Справочник: {catalog.count} предметов
-              {catalog.source ? ` · ${catalog.source}` : ''}. Список закрытый — предмет
-              выбирается только из него.
-            </>
-          )}
-        </div>
+            )}
+          </div>
+        </footer>
       </div>
     </div>
   )
@@ -533,74 +623,93 @@ function Row({
     if (!multi) onClose()
   }
 
+  const действие = () => {
+    if (выбираетЭффекты) {
+      setEffectsOpen(true)
+      return
+    }
+    выбрать()
+  }
+
   return (
     /*
      * Разворачиваемые эффекты — соседняя строка под основной, а не вложенная
      * кнопка в кнопку: вложенную кнопку браузер не разбирает, и клик по
-     * «▼ Эффекты» одновременно выбирал бы предмет. Поэтому сама строка —
-     * div с ролью button, а блок эффектов лежит под ней, вне кликабельной
-     * области.
+     * «Эффекты» одновременно выбирал бы предмет. Поэтому выбор предмета —
+     * отдельная кнопка внутри строки, а блок эффектов лежит под ней.
      */
     <>
     <div
-      role="button"
-      tabIndex={0}
       className={`picker-row ${inApp ? 'in-app' : ''} ${multi ? 'multi' : ''} ${chosen ? 'chosen' : ''} ${blocked ? 'blocked' : ''}`}
-      onClick={() => {
-        if (выбираетЭффекты) {
-          setEffectsOpen(true)
-          return
-        }
-        выбрать()
-      }}
-      title={[
-        setLabel(it),
-        it.weaponClass,
-        ...stats,
-        blocked ? 'Потолок выбора — снимите что-нибудь' : '',
-        выбираетЭффекты && !effectsOpen ? 'Нажми, чтобы выбрать SA и редкий эффект' : '',
-      ]
-        .filter(Boolean)
-        .join(' · ')}
     >
-      {multi && (
-        <span className="picker-check" aria-hidden="true">
-          {chosen ? '✓' : ''}
-        </span>
-      )}
-      <ItemIcon item={it} name={it.name} size={26} />
-      <span className="picker-name">{it.name}</span>
-      {stats.length > 0 && <span className="picker-stats">{stats.slice(0, 3).join(' · ')}</span>}
-      {/* Тип и грейд видно в строке: сразу понятно, почему предмет
-          остался в списке при выбранном фильтре. */}
-      {it.weaponType && <span className="tag">{it.weaponType}</span>}
-      {it.armorType && <span className="tag">{ARMOR_TYPE_LABELS[it.armorType] ?? it.armorType}</span>}
-      {it.armorItemType &&
-        (it.armorItemType === 'accessory' || it.armorItemType === 'shield') && (
-          <span className="tag">
-            {ARMOR_ITEM_TYPE_LABELS[it.armorItemType] ?? it.armorItemType}
+      <button
+        type="button"
+        className="picker-row-main"
+        onClick={действие}
+        aria-pressed={multi ? chosen : undefined}
+        title={[
+          setLabel(it),
+          it.weaponClass,
+          ...stats,
+          blocked ? 'Потолок выбора — снимите что-нибудь' : '',
+          выбираетЭффекты && !effectsOpen ? 'Нажми, чтобы выбрать SA и редкий эффект' : '',
+        ]
+          .filter(Boolean)
+          .join(' · ')}
+      >
+        {multi && (
+          <span className="picker-check" aria-hidden="true">
+            {chosen ? '✓' : ''}
           </span>
         )}
-      {it.gradeName && <span className={`tag grade g-${it.gradeName}`}>{it.gradeName}</span>}
-      {/* Эпическая бижутерия — не отдельный тип слота, поэтому метка видна
-          и в общем списке, и внутри фильтра «Кольца» или «Серьги». */}
-      {it.epic && (
-        <span className="tag epic" title="Эпическая бижутерия">
-          эпическая
+        <ItemIcon item={it} name={it.name} size={30} />
+        <span className="picker-main">
+          <span className="picker-line">
+            <span className="picker-name">{it.name}</span>
+            <span className="picker-badges">
+              {it.gradeName && <span className={`tag grade g-${it.gradeName}`}>{it.gradeName}</span>}
+              {/* Эпическая бижутерия — не отдельный тип слота, поэтому метка
+                  видна и в общем списке, и внутри фильтра «Кольца» или «Серьги». */}
+              {it.epic && (
+                <span className="tag epic" title="Эпическая бижутерия">
+                  эпическая
+                </span>
+              )}
+              {inApp && <span className="tag in-app-mark" title="Уже есть в пати">в пати</span>}
+            </span>
+          </span>
+          <span className="picker-subline">
+            {/* Тип видно в строке: сразу понятно, почему предмет остался
+                в списке при выбранном фильтре. */}
+            {it.weaponType && <span className="tag">{it.weaponType}</span>}
+            {it.armorType && (
+              <span className="tag">{ARMOR_TYPE_LABELS[it.armorType] ?? it.armorType}</span>
+            )}
+            {it.armorItemType &&
+              (it.armorItemType === 'accessory' || it.armorItemType === 'shield') && (
+                <span className="tag">
+                  {ARMOR_ITEM_TYPE_LABELS[it.armorItemType] ?? it.armorItemType}
+                </span>
+              )}
+            {stats.length > 0 && (
+              <span className="picker-stats">{stats.slice(0, 3).join(' · ')}</span>
+            )}
+            <span className="picker-id">#{it.id}</span>
+          </span>
         </span>
-      )}
-      {inApp && <span className="tag in-app-mark" title="Уже есть в пати">в пати</span>}
-      <span className="picker-id">#{it.id}</span>
+      </button>
       {естьЭффекты && (
         <button
-          className={`link-btn picker-expand${effectsOpen ? ' on' : ''}`}
-          onClick={(e) => {
-            e.stopPropagation()
-            setEffectsOpen((v) => !v)
-          }}
+          type="button"
+          className={`picker-expand${effectsOpen ? ' on' : ''}`}
+          onClick={() => setEffectsOpen((v) => !v)}
           title={effectsOpen ? 'Скрыть эффекты' : 'Показать эффекты'}
+          aria-expanded={effectsOpen}
         >
-          {effectsOpen ? '▲' : '▼ Эффекты'}
+          <span className="picker-expand-label">{effectsOpen ? 'Скрыть' : 'Эффекты'}</span>
+          <span className={`picker-chevron${effectsOpen ? ' up' : ''}`} aria-hidden="true">
+            <IconChevron size={10} />
+          </span>
         </button>
       )}
     </div>
