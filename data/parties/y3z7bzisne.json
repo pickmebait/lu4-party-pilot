@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-03T09:31:43.131Z",
+    "updatedAt": "2026-11-03T09:35:21.276Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -162,6 +162,14 @@
                 "mod": 4,
                 "spans": true
               }
+            ]
+          },
+          {
+            "rhand": [
+              null
+            ],
+            "lhand": [
+              null
             ]
           }
         ],
