@@ -1378,6 +1378,20 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
+/*
+ * Сдвиг на соседнюю дату у пользователя из другого пояса.
+ *
+ * «+1» — не украшение: без него «03:00» в понедельнике читается как утро
+ * понедельника, хотя по московскому дню это уже вторник.
+ */
+.cal-shift {
+  margin-left: 2px;
+  color: var(--muted-dim);
+  font-size: 9px;
+  font-weight: 500;
+  vertical-align: super;
+}
+
 /* Тема — вторая строка плана. Полный текст остаётся в подсказке. */
 .cal-theme {
   min-width: 0;
@@ -1484,6 +1498,15 @@ main {
 .event-legend-time {
   color: var(--muted-dim);
   font-variant-numeric: tabular-nums;
+}
+
+/* Подпись пояса под легендой: почему время именно такое. */
+.cal-zone-note {
+  flex: none;
+  padding: 0 2px;
+  color: var(--muted-dim);
+  font-size: 10.5px;
+  line-height: 1.35;
 }
 
 /* Строка выделения и расшифровка дней под календарём — одной полосой. */
@@ -1598,6 +1621,18 @@ main {
   font-size: 11px;
   color: var(--muted-dim);
   white-space: nowrap;
+}
+
+/*
+ * Пояс ввода — отдельной строкой под шапкой. В шапке он спорил бы с «сейчас
+ * 21:00–23:30» за место, а человеку важно видеть, в каких часах он вводит
+ * время, до того как нажмёт «Назначить».
+ */
+.editor-zone {
+  flex-basis: 100%;
+  color: var(--muted-dim);
+  font-size: 10.5px;
+  line-height: 1.3;
 }
 
 /*
@@ -4932,6 +4967,14 @@ main {
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0;
+}
+
+.sum-prime-shift {
+  color: var(--muted-dim);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+  white-space: nowrap;
 }
 
 /* Тема прайма рядом со временем: подпись, а не второе время. */

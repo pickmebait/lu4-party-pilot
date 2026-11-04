@@ -4,7 +4,6 @@ import {
   MAX_PRIME_THEME,
   cleanPrimeTheme,
   formatDay,
-  formatMinutes,
   minutesForField,
   minutesFromField,
   offWord,
@@ -12,6 +11,13 @@ import {
   primeOn,
   primeThemeOf,
 } from '@/lib/schedule'
+import {
+  PARTY_TIME_ZONE,
+  dayShiftBetween,
+  formatZoneWindow,
+  partyWindowFromClock,
+  userWindow,
+} from '@/lib/timezone'
 import {
   assignPrime,
   clearAway,
@@ -35,6 +41,17 @@ const ПО_УМОЛЧАНИЮ: PrimeWindow = { from: 21 * 60, to: 23 * 60 + 30 }
  * почти всегда внутри него, и незачем тащить за собой не то.
  */
 const УХОД_ПО_УМОЛЧАНИЮ: PrimeWindow = { from: 21 * 60, to: 23 * 60 + 30 }
+
+/** Московское окно в тех же часах, но на стенных часах пользователя. */
+function местноеОкно(
+  dayKey: string | undefined,
+  окно: PrimeWindow,
+  timeZone: string,
+): PrimeWindow {
+  if (!dayKey) return окно
+  const local = userWindow(dayKey, окно, timeZone)
+  return { from: local.from.minutes, to: local.to.minutes }
+}
 
 /**
  * Переключатель из двух вариантов — «на весь день» или «на окно».
@@ -91,6 +108,7 @@ export function РедакторДней({
   герой,
   chars,
   мастер,
+  пояс = PARTY_TIME_ZONE,
   onСменаГероя,
   onСнятьВыделение,
 }: {
@@ -98,11 +116,17 @@ export function РедакторДней({
   герой: string
   chars: Char[]
   мастер: boolean
+  /** Пояс, в котором человек вводит время. По умолчанию Москва — как в базе. */
+  пояс?: string
   onСменаГероя: (id: string) => void
   onСнятьВыделение: () => void
 }) {
-  const [окно, setОкно] = useState<PrimeWindow>(ПО_УМОЛЧАНИЮ)
-  const [окноУхода, setОкноУхода] = useState<PrimeWindow>(УХОД_ПО_УМОЛЧАНИЮ)
+  const [окно, setОкно] = useState<PrimeWindow>(() =>
+    местноеОкно(выбор[0], ПО_УМОЛЧАНИЮ, пояс),
+  )
+  const [окноУхода, setОкноУхода] = useState<PrimeWindow>(() =>
+    местноеОкно(выбор[0], УХОД_ПО_УМОЛЧАНИЮ, пояс),
+  )
   const [весьДень, setВесьДень] = useState(true)
   /** Тема прайма, которая уйдёт на выделенные дни вместе со временем. */
   const [тема, setТема] = useState('')
@@ -129,15 +153,17 @@ export function РедакторДней({
     if (!первый) return
     const { schedule, chars: все } = getDb()
     const текущее = primeOf(schedule, первый)
-    if (текущее.kind === 'окно') setОкно(текущее.window)
-    else if (текущее.kind === 'нет') setОкно(ПО_УМОЛЧАНИЮ)
+    if (текущее.kind === 'окно') setОкно(местноеОкно(первый, текущее.window, пояс))
+    else if (текущее.kind === 'нет') setОкно(местноеОкно(первый, ПО_УМОЛЧАНИЮ, пояс))
     setТема(primeThemeOf(schedule, первый))
     const его = все.find((c) => c.id === герой)?.away?.[первый]
     if (его) {
       setВесьДень(его.whole)
-      if (!его.whole && его.window) setОкноУхода(его.window)
+      if (!его.whole && его.window) {
+        setОкноУхода(местноеОкно(первый, его.window, пояс))
+      }
     }
-  }, [первый, герой])
+  }, [первый, герой, пояс])
 
   /*
    * Что стоит на выделенных днях прямо сейчас.
@@ -152,10 +178,35 @@ export function РедакторДней({
     const виды = new Set(выбор.map((k) => primeOf(schedule, k).kind))
     if (виды.size > 1) return 'на выделенных днях разное'
     const вид = primeOf(schedule, первый)
-    if (вид.kind === 'окно') return `сейчас ${formatMinutes(вид.window.from)}–${formatMinutes(вид.window.to)}`
+    if (вид.kind === 'окно') {
+      return `сейчас ${formatZoneWindow(userWindow(первый, вид.window, пояс))}`
+    }
     if (вид.kind === 'выходной') return 'сейчас выходной пати'
     return 'сейчас ничего не назначено'
-  }, [выбор, первый])
+  }, [выбор, первый, пояс])
+
+  /*
+   * Поля показывают местные часы, а база хранит московские. Пересчёт идёт
+   * по первому выбранному дню: остальным дням уходит то же московское окно,
+   * иначе один и тот же прайм на неделе разъехался бы по поясам.
+   *
+   * null — окно в этот день не помещается: конец раньше начала или местное
+   * время попало в дырку перевода часов. Тогда кнопка гаснет, а не пишет
+   * в базу выдуманное время.
+   */
+  const канонПрайма = useMemo(
+    () => (первый ? partyWindowFromClock(первый, окно.from, окно.to, пояс) : null),
+    [первый, окно, пояс],
+  )
+  const канонУхода = useMemo(
+    () => (первый ? partyWindowFromClock(первый, окноУхода.from, окноУхода.to, пояс) : null),
+    [первый, окноУхода, пояс],
+  )
+  const сдвигДня = useMemo(() => {
+    if (!первый) return 0
+    const local = userWindow(первый, канонПрайма ?? ПО_УМОЛЧАНИЮ, пояс)
+    return dayShiftBetween(первый, local.from.key)
+  }, [первый, канонПрайма, пояс])
 
   /*
    * Кто и на скольки из выделенных дней отмечен.
@@ -204,7 +255,9 @@ export function РедакторДней({
    * Оставляем дни выделенными: результат виден по клеткам сам собой, а под
    * заголовком редактора написано, что там сейчас стоит.
    */
-  const назначитьПрайм = () => assignPrime(выбор, окно, тема)
+  const назначитьПрайм = () => {
+    if (канонПрайма) assignPrime(выбор, канонПрайма, тема)
+  }
   /*
    * Вместе с праймом и выходным стирается и поле темы.
    *
@@ -225,7 +278,10 @@ export function РедакторДней({
 
   const отметитьОтсутствие = () => {
     if (!герой) return
-    const отсутствие: Absence = весьДень ? { whole: true } : { whole: false, window: окноУхода }
+    if (!весьДень && !канонУхода) return
+    const отсутствие: Absence = весьДень
+      ? { whole: true }
+      : { whole: false, window: канонУхода! }
     setAway(герой, выбор, отсутствие)
   }
   const снятьОтсутствие = () => {
@@ -265,6 +321,13 @@ export function РедакторДней({
           читать его надо после того, как увидишь дни.
         */}
         <span className="editor-now">{чтоТам}</span>
+        <span
+          className="editor-zone"
+          title="Время вводится в вашем поясе и сохраняется по Москве. Если пояс недоступен, ввод идёт по Москве."
+        >
+          {пояс === PARTY_TIME_ZONE ? 'время по Москве' : `время по вашему поясу: ${пояс}`}
+          {сдвигДня !== 0 && ` (${сдвигДня > 0 ? '+' : ''}${сдвигДня} дн.)`}
+        </span>
       </div>
 
       <div className={`editor-grid${мастер ? '' : ' один'}`}>
@@ -278,6 +341,7 @@ export function РедакторДней({
             setТема={setТема}
             выходныхВВыборе={выходныхВВыборе}
             естьЧтоОчистить={естьЧтоОчистить}
+            перевёрнуто={!канонПрайма}
             onНазначить={назначитьПрайм}
             onОчистить={очистить}
             onОтметитьВыходной={отметитьВыходной}
@@ -293,6 +357,7 @@ export function РедакторДней({
           setВесьДень={setВесьДень}
           окноУхода={окноУхода}
           setОкноУхода={setОкноУхода}
+          уходНеверен={!канонУхода}
           отмечено={отмеченные.length}
           уходовНет={уходовНет}
           onСменаГероя={onСменаГероя}
@@ -314,6 +379,7 @@ function ПраймБлок({
   setТема,
   выходныхВВыборе,
   естьЧтоОчистить,
+  перевёрнуто,
   onНазначить,
   onОчистить,
   onОтметитьВыходной,
@@ -326,13 +392,13 @@ function ПраймБлок({
   setТема: (тема: string) => void
   выходныхВВыборе: number
   естьЧтоОчистить: boolean
+  /** Окно не переводится в московское: конец раньше начала или дырка DST. */
+  перевёрнуто: boolean
   onНазначить: () => void
   onОчистить: () => void
   onОтметитьВыходной: () => void
   onСнятьВыходной: () => void
 }) {
-  const перевёрнуто = окно.from >= окно.to
-
   return (
     <section className="editor-block">
       <h4>Прайм</h4>
@@ -425,7 +491,9 @@ function ПраймБлок({
         </button>
       </div>
       {перевёрнуто && (
-        <p className="hint">Прайм должен заканчиваться позже, чем начинается.</p>
+        <p className="hint">
+          В вашем поясе не получается окно с таким началом и концом. Проверьте время.
+        </p>
       )}
     </section>
   )
@@ -440,6 +508,7 @@ function БлокОтсутствия({
   setВесьДень,
   окноУхода,
   setОкноУхода,
+  уходНеверен,
   отмечено,
   уходовНет,
   onСменаГероя,
@@ -454,6 +523,7 @@ function БлокОтсутствия({
   setВесьДень: (v: boolean) => void
   окноУхода: PrimeWindow
   setОкноУхода: (окно: PrimeWindow) => void
+  уходНеверен: boolean
   отмечено: number
   уходовНет: number
   onСменаГероя: (id: string) => void
@@ -518,26 +588,33 @@ function БлокОтсутствия({
       />
 
       {!весьДень && (
-        <div className="row time-row">
-          <label>
-            начало
-            <input
-              className="input time"
-              type="time"
-              value={minutesForField(окноУхода.from, false)}
-              onChange={(e) => setОкноУхода({ ...окноУхода, from: minutesFromField(e.target.value, false) })}
-            />
-          </label>
-          <label>
-            конец
-            <input
-              className="input time"
-              type="time"
-              value={minutesForField(окноУхода.to, true)}
-              onChange={(e) => setОкноУхода({ ...окноУхода, to: minutesFromField(e.target.value, true) })}
-            />
-          </label>
-        </div>
+        <>
+          <div className="row time-row">
+            <label>
+              начало
+              <input
+                className="input time"
+                type="time"
+                value={minutesForField(окноУхода.from, false)}
+                onChange={(e) => setОкноУхода({ ...окноУхода, from: minutesFromField(e.target.value, false) })}
+              />
+            </label>
+            <label>
+              конец
+              <input
+                className="input time"
+                type="time"
+                value={minutesForField(окноУхода.to, true)}
+                onChange={(e) => setОкноУхода({ ...окноУхода, to: minutesFromField(e.target.value, true) })}
+              />
+            </label>
+          </div>
+          {уходНеверен && (
+            <p className="hint">
+              В вашем поясе не получается такой промежуток. Проверьте начало и конец.
+            </p>
+          )}
+        </>
       )}
 
       {/*
@@ -549,7 +626,11 @@ function БлокОтсутствия({
       */}
 
       <div className="row">
-        <button className="btn primary" disabled={!герой} onClick={onОтметить}>
+        <button
+          className="btn primary"
+          disabled={!герой || (!весьДень && уходНеверен)}
+          onClick={onОтметить}
+        >
           Назначить отсутствие
         </button>
         <button

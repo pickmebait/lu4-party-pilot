@@ -37,7 +37,16 @@ import {
   weekDays,
   weekendKeys,
 } from '@/lib/schedule.ts'
-import { GAME_EVENTS, eventSchedule, eventTitle, eventsByDay, eventsOn } from '@/lib/l2events.ts'
+import { GAME_EVENTS, eventAt, eventClock, eventSchedule, eventTitle, eventsByDay, eventsOn } from '@/lib/l2events.ts'
+import {
+  PARTY_TIME_ZONE,
+  dayShiftBetween,
+  formatZoneWindow,
+  inUserZone,
+  partyWindowFromClock,
+  userWindow,
+  zoneOrParty,
+} from '@/lib/timezone.ts'
 
 let пройдено = 0
 const ошибки: string[] = []
@@ -88,6 +97,75 @@ for (let минут = 1; минут <= 1440; минут += 7) {
  */
 равно('ноль в конце — это полночь', minutesFromField(minutesForField(0, true), true), 1440)
 
+/* --------------------------------------------------------- часовые пояса */
+
+/*
+ * База хранит московское время. Проверяем оба направления и переход через
+ * полночь: у восточных поясов вечернее событие попадает на следующие сутки,
+ * и именно там чаще всего теряется дата.
+ */
+равно(
+  'Москва остаётся Москвой',
+  inUserZone('2026-10-26', 22 * 60, PARTY_TIME_ZONE),
+  { key: '2026-10-26', minutes: 22 * 60 },
+)
+равно(
+  'летом Берлин на час позади Москвы',
+  inUserZone('2026-07-01', 21 * 60, 'Europe/Berlin'),
+  { key: '2026-07-01', minutes: 20 * 60 },
+)
+равно(
+  'зимой Берлин на два часа позади Москвы',
+  inUserZone('2026-01-15', 21 * 60, 'Europe/Berlin'),
+  { key: '2026-01-15', minutes: 19 * 60 },
+)
+равно(
+  'во Владивостоке вечернее событие уже завтра',
+  inUserZone('2026-10-26', 22 * 60, 'Asia/Vladivostok'),
+  { key: '2026-10-27', minutes: 5 * 60 },
+)
+равно(
+  'окно из Москвы во Владивосток переходит через полночь',
+  formatZoneWindow(userWindow('2026-10-26', { from: 21 * 60, to: 23 * 60 + 30 }, 'Asia/Vladivostok')),
+  '04:00–06:30',
+)
+равно(
+  'полночь на конце остаётся 24:00',
+  formatZoneWindow(userWindow('2026-10-26', { from: 21 * 60, to: 24 * 60 }, PARTY_TIME_ZONE)),
+  '21:00–24:00',
+)
+равно(
+  'сдвиг дня считается по календарю',
+  dayShiftBetween('2026-10-26', '2026-10-27'),
+  1,
+)
+равно(
+  'неизвестный пояс уходит на Москву',
+  zoneOrParty('Not/AZone'),
+  PARTY_TIME_ZONE,
+)
+равно('пустой пояс уходит на Москву', zoneOrParty(undefined), PARTY_TIME_ZONE)
+равно(
+  'введённые местные часы возвращаются в московские',
+  partyWindowFromClock('2026-10-26', 4 * 60, 6 * 60 + 30, 'Asia/Vladivostok'),
+  { from: 21 * 60, to: 23 * 60 + 30 },
+)
+равно(
+  'обратный пересчёт совпадает с прямым',
+  inUserZone('2026-10-26', partyWindowFromClock('2026-10-26', 4 * 60, 6 * 60 + 30, 'Asia/Vladivostok').from, 'Asia/Vladivostok').minutes,
+  4 * 60,
+)
+равно(
+  'дырка перевода часов не превращается в выдуманное окно',
+  partyWindowFromClock('2026-03-29', 2 * 60 + 30, 4 * 60, 'Europe/Berlin'),
+  null,
+)
+равно(
+  'окно, начинающееся и кончающееся в полночь, — это сутки',
+  partyWindowFromClock('2026-10-26', 0, 0, PARTY_TIME_ZONE),
+  { from: 0, to: 24 * 60 },
+)
+
 /* ------------------------------------------------------------- отсутствие */
 
 равно('весь день читается словами', describeAbsence({ whole: true }), 'весь день')
@@ -96,6 +174,44 @@ for (let минут = 1; минут <= 1440; минут += 7) {
 
 равно('ник без окна остаётся ником', absentLabel('Алекс', { whole: true }), 'Алекс')
 равно('ник с окном получает его в скобках', absentLabel('Алекс', { whole: false, window: { from: 1260, to: 1410 } }), 'Алекс (21:00–23:30)')
+равно(
+  'окно отсутствия пересчитывается в пояс',
+  describeAbsence(
+    { whole: false, window: { from: 1260, to: 1410 } },
+    '2026-07-01',
+    'Europe/Berlin',
+  ),
+  '20:00–22:30',
+)
+равно(
+  'ник с окном отсутствия тоже в поясе',
+  absentLabel(
+    'Алекс',
+    { whole: false, window: { from: 1260, to: 1410 } },
+    '2026-07-01',
+    'Europe/Berlin',
+  ),
+  'Алекс (20:00–22:30)',
+)
+равно(
+  'окно отсутствия, ушедшее на следующую дату, помечено',
+  describeAbsence(
+    { whole: false, window: { from: 1290, to: 1350 } },
+    '2026-10-26',
+    'Asia/Vladivostok',
+  ),
+  '04:30–05:30 (+1 дн.)',
+)
+равно(
+  'ник с окном отсутствия тоже получает метку дня',
+  absentLabel(
+    'Алекс',
+    { whole: false, window: { from: 1290, to: 1350 } },
+    '2026-10-26',
+    'Asia/Vladivostok',
+  ),
+  'Алекс (04:30–05:30 (+1 дн.))',
+)
 
 /* -------------------------------------------------------------- слова и дни */
 
@@ -211,9 +327,45 @@ const Id = (key) => eventsOn(key).map((e) => e.id)
 равно('Orfen и Core не попадают на один день', eventsOn('2026-11-04').map((e) => e.id), ['core'])
 
 равно('в ноябре событий столько, сколько положено', eventsByDay(daysBetween('2026-11-01', '2026-11-30')).size, 13)
-равно('у эпического босса подпись со временем', eventTitle(GAME_EVENTS[0]), 'Ant Queen · эпический босс · 20:00')
+равно('у эпического босса подпись со временем', eventTitle(GAME_EVENTS[0]), 'Ant Queen · эпический босс · 22:00')
 равно('у осады подпись со временем', eventTitle(GAME_EVENTS[3]), 'Осады КХ · осада · 20:00')
-правда('в легенде назван день недели', eventSchedule(GAME_EVENTS[0]).includes('пн 20:00'))
+правда('в легенде назван день недели', eventSchedule(GAME_EVENTS[0]).includes('пн 22:00'))
+
+/*
+ * В другом поясе событие живёт на своей местной дате. Ant Queen в 22:00
+ * по Москве — это 05:00 следующего дня во Владивостоке, и в клетке
+ * календаря он должен стоять именно там.
+ */
+равно('в Москве Ant Queen в понедельник', eventsOn('2026-10-26').map((e) => e.id), ['ant-queen'])
+равно(
+  'во Владивостоке Ant Queen во вторник',
+  eventsOn('2026-10-27', 'Asia/Vladivostok').map((e) => e.id),
+  ['ant-queen'],
+)
+равно(
+  'в понедельник по Владивостоку Ant Queen ещё не наступил',
+  eventsOn('2026-10-26', 'Asia/Vladivostok').map((e) => e.id),
+  [],
+)
+равно(
+  'время события на местных часах',
+  eventClock(GAME_EVENTS[0], '2026-10-27', 'Asia/Vladivostok'),
+  5 * 60,
+)
+равно(
+  'в подсказке видны и местное время, и московское',
+  eventTitle(GAME_EVENTS[0], 'Asia/Vladivostok', '2026-10-27'),
+  'Ant Queen · эпический босс · 05:00 (по Москве 22:00)',
+)
+правда(
+  'в легенде день недели тоже местный',
+  eventSchedule(GAME_EVENTS[0], 'Asia/Vladivostok').includes('вт 05:00'),
+)
+равно(
+  'eventAt находит событие на местной дате',
+  eventAt(GAME_EVENTS[0], '2026-10-27', 'Asia/Vladivostok'),
+  { key: '2026-10-27', minutes: 5 * 60 },
+)
 
 /* ------------------------------------------------------- часы прайма */
 

@@ -7,6 +7,7 @@
  * самым, который человек видит в календаре.
  */
 import type { Absence, PrimeWindow, Schedule } from '@/types'
+import { PARTY_TIME_ZONE, dayShiftBetween, formatZoneWindow, userWindow } from './timezone'
 
 const МЕСЯЦЫ = [
   'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
@@ -376,10 +377,27 @@ export function offWord(сколькоДней: number): string {
  * выражение было написано трижды — в подсказке дня, в подсказке списка имён и в
  * раскрывающемся списке, — и при правке одного забывали другой: в одной подсказке
  * уже было «21:00–23:30», а в соседней по-прежнему пусто.
+ *
+ * Если передан день, окно пересчитывается в пояс пользователя. Без дня
+ * печатается московское время — так проверки и старые вызовы не зависят от
+ * пояса машины, на которой их запустили.
+ *
+ * Когда у пользователя окно начинается на соседнюю дату, рядом стоит «+1 дн.»:
+ * иначе «04:30–05:30» в клетке среды читается как утро среды, хотя по
+ * московскому дню это уже четверг.
  */
-export function describeAbsence(a: Absence): string {
+export function describeAbsence(
+  a: Absence,
+  dayKey?: string,
+  timeZone = PARTY_TIME_ZONE,
+): string {
   if (a.whole) return 'весь день'
-  return `${formatMinutes(a.window!.from)}–${formatMinutes(a.window!.to)}`
+  const окно = a.window!
+  if (!dayKey) return `${formatMinutes(окно.from)}–${formatMinutes(окно.to)}`
+  const местное = userWindow(dayKey, окно, timeZone)
+  const сдвиг = dayShiftBetween(dayKey, местное.from.key)
+  const метка = сдвиг === 0 ? '' : ` (${сдвиг > 0 ? '+' : ''}${сдвиг} дн.)`
+  return `${formatZoneWindow(местное)}${метка}`
 }
 
 /**
@@ -389,8 +407,13 @@ export function describeAbsence(a: Absence): string {
  * ошибаются: одна собирает «ник», другая «ник (окно)», а третья — отдельным
  * куском вёрстки. Список один, и собирать его одно место.
  */
-export function absentLabel(имя: string, a: Absence): string {
-  return a.whole ? имя : `${имя} (${describeAbsence(a)})`
+export function absentLabel(
+  имя: string,
+  a: Absence,
+  dayKey?: string,
+  timeZone = PARTY_TIME_ZONE,
+): string {
+  return a.whole ? имя : `${имя} (${describeAbsence(a, dayKey, timeZone)})`
 }
 
 /**

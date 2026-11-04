@@ -25,12 +25,22 @@ import {
 } from '@/lib/schedule'
 import {
   GAME_EVENTS,
+  eventClock,
   eventSchedule,
   eventTitle,
   eventsByDay,
   eventsOn,
   type GameEvent,
 } from '@/lib/l2events'
+import {
+  PARTY_TIME_ZONE,
+  browserTimeZone,
+  dayShiftBetween,
+  formatClock,
+  formatZoneWindow,
+  userTimeZone,
+  userWindow,
+} from '@/lib/timezone'
 import {
   addChecklistItem,
   removeChecklistItem,
@@ -60,8 +70,34 @@ function месяцСловами(часов: number, выходных: number):
   return `${прайм} · ${отдых}`
 }
 
+/** «+1 дн.» рядом со временем, которое у пользователя попало на соседнюю дату. */
+function сдвигСловами(сдвиг: number): string {
+  if (!сдвиг) return ''
+  return сдвиг > 0 ? `+${сдвиг} дн.` : `${сдвиг} дн.`
+}
+
+/**
+ * Подпись пояса.
+ *
+ * Отдельно от userTimeZone: там Москва — это ещё и запасной вариант, а
+ * человеку важно знать, почему время московское. Если браузер пояс не
+ * отдал, так и говорим, вместо тихого «по Москве».
+ */
+function подписьПояса(браузер: string | null): string {
+  if (!браузер) return 'Часовой пояс недоступен — время по Москве'
+  if (браузер === PARTY_TIME_ZONE) return 'Время — по Москве'
+  return `Время — по вашему поясу: ${браузер}`
+}
+
 export function ScheduleView() {
   const db = useDb()
+  /*
+   * Пояс читается один раз на отрисовку и кэшируется внутри timezone.ts.
+   * Если Intl не смог его отдать, userTimeZone вернёт Москву — тот же
+   * запасной вариант, что и при вводе времени.
+   */
+  const пояс = userTimeZone()
+  const поясБраузера = browserTimeZone()
   /*
    * Прайм и выходные — только мастеру. А вот отсутствие — другое дело: это
    * свойство персонажа, лежит оно в персонаже же, рядом со снаряжением и
@@ -176,7 +212,10 @@ export function ScheduleView() {
   )
 
   // Осады и эпические боссы в клетках: общее расписание сервера, не база пати.
-  const события = useMemo(() => eventsByDay(клетки.map((к) => к.key)), [клетки])
+  const события = useMemo(
+    () => eventsByDay(клетки.map((к) => к.key), пояс),
+    [клетки, пояс],
+  )
 
   const выходныхВМесяце = useMemo(
     () => клетки.filter((к) => !к.чужой && db.schedule.offs.includes(к.key)).length,
@@ -234,6 +273,7 @@ export function ScheduleView() {
                   тема={primeThemeOf(db.schedule, клетка.key)}
                   отсутствуют={отсутствия.get(клетка.key) ?? []}
                   события={события.get(клетка.key) ?? []}
+                  timeZone={пояс}
                   взят={выбрано.has(клетка.key)}
                   onStart={начать}
                   onEnter={выделитьДо}
@@ -251,13 +291,25 @@ export function ScheduleView() {
               <span
                 key={event.id}
                 className="event-legend"
-                title={`${eventTitle(event)} · ${eventSchedule(event)}`}
+                title={`${eventTitle(event, пояс)} · ${eventSchedule(event, пояс)}`}
               >
                 <EventIcon />
                 <span>{event.name}</span>
-                <span className="event-legend-time">{event.time}</span>
+                <span className="event-legend-time">{formatClock(eventClock(event, undefined, пояс))}</span>
               </span>
             ))}
+          </div>
+
+          {/*
+            Пояс подписан явно: иначе «22:00» в клетке у человека из другого
+            города выглядит как ошибка, а «время по Москве» после неудачного
+            чтения Intl — как обычное местное.
+          */}
+          <div
+            className="cal-zone-note"
+            title="Время событий, прайма и отсутствий пересчитано из московского в ваш пояс. Дни календаря остаются прежними."
+          >
+            {подписьПояса(поясБраузера)}
           </div>
 
           {/*
@@ -343,6 +395,7 @@ export function ScheduleView() {
                 выбрано={выбор.length}
                 chars={db.chars}
                 schedule={db.schedule}
+                timeZone={пояс}
               />
             ) : (
               <Checklist />
@@ -361,6 +414,7 @@ export function ScheduleView() {
               герой={герой}
               chars={db.chars}
               мастер={мастер}
+              пояс={пояс}
               onСменаГероя={setКто}
               onСнятьВыделение={() => setВыбор([])}
             />
@@ -387,8 +441,14 @@ export function ScheduleView() {
  * правила совпадают: разъезжаются они правкой одной строки, а человек потом
  * водит мышью по календарю и видит в подсказке дни два разных времени ухода.
  */
-function подписьСписка(список: DayAbsent[]): string {
-  return список.map((a) => absentLabel(a.имя, a.absence)).join(', ')
+function подписьСписка(
+  список: DayAbsent[],
+  dayKey: string,
+  timeZone: string,
+): string {
+  return список
+    .map((a) => absentLabel(a.имя, a.absence, dayKey, timeZone))
+    .join(', ')
 }
 
 /** Один день в сетке. Вынесен отдельно ради читаемости разметки. */
@@ -398,6 +458,7 @@ function DayBox({
   тема,
   отсутствуют,
   события,
+  timeZone,
   взят,
   onStart,
   onEnter,
@@ -407,11 +468,14 @@ function DayBox({
   тема: string
   отсутствуют: DayAbsent[]
   события: GameEvent[]
+  timeZone: string
   взят: boolean
   onStart: (к: DayCell) => void
   onEnter: (key: string) => void
 }) {
   const инфо = dayInfo(клетка.дата)
+  const местный = прайм.kind === 'окно' ? userWindow(клетка.key, прайм.window, timeZone) : null
+  const сдвиг = местный ? dayShiftBetween(клетка.key, местный.from.key) : 0
 
   const классы = ['cal-day']
   if (клетка.чужой) классы.push('other')
@@ -436,13 +500,19 @@ function DayBox({
         инфо.праздник ? holidayName(клетка.дата) : '',
         инфо.рабочий ? 'рабочий день, объявленный на выходном' : '',
         инфо.сокращённый ? 'сокращённый рабочий день' : '',
-        ...события.map((e) => `${eventTitle(e)} (${eventSchedule(e)})`),
+        ...события.map((e) => eventTitle(e, timeZone, клетка.key)),
         прайм.kind === 'окно'
-          ? `прайм ${formatMinutes(прайм.window.from)}–${formatMinutes(прайм.window.to)}${тема ? `, тема: ${тема}` : ''}`
+          ? `прайм ${formatZoneWindow(местный!)}${сдвиг ? ` (${сдвигСловами(сдвиг)})` : ''}${
+              timeZone !== PARTY_TIME_ZONE
+                ? `, по Москве ${formatMinutes(прайм.window.from)}–${formatMinutes(прайм.window.to)}`
+                : ''
+            }${тема ? `, тема: ${тема}` : ''}`
           : прайм.kind === 'выходной'
             ? 'выходной пати'
             : 'прайм не назначен',
-        отсутствуют.length > 0 ? `нет: ${подписьСписка(отсутствуют)}` : '',
+        отсутствуют.length > 0
+          ? `нет: ${подписьСписка(отсутствуют, клетка.key, timeZone)}`
+          : '',
       ]
         .filter(Boolean)
         .join(' · ')}
@@ -489,7 +559,7 @@ function DayBox({
           {события.length > 0 && (
             <span className="cal-events">
               {события.map((event) => (
-                <EventBadge key={event.id} event={event} />
+                <EventBadge key={event.id} event={event} timeZone={timeZone} dayKey={клетка.key} />
               ))}
             </span>
           )}
@@ -501,7 +571,10 @@ function DayBox({
             остаётся в подсказке клетки и в сводке.
           */}
           {отсутствуют.length > 0 && (
-            <span className="cal-away" title={`Отсутствуют: ${подписьСписка(отсутствуют)}`}>
+            <span
+              className="cal-away"
+              title={`Отсутствуют: ${подписьСписка(отсутствуют, клетка.key, timeZone)}`}
+            >
               {отсутствуют.slice(0, ИМЁН_В_ЯЧЕЙКЕ).map((a) => (
                 <span key={a.charId} className="cal-away-name" title={a.имя}>
                   {a.имя}
@@ -526,7 +599,15 @@ function DayBox({
       {прайм.kind === 'окно' && (
         <span className="cal-plan">
           <span className="cal-prime">
-            {formatMinutes(прайм.window.from)}–{formatMinutes(прайм.window.to)}
+            {formatZoneWindow(местный!)}
+            {сдвиг !== 0 && (
+              <span
+                className="cal-shift"
+                title={`У вас это ${сдвиг > 0 ? 'следующий' : 'предыдущий'} день`}
+              >
+                {сдвиг > 0 ? `+${сдвиг}` : String(сдвиг)}
+              </span>
+            )}
           </span>
           {тема && (
             <span className="cal-theme" title={`Тема прайма: ${тема}`}>
@@ -546,12 +627,27 @@ function DayBox({
  * повтор остаются в подсказке. В сводке, где места больше, выводится полное
  * имя — там событие и открывают, чтобы понять, что сегодня вечером.
  */
-function EventBadge({ event, full = false }: { event: GameEvent; full?: boolean }) {
+function EventBadge({
+  event,
+  timeZone,
+  dayKey,
+  full = false,
+}: {
+  event: GameEvent
+  timeZone: string
+  dayKey?: string
+  full?: boolean
+}) {
   return (
-    <span className={`event-badge${full ? ' full' : ''}`} title={eventTitle(event)}>
+    <span
+      className={`event-badge${full ? ' full' : ''}`}
+      title={eventTitle(event, timeZone, dayKey)}
+    >
       <EventIcon />
       <span className="event-badge-name">{full ? event.name : event.short}</span>
-      <span className="event-badge-time">{event.time}</span>
+      <span className="event-badge-time">
+        {formatClock(eventClock(event, dayKey, timeZone))}
+      </span>
     </span>
   )
 }
@@ -581,15 +677,19 @@ function DaySummary({
   выбрано,
   chars,
   schedule,
+  timeZone,
 }: {
   день: string
   выбрано: number
   chars: Char[]
   schedule: Schedule
+  timeZone: string
 }) {
   const прайм = primeOf(schedule, день)
   const тема = primeThemeOf(schedule, день)
-  const события = eventsOn(день)
+  const события = eventsOn(день, timeZone)
+  const местный = прайм.kind === 'окно' ? userWindow(день, прайм.window, timeZone) : null
+  const сдвиг = местный ? dayShiftBetween(день, местный.from.key) : 0
   const состав = chars.filter((c) => c.affil === 'roster')
   const уходят = chars.filter((c) => c.away?.[день])
   const пойдут = состав.filter((c) => !c.away?.[день])
@@ -603,12 +703,24 @@ function DaySummary({
         {выбрано > 1 && <span className="sum-selected">первый из {выбрано}</span>}
       </div>
 
-      <div className={`sum-prime${прайм.kind === 'выходной' ? ' off' : ''}`}>
+      <div
+        className={`sum-prime${прайм.kind === 'выходной' ? ' off' : ''}`}
+        title={
+          прайм.kind === 'окно' && timeZone !== PARTY_TIME_ZONE
+            ? `Время по вашему поясу. По Москве: ${formatMinutes(прайм.window.from)}–${formatMinutes(прайм.window.to)}`
+            : undefined
+        }
+      >
         {прайм.kind === 'окно'
-          ? `${formatMinutes(прайм.window.from)}–${formatMinutes(прайм.window.to)}`
+          ? formatZoneWindow(местный!)
           : прайм.kind === 'выходной'
             ? 'выходной пати'
             : 'время не назначено'}
+        {прайм.kind === 'окно' && сдвиг !== 0 && (
+          <span className="sum-prime-shift" title={`У вас это ${сдвиг > 0 ? 'следующий' : 'предыдущий'} день`}>
+            {сдвигСловами(сдвиг)}
+          </span>
+        )}
         {длительность > 0 && (
           <span className="sum-prime-hours">{String(Math.round(длительность / 6) / 10).replace('.', ',')} ч</span>
         )}
@@ -622,7 +734,7 @@ function DaySummary({
       {события.length > 0 && (
         <div className="sum-events">
           {события.map((event) => (
-            <EventBadge key={event.id} event={event} full />
+            <EventBadge key={event.id} event={event} timeZone={timeZone} dayKey={день} full />
           ))}
         </div>
       )}
@@ -665,7 +777,7 @@ function DaySummary({
                 имя={c.name}
                 cls={c.cls}
                 level={c.level}
-                примечание={describeAbsence(c.away![день])}
+                примечание={describeAbsence(c.away![день], день, timeZone)}
               />
             ))}
           </ul>
