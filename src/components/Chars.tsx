@@ -141,7 +141,7 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
             и сервер такой состав всё равно не примет.
           */}
           {master && (
-            <button className="btn add-char" onClick={() => setQuickAdd(true)}>
+            <button className="btn tiny" onClick={() => setQuickAdd(true)}>
               + Персонаж
             </button>
           )}
