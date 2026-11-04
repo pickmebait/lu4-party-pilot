@@ -158,6 +158,11 @@ export default function App() {
 
   return (
     <div className={`app${tab === 'schedule' ? ' app-schedule' : ''}`}>
+      {/*
+        Разделы стоят в одной строке с логотипом: отдельная полоса меню
+        отнимала у содержимого высоту на каждом экране. Палитра идёт после
+        разделов, а полоса синхронизации прижимается к правому краю.
+      */}
       <header className="top">
         <div className="brand">
           <span className="logo">⚔</span>
@@ -165,19 +170,20 @@ export default function App() {
             <AppTitle />
             <Tagline />
           </div>
-          <PaletteBar />
         </div>
+
+        <nav className="tabs" aria-label="Разделы">
+          {TABS.map((t) => (
+            <button key={t.key} className={tab === t.key ? 'on' : ''} onClick={() => сменитьВкладку(t.key)}>
+              <span className="tab-label">{t.label}</span>
+              <span className="tab-note">{заметка(t.key, sum, db)}</span>
+            </button>
+          ))}
+        </nav>
+
+        <PaletteBar />
         <SyncBar />
       </header>
-
-      <nav className="tabs">
-        {TABS.map((t) => (
-          <button key={t.key} className={tab === t.key ? 'on' : ''} onClick={() => сменитьВкладку(t.key)}>
-            <span className="tab-label">{t.label}</span>
-            <span className="tab-note">{заметка(t.key, sum, db)}</span>
-          </button>
-        ))}
-      </nav>
 
       <main>
         {tab === 'summary' && <SummaryView catalog={catalog} />}

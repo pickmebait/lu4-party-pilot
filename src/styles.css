@@ -205,20 +205,26 @@ main {
 
 /* ------------------------------------------------------------------ шапка */
 
+/*
+ * Шапка собрана в одну строку: логотип, разделы, палитра и синхронизация.
+ * Раньше меню лежало отдельной полосой под шапкой и отнимало высоту у
+ * содержимого — на календаре это были две строки, которых не хватало.
+ * Синхронизация остаётся справа, а на узком экране шапка переносится.
+ */
 .top {
   flex: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 10px 14px;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--line);
 }
 
 .brand {
+  flex: none;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
 }
@@ -237,9 +243,9 @@ main {
 
 /* Палитры: шесть кружков, у каждого три цвета самой палитры. */
 .palettes {
+  flex: none;
   display: flex;
   gap: 5px;
-  margin-left: 8px;
   padding: 4px 6px;
   background: var(--bg-2);
   border: 1px solid var(--line);
@@ -341,10 +347,12 @@ main {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  flex: 1 1 200px;
   justify-content: flex-end;
   gap: 8px;
-  width: 460px;
-  max-width: 100%;
+  width: auto;
+  max-width: 460px;
+  min-width: 0;
   margin-left: auto;
 }
 
@@ -697,11 +705,12 @@ main {
 /* -------------------------------------------------------------------- табы */
 
 .tabs {
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 0;
   display: flex;
-  gap: 4px;
-  margin: 8px 0 10px;
-  border-bottom: 1px solid var(--line);
+  gap: 2px;
+  margin: 0;
+  border-bottom: 0;
   flex-wrap: wrap;
 }
 
@@ -712,11 +721,12 @@ main {
  * видно, сколько занято.
  */
 .tabs button {
+  flex: none;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
   color: var(--muted);
-  padding: 8px 14px;
+  padding: 8px 12px;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -4509,16 +4519,33 @@ main {
 
 /*
  * Узкий экран. Карточки персонажей не перестраиваются: они и так в одну
- * строку со своей прокруткой, а вот шапка приложения складывается в
- * колонку, чтобы меню доступа не сжимало логотип с палитрой.
+ * строку со своей прокруткой, а шапка приложения разводит логотип, разделы,
+ * палитру и меню доступа по строкам, чтобы они не сжимали друг друга.
  */
 @media (max-width: 720px) {
-  .top {
-    flex-direction: column;
-    align-items: stretch;
+  /*
+   * На узком экране логотип и разделы занимают свои строки целиком, а
+   * палитра и синхронизация делят последнюю. Так меню остаётся читаемым, а
+   * лишней полосы под шапкой по-прежнему нет.
+   */
+  .brand,
+  .tabs {
+    flex: 0 0 100%;
   }
+
+  .tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
   /* Постоянная ширина на узком экране отнимала бы половину строки впустую. */
   .sync {
+    flex: 1 1 200px;
     width: auto;
   }
 
@@ -6023,15 +6050,12 @@ main {
   }
 
   .top {
+    gap: 8px 12px;
     padding-bottom: 6px;
   }
 
-  .tabs {
-    margin: 6px 0 8px;
-  }
-
   .tabs button {
-    padding: 6px 12px;
+    padding: 6px 10px;
   }
 
   .schedule-view > .view-head {
