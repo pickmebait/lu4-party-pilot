@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-06T12:53:48.393Z",
+    "updatedAt": "2026-11-06T12:56:37.534Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -1756,6 +1756,50 @@
           "from": "2026-08-08",
           "days": 100
         }
+      },
+      {
+        "id": "cmw4zandl1adneg",
+        "name": "PickMeBaby",
+        "cls": "Shillien Elder",
+        "level": 61,
+        "affil": "window",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
       }
     ],
     "warehouse": {
