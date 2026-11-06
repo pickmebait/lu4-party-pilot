@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-06T13:02:06.188Z",
+    "updatedAt": "2026-11-06T23:22:31.778Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -1822,6 +1822,16 @@
             }
           ]
         },
+        "extraWeaponSets": [
+          {
+            "rhand": [
+              null
+            ],
+            "lhand": [
+              null
+            ]
+          }
+        ],
         "subUnlocked": false,
         "subs": [],
         "away": {}
