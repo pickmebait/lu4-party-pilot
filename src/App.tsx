@@ -107,8 +107,16 @@ export default function App() {
   const items = catalog.catalog?.items
   useEffect(() => {
     if (session?.role !== 'master' || !items?.length) return
+    /*
+     * Миграция меняет базу и сохраняется как обычная правка. Пока серверная
+     * версия ни разу не прочитана, локальная копия может быть старой — и
+     * запись миграции увезла бы её на сервер вместо свежего расписания.
+     * Поэтому ждём метку сервера: после загрузки база уже настоящая, и
+     * миграция применяется к ней.
+     */
+    if (!session.lastSyncedAt) return
     migrateGear(items)
-  }, [items, db, session?.role])
+  }, [items, db, session?.role, session?.lastSyncedAt])
 
   /*
    * Сохранённая сессия проверяется, а не принимается на веру.

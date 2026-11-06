@@ -1,4 +1,5 @@
 /** Небольшие утилиты, общие для всего приложения. */
+import { formatClock, userTimeZone, wallTimeAt } from './timezone'
 
 let counter = 0
 
@@ -11,12 +12,19 @@ export function uid(prefix = ''): string {
   return `${prefix}${t}${c}${r}`
 }
 
-/** 2026-10-06 21:34 */
-export function formatStamp(iso: string): string {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  const p = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`
+/**
+ * «2026-10-06 21:34» в поясе пользователя.
+ *
+ * Раньше здесь были локальные геттеры Date: на одном компьютере они давали
+ * московское время, на другом — своё. Расписание уже пересчитывает время в
+ * пояс пользователя, и даты токенов должны читаться теми же часами. Пояс
+ * берётся из того же места, что и в календаре, с запасной Москвой.
+ */
+export function formatStamp(iso: string, timeZone = userTimeZone()): string {
+  const t = new Date(iso).getTime()
+  if (Number.isNaN(t)) return iso
+  const wall = wallTimeAt(t, timeZone)
+  return `${wall.key} ${formatClock(wall.minutes)}`
 }
 
 /** "3 мин назад", "2 ч назад", "вчера" — для истории операций. */

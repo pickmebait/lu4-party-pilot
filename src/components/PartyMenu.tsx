@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Char } from '@/types'
 import {
   deleteParty,
@@ -11,8 +11,10 @@ import {
   type TokenInfo,
 } from '@/lib/api'
 import { getSession, signIn, signOut, updateSession, useDb } from '@/lib/store'
-import { formatAgo, formatStamp } from '@/lib/util'
+import { browserTimeZone, userTimeZone, zoneLabel } from '@/lib/timezone'
+import { formatAgo } from '@/lib/util'
 import { ConfirmModal, ПАУЗА_ПАТИ_СЕКУНД } from './ConfirmModal'
+import { TokensTable } from './PartyTokens'
 import { TokenModal } from './TokenModal'
 
 /**
@@ -32,6 +34,8 @@ import { TokenModal } from './TokenModal'
 export function PartyMenu() {
   const session = getSession()!
   const db = useDb()
+  const поясБраузера = browserTimeZone()
+  const пояс = userTimeZone()
   const [open, setOpen] = useState(false)
   const [meta, setMeta] = useState<PartyMeta | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
@@ -44,9 +48,37 @@ export function PartyMenu() {
   const [правкаИмени, setПравкаИмени] = useState(false)
   const [новоеИмя, setНовоеИмя] = useState('')
   const root = useRef<HTMLDivElement>(null)
+  const panel = useRef<HTMLDivElement>(null)
+  /** Номер последнего запроса списка: ответ старого запроса не должен затирать новый. */
+  const запросМета = useRef(0)
 
   const свой = session.role === 'char' ? session.charId : null
   const имяСвоего = свой ? (db.chars.find((c) => c.id === свой)?.name?.trim() ?? '') : ''
+  const мастер = session.role === 'master'
+  const видТокена = мастер
+    ? 'мастер-токен'
+    : `токен персонажа${имяСвоего ? `: ${имяСвоего}` : ''}`
+
+  /**
+   * Перечитывает данные панели.
+   *
+   * Список токенов меняется после выпуска, отзыва и пересоздания мастер-
+   * токена. Раньше на месте списка просто выставлялось «Загружаю…», и оно
+   * висело до закрытия меню: эффект читал данные только при открытии.
+   * Токен можно передать явно — после смены мастер-токена старый уже не
+   * подходит, а состояние сессии обновится только к следующей отрисовке.
+   */
+  const обновитьМета = useCallback(
+    async (токен = session.token) => {
+      const номер = ++запросМета.current
+      setError(null)
+      const res = await fetchMeta(session.apiUrl, токен)
+      if (номер !== запросМета.current) return
+      if (res.ok) setMeta(res.value)
+      else setError(res.error)
+    },
+    [session.apiUrl, session.token],
+  )
 
   /*
    * Щелчок мимо кнопки закрывает меню. Слушатель ставится только пока меню
@@ -69,24 +101,45 @@ export function PartyMenu() {
     }
   }, [open])
 
-  /** Данные панели берём при открытии: там список токенов, он меняется не сам. */
+  /*
+   * Высота панели считается от нижнего края кнопки, а не от верха окна.
+   *
+   * Шапка на узком экране занимает несколько строк, а сообщение
+   * синхронизации может её растянуть: постоянный запас в пикселях то
+   * оставлял панель за нижним краем, то отнимал у списка место без причины.
+   * Поэтому при открытии и при изменении шапки пересчитываем доступную
+   * высоту и отдаём её панели.
+   */
   useEffect(() => {
     if (!open) return
-    // Старая ошибка не должна висеть над свежим списком: она относилась к
-    // прошлой попытке и к этому открытию отношения не имеет.
-    setError(null)
-    let отменено = false
-    fetchMeta(session.apiUrl, session.token).then((res) => {
-      if (отменено) return
-      if (res.ok) setMeta(res.value)
-      else setError(res.error)
-    })
-    return () => {
-      отменено = true
+    const подогнать = () => {
+      const кнопка = root.current?.getBoundingClientRect()
+      const окно = panel.current
+      if (!кнопка || !окно) return
+      const место = window.innerHeight - (кнопка.bottom + 8) - 12
+      окно.style.maxHeight = `${Math.max(160, Math.round(место))}px`
     }
-  }, [open, session.apiUrl, session.token])
+    подогнать()
+    const шапка = root.current?.closest('.top')
+    const наблюдатель =
+      typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(подогнать)
+    if (наблюдатель && шапка) наблюдатель.observe(шапка)
+    window.addEventListener('resize', подогнать)
+    return () => {
+      наблюдатель?.disconnect()
+      window.removeEventListener('resize', подогнать)
+    }
+  }, [open])
 
-  const мастер = session.role === 'master'
+  /** Данные панели берём при открытии: список токенов сам не меняется. */
+  useEffect(() => {
+    if (!open) return
+    обновитьМета()
+    // Закрытие меню отменяет ответ: он относится к прошлому открытию.
+    return () => {
+      запросМета.current++
+    }
+  }, [open, обновитьМета])
 
   const выпустить = async (charId: string) => {
     const персонаж = db.chars.find((c) => c.id === charId)
@@ -99,7 +152,7 @@ export function PartyMenu() {
       return
     }
     setВыборПерсонажа(false)
-    setMeta(null)
+    обновитьМета()
     setВыдан({
       token: res.value.token,
       заголовок: `Токен для «${персонаж?.name || 'персонажа'}»`,
@@ -115,7 +168,7 @@ export function PartyMenu() {
       setError(res.error)
       return
     }
-    setMeta(null)
+    обновитьМета()
     setВыдан({ token: res.value.token, заголовок: `Новый токен для «${t.charName}»` })
   }
 
@@ -128,7 +181,7 @@ export function PartyMenu() {
       setError(res.error)
       return
     }
-    setMeta(null)
+    обновитьМета()
   }
 
   const переименовать = async () => {
@@ -154,7 +207,7 @@ export function PartyMenu() {
     // прежнее имя до перезагрузки.
     updateSession({ name: res.value.name })
     setПравкаИмени(false)
-    setMeta(null)
+    обновитьМета()
   }
 
   const перевыпуститьМастер = async () => {
@@ -168,7 +221,7 @@ export function PartyMenu() {
     }
     // Мастер-токен сменился — старый в этом браузере уже не годится.
     signIn({ ...session, token: res.value.token })
-    setMeta(null)
+    обновитьМета(res.value.token)
     setВыдан({
       token: res.value.token,
       заголовок: 'Новый мастер-токен',
@@ -211,159 +264,144 @@ export function PartyMenu() {
         title="Название пати и вид токена"
       >
         <span className="party-name">{session.name}</span>
-        <span className={`party-role ${мастер ? 'master' : 'char'}`}>
-          {мастер ? 'мастер-токен' : `токен персонажа${имяСвоего ? `: ${имяСвоего}` : ''}`}
-        </span>
+        <span className={`party-role ${мастер ? 'master' : 'char'}`}>{видТокена}</span>
       </button>
 
       {open && (
-        <div className="party-panel">
-          <h4>Пати «{session.name}»</h4>
-          <p className="hint">
-            {мастер
-              ? 'Мастер-токен: полные права. Можно править любого персонажа, общую казну и расписание, выпускать и отзывать токены.'
-              : 'Токен персонажа: видно всё, править можно только своего персонажа. Остальное — общая часть пати.'}
-          </p>
-
-          {meta && (
-            <div className="kv">
-              <span>В базе</span>
-              <b>
-                {meta.chars ?? 0} перс. · изменено{' '}
-                {meta.updatedAt ? formatAgo(meta.updatedAt) : '—'}
-                {meta.updatedBy ? ` (${meta.updatedBy})` : ''}
-              </b>
-            </div>
-          )}
-
-          {error && <p className="sync-msg err">{error}</p>}
-
-          {/*
-            Название пати правится только мастером: сервер отклонит правку
-            от токена персонажа, а показывать поле, которое не сработает,
-            незачем. Правка живёт на месте — нажали «Переименовать», под
-            именем появилось поле, и оно же уходит по «Отмене» или Escape.
-          */}
-          {мастер && (
-            <section className="party-rename">
-              {правкаИмени ? (
-                <>
-                  <input
-                    className="input"
-                    autoFocus
-                    value={новоеИмя}
-                    maxLength={40}
-                    placeholder="Название пати"
-                    onChange={(e) => setНовоеИмя(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') переименовать()
-                      if (e.key === 'Escape') {
-                        // Ошибку правки закрывать не надо, но и меню вместе
-                        // с ней закрывать нельзя: правка это не всё окно.
-                        e.stopPropagation()
-                        setПравкаИмени(false)
-                      }
-                    }}
-                  />
-                  <div className="party-rename-actions">
-                    <button
-                      className="btn tiny primary"
-                      disabled={busy === 'name'}
-                      onClick={переименовать}
-                    >
-                      Сохранить
-                    </button>
-                    <button className="btn tiny" onClick={() => setПравкаИмени(false)}>
-                      Отмена
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="party-rename-row">
-                  <span className="party-rename-name">{session.name}</span>
-                  <button
-                    className="btn tiny"
-                    onClick={() => {
-                      setНовоеИмя(session.name)
-                      setПравкаИмени(true)
-                    }}
-                  >
-                    Переименовать
-                  </button>
-                </div>
-              )}
-            </section>
-          )}
-
-          {мастер && (
-            <section className="party-tokens">
-              <div className="party-section-head">
-                <b>Токены персонажей</b>
-                <button className="btn tiny primary" onClick={() => setВыборПерсонажа(true)}>
-                  Выпустить
-                </button>
+        <div className="party-panel" ref={panel} role="dialog" aria-label={`Пати «${session.name}»`}>
+          <div className="party-head">
+            <div className="party-head-main">
+              <h4 title={session.name}>Пати «{session.name}»</h4>
+              <div className="party-head-meta">
+                <span className={`party-role ${мастер ? 'master' : 'char'}`}>{видТокена}</span>
+                {meta && (
+                  <span>
+                    {meta.chars ?? 0} перс. · изменено{' '}
+                    {meta.updatedAt ? formatAgo(meta.updatedAt) : '—'}
+                    {meta.updatedBy ? ` (${meta.updatedBy})` : ''}
+                  </span>
+                )}
               </div>
+            </div>
+            <button
+              className="icon-btn tiny party-close"
+              title="Закрыть меню"
+              aria-label="Закрыть меню"
+              onClick={() => setOpen(false)}
+            >
+              ✕
+            </button>
+          </div>
 
-              {!meta && <p className="hint">Загружаю список…</p>}
-              {безТокена && <p className="hint">Пока никому не выдан.</p>}
+          <div className="party-body">
+            <p className="hint party-note">
+              {мастер
+                ? 'Полные права: любой персонаж, казна и расписание, выпуск и отзыв токенов.'
+                : 'Видно всю пати, править можно только своего персонажа.'}
+            </p>
 
-              {токены.map((t) => (
-                <div className="party-token" key={t.id}>
-                  <div className="party-token-main">
-                    <span className="party-token-name">{t.charName}</span>
+            {error && <p className="sync-msg err">{error}</p>}
+
+            {/*
+              Название пати правится только мастером: сервер отклонит правку
+              от токена персонажа, а показывать поле, которое не сработает,
+              незачем. Правка живёт на месте — нажали «Переименовать», под
+              именем появилось поле, и оно же уходит по «Отмене» или Escape.
+            */}
+            {мастер && (
+              <section className="party-rename">
+                {правкаИмени ? (
+                  <>
+                    <input
+                      className="input"
+                      autoFocus
+                      value={новоеИмя}
+                      maxLength={40}
+                      placeholder="Название пати"
+                      onChange={(e) => setНовоеИмя(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') переименовать()
+                        if (e.key === 'Escape') {
+                          // Ошибку правки закрывать не надо, но и меню вместе
+                          // с ней закрывать нельзя: правка это не всё окно.
+                          e.stopPropagation()
+                          setПравкаИмени(false)
+                        }
+                      }}
+                    />
+                    <div className="party-rename-actions">
+                      <button
+                        className="btn tiny primary"
+                        disabled={busy === 'name'}
+                        onClick={переименовать}
+                      >
+                        Сохранить
+                      </button>
+                      <button className="btn tiny" onClick={() => setПравкаИмени(false)}>
+                        Отмена
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="party-rename-row">
+                    <span className="party-rename-name">{session.name}</span>
                     <button
                       className="btn tiny"
-                      disabled={busy === t.id}
-                      title="Выпустить новый токен; прежний перестанет работать"
-                      onClick={() => перевыпустить(t)}
+                      onClick={() => {
+                        setНовоеИмя(session.name)
+                        setПравкаИмени(true)
+                      }}
                     >
-                      Перевыпустить
-                    </button>
-                    <button
-                      className="icon-btn tiny danger"
-                      disabled={busy === t.id}
-                      title="Отозвать токен"
-                      onClick={() => отозвать(t)}
-                    >
-                      ✕
+                      Переименовать
                     </button>
                   </div>
-                  {/*
-                    Даты стоят под именем, а не в одной строке с кнопками:
-                    «создан» и «активность» вместе с датами не помещались
-                    рядом с именем и двумя кнопками и вылезали за панель.
-                    Время точное: по нему видно, пользовались ли токеном
-                    вообще, а «два дня назад» на этот вопрос не отвечает.
-                  */}
-                  <div className="party-token-dates">
-                    <span title={`Токен выпущен ${formatAgo(t.createdAt)}`}>
-                      создан {formatStamp(t.createdAt)}
-                    </span>
-                    <span
-                      className={t.lastUsedAt ? undefined : 'muted'}
-                      title={
-                        t.lastUsedAt
-                          ? `Последняя активность ${formatAgo(t.lastUsedAt)}`
-                          : 'Этим токеном ещё ни разу не пользовались'
-                      }
-                    >
-                      {t.lastUsedAt ? `активность ${formatStamp(t.lastUsedAt)}` : 'активности не было'}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                )}
+              </section>
+            )}
 
-              <p className="hint">
-                Токен персонажа видит всю пати, но правит только того, на кого выдан.
-                Перевыпуск и пересоздание мастер-токена отзывают все ранее выпущенные.
+            {мастер && (
+              <section className="party-tokens">
+                <div className="party-section-head">
+                  <b>Токены персонажей</b>
+                  <button className="btn tiny primary" onClick={() => setВыборПерсонажа(true)}>
+                    Выпустить
+                  </button>
+                </div>
+
+                {!meta && <p className="hint">Загружаю список…</p>}
+                {безТокена && <p className="hint">Пока никому не выдан.</p>}
+
+                {/*
+                  Таблица прокручивается отдельно от панели: токенов может
+                  быть больше, чем помещается на экран, а шапка с кнопкой
+                  «Выпустить» и подвал с выходом должны оставаться на месте.
+                */}
+                <TokensTable
+                  токены={токены}
+                  пояс={пояс}
+                  занят={busy}
+                  onПеревыпустить={перевыпустить}
+                  onОтозвать={отозвать}
+                />
+
+                <p className="hint party-note">
+                  Токен персонажа видит всю пати, но правит только того, на кого выдан.
+                  Перевыпуск и пересоздание мастер-токена отзывают все ранее выпущенные.
+                </p>
+              </section>
+            )}
+
+            {мастер && (
+              <p className="party-zone">
+                {zoneLabel(поясБраузера)}. Даты токенов — в этом поясе.
               </p>
-            </section>
-          )}
+            )}
+          </div>
 
           <div className="party-actions">
             {мастер && (
               <button
-                className="btn"
+                className="btn tiny"
                 disabled={busy === 'master'}
                 title="Прежний мастер-токен и все токены персонажей перестанут работать"
                 onClick={перевыпуститьМастер}
@@ -371,12 +409,12 @@ export function PartyMenu() {
                 Перевыпустить мастер-токен
               </button>
             )}
-            <button className="btn danger" onClick={выйти}>
+            <button className="btn tiny danger" onClick={выйти}>
               Выйти
             </button>
             {мастер && (
               <button
-                className="btn danger"
+                className="btn tiny danger"
                 disabled={busy === 'delete'}
                 onClick={() => setПодтвердитьУдаление(true)}
               >

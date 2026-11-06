@@ -93,6 +93,19 @@ export function userTimeZone(): string {
   return browserTimeZone() ?? PARTY_TIME_ZONE
 }
 
+/**
+ * Подпись пояса для человека.
+ *
+ * Отдельно от userTimeZone: там Москва — это ещё и запасной вариант, а
+ * человеку важно знать, почему время московское. Если браузер пояс не
+ * отдал, так и говорим, вместо тихого «по Москве».
+ */
+export function zoneLabel(browser: string | null = browserTimeZone()): string {
+  if (!browser) return 'Часовой пояс недоступен — время по Москве'
+  if (browser === PARTY_TIME_ZONE) return 'Время — по Москве'
+  return `Время — по вашему поясу: ${browser}`
+}
+
 /** Любое значение → проверенный пояс, иначе Москва. */
 export function zoneOrParty(value: unknown): string {
   return isValidTimeZone(value) ? value : PARTY_TIME_ZONE

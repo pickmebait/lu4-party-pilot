@@ -598,9 +598,49 @@ let dbPartyId = loadSession()?.partyId ?? ''
  */
 let dbПрочитана = false
 
+/**
+ * Есть ли в браузере правки, которых ещё нет на сервере.
+ *
+ * Отдельный признак, а не сравнение меток: у сессии, которая ни разу не
+ * видела сервер, сравнивать не с чем. Раньше отсутствие метки считалось
+ * правкой само по себе — и старая копия базы уезжала на сервер поверх
+ * свежего расписания. Теперь признак ставится только там, где база
+ * действительно менялась человеком.
+ */
+let dbГрязная = false
+
 /** База в браузере прочитана и принадлежит этой пати. */
 export function базаПрочитана(): boolean {
   return dbПрочитана
+}
+
+/** В браузере есть несохранённые правки этой пати. */
+export function естьНесохранённое(): boolean {
+  return dbПрочитана && dbГрязная
+}
+
+/**
+ * Метка серверной версии из сохранённой сессии этой же пати.
+ *
+ * Нужна при чтении базы старого формата: там не было признака «грязная», и
+ * отличить несохранённую правку от давно не сверенной копии можно только по
+ * метке. Пустая метка ничего не доказывает — такие копии как раз и затирали
+ * серверное расписание, поэтому правкой они не считаются.
+ *
+ * Чужая сессия не подходит: при входе в другую пати в хранилище ещё лежит
+ * метка предыдущей, и сравнение с ней выдало бы чужое время за своё.
+ */
+function меткаСервера(partyId: string): string {
+  if (typeof localStorage === 'undefined') return ''
+  try {
+    const raw = localStorage.getItem(SESSION_KEY)
+    if (!raw) return ''
+    const s = JSON.parse(raw) as { partyId?: unknown; lastSyncedAt?: unknown }
+    if (s.partyId !== partyId) return ''
+    return typeof s.lastSyncedAt === 'string' ? s.lastSyncedAt : ''
+  } catch {
+    return ''
+  }
 }
 
 /**
@@ -613,16 +653,29 @@ export function базаПрочитана(): boolean {
  */
 function loadState(partyId = dbPartyId): Db {
   dbПрочитана = false
+  dbГрязная = false
   if (typeof localStorage === 'undefined') return emptyDb()
   try {
     const raw = localStorage.getItem(DB_KEY)
     if (!raw) return emptyDb()
-    const сохранённое = JSON.parse(raw) as { partyId?: string; db?: unknown }
+    const сохранённое = JSON.parse(raw) as { partyId?: string; db?: unknown; dirty?: unknown }
     // База, сохранённая до появления пометки, чужой считается: чей это id,
     // не узнать, а показать лишнее хуже, чем не показать ничего.
     if (!сохранённое.partyId || сохранённое.partyId !== partyId) return emptyDb()
     dbПрочитана = true
-    return normalizeDb(сохранённое.db)
+    const загруженная = normalizeDb(сохранённое.db)
+    /*
+     * Старые записи не знают признака «грязная». Считать их правкой нельзя:
+     * именно так старая копия без праймов уезжала на сервер. Но если сервер
+     * уже был прочитан, а локальная метка новее — это настоящая правка,
+     * сделанная до обновления. Её сохраняем: сервер отклонит запись по старой
+     * метке, если кто-то успел вперёд, и ничего чужого не потеряется.
+     */
+    const метка = меткаСервера(partyId)
+    dbГрязная =
+      сохранённое.dirty === true ||
+      (сохранённое.dirty === undefined && метка !== '' && (загруженная.updatedAt ?? '') > метка)
+    return загруженная
   } catch {
     /* повреждённые данные не должны ронять приложение */
   }
@@ -636,9 +689,10 @@ function loadState(partyId = dbPartyId): Db {
  * ещё: забытый приписочный try в одном из них сделал бы базу, которая при
  * следующем чтении посчитается чужой.
  */
-function saveState(next: Db): void {
+function saveState(next: Db, dirty: boolean): void {
+  dbГрязная = dirty
   try {
-    localStorage.setItem(DB_KEY, JSON.stringify({ partyId: dbPartyId, db: next }))
+    localStorage.setItem(DB_KEY, JSON.stringify({ partyId: dbPartyId, db: next, dirty }))
   } catch {
     /* приватный режим или переполнение — работаем без сохранения */
   }
@@ -682,7 +736,7 @@ export function авторПравки(): string {
 function commit(next: Db): void {
   dbПрочитана = true
   db = { ...next, version: DB_VERSION, updatedAt: new Date().toISOString(), updatedBy: авторПравки() }
-  saveState(db)
+  saveState(db, true)
   emit()
 }
 
@@ -2015,6 +2069,6 @@ export function replaceDb(next: unknown): void {
   dbПрочитана = true
   const normalized = normalizeDb(next)
   db = { ...normalized, version: DB_VERSION }
-  saveState(db)
+  saveState(db, false)
   emit()
 }

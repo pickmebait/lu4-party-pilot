@@ -40,6 +40,7 @@ import {
   formatZoneWindow,
   userTimeZone,
   userWindow,
+  zoneLabel,
 } from '@/lib/timezone'
 import {
   addChecklistItem,
@@ -74,19 +75,6 @@ function месяцСловами(часов: number, выходных: number):
 function сдвигСловами(сдвиг: number): string {
   if (!сдвиг) return ''
   return сдвиг > 0 ? `+${сдвиг} дн.` : `${сдвиг} дн.`
-}
-
-/**
- * Подпись пояса.
- *
- * Отдельно от userTimeZone: там Москва — это ещё и запасной вариант, а
- * человеку важно знать, почему время московское. Если браузер пояс не
- * отдал, так и говорим, вместо тихого «по Москве».
- */
-function подписьПояса(браузер: string | null): string {
-  if (!браузер) return 'Часовой пояс недоступен — время по Москве'
-  if (браузер === PARTY_TIME_ZONE) return 'Время — по Москве'
-  return `Время — по вашему поясу: ${браузер}`
 }
 
 export function ScheduleView() {
@@ -309,7 +297,7 @@ export function ScheduleView() {
             className="cal-zone-note"
             title="Время событий, прайма и отсутствий пересчитано из московского в ваш пояс. Дни календаря остаются прежними."
           >
-            {подписьПояса(поясБраузера)}
+            {zoneLabel(поясБраузера)}
           </div>
 
           {/*
