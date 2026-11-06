@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-06T12:56:37.534Z",
+    "updatedAt": "2026-11-06T12:57:49.819Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -1765,7 +1765,10 @@
         "affil": "window",
         "slots": {
           "rhand": [
-            null
+            {
+              "itemId": 239,
+              "sa": "Acumen"
+            }
           ],
           "lhand": [
             null
@@ -9281,6 +9284,24 @@
           {
             "itemId": 5784,
             "mod": 5
+          }
+        ]
+      },
+      {
+        "ts": "2026-11-06T12:57:45.502Z",
+        "кто": "Мастер",
+        "charId": "cmw4zandl1adneg",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 239,
+            "mod": 0,
+            "sa": "Acumen"
           }
         ]
       }
