@@ -37,7 +37,7 @@ import {
   weekDays,
   weekendKeys,
 } from '@/lib/schedule.ts'
-import { GAME_EVENTS, eventAt, eventClock, eventSchedule, eventTitle, eventsByDay, eventsOn } from '@/lib/l2events.ts'
+import { GAME_EVENTS, eventAt, eventClock, eventSchedule, eventTimeLabel, eventTitle, eventWindow, eventsByDay, eventsOn } from '@/lib/l2events.ts'
 import {
   PARTY_TIME_ZONE,
   dayShiftBetween,
@@ -363,8 +363,35 @@ const Id = (key) => eventsOn(key).map((e) => e.id)
 
 равно('в ноябре событий столько, сколько положено', eventsByDay(daysBetween('2026-11-01', '2026-11-30')).size, 13)
 равно('у эпического босса подпись со временем', eventTitle(GAME_EVENTS[0]), 'Ant Queen · эпический босс · 22:00')
-равно('у осады подпись со временем', eventTitle(GAME_EVENTS[3]), 'Осады КХ · осада · 20:00')
+равно('у осады подпись с диапазоном', eventTitle(GAME_EVENTS[3]), 'Осады КХ · осада · 20:00–22:00')
+равно('у осады замков диапазон два часа', eventTimeLabel(GAME_EVENTS[4]), '18:00–20:00')
+равно('у босса время одной точкой', eventTimeLabel(GAME_EVENTS[0]), '22:00')
 правда('в легенде назван день недели', eventSchedule(GAME_EVENTS[0]).includes('пн 22:00'))
+/*
+ * Осада кончается через два часа. В поясе, где она начинается в 22:00,
+ * конец попадает ровно на местную полночь: это следующие сутки, и «+1»
+ * должно быть видно, иначе диапазон читается как «22:00–00:00» того же дня.
+ */
+равно(
+  'ночная осада показывает полночь со сдвигом',
+  eventTimeLabel(GAME_EVENTS[3], undefined, 'Asia/Yekaterinburg'),
+  '22:00–00:00 +1',
+)
+равно(
+  'конец ночной осады лежит на следующих сутках',
+  eventWindow(GAME_EVENTS[3], undefined, 'Asia/Yekaterinburg').to,
+  { key: '2026-11-06', minutes: 0 },
+)
+равно(
+  'в легенде у осады тоже диапазон',
+  eventSchedule(GAME_EVENTS[3], 'Asia/Yekaterinburg').includes('чт 22:00–00:00 +1'),
+  true,
+)
+равно(
+  'во Владивостоке осада не переходит полночь',
+  eventTimeLabel(GAME_EVENTS[3], '2026-11-06', 'Asia/Vladivostok'),
+  '03:00–05:00',
+)
 
 /*
  * В другом поясе событие живёт на своей местной дате. Ant Queen в 22:00

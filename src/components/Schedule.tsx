@@ -1,4 +1,11 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from 'react'
+import { createPortal } from 'react-dom'
 import type { Char, Schedule } from '@/types'
 import { dayInfo, holidayName } from '@/lib/holidays'
 import {
@@ -25,8 +32,8 @@ import {
 } from '@/lib/schedule'
 import {
   GAME_EVENTS,
-  eventClock,
   eventSchedule,
+  eventTimeLabel,
   eventTitle,
   eventsByDay,
   eventsOn,
@@ -36,7 +43,6 @@ import {
   PARTY_TIME_ZONE,
   browserTimeZone,
   dayShiftBetween,
-  formatClock,
   formatZoneWindow,
   userTimeZone,
   userWindow,
@@ -278,12 +284,12 @@ export function ScheduleView() {
             {GAME_EVENTS.map((event) => (
               <span
                 key={event.id}
-                className="event-legend"
+                className={`event-legend kind-${event.kind}`}
                 title={`${eventTitle(event, пояс)} · ${eventSchedule(event, пояс)}`}
               >
                 <EventIcon />
                 <span>{event.name}</span>
-                <span className="event-legend-time">{formatClock(eventClock(event, undefined, пояс))}</span>
+                <span className="event-legend-time">{eventTimeLabel(event, undefined, пояс)}</span>
               </span>
             ))}
           </div>
@@ -461,9 +467,38 @@ function DayBox({
   onStart: (к: DayCell) => void
   onEnter: (key: string) => void
 }) {
+  /*
+   * Подсказка отсутствующих — отдельным слоем поверх страницы.
+   *
+   * У клетки `overflow: hidden`, а у сетки — своя прокрутка, поэтому
+   * подсказка внутри дня обрезалась бы по краю. Портал рисует её над всем
+   * интерфейсом, а координаты берутся с самой цифры: список должен появиться
+   * там, куда человек навёл мышь.
+   */
+  const [подсказка, setПодсказка] = useState<{ left: number; top: number; below: boolean } | null>(
+    null,
+  )
+
+  const показатьСписок = (e: ReactMouseEvent<HTMLSpanElement>) => {
+    const r = e.currentTarget.getBoundingClientRect()
+    const below = r.top < 220
+    setПодсказка({
+      left: r.left + r.width / 2,
+      top: below ? r.bottom : r.top,
+      below,
+    })
+  }
+
   const инфо = dayInfo(клетка.дата)
   const местный = прайм.kind === 'окно' ? userWindow(клетка.key, прайм.window, timeZone) : null
   const сдвиг = местный ? dayShiftBetween(клетка.key, местный.from.key) : 0
+  const деньНедели = ДНИ_НЕДЕЛИ[(клетка.дата.getDay() + 6) % 7]
+  /*
+   * Два имени показываем только когда их всего два. С цифрой и «ещё N»
+   * третье имя сжималось до огрызков; при трёх и больше оставляем одно,
+   * а полный список открывается наведением на цифру.
+   */
+  const имёнВидноВЯчейке = отсутствуют.length > 2 ? 1 : ИМЁН_В_ЯЧЕЙКЕ
 
   const классы = ['cal-day']
   if (клетка.чужой) классы.push('other')
@@ -510,9 +545,10 @@ function DayBox({
       <span className="cal-top">
         <span className="cal-daynum">
           <span className="cal-num">{клетка.дата.getDate()}</span>
-          {клетка.сегодня && <span className="cal-today">сегодня</span>}
+          <span className="cal-dow">{деньНедели}</span>
         </span>
         <span className="cal-marks">
+          {клетка.сегодня && <span className="cal-today">сегодня</span>}
           {инфо.праздник && (
             <span className="cal-mark" title={holidayName(клетка.дата)}>
               ★
@@ -527,83 +563,99 @@ function DayBox({
       </span>
 
       {/*
-        Выходной пати — сразу под номером, а не последней строкой клетки.
-        Внизу он стоял на месте времени и читался как ещё одно значение дня;
-        рядом с числом видно, что это решение про весь день, а не про вечер.
+        Тело карточки: события сверху, отсутствующие — у самого прайма.
+        Распорка `margin-top: auto` у отсутствующих держит их над нижним
+        блоком, поэтому красная строка не скачет вслед за числом событий.
       */}
-      {прайм.kind === 'выходной' && (
-        <span className="cal-off" title="Выходной пати — в этот день не собираемся">
-          выходной
-        </span>
-      )}
+      <span className="cal-body">
+        {события.length > 0 && (
+          <span className="cal-events">
+            {события.map((event) => (
+              <EventBadge key={event.id} event={event} timeZone={timeZone} dayKey={клетка.key} />
+            ))}
+          </span>
+        )}
 
-      {/*
-        События и отсутствия — вторая ступень после плана вечера. Они стоят
-        одной колонкой: так строка «Ant Queen 20:00» не спорит за место с
-        временем прайма, а красные имена не теряются между ними.
-      */}
-      {(события.length > 0 || отсутствуют.length > 0) && (
-        <span className="cal-notes">
-          {события.length > 0 && (
-            <span className="cal-events">
-              {события.map((event) => (
-                <EventBadge key={event.id} event={event} timeZone={timeZone} dayKey={клетка.key} />
-              ))}
-            </span>
-          )}
-
-          {/*
-            Имена отсутствующих — полные, а не первая буква: в пати встречаются
-            два Ирока, и по «И» нельзя понять, кого именно не ждать. Строка одна:
-            лишние сворачиваются в «ещё N», полный список с временем ухода
-            остаётся в подсказке клетки и в сводке.
-          */}
-          {отсутствуют.length > 0 && (
+        {/*
+          Имена отсутствующих — полные, а не первая буква: в пати встречаются
+          два Ирока, и по «И» нельзя понять, кого именно не ждать. Строка одна:
+          лишние сворачиваются в «ещё N», а полный список в столбик — в
+          подсказке на цифре и с временем ухода — в сводке.
+        */}
+        {отсутствуют.length > 0 && (
+          <span
+            className="cal-away"
+            title={`Отсутствуют: ${подписьСписка(отсутствуют, клетка.key, timeZone)}`}
+          >
             <span
-              className="cal-away"
-              title={`Отсутствуют: ${подписьСписка(отсутствуют, клетка.key, timeZone)}`}
+              className="cal-away-badge"
+              onMouseEnter={показатьСписок}
+              onMouseLeave={() => setПодсказка(null)}
             >
-              {отсутствуют.slice(0, ИМЁН_В_ЯЧЕЙКЕ).map((a) => (
+              −{отсутствуют.length}
+            </span>
+            <span className="cal-away-names">
+              {отсутствуют.slice(0, имёнВидноВЯчейке).map((a) => (
                 <span key={a.charId} className="cal-away-name" title={a.имя}>
                   {a.имя}
                 </span>
               ))}
 
-              {отсутствуют.length > ИМЁН_В_ЯЧЕЙКЕ && (
-                <span className="cal-away-more">ещё {отсутствуют.length - ИМЁН_В_ЯЧЕЙКЕ}</span>
+              {отсутствуют.length > имёнВидноВЯчейке && (
+                <span className="cal-away-more">ещё {отсутствуют.length - имёнВидноВЯчейке}</span>
               )}
             </span>
-          )}
-        </span>
-      )}
+          </span>
+        )}
+      </span>
 
       {/*
-        План вечера — один блок. Время и тема раньше стояли на разных краях
-        клетки, между ними лежали событие и отсутствия, и приходилось собирать
-        «во сколько и что» из двух строк. Теперь это карточка с общей акцентной
-        чертой: сверху время, под ним тема. Блок прижат к низу, поэтому время
-        читается по одной линии во всей неделе.
+        Нижняя полоса всегда одной высоты: строка времени и строка темы
+        зарезервированы даже у выходного и у дня без прайма. Иначе разделитель
+        прыгал вверх-вниз при прокрутке недели и глаз цеплялся за него.
       */}
-      {прайм.kind === 'окно' && (
-        <span className="cal-plan">
-          <span className="cal-prime">
-            {formatZoneWindow(местный!)}
-            {сдвиг !== 0 && (
-              <span
-                className="cal-shift"
-                title={`У вас это ${сдвиг > 0 ? 'следующий' : 'предыдущий'} день`}
-              >
-                {сдвиг > 0 ? `+${сдвиг}` : String(сдвиг)}
-              </span>
-            )}
-          </span>
-          {тема && (
-            <span className="cal-theme" title={`Тема прайма: ${тема}`}>
-              {тема}
-            </span>
+      <span className={`cal-plan${прайм.kind === 'окно' ? '' : ' none'}`}>
+        <span className="cal-prime">
+          {прайм.kind === 'окно' ? (
+            <>
+              {formatZoneWindow(местный!)}
+              {сдвиг !== 0 && (
+                <span
+                  className="cal-shift"
+                  title={`У вас это ${сдвиг > 0 ? 'следующий' : 'предыдущий'} день`}
+                >
+                  {сдвиг > 0 ? `+${сдвиг}` : String(сдвиг)}
+                </span>
+              )}
+            </>
+          ) : прайм.kind === 'выходной' ? (
+            'выходной'
+          ) : (
+            'прайм не назначен'
           )}
         </span>
-      )}
+        <span className="cal-theme" title={тема ? `Тема прайма: ${тема}` : undefined}>
+          {прайм.kind === 'окно' && тема ? тема : ''}
+        </span>
+      </span>
+
+      {подсказка &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className={`cal-away-tip${подсказка.below ? ' below' : ''}`}
+            style={{ left: подсказка.left, top: подсказка.top }}
+            role="tooltip"
+          >
+            <span className="cal-away-tip-head">Отсутствуют: {отсутствуют.length}</span>
+            <ul>
+              {отсутствуют.map((a) => (
+                <li key={a.charId}>{a.имя || 'Без имени'}</li>
+              ))}
+            </ul>
+          </div>,
+          document.body,
+        )}
     </button>
   )
 }
@@ -611,9 +663,10 @@ function DayBox({
 /*
  * Значок и подпись события.
  *
- * В клетке достаточно короткого имени и времени; полное название, вид и
- * повтор остаются в подсказке. В сводке, где места больше, выводится полное
- * имя — там событие и открывают, чтобы понять, что сегодня вечером.
+ * В клетке имя идёт первой строкой, а время — второй: «Осады замков» с
+ * диапазоном «18:00–20:00» в одну строку не помещаются. Вид события красит
+ * значок: эпические боссы одним цветом, осады другим. В сводке, где места
+ * больше, тот же значок остаётся строкой.
  */
 function EventBadge({
   event,
@@ -628,14 +681,14 @@ function EventBadge({
 }) {
   return (
     <span
-      className={`event-badge${full ? ' full' : ''}`}
+      className={`event-badge kind-${event.kind}${full ? ' full' : ''}`}
       title={eventTitle(event, timeZone, dayKey)}
     >
-      <EventIcon />
-      <span className="event-badge-name">{full ? event.name : event.short}</span>
-      <span className="event-badge-time">
-        {formatClock(eventClock(event, dayKey, timeZone))}
+      <span className="event-badge-icon">
+        <EventIcon size={full ? 11 : 9} />
       </span>
+      <span className="event-badge-name">{event.name}</span>
+      <span className="event-badge-time">{eventTimeLabel(event, dayKey, timeZone)}</span>
     </span>
   )
 }

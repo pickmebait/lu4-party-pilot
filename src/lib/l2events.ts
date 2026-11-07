@@ -17,6 +17,8 @@ import {
   addDaysKey,
   formatClock,
   inUserZone,
+  instantOfWallTime,
+  wallTimeAt,
   zoneOrParty,
   type WallTime,
 } from './timezone'
@@ -25,13 +27,13 @@ export type EventKind = 'epic' | 'siege'
 
 export interface GameEvent {
   id: 'ant-queen' | 'orfen' | 'core' | 'kh-siege' | 'castle-siege'
-  /** Полное название для подсказки и сводки. */
+  /** Полное название для клетки, подсказки и сводки. */
   name: string
-  /** Короткое имя для клетки календаря. */
-  short: string
   kind: EventKind
   /** Время начала по Москве, минуты от полуночи. */
   timeMinutes: number
+  /** Сколько длится событие: осады — два часа, боссы появляются мгновенно. */
+  durationMinutes: number
   /** Ближайшее событие: от него считается период. */
   nearest: string
   /** Через сколько дней повторяется. */
@@ -42,45 +44,45 @@ export const GAME_EVENTS: readonly GameEvent[] = [
   {
     id: 'ant-queen',
     name: 'Ant Queen',
-    short: 'Ant Queen',
     kind: 'epic',
     timeMinutes: 22 * 60,
+    durationMinutes: 0,
     nearest: '2026-10-26',
     everyDays: 7,
   },
   {
     id: 'orfen',
     name: 'Orfen',
-    short: 'Orfen',
     kind: 'epic',
     timeMinutes: 22 * 60,
+    durationMinutes: 0,
     nearest: '2026-10-28',
     everyDays: 14,
   },
   {
     id: 'core',
     name: 'Core',
-    short: 'Core',
     kind: 'epic',
     timeMinutes: 22 * 60,
+    durationMinutes: 0,
     nearest: '2026-11-04',
     everyDays: 14,
   },
   {
     id: 'kh-siege',
     name: 'Осады КХ',
-    short: 'КХ',
     kind: 'siege',
     timeMinutes: 20 * 60,
+    durationMinutes: 2 * 60,
     nearest: '2026-11-05',
     everyDays: 14,
   },
   {
     id: 'castle-siege',
     name: 'Осады замков',
-    short: 'Замки',
     kind: 'siege',
     timeMinutes: 18 * 60,
+    durationMinutes: 2 * 60,
     nearest: '2026-11-08',
     everyDays: 14,
   },
@@ -156,6 +158,67 @@ export function eventClock(
   return inUserZone(event.nearest, event.timeMinutes, timeZone).minutes
 }
 
+/** Начало и конец события на часах пользователя. */
+export interface EventWindow {
+  from: WallTime
+  to: WallTime
+}
+
+/** Конец события: у боссов совпадает с началом, у осад прибавляет длительность. */
+function eventEnd(event: GameEvent, partyKey: string, timeZone: string): WallTime {
+  if (event.durationMinutes <= 0) {
+    return inUserZone(partyKey, event.timeMinutes, timeZone)
+  }
+  const start = instantOfWallTime({ key: partyKey, minutes: event.timeMinutes }, PARTY_TIME_ZONE)
+  return wallTimeAt(start + event.durationMinutes * 60_000, timeZone)
+}
+
+/**
+ * Окно события в локальном дне пользователя.
+ *
+ * localKey — клетка календаря. Событие могло начаться по Москве вчера или
+ * сегодня, поэтому ищем тот круг повтора, чьё начало на часах пользователя
+ * попадает именно в эту клетку. Без localKey берётся ближайшее событие.
+ */
+export function eventWindow(
+  event: GameEvent,
+  localKey?: string,
+  timeZone = PARTY_TIME_ZONE,
+): EventWindow | null {
+  const zone = zoneOrParty(timeZone)
+  if (!localKey) {
+    return {
+      from: inUserZone(event.nearest, event.timeMinutes, zone),
+      to: eventEnd(event, event.nearest, zone),
+    }
+  }
+  for (const key of [addDaysKey(localKey, -1), localKey, addDaysKey(localKey, 1)]) {
+    if (!eventOn(event, key)) continue
+    const from = inUserZone(key, event.timeMinutes, zone)
+    if (from.key !== localKey) continue
+    return { from, to: eventEnd(event, key, zone) }
+  }
+  return null
+}
+
+/**
+ * Время события для клетки и подсказки: «22:00» у босса и «18:00–20:00»
+ * у осад. Если конец перешёл на следующие местные сутки, добавляем «+1»:
+ * без него «23:00–01:00» читается как ошибка, а не как ночная осада.
+ */
+export function eventTimeLabel(
+  event: GameEvent,
+  localKey?: string,
+  timeZone = PARTY_TIME_ZONE,
+): string {
+  const окно = eventWindow(event, localKey, timeZone)
+  if (!окно) return formatClock(eventClock(event, localKey, timeZone))
+  const начало = formatClock(окно.from.minutes)
+  if (event.durationMinutes <= 0) return начало
+  const конец = formatClock(окно.to.minutes)
+  return `${начало}–${конец}${окно.to.key > окно.from.key ? ' +1' : ''}`
+}
+
 /** Подпись для подсказки: имя, вид и время на часах пользователя. */
 export function eventTitle(
   event: GameEvent,
@@ -164,7 +227,7 @@ export function eventTitle(
 ): string {
   const вид = event.kind === 'epic' ? 'эпический босс' : 'осада'
   const zone = zoneOrParty(timeZone)
-  const время = formatClock(eventClock(event, localKey, zone))
+  const время = eventTimeLabel(event, localKey, zone)
   const база = `${event.name} · ${вид} · ${время}`
   return zone === PARTY_TIME_ZONE
     ? база
@@ -176,5 +239,5 @@ export function eventSchedule(event: GameEvent, timeZone = PARTY_TIME_ZONE): str
   const wall = inUserZone(event.nearest, event.timeMinutes, timeZone)
   const дата = new Date(`${wall.key}T00:00:00Z`)
   const дни = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб']
-  return `${event.name} · ${дни[дата.getUTCDay()]} ${formatClock(wall.minutes)}`
+  return `${event.name} · ${дни[дата.getUTCDay()]} ${eventTimeLabel(event, wall.key, timeZone)}`
 }
