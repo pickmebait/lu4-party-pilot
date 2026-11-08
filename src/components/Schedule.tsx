@@ -11,20 +11,25 @@ import { dayInfo, holidayName } from '@/lib/holidays'
 import {
   ДНИ_НЕДЕЛИ,
   absencesByDay,
+  addDays,
   addMonths,
+  actualDays,
   daysBetween,
   absentLabel,
   describeAbsence,
   formatDay,
+  formatDayRange,
   formatMinutes,
   formatMonth,
   formatWeekday,
+  isoKey,
   isoToday,
   monthGrid,
   parseKey,
-  primeHours,
+  primeHoursOn,
   primeOf,
   primeThemeOf,
+  rangeCells,
   weekDays,
   weekendKeys,
   type DayAbsent,
@@ -75,12 +80,34 @@ import { ScheduleNote } from './ReadOnlyNote'
  */
 const ИМЁН_В_ЯЧЕЙКЕ = 2
 
-/** Месяц в шапке: часы прайма и число выходных. */
-function месяцСловами(часов: number, выходных: number): string {
+/** Период в шапке: часы прайма и число выходных. */
+function периодСловами(часов: number, выходных: number): string {
   const прайм = часов > 0 ? `${String(часов).replace('.', ',')} ч прайма` : 'прайм не назначен'
   const отдых = выходных > 0 ? `выходных: ${выходных}` : 'выходных нет'
   return `${прайм} · ${отдых}`
 }
+
+/**
+ * Как показан календарь: месяц целиком, текущая неделя или окно вокруг
+ * сегодняшнего дня.
+ *
+ * Месяц — привычная сетка, неделя и «Актуальное» — крупные карточки с осью
+ * вечера: в семи клетках помещается то, что в месячной сетке пришлось бы
+ * прятать в подсказку.
+ */
+type Режим = 'актуальное' | 'неделя' | 'месяц'
+
+const РЕЖИМЫ: { key: Режим; label: string; подсказка: string }[] = [
+  { key: 'актуальное', label: 'Актуальное', подсказка: 'Два дня до сегодня, сегодня и четыре после' },
+  { key: 'неделя', label: 'Неделя', подсказка: 'Текущая неделя с понедельника по воскресенье' },
+  { key: 'месяц', label: 'Месяц', подсказка: 'Сетка всего месяца' },
+]
+
+/*
+ * Режим переживает переход на другую вкладку: как и вид персонажей, это
+ * способ посмотреть, а не данные пати.
+ */
+let сохранённыйРежим: Режим = 'месяц'
 
 /** «+1 дн.» рядом со временем, которое у пользователя попало на соседнюю дату. */
 function сдвигСловами(сдвиг: number): string {
@@ -110,6 +137,13 @@ export function ScheduleView() {
     const d = parseKey(сегодня)
     return new Date(d.getFullYear(), d.getMonth(), 1)
   })
+  const [режим, setРежим] = useState<Режим>(сохранённыйРежим)
+  /*
+   * Опора недели и «Актуального». При переключении режима возвращается к
+   * сегодняшнему дню: по определению это текущая неделя и окно вокруг
+   * сегодня, а стрелки позволяют отойти от него, если понадобится.
+   */
+  const [обзор, setОбзор] = useState(сегодня)
   const [выбор, setВыбор] = useState<string[]>([])
   const [якорь, setЯкорь] = useState<string | null>(null)
   const [кто, setКто] = useState('')
@@ -129,16 +163,31 @@ export function ScheduleView() {
   useLayoutEffect(() => {
     const cal = календарь.current
     if (!cal) return
-    const today = cal.querySelector<HTMLElement>('.cal-day.today')
-    if (!today) {
+    /*
+     * Вбок прокручиваем к тому дню, на который смотрит человек: к
+     * выделенному, а если его в этом диапазоне нет — к сегодняшнему. Иначе
+     * при переключении вида с выделенного дня на «Неделю» календарь уезжал
+     * к сегодняшнему дню и прятал выбор за левым краем.
+     */
+    const цель =
+      cal.querySelector<HTMLElement>('.cal-day.picked') ||
+      cal.querySelector<HTMLElement>('.cal-day.today')
+    if (!цель) {
       cal.scrollLeft = 0
       return
     }
-    if (cal.scrollWidth <= cal.clientWidth + 1) return
-    const рамка = cal.getBoundingClientRect()
-    const день = today.getBoundingClientRect()
-    cal.scrollLeft += день.left - рамка.left - (cal.clientWidth - день.width) / 2
-  }, [месяц, кСегодня])
+    /*
+     * В месячной сетке вбок прокручивается сам календарь, а в крупной —
+     * внутренняя сетка: она шире семи колонок и живёт со своим скроллом.
+     * Выбираем тот контейнер, который действительно переполнен.
+     */
+    const полоса = cal.querySelector<HTMLElement>('.cal-grid')
+    const контейнер = полоса && cal.scrollWidth <= cal.clientWidth + 1 ? полоса : cal
+    if (контейнер.scrollWidth <= контейнер.clientWidth + 1) return
+    const рамка = контейнер.getBoundingClientRect()
+    const день = цель.getBoundingClientRect()
+    контейнер.scrollLeft += день.left - рамка.left - (контейнер.clientWidth - день.width) / 2
+  }, [месяц, кСегодня, режим, обзор])
 
   /*
    * Кто отмечает отсутствие.
@@ -149,13 +198,17 @@ export function ScheduleView() {
    */
   const герой = мастер ? (кто || db.chars[0]?.id || '') : (свойId ?? '')
 
-  const клетки = useMemo(() => monthGrid(месяц), [месяц])
+  const клетки = useMemo(() => {
+    if (режим === 'месяц') return monthGrid(месяц)
+    return rangeCells(режим === 'неделя' ? weekDays(обзор) : actualDays(обзор))
+  }, [режим, месяц, обзор])
   /*
    * В месяце из шести недель строк на одну больше, и клеткам достаётся
    * меньше высоты. Класс позволяет ужать только такие месяцы: в пятинедельных
    * номер, события и прайм остаются крупными.
    */
-  const шестьНедель = клетки.length > 35
+  const шестьНедель = режим === 'месяц' && клетки.length > 35
+  const крупныйВид = режим !== 'месяц'
   const выбрано = new Set(выбор)
   const границы = выбор.length > 0 ? [выбор[0], выбор[выбор.length - 1]] : null
 
@@ -185,14 +238,14 @@ export function ScheduleView() {
    * число показанного месяца: кнопка должна выделять что-то осмысленное
    * всегда, а не молча ничего.
    */
-  const опора = useMemo(() => {
+  const опораВыбора = useMemo(() => {
     if (выбор.length) return выбор[выбор.length - 1]
     const свой = клетки.find((к) => к.сегодня)
     return (свой || клетки.find((к) => !к.чужой))?.key ?? сегодня
   }, [выбор, клетки, сегодня])
 
   const выделитьНеделю = () => {
-    setВыбор(weekDays(опора))
+    setВыбор(weekDays(опораВыбора))
     открытьДень()
   }
   const выделитьВыходные = () => {
@@ -202,6 +255,54 @@ export function ScheduleView() {
   const выделитьМесяц = () => {
     setВыбор(клетки.filter((к) => !к.чужой).map((к) => к.key))
     открытьДень()
+  }
+
+  const выбратьРежим = (новый: Режим) => {
+    сохранённыйРежим = новый
+    setРежим(новый)
+    if (новый !== 'месяц') {
+      setОбзор(сегодня)
+      /*
+       * Выбор переезжает вместе с видом: если выделенный день остался за
+       * пределами недели или окна, справа открывалась бы карточка дня,
+       * которого нет в календаре.
+       */
+      const диапазон = новый === 'неделя' ? weekDays(сегодня) : actualDays(сегодня)
+      if (!выбор.some((key) => диапазон.includes(key))) setВыбор([сегодня])
+    }
+    открытьДень()
+  }
+
+  const листнуть = (направление: -1 | 1) => {
+    if (режим === 'месяц') {
+      setМесяц(addMonths(месяц, направление))
+      return
+    }
+    /*
+     * Неделя и «Актуальное» листаются на семь дней. Выделение едет вместе
+     * с периодом: иначе справа оставалась бы карточка дня, которого в
+     * показанном окне уже нет.
+     */
+    const шаг = направление * 7
+    const новаяОпора = isoKey(addDays(parseKey(обзор), шаг))
+    setОбзор(новаяОпора)
+    setВыбор(
+      выбор.length
+        ? выбор.map((key) => isoKey(addDays(parseKey(key), шаг)))
+        : [новаяОпора],
+    )
+    открытьДень()
+  }
+
+  const вернутьсяКСегодня = () => {
+    const d = parseKey(сегодня)
+    setМесяц(new Date(d.getFullYear(), d.getMonth(), 1))
+    setОбзор(сегодня)
+    setВыбор([сегодня])
+    setЯкорь(null)
+    тянем.current = false
+    открытьДень()
+    setКСегодня((n) => n + 1)
   }
 
   // Кто отсутствует в дни показанного месяца — для метки в клетке.
@@ -216,35 +317,68 @@ export function ScheduleView() {
     [клетки, пояс],
   )
 
-  const выходныхВМесяце = useMemo(
-    () => клетки.filter((к) => !к.чужой && db.schedule.offs.includes(к.key)).length,
-    [клетки, db.schedule.offs],
+  const своихКлеток = useMemo(() => клетки.filter((к) => !к.чужой), [клетки])
+  const выходныхВПериоде = useMemo(
+    () => своихКлеток.filter((к) => db.schedule.offs.includes(к.key)).length,
+    [своихКлеток, db.schedule.offs],
   )
-  const часовПрайма = primeHours(db.schedule, месяц)
+  const часовПрайма = useMemo(
+    () => primeHoursOn(db.schedule, своихКлеток.map((к) => к.key)),
+    [db.schedule, своихКлеток],
+  )
+  /*
+   * Крупная карточка показывает явку прямо в клетке: в неделе и «Актуальном»
+   * для этого есть место, а в месячной сетке счёт остаётся в правой сводке.
+   */
+  const составПати = useMemo(() => db.chars.filter((c) => c.affil === 'roster'), [db.chars])
+  const пойдутПоДням = useMemo(() => {
+    const карта = new Map<string, number>()
+    for (const к of клетки) {
+      карта.set(к.key, составПати.filter((c) => !c.away?.[к.key]).length)
+    }
+    return карта
+  }, [клетки, составПати])
+
+  const заголовокПериода =
+    режим === 'месяц' ? formatMonth(месяц) : formatDayRange(клетки.map((к) => к.key))
 
   return (
     <section className="view schedule-view" onMouseUp={закончитьВыбор} onMouseLeave={закончитьВыбор}>
       <div className="view-head">
         <h2>
           Расписание
-          <span className="head-note">{месяцСловами(часовПрайма, выходныхВМесяце)}</span>
+          <span className="head-note">{периодСловами(часовПрайма, выходныхВПериоде)}</span>
         </h2>
         <div className="cal-nav">
-          <button className="icon-btn" title="Предыдущий месяц" onClick={() => setМесяц(addMonths(месяц, -1))}>
+          <div className="segmented cal-modes" role="group" aria-label="Вид календаря">
+            {РЕЖИМЫ.map((р) => (
+              <button
+                key={р.key}
+                type="button"
+                className={режим === р.key ? 'on' : ''}
+                title={р.подсказка}
+                onClick={() => выбратьРежим(р.key)}
+              >
+                {р.label}
+              </button>
+            ))}
+          </div>
+          <button
+            className="icon-btn"
+            title={режим === 'месяц' ? 'Предыдущий месяц' : 'Предыдущие семь дней'}
+            onClick={() => листнуть(-1)}
+          >
             ‹
           </button>
-          <span className="cal-title">{formatMonth(месяц)}</span>
-          <button className="icon-btn" title="Следующий месяц" onClick={() => setМесяц(addMonths(месяц, 1))}>
+          <span className={`cal-title${режим === 'месяц' ? '' : ' range'}`}>{заголовокПериода}</span>
+          <button
+            className="icon-btn"
+            title={режим === 'месяц' ? 'Следующий месяц' : 'Следующие семь дней'}
+            onClick={() => листнуть(1)}
+          >
             ›
           </button>
-          <button
-            className="btn tiny"
-            onClick={() => {
-              const d = parseKey(сегодня)
-              setМесяц(new Date(d.getFullYear(), d.getMonth(), 1))
-              setКСегодня((n) => n + 1)
-            }}
-          >
+          <button className="btn tiny" onClick={вернутьсяКСегодня}>
             Сегодня
           </button>
         </div>
@@ -254,16 +388,18 @@ export function ScheduleView() {
 
       <div className="schedule-board">
         <div className="schedule-main">
-          <div className={`cal${шестьНедель ? ' cal-six' : ''}`} ref={календарь}>
-            <div className="cal-head">
-              {ДНИ_НЕДЕЛИ.map((д) => (
-                <div key={д} className={д === 'Сб' || д === 'Вс' ? 'weekend' : ''}>
-                  {д}
-                </div>
-              ))}
-            </div>
+          <div className={`cal${шестьНедель ? ' cal-six' : ''}${крупныйВид ? ' cal-big' : ''}`} ref={календарь}>
+            {!крупныйВид && (
+              <div className="cal-head">
+                {ДНИ_НЕДЕЛИ.map((д) => (
+                  <div key={д} className={д === 'Сб' || д === 'Вс' ? 'weekend' : ''}>
+                    {д}
+                  </div>
+                ))}
+              </div>
+            )}
 
-            <div className="cal-grid">
+            <div className={`cal-grid${крупныйВид ? ' cal-grid-big' : ''}`}>
               {клетки.map((клетка) => (
                 <DayBox
                   key={клетка.key}
@@ -274,6 +410,9 @@ export function ScheduleView() {
                   события={события.get(клетка.key) ?? []}
                   timeZone={пояс}
                   взят={выбрано.has(клетка.key)}
+                  крупно={крупныйВид}
+                  пойдут={пойдутПоДням.get(клетка.key) ?? 0}
+                  состав={составПати.length}
                   onStart={начать}
                   onEnter={выделитьДо}
                 />
@@ -317,36 +456,38 @@ export function ScheduleView() {
             заставляли бы прокручивать страницу.
           */}
           <div className="cal-tools">
-            <div className="cal-pick">
-              <span
-                className="cal-pick-label"
-                title="Зажмите день и протяните до последнего — или выберите готовый диапазон"
-              >
-                Выделить
-              </span>
-              <button
-                className="chip pick"
-                onClick={выделитьНеделю}
-                title="Неделя вокруг последнего выделенного дня, иначе вокруг сегодняшнего"
-              >
-                неделю
-              </button>
-              <button
-                className="chip pick"
-                onClick={выделитьВыходные}
-                title="Субботы и воскресенья показанного месяца"
-              >
-                выходные
-              </button>
-              <button className="chip pick" onClick={выделитьМесяц} title="Все дни показанного месяца">
-                месяц
-              </button>
-              {выбор.length > 0 && (
-                <button className="chip pick" onClick={() => setВыбор([])} title="Снять выделение">
-                  снять
+            {!крупныйВид && (
+              <div className="cal-pick">
+                <span
+                  className="cal-pick-label"
+                  title="Зажмите день и протяните до последнего — или выберите готовый диапазон"
+                >
+                  Выделить
+                </span>
+                <button
+                  className="chip pick"
+                  onClick={выделитьНеделю}
+                  title="Неделя вокруг последнего выделенного дня, иначе вокруг сегодняшнего"
+                >
+                  неделю
                 </button>
-              )}
-            </div>
+                <button
+                  className="chip pick"
+                  onClick={выделитьВыходные}
+                  title="Субботы и воскресенья показанного месяца"
+                >
+                  выходные
+                </button>
+                <button className="chip pick" onClick={выделитьМесяц} title="Все дни показанного месяца">
+                  месяц
+                </button>
+                {выбор.length > 0 && (
+                  <button className="chip pick" onClick={() => setВыбор([])} title="Снять выделение">
+                    снять
+                  </button>
+                )}
+              </div>
+            )}
 
             <div className="cal-legend">
               <span className="legend workday" title="Рабочий день, объявленный на выходном, и сокращённый предпраздничный день">
@@ -459,6 +600,9 @@ function DayBox({
   события,
   timeZone,
   взят,
+  крупно,
+  пойдут,
+  состав,
   onStart,
   onEnter,
 }: {
@@ -469,6 +613,10 @@ function DayBox({
   события: GameEvent[]
   timeZone: string
   взят: boolean
+  /** Крупная карточка недели или «Актуального»: с осью вечера и явкой. */
+  крупно: boolean
+  пойдут: number
+  состав: number
   onStart: (к: DayCell) => void
   onEnter: (key: string) => void
 }) {
@@ -503,10 +651,17 @@ function DayBox({
    * третье имя сжималось до огрызков; при трёх и больше оставляем одно,
    * а полный список открывается наведением на цифру.
    */
-  const имёнВидноВЯчейке = отсутствуют.length > 2 ? 1 : ИМЁН_В_ЯЧЕЙКЕ
+  const имёнВидноВЯчейке = крупно
+    ? отсутствуют.length > 3
+      ? 2
+      : 3
+    : отсутствуют.length > 2
+      ? 1
+      : ИМЁН_В_ЯЧЕЙКЕ
 
   const классы = ['cal-day']
   if (клетка.чужой) классы.push('other')
+  if (крупно) классы.push('big')
   if (инфо.выходной) классы.push('weekend')
   if (инфо.праздник) классы.push('holiday')
   /*
@@ -573,11 +728,41 @@ function DayBox({
         блоком, поэтому красная строка не скачет вслед за числом событий.
       */}
       <span className="cal-body">
-        {события.length > 0 && (
-          <span className="cal-events">
-            {события.map((event) => (
-              <EventBadge key={event.id} event={event} timeZone={timeZone} dayKey={клетка.key} />
-            ))}
+        {крупно ? (
+          /*
+           * В крупной клетке ось вечера заменяет список событий: на ней видно
+           * и прайм, и когда именно начинается осада или босс. Событий на
+           * день обычно одно-два, поэтому подписи не сливаются.
+           */
+          <EventTrack
+            день={клетка.key}
+            прайм={прайм}
+            тема={тема}
+            события={события}
+            timeZone={timeZone}
+            className="cal-tl"
+            edgeThreshold={32}
+          />
+        ) : (
+          события.length > 0 && (
+            <span className="cal-events">
+              {события.map((event) => (
+                <EventBadge key={event.id} event={event} timeZone={timeZone} dayKey={клетка.key} />
+              ))}
+            </span>
+          )
+        )}
+
+        {крупно && (
+          <span
+            className="cal-attend"
+            title={`Придут ${пойдут} из ${состав} состава`}
+          >
+            <b>{пойдут}</b>
+            <span>придут из {состав}</span>
+            <span className="cal-attend-bar">
+              <span style={{ width: `${состав ? Math.round((пойдут / состав) * 100) : 0}%` }} />
+            </span>
           </span>
         )}
 
@@ -619,7 +804,7 @@ function DayBox({
         зарезервированы даже у выходного и у дня без прайма. Иначе разделитель
         прыгал вверх-вниз при прокрутке недели и глаз цеплялся за него.
       */}
-      <span className={`cal-plan${прайм.kind === 'окно' ? '' : ' none'}`}>
+      <span className={`cal-plan${прайм.kind === 'нет' ? ' none' : ''}${прайм.kind === 'выходной' ? ' off' : ''}`}>
         <span className="cal-prime">
           {прайм.kind === 'окно' ? (
             <>
@@ -634,7 +819,7 @@ function DayBox({
               )}
             </>
           ) : прайм.kind === 'выходной' ? (
-            'выходной'
+            'Выходной'
           ) : (
             'прайм не назначен'
           )}
@@ -706,6 +891,121 @@ function EventIcon({ size = 11 }: { size?: number }) {
 }
 
 /**
+ * Ось вечера: прайм полупрозрачной полосой, события — точками своего цвета.
+ *
+ * Одна на сводку и на крупные клетки недели: правила расчёта окна, перехода
+ * через полночь и подписей часов не должны разъезжаться между двумя видами.
+ */
+function EventTrack({
+  день,
+  прайм,
+  тема,
+  события,
+  timeZone,
+  className = '',
+  showLabels = true,
+  edgeThreshold = 18,
+}: {
+  день: string
+  прайм: ReturnType<typeof primeOf>
+  тема: string
+  события: GameEvent[]
+  timeZone: string
+  className?: string
+  showLabels?: boolean
+  /**
+   * Насколько близко к краю подпись прижимается внутрь. В узкой клетке
+   * порог шире: половина подписи не помещается в восемнадцать процентов.
+   */
+  edgeThreshold?: number
+}) {
+  const местный = прайм.kind === 'окно' ? userWindow(день, прайм.window, timeZone) : null
+  const окна = события.map((event) => eventWindow(event, день, timeZone))
+  const ось = dayTimeline(
+    день,
+    местный,
+    окна.filter((окно): окно is EventWindow => окно !== null),
+  )
+  const позиция = (wall: WallTime) => timelineOffset(ось, minutesOnDay(день, wall))
+  const подписьЧаса = (минуты: number) =>
+    formatClock(((минуты % 1440) + 1440) % 1440).slice(0, 2)
+
+  return (
+    <div
+      className={`sum-tl${className ? ` ${className}` : ''}`}
+      role="img"
+      aria-label={`Вечер с ${подписьЧаса(ось.from)} до ${подписьЧаса(ось.to)}: ${
+        события.length > 0
+          ? события.map((e) => `${e.name} ${eventTimeLabel(e, день, timeZone)}`).join(', ')
+          : 'событий нет'
+      }`}
+    >
+      {showLabels && (
+        <div className="sum-tl-labels">
+          {события.map((event, i) => {
+            const окно = окна[i]
+            if (!окно) return null
+            const left = позиция(окно.from)
+            const край =
+              left < edgeThreshold ? ' start' : left > 100 - edgeThreshold ? ' end' : ''
+            return (
+              <span
+                key={event.id}
+                className={`sum-tl-label kind-${event.kind}${край}`}
+                style={{ left: `${left}%` }}
+                title={eventTitle(event, timeZone, день)}
+              >
+                {event.name} <span>{eventTimeLabel(event, день, timeZone)}</span>
+              </span>
+            )
+          })}
+        </div>
+      )}
+
+      <div className="sum-tl-track">
+        {прайм.kind === 'окно' && (
+          <span
+            className="sum-tl-prime"
+            style={{
+              left: `${позиция(местный!.from)}%`,
+              width: `${позиция(местный!.to) - позиция(местный!.from)}%`,
+            }}
+            title={`Прайм ${formatZoneWindow(местный!)}${тема ? ` · ${тема}` : ''}`}
+          />
+        )}
+        {события.map((event, i) => {
+          const окно = окна[i]
+          if (!окно) return null
+          return (
+            <span
+              key={event.id}
+              className={`sum-tl-mark kind-${event.kind}`}
+              style={{ left: `${позиция(окно.from)}%` }}
+              title={eventTitle(event, timeZone, день)}
+            />
+          )
+        })}
+        {ось.ticks.map((минуты) => (
+          <span
+            key={минуты}
+            className="sum-tl-tick"
+            style={{ left: `${timelineOffset(ось, минуты)}%` }}
+          />
+        ))}
+      </div>
+
+      <div className="sum-tl-ticks" aria-hidden="true">
+        {ось.ticks.map((минуты) => (
+          <span key={минуты} style={{ left: `${timelineOffset(ось, минуты)}%` }}>
+            {подписьЧаса(минуты)}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/**
  * Сводка по дню: когда прайм, что происходит в игре, кто не придёт и сколько
  * состава остаётся.
  *
@@ -736,21 +1036,6 @@ function DaySummary({
   const пойдут = состав.filter((c) => !c.away?.[день])
   const процент = состав.length ? Math.round((пойдут.length / состав.length) * 100) : 0
   const длительность = прайм.kind === 'окно' ? прайм.window.to - прайм.window.from : 0
-
-  /*
-   * Ось вечера — общая для прайма и событий. Окна считаем в минутах от
-   * полуночи выбранного дня: прайм, перешедший через полночь или сдвинутый
-   * поясом на соседние сутки, остаётся на той же шкале.
-   */
-  const окна = события.map((event) => eventWindow(event, день, timeZone))
-  const ось = dayTimeline(
-    день,
-    местный,
-    окна.filter((окно): окно is EventWindow => окно !== null),
-  )
-  const позиция = (wall: WallTime) => timelineOffset(ось, minutesOnDay(день, wall))
-  const подписьЧаса = (минуты: number) =>
-    formatClock(((минуты % 1440) + 1440) % 1440).slice(0, 2)
 
   return (
     <div className="day-sum">
@@ -794,74 +1079,13 @@ function DaySummary({
         и её приходилось бы искать глазами. Красных полос отсутствий здесь
         нет — они остаются в списке ниже, где видно время ухода.
       */}
-      <div
-        className="sum-tl"
-        role="img"
-        aria-label={`Вечер с ${подписьЧаса(ось.from)} до ${подписьЧаса(ось.to)}: ${
-          события.length > 0
-            ? события.map((e) => `${e.name} ${eventTimeLabel(e, день, timeZone)}`).join(', ')
-            : 'событий нет'
-        }`}
-      >
-        <div className="sum-tl-labels">
-          {события.map((event, i) => {
-            const окно = окна[i]
-            if (!окно) return null
-            const left = позиция(окно.from)
-            const край = left < 18 ? ' start' : left > 82 ? ' end' : ''
-            return (
-              <span
-                key={event.id}
-                className={`sum-tl-label kind-${event.kind}${край}`}
-                style={{ left: `${left}%` }}
-                title={eventTitle(event, timeZone, день)}
-              >
-                {event.name} <span>{eventTimeLabel(event, день, timeZone)}</span>
-              </span>
-            )
-          })}
-        </div>
-
-        <div className="sum-tl-track">
-          {прайм.kind === 'окно' && (
-            <span
-              className="sum-tl-prime"
-              style={{
-                left: `${позиция(местный!.from)}%`,
-                width: `${позиция(местный!.to) - позиция(местный!.from)}%`,
-              }}
-              title={`Прайм ${formatZoneWindow(местный!)}${тема ? ` · ${тема}` : ''}`}
-            />
-          )}
-          {события.map((event, i) => {
-            const окно = окна[i]
-            if (!окно) return null
-            return (
-              <span
-                key={event.id}
-                className={`sum-tl-mark kind-${event.kind}`}
-                style={{ left: `${позиция(окно.from)}%` }}
-                title={eventTitle(event, timeZone, день)}
-              />
-            )
-          })}
-          {ось.ticks.map((минуты) => (
-            <span
-              key={минуты}
-              className="sum-tl-tick"
-              style={{ left: `${timelineOffset(ось, минуты)}%` }}
-            />
-          ))}
-        </div>
-
-        <div className="sum-tl-ticks" aria-hidden="true">
-          {ось.ticks.map((минуты) => (
-            <span key={минуты} style={{ left: `${timelineOffset(ось, минуты)}%` }}>
-              {подписьЧаса(минуты)}
-            </span>
-          ))}
-        </div>
-      </div>
+      <EventTrack
+        день={день}
+        прайм={прайм}
+        тема={тема}
+        события={события}
+        timeZone={timeZone}
+      />
 
       <div className="sum-attend" title={`Придут ${пойдут.length} из ${состав.length} состава`}>
         <span className="sum-attend-num">{пойдут.length}</span>

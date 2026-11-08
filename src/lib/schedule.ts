@@ -116,6 +116,65 @@ export function formatMonth(дата: Date): string {
   return `${МЕСЯЦЫ[дата.getMonth()]} ${дата.getFullYear()}`
 }
 
+/**
+ * Дни вокруг опорной даты: сколько-то до, сколько-то после, включая её саму.
+ *
+ * Нужно виду «Актуальное»: это не календарная неделя, а окно вокруг
+ * сегодняшнего дня, и оно может начинаться и кончаться в любые дни недели.
+ */
+export function daysAround(key: string, before: number, after: number): string[] {
+  const дата = parseKey(key)
+  return daysBetween(isoKey(addDays(дата, -before)), isoKey(addDays(дата, after)))
+}
+
+/** «Актуальное»: два дня до, сегодня и четыре после. */
+export function actualDays(key: string): string[] {
+  return daysAround(key, 2, 4)
+}
+
+/**
+ * Клетки для произвольного диапазона.
+ *
+ * У диапазона нет «чужих» дней: в неделе или в окне «Актуального» все семь
+ * дат равноправны, даже если окно перешло в соседний месяц. Поэтому месяц
+ * клетки остаётся её собственным, а чужой она не считается.
+ */
+export function rangeCells(keys: string[]): DayCell[] {
+  const сегодня = isoToday()
+  return keys.map((key) => {
+    const дата = parseKey(key)
+    return {
+      key,
+      дата,
+      месяц: дата.getMonth(),
+      чужой: false,
+      сегодня: key === сегодня,
+    }
+  })
+}
+
+/**
+ * Диапазон словами: «3–9 ноября 2026» или «28 октября — 3 ноября 2026».
+ *
+ * Год называется всегда: заголовок календаря должен отвечать на вопрос
+ * «какой это год», а не заставлять вспоминать его по соседним месяцам.
+ */
+export function formatDayRange(keys: string[]): string {
+  if (!keys.length) return ''
+  const первый = parseKey(keys[0])
+  const последний = parseKey(keys[keys.length - 1])
+  if (keys.length === 1) return formatDay(keys[0], true)
+  const год = последний.getFullYear()
+  if (первый.getFullYear() === год && первый.getMonth() === последний.getMonth()) {
+    return `${первый.getDate()}–${последний.getDate()} ${МЕСЯЦЫ_РОД[последний.getMonth()]} ${год}`
+  }
+  const начало =
+    первый.getFullYear() === год
+      ? `${первый.getDate()} ${МЕСЯЦЫ_РОД[первый.getMonth()]}`
+      : `${первый.getDate()} ${МЕСЯЦЫ_РОД[первый.getMonth()]} ${первый.getFullYear()}`
+  return `${начало} — ${последний.getDate()} ${МЕСЯЦЫ_РОД[последний.getMonth()]} ${год}`
+}
+
 /** «20:00», «9:05» — минуты от полуночи в привычном виде. */
 export function formatMinutes(минут: number): string {
   const m = Math.max(0, Math.min(24 * 60, Math.round(минут)))
@@ -146,10 +205,23 @@ export function parseMinutes(текст: string): number {
  */
 export function primeHours(schedule: Schedule, now = new Date()): number {
   const префикс = `${now.getFullYear()}-${pad(now.getMonth() + 1)}`
+  const keys = Object.keys(schedule.prime).filter((key) => key.startsWith(префикс))
+  return primeHoursOn(schedule, keys)
+}
+
+/**
+ * Часы прайма на произвольном наборе дней.
+ *
+ * Неделя и «Актуальное» показывают свой период, и сводка в шапке должна
+ * считать именно его, а не весь месяц. Выходные, как и в месячной сводке,
+ * ничего не отнимают: прайм под ними сохранён.
+ */
+export function primeHoursOn(schedule: Schedule, keys: string[]): number {
   let минут = 0
-  for (const [key, окно] of Object.entries(schedule.prime)) {
-    if (!key.startsWith(префикс)) continue
+  for (const key of keys) {
     if (schedule.offs.includes(key)) continue
+    const окно = schedule.prime[key]
+    if (!окно) continue
     // Окно всегда в пределах суток: форма не даёт сохранить from >= to.
     минут += Math.max(0, окно.to - окно.from)
   }

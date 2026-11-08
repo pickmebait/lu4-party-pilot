@@ -1279,6 +1279,29 @@ main {
   color: var(--text);
 }
 
+/* Неделя и «Актуальное» подписаны диапазоном, а не месяцем. */
+.cal-title.range {
+  min-width: 190px;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Переключатель вида календаря.
+ *
+ * Как у персонажей: три равные кнопки в одной рамке, выбранная подсвечена.
+ * Высота совпадает с «Сегодня» и стрелками, чтобы шапка оставалась одной
+ * строкой.
+ */
+.cal-modes {
+  border-radius: 6px;
+}
+
+.cal-modes button {
+  padding: 4px 9px;
+  font-size: 12px;
+  line-height: 18px;
+}
+
 .cal {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -1483,23 +1506,41 @@ main {
 }
 
 .cal-day.picked {
-  background: color-mix(in srgb, var(--accent) 18%, var(--bg-2));
   border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/*
+ * Подсветка — отдельным слоем поверх клетки.
+ *
+ * Раньше она была заливкой самой кнопки, и штриховка выходного пати,
+ * нарисованная позже, закрывала её целиком. Теперь это отдельный слой поверх
+ * фона и штриховки: диапазон видно и на выходном, и на обычном дне. Девять
+ * процентов акцента почти не трогают текст, но заметно меняют тон клетки.
+ */
+.cal-day.picked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  pointer-events: none;
 }
 
 .cal-day.today.picked {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent),
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent),
     0 8px 22px rgba(0, 0, 0, 0.28);
 }
 
 /*
- * Выходной пати — косой штриховкой, как в тихой сетке.
+ * Выходной пати — косой штриховкой только в теле клетки.
  *
- * Заливка отличается от обычного дня и от календарного выходного, но не
- * спорит с рамкой «сегодня» и выделением: те остаются на месте.
+ * Шапка и нижняя полоса остаются обычными: выходной — это план вечера, а не
+ * рамка вокруг дня. Штриховка на теле не спорит с подсветкой выбранных дней.
  */
-.cal-day.off {
+.cal-day.off .cal-body {
   background: repeating-linear-gradient(
     135deg,
     var(--surface-deep) 0 8px,
@@ -4913,6 +4954,172 @@ main {
   line-height: 11px;
 }
 
+/*
+ * Неделя и «Актуальное» — крупные карточки вместо месячной сетки.
+ *
+ * Семь колонок остаются, но клетка получает минимум 170 пикселей: в неё
+ * помещается ось вечера, а не только номер и время. Если места меньше,
+ * календарь прокручивается вбок, как и месячная сетка на телефоне.
+ */
+.schedule-main .cal.cal-big {
+  flex: 0 0 auto;
+}
+
+.schedule-main .cal.cal-big .cal-grid-big {
+  grid-template-columns: repeat(7, minmax(170px, 1fr));
+  grid-auto-rows: clamp(300px, 36vh, 430px);
+  gap: 8px;
+  padding: 8px;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.schedule-main .cal.cal-big .cal-day {
+  min-height: 0;
+}
+
+.cal-big .cal-top {
+  min-height: 38px;
+  padding: 7px 10px;
+}
+
+.cal-big .cal-num {
+  font-size: 24px;
+  line-height: 1.05;
+}
+
+.cal-big .cal-dow {
+  font-size: 10px;
+}
+
+.cal-big .cal-today {
+  padding: 2px 6px;
+  font-size: 8.5px;
+}
+
+.cal-big .cal-mark {
+  font-size: 14px;
+}
+
+.cal-big .cal-body {
+  gap: 7px;
+  padding: 9px 10px 7px;
+}
+
+.cal-big .cal-plan {
+  height: 52px;
+  padding: 8px 10px 7px;
+}
+
+.cal-big .cal-prime {
+  font-size: 14px;
+  line-height: 17px;
+}
+
+.cal-big .cal-theme {
+  min-height: 14px;
+  font-size: 11px;
+  line-height: 14px;
+}
+
+/* Ось вечера в крупной клетке: те же правила, но с запасом по высоте. */
+.cal-big .cal-tl {
+  flex: none;
+  height: 78px;
+  margin: 1px 0 0;
+}
+
+.cal-big .cal-tl .sum-tl-labels {
+  height: 22px;
+}
+
+.cal-big .cal-tl .sum-tl-label {
+  font-size: 11px;
+}
+
+.cal-big .cal-tl .sum-tl-label > span {
+  font-size: 9.5px;
+}
+
+.cal-big .cal-tl .sum-tl-track {
+  top: 34px;
+  height: 10px;
+  border-radius: 5px;
+}
+
+.cal-big .cal-tl .sum-tl-prime {
+  height: 10px;
+  border-radius: 5px;
+}
+
+.cal-big .cal-tl .sum-tl-mark {
+  top: -2px;
+  width: 16px;
+  height: 16px;
+}
+
+.cal-big .cal-tl .sum-tl-tick {
+  top: 48px;
+  height: 5px;
+}
+
+.cal-big .cal-tl .sum-tl-ticks {
+  top: 56px;
+  font-size: 10px;
+}
+
+/*
+ * Явка в крупной клетке: цифра, подпись и полоса. В месячной сетке для неё
+ * нет места, а здесь она отвечает на вопрос «сколько нас» без правой сводки.
+ */
+.cal-attend {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.cal-attend b {
+  flex: none;
+  color: var(--ok);
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-attend-bar {
+  flex: 1 1 auto;
+  align-self: center;
+  height: 5px;
+  min-width: 26px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--bg-3);
+}
+
+.cal-attend-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2f9d68, var(--ok));
+}
+
+.cal-big .cal-away {
+  gap: 5px;
+  font-size: 10.5px;
+}
+
+.cal-big .cal-away-badge {
+  padding: 2px 5px;
+  font-size: 9px;
+}
+
 .schedule-side {
   flex: 0 0 420px;
   min-height: 0;
@@ -5841,8 +6048,12 @@ main {
 }
 
 .cal-legend .off::before {
-  background: var(--accent-deep);
-  border-color: var(--accent);
+  background: repeating-linear-gradient(
+    135deg,
+    var(--surface-deep) 0 2px,
+    color-mix(in srgb, #fff 16%, var(--surface-deep)) 2px 4px
+  );
+  border-color: var(--line-2);
 }
 
 .cal-legend .away::before {
@@ -6172,6 +6383,31 @@ main {
 @media (max-width: 560px) {
   .sum-big {
     font-size: 26px;
+  }
+
+  /*
+   * Шапка расписания на телефоне в одну строку не влезает: переключатель
+   * видов занимает всю ширину, а стрелки, период и «Сегодня» встают под ним.
+   */
+  .cal-nav {
+    flex: 1 0 100%;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .cal-modes {
+    flex: 0 0 100%;
+    order: -1;
+  }
+
+  .cal-modes button {
+    flex: 1 1 0;
+  }
+
+  .cal-title,
+  .cal-title.range {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   /*
