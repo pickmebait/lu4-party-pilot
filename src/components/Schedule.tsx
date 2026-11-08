@@ -35,19 +35,24 @@ import {
   eventSchedule,
   eventTimeLabel,
   eventTitle,
+  eventWindow,
   eventsByDay,
   eventsOn,
+  type EventWindow,
   type GameEvent,
 } from '@/lib/l2events'
 import {
   PARTY_TIME_ZONE,
   browserTimeZone,
   dayShiftBetween,
+  formatClock,
   formatZoneWindow,
   userTimeZone,
   userWindow,
   zoneLabel,
+  type WallTime,
 } from '@/lib/timezone'
+import { dayTimeline, minutesOnDay, timelineOffset } from '@/lib/timeline'
 import {
   addChecklistItem,
   removeChecklistItem,
@@ -665,27 +670,22 @@ function DayBox({
  *
  * В клетке имя идёт первой строкой, а время — второй: «Осады замков» с
  * диапазоном «18:00–20:00» в одну строку не помещаются. Вид события красит
- * значок: эпические боссы одним цветом, осады другим. В сводке, где места
- * больше, тот же значок остаётся строкой.
+ * значок: эпические боссы одним цветом, осады другим, не золотым — иначе
+ * осада сливалась бы с полосой прайма.
  */
 function EventBadge({
   event,
   timeZone,
   dayKey,
-  full = false,
 }: {
   event: GameEvent
   timeZone: string
   dayKey?: string
-  full?: boolean
 }) {
   return (
-    <span
-      className={`event-badge kind-${event.kind}${full ? ' full' : ''}`}
-      title={eventTitle(event, timeZone, dayKey)}
-    >
+    <span className={`event-badge kind-${event.kind}`} title={eventTitle(event, timeZone, dayKey)}>
       <span className="event-badge-icon">
-        <EventIcon size={full ? 11 : 9} />
+        <EventIcon size={9} />
       </span>
       <span className="event-badge-name">{event.name}</span>
       <span className="event-badge-time">{eventTimeLabel(event, dayKey, timeZone)}</span>
@@ -737,6 +737,21 @@ function DaySummary({
   const процент = состав.length ? Math.round((пойдут.length / состав.length) * 100) : 0
   const длительность = прайм.kind === 'окно' ? прайм.window.to - прайм.window.from : 0
 
+  /*
+   * Ось вечера — общая для прайма и событий. Окна считаем в минутах от
+   * полуночи выбранного дня: прайм, перешедший через полночь или сдвинутый
+   * поясом на соседние сутки, остаётся на той же шкале.
+   */
+  const окна = события.map((event) => eventWindow(event, день, timeZone))
+  const ось = dayTimeline(
+    день,
+    местный,
+    окна.filter((окно): окно is EventWindow => окно !== null),
+  )
+  const позиция = (wall: WallTime) => timelineOffset(ось, minutesOnDay(день, wall))
+  const подписьЧаса = (минуты: number) =>
+    formatClock(((минуты % 1440) + 1440) % 1440).slice(0, 2)
+
   return (
     <div className="day-sum">
       <div className="sum-date">
@@ -765,42 +780,102 @@ function DaySummary({
         {длительность > 0 && (
           <span className="sum-prime-hours">{String(Math.round(длительность / 6) / 10).replace('.', ',')} ч</span>
         )}
-        {прайм.kind === 'окно' && тема && (
-          <span className="sum-theme" title={`Тема прайма: ${тема}`}>
-            {тема}
-          </span>
-        )}
       </div>
 
-      {события.length > 0 && (
-        <div className="sum-events">
-          {события.map((event) => (
-            <EventBadge key={event.id} event={event} timeZone={timeZone} dayKey={день} full />
-          ))}
-        </div>
+      {прайм.kind === 'окно' && тема && (
+        <span className="sum-theme" title={`Тема прайма: ${тема}`}>
+          {тема}
+        </span>
       )}
 
-      <div className="sum-stats">
-        <span className="sum-stat ok" title="Сколько человек из состава придёт">
-          <b>{пойдут.length}</b>
-          <span>Придут</span>
-        </span>
-        <span className={`sum-stat bad${уходят.length > 0 ? ' has' : ''}`} title="Сколько человек отметилось об отсутствии">
-          <b>{уходят.length}</b>
-          <span>Не придут</span>
-        </span>
-        <span className="sum-stat all" title="Весь состав пати">
-          <b>{состав.length}</b>
-          <span>В составе</span>
-        </span>
+      {/*
+        Ось вечера: прайм полупрозрачной полосой, события — точками своего
+        цвета. Точки не золотые, как прайм: иначе осада сливалась бы с полосой
+        и её приходилось бы искать глазами. Красных полос отсутствий здесь
+        нет — они остаются в списке ниже, где видно время ухода.
+      */}
+      <div
+        className="sum-tl"
+        role="img"
+        aria-label={`Вечер с ${подписьЧаса(ось.from)} до ${подписьЧаса(ось.to)}: ${
+          события.length > 0
+            ? события.map((e) => `${e.name} ${eventTimeLabel(e, день, timeZone)}`).join(', ')
+            : 'событий нет'
+        }`}
+      >
+        <div className="sum-tl-labels">
+          {события.map((event, i) => {
+            const окно = окна[i]
+            if (!окно) return null
+            const left = позиция(окно.from)
+            const край = left < 18 ? ' start' : left > 82 ? ' end' : ''
+            return (
+              <span
+                key={event.id}
+                className={`sum-tl-label kind-${event.kind}${край}`}
+                style={{ left: `${left}%` }}
+                title={eventTitle(event, timeZone, день)}
+              >
+                {event.name} <span>{eventTimeLabel(event, день, timeZone)}</span>
+              </span>
+            )
+          })}
+        </div>
+
+        <div className="sum-tl-track">
+          {прайм.kind === 'окно' && (
+            <span
+              className="sum-tl-prime"
+              style={{
+                left: `${позиция(местный!.from)}%`,
+                width: `${позиция(местный!.to) - позиция(местный!.from)}%`,
+              }}
+              title={`Прайм ${formatZoneWindow(местный!)}${тема ? ` · ${тема}` : ''}`}
+            />
+          )}
+          {события.map((event, i) => {
+            const окно = окна[i]
+            if (!окно) return null
+            return (
+              <span
+                key={event.id}
+                className={`sum-tl-mark kind-${event.kind}`}
+                style={{ left: `${позиция(окно.from)}%` }}
+                title={eventTitle(event, timeZone, день)}
+              />
+            )
+          })}
+          {ось.ticks.map((минуты) => (
+            <span
+              key={минуты}
+              className="sum-tl-tick"
+              style={{ left: `${timelineOffset(ось, минуты)}%` }}
+            />
+          ))}
+        </div>
+
+        <div className="sum-tl-ticks" aria-hidden="true">
+          {ось.ticks.map((минуты) => (
+            <span key={минуты} style={{ left: `${timelineOffset(ось, минуты)}%` }}>
+              {подписьЧаса(минуты)}
+            </span>
+          ))}
+        </div>
       </div>
 
-      <div
-        className="sum-bar"
-        title={`Придут ${пойдут.length} из ${состав.length} состава`}
-        aria-label={`Придут ${пойдут.length} из ${состав.length} состава`}
-      >
-        <span style={{ width: `${процент}%` }} />
+      <div className="sum-attend" title={`Придут ${пойдут.length} из ${состав.length} состава`}>
+        <span className="sum-attend-num">{пойдут.length}</span>
+        <span className="sum-attend-cap">
+          придут из <b>{состав.length}</b>
+          <br />
+          {уходят.length ? `${уходят.length} не смогут` : 'все на месте'}
+        </span>
+        <span
+          className="sum-attend-bar"
+          aria-label={`Придут ${пойдут.length} из ${состав.length} состава`}
+        >
+          <span style={{ width: `${процент}%` }} />
+        </span>
       </div>
 
       <div className="sum-block sum-block-bad">
@@ -835,11 +910,20 @@ function DaySummary({
         ) : пойдут.length === 0 ? (
           <p className="hint">в составе никого не осталось</p>
         ) : (
-          <ul className="sum-list">
+          <div className="sum-chips">
             {пойдут.map((c) => (
-              <СтрокаСводки key={c.id} имя={c.name} cls={c.cls} level={c.level} />
+              <span
+                key={c.id}
+                className="sum-chip"
+                title={`${c.name || 'Без имени'} · ${c.cls || 'профессия не указана'}${
+                  c.level ? ` · ур. ${c.level}` : ''
+                }`}
+              >
+                <b>{c.name || 'Без имени'}</b>
+                {c.cls && <span className="sum-chip-char">{c.cls}</span>}
+              </span>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </div>
@@ -847,16 +931,13 @@ function DaySummary({
 }
 
 /**
- * Строка обоих списков сводки: ник, а под ним профессия с уровнем.
+ * Строка списка отсутствующих: ник, под ним профессия с уровнем и время ухода.
  *
- * Одна на оба списка. Списки про одном составе, и разъезжаться им незачем:
- * если «Не придут» подробнее, а «Пойдут» с одним ником, то непонятно, где
- * вообще смотреть подробности.
- *
- * Ник, профессия и уровень идут тремя строками фактов. Одного ника мало: в
- * пати есть два Ироки, и по списку не понять, кого именно спрашивать.
- * Профессия и уровень — под ником и мельче: это справочное, главное — кто
- * придёт, а примечание справа — уточнение про конкретный день.
+ * Одного ника мало: в пати есть два Ироки, и по списку не понять, кого именно
+ * не ждать. Профессия и уровень — под ником и мельче: это справочное.
+ * Примечание справа отвечает на вопрос «когда», ради которого в список и
+ * смотрят. Пришедшие перечислены чипами ниже: их и так больше, и полные
+ * строки на каждого растягивали карточку на несколько экранов.
  */
 function СтрокаСводки({
   имя,

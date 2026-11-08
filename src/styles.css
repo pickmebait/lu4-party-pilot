@@ -11,6 +11,10 @@
   --ok: #3fbf7f;
   --err: #ef5f5f;
   --in: #4aa3ff;
+  /* События сервера: боссы и осады. Не зависят от палитры: по цвету должно
+     быть видно, что это, а не какой сегодня оттенок интерфейса. */
+  --event-epic: #7db8ff;
+  --event-siege: #b18cff;
   /* Пятно света за шапкой. Тоже часть палитры, иначе при переключении
      оставалось бы тёмное пятно на другом фоне. */
   --glow: #1a2133;
@@ -1674,8 +1678,10 @@ main {
 }
 
 /*
- * Значок вида: эпические боссы — синие, осады — золотые. Цвет один на вид,
+ * Значок вида: эпические боссы — синие, осады — сиреневые. Цвет один на вид,
  * а не на событие: по нему видно, босс это или осада, не читая название.
+ * Осада не золотая: золото занято праймом, и на оси вечера событие сливалось
+ * бы с его полосой.
  */
 .event-badge-icon {
   flex: none;
@@ -1685,13 +1691,13 @@ main {
   width: 13px;
   height: 13px;
   border-radius: 3px;
-  background: color-mix(in srgb, #4aa3ff 14%, transparent);
-  color: #7db8ff;
+  background: color-mix(in srgb, var(--event-epic) 14%, transparent);
+  color: var(--event-epic);
 }
 
 .event-badge.kind-siege .event-badge-icon {
-  background: color-mix(in srgb, var(--accent) 16%, transparent);
-  color: var(--accent-2);
+  background: color-mix(in srgb, var(--event-siege) 15%, transparent);
+  color: var(--event-siege);
 }
 
 .event-badge-name {
@@ -1704,12 +1710,6 @@ main {
 .event-badge-time {
   opacity: 0.72;
   font-variant-numeric: tabular-nums;
-}
-
-.event-badge.full {
-  padding: 2px 7px;
-  border-radius: 5px;
-  font-size: 11.5px;
 }
 
 /*
@@ -1738,11 +1738,11 @@ main {
 }
 
 .event-legend.kind-epic svg {
-  color: #7db8ff;
+  color: var(--event-epic);
 }
 
 .event-legend.kind-siege svg {
-  color: var(--accent-2);
+  color: var(--event-siege);
 }
 
 .event-legend-time {
@@ -5219,9 +5219,11 @@ main {
   white-space: nowrap;
 }
 
-/* Тема прайма рядом со временем: подпись, а не второе время. */
+/* Тема прайма — отдельной строкой под временем: подпись, а не второе время. */
 .sum-theme {
+  display: inline-block;
   max-width: 100%;
+  margin-bottom: 2px;
   padding: 2px 8px;
   overflow: hidden;
   border: 1px solid var(--accent-line);
@@ -5236,78 +5238,220 @@ main {
   white-space: nowrap;
 }
 
-.sum-events {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 7px;
-}
-
-.sum-events .event-badge {
-  padding: 2px 7px;
-  font-size: 11.5px;
-}
-
-.sum-stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
-  margin-top: 10px;
-}
-
 /*
- * Счётчики — плитки с цветом по смыслу.
+ * Ось вечера.
  *
- * Раньше цифра и подпись стояли в одной строке мелким шрифтом, и «сколько
- * придёт» приходилось вычитывать. Теперь цифра крупная и первая, а цвет
- * плитки отвечает за смысл до чтения: зелёная — придут, красная — не придут,
- * нейтральная — весь состав.
+ * Прайм — полупрозрачная золотая полоса: время и тема уже написаны в шапке,
+ * а на оси важно видеть, какую часть вечера занимает сбор. События — точки
+ * своего цвета, не золотые: иначе осада сливалась бы с праймом. Подписи
+ * событий стоят над осью, у краёв прижимаются внутрь, чтобы не обрезаться.
  */
-.sum-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 7px 8px 6px;
-  background: var(--bg-2);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  color: var(--muted);
+.sum-tl {
+  position: relative;
+  height: 64px;
+  margin: 11px 0 2px;
+}
+
+.sum-tl-labels {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 18px;
+}
+
+.sum-tl-label {
+  position: absolute;
+  top: 0;
+  max-width: 100%;
+  overflow: hidden;
+  transform: translateX(-50%);
   font-size: 10px;
   font-weight: 600;
   line-height: 1.2;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.sum-stat b {
-  color: var(--text);
-  font-size: 24px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0;
+.sum-tl-label.start {
+  transform: none;
+}
+
+.sum-tl-label.end {
+  transform: translateX(-100%);
+}
+
+.sum-tl-label.kind-epic {
+  color: var(--event-epic);
+}
+
+.sum-tl-label.kind-siege {
+  color: var(--event-siege);
+}
+
+.sum-tl-label > span {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
 }
 
-.sum-stat.ok {
-  background: color-mix(in srgb, var(--ok) 9%, var(--bg-2));
-  border-color: color-mix(in srgb, var(--ok) 30%, var(--line));
-}
-
-.sum-stat.ok b {
-  color: var(--ok);
-}
-
-.sum-stat.bad.has {
-  background: color-mix(in srgb, #ff9d9d 8%, var(--bg-2));
-  border-color: color-mix(in srgb, #ff9d9d 32%, var(--line));
-}
-
-.sum-stat.bad.has b {
-  color: #ff9d9d;
-}
-
-.sum-stat.all {
+.sum-tl-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 28px;
+  height: 8px;
+  border-radius: 4px;
   background: var(--bg-3);
+}
+
+.sum-tl-prime {
+  position: absolute;
+  top: 0;
+  height: 8px;
+  border: 1px solid color-mix(in srgb, var(--accent-2) 32%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.sum-tl-mark {
+  position: absolute;
+  top: -3px;
+  z-index: 1;
+  width: 14px;
+  height: 14px;
+  transform: translateX(-50%);
+  border: 3px solid var(--surface-lit);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.sum-tl-mark.kind-epic {
+  background: var(--event-epic);
+}
+
+.sum-tl-mark.kind-siege {
+  background: var(--event-siege);
+}
+
+.sum-tl-tick {
+  position: absolute;
+  top: 40px;
+  width: 1px;
+  height: 4px;
+  transform: translateX(-50%);
+  background: var(--line-2);
+}
+
+.sum-tl-ticks {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 46px;
+  height: 12px;
+  color: var(--muted-dim);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sum-tl-ticks > span {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.sum-tl-ticks > span:first-child {
+  transform: none;
+}
+
+.sum-tl-ticks > span:last-child {
+  transform: translateX(-100%);
+}
+
+/*
+ * Явка после оси: одна крупная цифра вместо трёх плиток.
+ *
+ * Вопрос «сколько нас» решается до чтения списков, а полоса показывает долю
+ * от состава. Так под осью остаётся одна спокойная строка, и карточка не
+ * растягивается на лишний ряд.
+ */
+.sum-attend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 9px;
+}
+
+.sum-attend-num {
+  flex: none;
+  color: var(--ok);
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.sum-attend-cap {
+  flex: none;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.3;
+}
+
+.sum-attend-cap b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.sum-attend-bar {
+  flex: 1 1 auto;
+  height: 6px;
+  min-width: 40px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--bg-3);
+}
+
+.sum-attend-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2f9d68, var(--ok));
+  transition: width 0.2s;
+}
+
+/* Пришедшие — чипами: их большинство, и полные строки на каждого растягивали
+   карточку на несколько экранов. Профессия остаётся подсказкой при наведении. */
+.sum-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.sum-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg-2);
+  color: var(--text);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+.sum-chip b {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sum-chip-char {
+  color: var(--muted-dim);
+  font-size: 9px;
+  white-space: nowrap;
 }
 
 /* Полоса явки: доля состава, который придёт. */
@@ -6387,26 +6531,29 @@ main {
     font-size: 24px;
   }
 
-  .sum-events {
-    margin-top: 5px;
+  .sum-tl {
+    height: 56px;
+    margin-top: 8px;
   }
 
-  .sum-events .event-badge {
-    padding: 1px 6px;
-    font-size: 10.5px;
+  .sum-tl-track {
+    top: 24px;
   }
 
-  .sum-stats {
-    gap: 5px;
+  .sum-tl-tick {
+    top: 36px;
+  }
+
+  .sum-tl-ticks {
+    top: 42px;
+  }
+
+  .sum-attend {
     margin-top: 7px;
   }
 
-  .sum-stat {
-    padding: 4px 7px;
-  }
-
-  .sum-stat b {
-    font-size: 17px;
+  .sum-attend-num {
+    font-size: 24px;
   }
 
   .sum-bar {
