@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-09T21:17:03.152Z",
+    "updatedAt": "2026-11-09T21:17:10.879Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -270,7 +270,9 @@
                   }
                 ],
                 "gloves": [
-                  null
+                  {
+                    "itemId": 5718
+                  }
                 ],
                 "feet": [
                   null
@@ -9862,6 +9864,24 @@
         "стало": [
           {
             "itemId": 2380,
+            "mod": 0
+          }
+        ]
+      },
+      {
+        "ts": "2026-11-09T21:17:08.756Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "gloves",
+        "subId": "smvjolwxp1w64im",
+        "armorSet": 1,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 5718,
             "mod": 0
           }
         ]
