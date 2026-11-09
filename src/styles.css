@@ -403,6 +403,7 @@ main {
  * полосу и не отжимает кнопку доступа.
  */
 .sync-msg {
+  position: relative;
   order: 1;
   flex: 0 1 auto;
   min-width: 0;
@@ -440,6 +441,7 @@ main {
 }
 
 .sync-info {
+  position: relative;
   display: inline-flex;
   align-items: center;
   flex: none;
@@ -448,47 +450,55 @@ main {
   background: none;
   color: currentColor;
   opacity: 0.55;
-  cursor: pointer;
+  cursor: help;
   border-radius: 50%;
 }
 
 .sync-info:hover,
+.sync-info:focus,
 .sync-info:focus-visible {
   opacity: 1;
 }
 
-.sync-info.on {
-  opacity: 1;
-}
-
 /*
- * Подробности под плашкой.
+ * Подробности — всплывающей подсказкой у значка статуса.
  *
- * Отдельная строка под всей полосой, а не хвост у плашки: человек открыл их
- * сам и нажатием, вертикальный сдвиг в этот момент ожидаем, а вот появление
- * надписи без всякого повода сдвигает шапку само и сбивает взгляд с кнопки
- * доступа, которая в этот момент и нажата была.
+ * Раньше они раскрывались строкой под всей полосой, и шапка на время чтения
+ * становилась выше: интерфейс уезжал вниз, хотя человек всего лишь навёл
+ * мышь. Подсказка ничего не сдвигает: она лежит поверх страницы, а плашка
+ * остаётся одной строкой.
  *
  * Моноширинным шрифтом и с переносом по словам: там адрес, метки времени и
  * код ответа, и строкой подряд они читаются как каша.
  */
-.sync-details {
-  order: 3;
-  flex-basis: 100%;
-  width: fit-content;
-  max-width: 100%;
-  margin: 0;
+.sync-tip {
+  position: absolute;
+  right: -8px;
+  top: calc(100% + 8px);
+  z-index: 90;
+  display: none;
+  width: max-content;
+  max-width: min(360px, calc(100vw - 32px));
   padding: 8px 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-2);
   border-radius: 8px;
-  background: var(--bg-3);
+  background: var(--bg-2);
+  box-shadow: var(--shadow);
   color: var(--text-dim);
   font-family: var(--mono, ui-monospace, Consolas, monospace);
   font-size: 11px;
+  font-weight: 400;
   line-height: 1.55;
   white-space: pre-wrap;
   word-break: break-word;
-  overflow-x: auto;
+  text-align: left;
+  cursor: auto;
+}
+
+.sync-info:hover .sync-tip,
+.sync-info:focus .sync-tip,
+.sync-info:focus-visible .sync-tip {
+  display: block;
 }
 
 .sync-actions {
@@ -514,9 +524,8 @@ main {
 
 .party-btn {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1px;
+  align-items: center;
+  gap: 9px;
   padding: 4px 10px;
   min-height: 0;
   background: var(--bg-3);
@@ -528,9 +537,28 @@ main {
   line-height: 1.25;
 }
 
+.party-btn-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 0;
+}
+
+.party-gear {
+  display: inline-flex;
+  flex: none;
+  color: var(--muted);
+}
+
 .party-btn:hover,
 .party-btn.on {
   border-color: var(--accent);
+}
+
+.party-btn:hover .party-gear,
+.party-btn.on .party-gear {
+  color: var(--accent);
 }
 
 .party-name {
@@ -1266,6 +1294,14 @@ main {
 
 /* ------------------------------------------------------------- расписание */
 
+.schedule-head-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
 .cal-nav {
   display: flex;
   align-items: center;
@@ -1279,7 +1315,7 @@ main {
   color: var(--text);
 }
 
-/* Неделя и «Актуальное» подписаны диапазоном, а не месяцем. */
+/* Неделя и «Ближайшее» подписаны диапазоном, а не месяцем. */
 .cal-title.range {
   min-width: 190px;
   font-variant-numeric: tabular-nums;
@@ -1596,7 +1632,14 @@ main {
   height: 38px;
   padding: 5px 7px 4px;
   border-top: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
-  background: linear-gradient(
+  /*
+   * Тёмная подложка, а не фон самой клетки. На выходном клетка уже тёмная, и
+   * полоса прайма выглядела собранной; на буднях сквозь полупрозрачный
+   * акцент просвечивал светлый фон, и тот же прайм казался бледнее. Теперь
+   * подложка одна на все типы дня — назначенный вечер читается одинаково.
+   */
+  background-color: var(--surface-deep);
+  background-image: linear-gradient(
     135deg,
     color-mix(in srgb, var(--accent) 14%, transparent),
     color-mix(in srgb, var(--accent) 3.5%, transparent)
@@ -1615,7 +1658,10 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
-/* Выходной и отсутствие прайма — та же высота, но тише по цвету. */
+/*
+ * Отсутствие прайма — та же высота, но тише по цвету. Выходной пати сюда не
+ * относится: он выглядит как назначенный прайм, только без часов.
+ */
 .cal-plan.none {
   border-top-color: color-mix(in srgb, #fff 8%, transparent);
   background: transparent;
@@ -4827,7 +4873,6 @@ main {
     order: 2;
   }
 
-  .sync-details,
   .sync-actions {
     order: 3;
   }
@@ -4955,7 +5000,7 @@ main {
 }
 
 /*
- * Неделя и «Актуальное» — крупные карточки вместо месячной сетки.
+ * Неделя и «Ближайшее» — крупные карточки вместо месячной сетки.
  *
  * Семь колонок остаются, но клетка получает минимум 170 пикселей: в неё
  * помещается ось вечера, а не только номер и время. Если места меньше,
@@ -4967,7 +5012,12 @@ main {
 
 .schedule-main .cal.cal-big .cal-grid-big {
   grid-template-columns: repeat(7, minmax(170px, 1fr));
-  grid-auto-rows: clamp(300px, 36vh, 430px);
+  /*
+   * Две недели — две строки. Высота подобрана так, чтобы обе строки помещались
+   * на обычном экране: в клетке остаётся место на ось, явку и план, а лишнее
+   * уходит в прокрутку сетки, а не обрезается.
+   */
+  grid-auto-rows: clamp(260px, 30vh, 380px);
   gap: 8px;
   padding: 8px;
   overflow-x: auto;
@@ -5022,27 +5072,25 @@ main {
   line-height: 14px;
 }
 
-/* Ось вечера в крупной клетке: те же правила, но с запасом по высоте. */
+/*
+ * Ось вечера в крупной клетке.
+ *
+ * Сверху вниз: полоса вечера, подписи часов, короткие засечки и только под
+ * ними — названия событий. Раньше события стояли над осью и спорили за
+ * внимание с временем; теперь глаз идёт от часов к тому, что в эти часы
+ * происходит, и подписи не наезжают на полосу.
+ *
+ * Отступы между полосой, часами и засечками ужаты: в клетке важнее высота
+ * под явку и план, а не воздух между тремя тонкими строками.
+ */
 .cal-big .cal-tl {
   flex: none;
-  height: 78px;
-  margin: 1px 0 0;
-}
-
-.cal-big .cal-tl .sum-tl-labels {
-  height: 22px;
-}
-
-.cal-big .cal-tl .sum-tl-label {
-  font-size: 11px;
-}
-
-.cal-big .cal-tl .sum-tl-label > span {
-  font-size: 9.5px;
+  height: 64px;
+  margin: 0 0 1px;
 }
 
 .cal-big .cal-tl .sum-tl-track {
-  top: 34px;
+  top: 0;
   height: 10px;
   border-radius: 5px;
 }
@@ -5058,29 +5106,79 @@ main {
   height: 16px;
 }
 
-.cal-big .cal-tl .sum-tl-tick {
-  top: 48px;
-  height: 5px;
-}
-
 .cal-big .cal-tl .sum-tl-ticks {
-  top: 56px;
+  top: 16px;
   font-size: 10px;
 }
 
+.cal-big .cal-tl .sum-tl-tick {
+  top: 32px;
+  height: 5px;
+}
+
 /*
- * Явка в крупной клетке: цифра, подпись и полоса. В месячной сетке для неё
- * нет места, а здесь она отвечает на вопрос «сколько нас» без правой сводки.
+ * Подписи событий — под временем и по центру своей отметки.
+ *
+ * У краёв клетки подпись больше не прижимается внутрь: смещённая к середине
+ * она читается как подпись именно этой отметки, а не соседней.
+ */
+.cal-big .cal-tl .sum-tl-labels {
+  top: 42px;
+  height: 20px;
+}
+
+.cal-big .cal-tl .sum-tl-label {
+  font-size: 11px;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+.cal-big .cal-tl .sum-tl-label.start,
+.cal-big .cal-tl .sum-tl-label.end {
+  transform: translateX(-50%);
+}
+
+.cal-big .cal-tl .sum-tl-label > span {
+  font-size: 9.5px;
+}
+
+/*
+ * Низ крупной клетки: отсутствующие и явка вплотную над планом вечера.
+ *
+ * `margin-top: auto` прижимает весь блок к плану, поэтому он стоит на одной
+ * высоте во всех клетках ряда, сколько бы событий ни было выше.
+ */
+.cal-foot {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  margin-top: auto;
+}
+
+/*
+ * Явка в крупной клетке: строка «сколько придут» и полоса на всю ширину под
+ * ней. В месячной сетке для неё нет места, а здесь она отвечает на вопрос
+ * «сколько нас» без правой сводки.
  */
 .cal-attend {
   flex: none;
   display: flex;
-  align-items: baseline;
-  gap: 5px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
   min-width: 0;
   color: var(--muted);
   font-size: 10px;
   line-height: 1.2;
+}
+
+.cal-attend-head {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
   white-space: nowrap;
 }
 
@@ -5094,10 +5192,10 @@ main {
 }
 
 .cal-attend-bar {
-  flex: 1 1 auto;
-  align-self: center;
+  display: block;
+  flex: none;
+  width: 100%;
   height: 5px;
-  min-width: 26px;
   overflow: hidden;
   border-radius: 999px;
   background: var(--bg-3);
@@ -5111,7 +5209,7 @@ main {
 }
 
 .cal-big .cal-away {
-  gap: 5px;
+  gap: 3px;
   font-size: 10.5px;
 }
 
@@ -5406,7 +5504,12 @@ main {
   letter-spacing: -0.01em;
 }
 
-.sum-prime.off {
+/*
+ * «Время не назначено» — не план, а его отсутствие: тише и мельче. Выходной
+ * пати, наоборот, остаётся крупным и золотым, как назначенный прайм: это
+ * такое же решение на вечер, только без часов.
+ */
+.sum-prime.none {
   color: var(--muted);
   font-size: 21px;
 }
@@ -5930,14 +6033,40 @@ main {
 .cal-away {
   flex: none;
   display: flex;
-  align-items: center;
-  gap: 4px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
   min-width: 0;
   margin-top: auto;
   overflow: hidden;
   color: #ffb3b3;
   font-size: 9px;
   line-height: 1.2;
+}
+
+/*
+ * В крупной клетке отсутствующие стоят над явкой, а не отдельно от неё:
+ * распорку снизу держит общий `.cal-foot`.
+ */
+.cal-foot .cal-away {
+  margin-top: 0;
+}
+
+.cal-away-head {
+  color: #d98a8a;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cal-away-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   white-space: nowrap;
 }
 
@@ -6389,15 +6518,18 @@ main {
    * Шапка расписания на телефоне в одну строку не влезает: переключатель
    * видов занимает всю ширину, а стрелки, период и «Сегодня» встают под ним.
    */
-  .cal-nav {
+  .schedule-head-left {
+    flex: 1 1 100%;
+  }
+
+  .schedule-head .cal-modes {
+    flex: 1 1 100%;
+  }
+
+  .schedule-head .cal-nav {
     flex: 1 0 100%;
     flex-wrap: wrap;
     justify-content: flex-end;
-  }
-
-  .cal-modes {
-    flex: 0 0 100%;
-    order: -1;
   }
 
   .cal-modes button {

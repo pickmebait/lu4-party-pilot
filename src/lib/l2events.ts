@@ -72,7 +72,7 @@ export const GAME_EVENTS: readonly GameEvent[] = [
     id: 'kh-siege',
     name: 'Осады КХ',
     kind: 'siege',
-    timeMinutes: 20 * 60,
+    timeMinutes: 21 * 60,
     durationMinutes: 2 * 60,
     nearest: '2026-11-05',
     everyDays: 14,
@@ -81,7 +81,7 @@ export const GAME_EVENTS: readonly GameEvent[] = [
     id: 'castle-siege',
     name: 'Осады замков',
     kind: 'siege',
-    timeMinutes: 18 * 60,
+    timeMinutes: 19 * 60,
     durationMinutes: 2 * 60,
     nearest: '2026-11-08',
     everyDays: 14,
@@ -202,7 +202,7 @@ export function eventWindow(
 }
 
 /**
- * Время события для клетки и подсказки: «22:00» у босса и «18:00–20:00»
+ * Время события для клетки и подсказки: «22:00» у босса и «19:00–21:00»
  * у осад. Если конец перешёл на следующие местные сутки, добавляем «+1»:
  * без него «23:00–01:00» читается как ошибка, а не как ночная осада.
  */

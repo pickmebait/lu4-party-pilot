@@ -87,8 +87,6 @@ const долг = useMemo(
   [db, сОт, сегодня, ownCharId],
 )
 
-  const подписьПериода = ПЕРИОДЫ.find((п) => п.дней === дней)?.подпись ?? ''
-
   const maxНедели = Math.max(1, ...прайм.поДнямНедели)
   const maxМесяца = Math.max(1, ...прайм.поМесяцам.map((м) => м.часов))
 
@@ -103,10 +101,12 @@ const долг = useMemo(
   return (
     <section className="view">
       <div className="view-head">
-        <h2>
-          Сводка <span className="muted">за {подписьПериода}</span>
-        </h2>
-        <div className="view-actions">
+        {/*
+          Период — тот же фильтр вида, что и в остальных разделах: стоит
+          слева, без заголовка «Сводка за». «За все время» — вариант по
+          умолчанию и самая длинная подпись, по ней и выравнивается ряд.
+        */}
+        <div className="view-actions affil">
           <div className="segmented" role="group" aria-label="Период">
             {ПЕРИОДЫ.map((п) => (
               <button

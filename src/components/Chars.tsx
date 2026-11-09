@@ -90,18 +90,11 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
   return (
     <section className="view">
       <div className="view-head">
-        <h2>
-          Персонажи
-          {фильтр !== 'все' && (
-            <span className="head-note">
-              показано {показанные.length} из {все.length}
-            </span>
-          )}
-        </h2>
         <div className="view-actions affil">
           {/*
-           * Фильтр и кнопка стоят рядом и растягиваются по общей высоте:
-           * кнопка ниже — шапка перестаёт занимать две строки.
+           * Фильтр и вид стоят слева, как в расписании и сводке: заголовок
+           * раздела повторял бы подпись вкладки, а место нужно самим
+           * карточкам. Кнопка добавления — справа, у неё другое назначение.
            */}
           <div className="segmented" role="group" aria-label="Фильтр по принадлежности">
             <button
@@ -135,17 +128,23 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
               </button>
             ))}
           </div>
-          {/*
-            Добавление персонажа доступно только мастеру: новый персонаж не
-            может оказаться «своим» у того, кто вошёл по токену персонажа,
-            и сервер такой состав всё равно не примет.
-          */}
-          {master && (
-            <button className="btn tiny" onClick={() => setQuickAdd(true)}>
-              + Персонаж
-            </button>
+          {фильтр !== 'все' && (
+            <span className="head-note">
+              показано {показанные.length} из {все.length}
+            </span>
           )}
         </div>
+
+        {/*
+          Добавление персонажа доступно только мастеру: новый персонаж не
+          может оказаться «своим» у того, кто вошёл по токену персонажа,
+          и сервер такой состав всё равно не примет.
+        */}
+        {master && (
+          <button className="btn tiny primary" onClick={() => setQuickAdd(true)}>
+            Добавить персонажа
+          </button>
+        )}
       </div>
 
       <div className={вид === 'строка' ? 'chars-grid' : 'chars-col'}>

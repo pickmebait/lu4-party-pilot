@@ -14,6 +14,7 @@ import { getSession, signIn, signOut, updateSession, useDb } from '@/lib/store'
 import { browserTimeZone, userTimeZone, zoneLabel } from '@/lib/timezone'
 import { formatAgo } from '@/lib/util'
 import { ConfirmModal, ПАУЗА_ПАТИ_СЕКУНД } from './ConfirmModal'
+import { IconGear } from './Icons'
 import { TokensTable } from './PartyTokens'
 import { TokenModal } from './TokenModal'
 
@@ -263,8 +264,13 @@ export function PartyMenu() {
         onClick={() => setOpen((v) => !v)}
         title="Название пати и вид токена"
       >
-        <span className="party-name">{session.name}</span>
-        <span className={`party-role ${мастер ? 'master' : 'char'}`}>{видТокена}</span>
+        <span className="party-btn-main">
+          <span className="party-name">{session.name}</span>
+          <span className={`party-role ${мастер ? 'master' : 'char'}`}>{видТокена}</span>
+        </span>
+        <span className="party-gear">
+          <IconGear size={14} />
+        </span>
       </button>
 
       {open && (
