@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-09T21:16:19.617Z",
+    "updatedAt": "2026-11-09T21:16:30.813Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -242,7 +242,10 @@
             "extraWeaponSets": [
               {
                 "rhand": [
-                  null
+                  {
+                    "itemId": 300,
+                    "sa": "Health"
+                  }
                 ],
                 "lhand": [
                   null
@@ -9762,6 +9765,25 @@
           {
             "itemId": 2394,
             "mod": 4
+          }
+        ]
+      },
+      {
+        "ts": "2026-11-09T21:16:28.711Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": "smvjolwxp1w64im",
+        "weaponSet": 1,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 300,
+            "mod": 0,
+            "sa": "Health"
           }
         ]
       }
