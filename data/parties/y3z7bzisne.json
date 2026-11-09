@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-09T21:16:30.813Z",
+    "updatedAt": "2026-11-09T21:16:39.884Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -248,6 +248,25 @@
                   }
                 ],
                 "lhand": [
+                  null
+                ]
+              }
+            ],
+            "extraArmorSets": [
+              {
+                "head": [
+                  null
+                ],
+                "chest": [
+                  null
+                ],
+                "legs": [
+                  null
+                ],
+                "gloves": [
+                  null
+                ],
+                "feet": [
                   null
                 ]
               }
