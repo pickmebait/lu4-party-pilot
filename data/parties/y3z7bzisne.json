@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-09T16:30:24.426Z",
+    "updatedAt": "2026-11-09T21:16:19.617Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -238,7 +238,17 @@
                   "itemId": 887
                 }
               ]
-            }
+            },
+            "extraWeaponSets": [
+              {
+                "rhand": [
+                  null
+                ],
+                "lhand": [
+                  null
+                ]
+              }
+            ]
           },
           {
             "id": "smvjom1e73m4i48",
