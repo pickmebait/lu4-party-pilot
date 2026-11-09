@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-09T21:18:09.463Z",
+    "updatedAt": "2026-11-09T21:18:22.219Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -356,7 +356,7 @@
           {
             "id": "smvjom2r34az0e1",
             "cls": "Destroyer",
-            "level": 63,
+            "level": 64,
             "slots": {
               "rhand": [
                 {
