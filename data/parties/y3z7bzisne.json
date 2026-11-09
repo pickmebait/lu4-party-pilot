@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-09T21:16:39.884Z",
+    "updatedAt": "2026-11-09T21:16:49.959Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -255,7 +255,9 @@
             "extraArmorSets": [
               {
                 "head": [
-                  null
+                  {
+                    "itemId": 2416
+                  }
                 ],
                 "chest": [
                   null
@@ -9803,6 +9805,24 @@
             "itemId": 300,
             "mod": 0,
             "sa": "Health"
+          }
+        ]
+      },
+      {
+        "ts": "2026-11-09T21:16:47.857Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "head",
+        "subId": "smvjolwxp1w64im",
+        "armorSet": 1,
+        "было": [
+          null
+        ],
+        "стало": [
+          {
+            "itemId": 2416,
+            "mod": 0
           }
         ]
       }
