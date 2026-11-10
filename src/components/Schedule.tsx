@@ -355,6 +355,11 @@ export function ScheduleView() {
 
   const заголовокПериода =
     режим === 'месяц' ? formatMonth(месяц) : formatDayRange(клетки.map((к) => к.key))
+  /*
+   * В «Ближайшем» листать нечего, но стрелки остаются в разметке невидимыми:
+   * иначе при переключении вида диапазон дат уезжал бы вбок вместе с ними.
+   */
+  const стрелкиСкрыты = режим === 'ближайшее'
 
   return (
     <section className="view schedule-view" onMouseUp={закончитьВыбор} onMouseLeave={закончитьВыбор}>
@@ -376,26 +381,27 @@ export function ScheduleView() {
           <span className="head-note">{периодСловами(часовПрайма, выходныхВПериоде)}</span>
         </div>
         <div className="cal-nav">
-          {/* «Ближайшее» — окно вокруг сегодняшнего дня: листать его некуда. */}
-          {режим !== 'ближайшее' && (
-            <button
-              className="icon-btn"
-              title={режим === 'месяц' ? 'Предыдущий месяц' : 'Предыдущие семь дней'}
-              onClick={() => листнуть(-1)}
-            >
-              ‹
-            </button>
-          )}
+          <button
+            className="icon-btn"
+            title={режим === 'месяц' ? 'Предыдущий месяц' : 'Предыдущие семь дней'}
+            style={{ visibility: стрелкиСкрыты ? 'hidden' : undefined }}
+            aria-hidden={стрелкиСкрыты}
+            tabIndex={стрелкиСкрыты ? -1 : undefined}
+            onClick={() => листнуть(-1)}
+          >
+            ‹
+          </button>
           <span className={`cal-title${режим === 'месяц' ? '' : ' range'}`}>{заголовокПериода}</span>
-          {режим !== 'ближайшее' && (
-            <button
-              className="icon-btn"
-              title={режим === 'месяц' ? 'Следующий месяц' : 'Следующие семь дней'}
-              onClick={() => листнуть(1)}
-            >
-              ›
-            </button>
-          )}
+          <button
+            className="icon-btn"
+            title={режим === 'месяц' ? 'Следующий месяц' : 'Следующие семь дней'}
+            style={{ visibility: стрелкиСкрыты ? 'hidden' : undefined }}
+            aria-hidden={стрелкиСкрыты}
+            tabIndex={стрелкиСкрыты ? -1 : undefined}
+            onClick={() => листнуть(1)}
+          >
+            ›
+          </button>
           <button className="btn tiny" onClick={вернутьсяКСегодня}>
             Сегодня
           </button>
@@ -799,6 +805,7 @@ function DayBox({
             timeZone={timeZone}
             className="cal-tl"
             edgeThreshold={32}
+            clampLabels
           />
         ) : (
           события.length > 0 && (
@@ -940,6 +947,7 @@ function EventTrack({
   className = '',
   showLabels = true,
   edgeThreshold = 18,
+  clampLabels = false,
 }: {
   день: string
   прайм: ReturnType<typeof primeOf>
@@ -953,6 +961,15 @@ function EventTrack({
    * порог шире: половина подписи не помещается в восемнадцать процентов.
    */
   edgeThreshold?: number
+  /**
+   * Удерживать подписи внутри полосы по их настоящей ширине.
+   *
+   * В крупной клетке подпись стоит по центру отметки, но у края окна она
+   * вылезала бы за клетку. Порог по процентам не спасает: у осады подпись
+   * шире, чем расстояние от отметки до края. Поэтому после раскладки меряем
+   * её и сдвигаем внутрь ровно настолько, насколько нужно.
+   */
+  clampLabels?: boolean
 }) {
   const местный = прайм.kind === 'окно' ? userWindow(день, прайм.window, timeZone) : null
   const окна = события.map((event) => eventWindow(event, день, timeZone))
@@ -965,6 +982,41 @@ function EventTrack({
   const подписьЧаса = (минуты: number) =>
     formatClock(((минуты % 1440) + 1440) % 1440).slice(0, 2)
 
+  const подписи = useRef<HTMLDivElement>(null)
+
+  /*
+   * Подписи у краёв сдвигаются внутрь по своей настоящей ширине. Проценты
+   * здесь не годятся: «Осады замков 19:00–21:00» шире, чем половина клетки,
+   * и любая привязка к отметке выносила бы её за рамку.
+   */
+  useLayoutEffect(() => {
+    const полоса = подписи.current
+    if (!clampLabels || !showLabels || !полоса) return
+
+    const уложить = () => {
+      const ширина = полоса.clientWidth
+      if (!ширина) return
+      полоса.querySelectorAll<HTMLElement>('.sum-tl-label').forEach((подпись) => {
+        const доля = Number(подпись.dataset.left)
+        if (!Number.isFinite(доля)) return
+        const половина = подпись.offsetWidth / 2
+        /* Два пикселя запаса, чтобы подпись не липла к рамке клетки. */
+        const запас = Math.min(2, Math.max(0, ширина / 2 - половина))
+        const центр = Math.min(
+          Math.max((доля / 100) * ширина, половина + запас),
+          ширина - половина - запас,
+        )
+        подпись.style.left = `${центр}px`
+      })
+    }
+
+    уложить()
+    if (typeof ResizeObserver === 'undefined') return
+    const наблюдатель = new ResizeObserver(уложить)
+    наблюдатель.observe(полоса)
+    return () => наблюдатель.disconnect()
+  }, [clampLabels, showLabels, день, события, timeZone])
+
   return (
     <div
       className={`sum-tl${className ? ` ${className}` : ''}`}
@@ -976,18 +1028,24 @@ function EventTrack({
       }`}
     >
       {showLabels && (
-        <div className="sum-tl-labels">
+        <div className="sum-tl-labels" ref={подписи}>
           {события.map((event, i) => {
             const окно = окна[i]
             if (!окно) return null
             const left = позиция(окно.from)
-            const край =
-              left < edgeThreshold ? ' start' : left > 100 - edgeThreshold ? ' end' : ''
+            const край = clampLabels
+              ? ''
+              : left < edgeThreshold
+                ? ' start'
+                : left > 100 - edgeThreshold
+                  ? ' end'
+                  : ''
             return (
               <span
                 key={event.id}
                 className={`sum-tl-label kind-${event.kind}${край}`}
                 style={{ left: `${left}%` }}
+                data-left={left}
                 title={eventTitle(event, timeZone, день)}
               >
                 {event.name} <span>{eventTimeLabel(event, день, timeZone)}</span>

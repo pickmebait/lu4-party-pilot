@@ -258,7 +258,7 @@ function SetTabs({
               title={`Добавить ещё один набор ${набор}`}
               onClick={onAdd}
             >
-              + Добавить
+              Добавить
             </button>
           )}
           <button
