@@ -5582,9 +5582,39 @@ main {
  * событий стоят над осью, у краёв прижимаются внутрь, чтобы не обрезаться.
  */
 .sum-tl {
+  /*
+   * Тон полосы вечера. Общий для всех дней: форма и высота не меняются,
+   * различается только заливка под подложку клетки. На буднях дорожка была
+   * почти чёрной и терялась на градиенте карточки; теперь она светлее линии
+   * и у неё есть верхний блик, как у жёлоба.
+   */
+  --tl-track: color-mix(in srgb, var(--line-2) 78%, var(--bg-3));
+  --tl-track-edge: color-mix(in srgb, #fff 7%, transparent);
+  --tl-tick: color-mix(in srgb, var(--muted) 60%, transparent);
+  --tl-tick-text: color-mix(in srgb, var(--muted) 90%, transparent);
   position: relative;
   height: 64px;
   margin: 11px 0 2px;
+}
+
+/* Выходной — самая тёмная подложка, поэтому полоса немного плотнее. */
+.sum-tl.day-weekend {
+  --tl-track: color-mix(in srgb, var(--line-2) 72%, var(--surface-deep));
+}
+
+/* Выходной, объявленный рабочим: подложка --bg-2, тон как у будней. */
+.sum-tl.day-workday {
+  --tl-track: color-mix(in srgb, var(--line-2) 74%, var(--bg-2));
+}
+
+/*
+ * Выходной пати: тело клетки в косой штриховке. Полоса чуть темнее, но с
+ * более заметной окантовкой — так она не рябит вместе с фоном.
+ */
+.sum-tl.day-off {
+  --tl-track: color-mix(in srgb, var(--line-2) 68%, var(--surface-deep));
+  --tl-track-edge: color-mix(in srgb, #fff 10%, transparent);
+  --tl-tick: color-mix(in srgb, var(--muted) 55%, transparent);
 }
 
 .sum-tl-labels {
@@ -5636,7 +5666,8 @@ main {
   top: 28px;
   height: 8px;
   border-radius: 4px;
-  background: var(--bg-3);
+  background: var(--tl-track, var(--bg-3));
+  box-shadow: inset 0 1px 0 var(--tl-track-edge, transparent);
 }
 
 .sum-tl-prime {
@@ -5674,7 +5705,7 @@ main {
   width: 1px;
   height: 4px;
   transform: translateX(-50%);
-  background: var(--line-2);
+  background: var(--tl-tick, var(--line-2));
 }
 
 .sum-tl-ticks {
@@ -5683,7 +5714,7 @@ main {
   right: 0;
   top: 46px;
   height: 12px;
-  color: var(--muted-dim);
+  color: var(--tl-tick-text, var(--muted-dim));
   font-size: 9px;
   font-variant-numeric: tabular-nums;
 }

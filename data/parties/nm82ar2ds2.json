@@ -6,8 +6,8 @@
   "tokens": [],
   "db": {
     "version": 10,
-    "updatedAt": "2026-10-25T19:05:12.147Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-11-10T05:40:04.168Z",
+    "updatedBy": "Миграция",
     "chars": [
       {
         "id": "cmvo760en1knaxr",
@@ -22,7 +22,10 @@
             }
           ],
           "lhand": [
-            null
+            {
+              "itemId": 299,
+              "spans": true
+            }
           ],
           "head": [
             null

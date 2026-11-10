@@ -31,7 +31,7 @@ import {
   replaceDb,
   setSubUnlocked,
 } from '@/lib/store.ts'
-import { fistIds, migrateFistHands } from '@/lib/migrations.ts'
+import { migrateTwoHanded, twoHandedIds } from '@/lib/migrations.ts'
 import { levelForInput, levelToSave, LEVEL_MIN, LEVEL_MAX } from '@/lib/classes.ts'
 import { привестиНик, написаноБезПробелов, НИК_МАКС } from '@/lib/nick.ts'
 
@@ -250,7 +250,7 @@ removeArmorSet(main, 1)
   { занято: 11, всего: 18 },
 )
 
-/* ------------------------------------------------------ миграция кастетов */
+/* ------------------------------------------------ миграция двуручного оружия */
 
 /*
  * Кастеты стали двуручными. Миграция должна не просто дорисовать вторую
@@ -258,11 +258,11 @@ removeArmorSet(main, 1)
  * заточкой, SA и редким эффектом, а не пропадает.
  */
 const idКастета = 268
-const idsКастетов = fistIds([
-  { id: idКастета, weaponClass: 'Кастеты' },
+const idsКастетов = twoHandedIds([
+  { id: idКастета, weaponClass: 'Кастеты', twoHanded: true },
   { id: 9999, weaponClass: 'Меч' },
 ])
-равно('кастет находится по классу оружия', [...idsКастетов], [idКастета])
+равно('двуручное находится по признаку справочника', [...idsКастетов], [idКастета])
 
 const кастет = (mod = 10) => ({ itemId: idКастета, mod, sa: 'Health' })
 const вРуке = (item) => ({ rhand: [item], lhand: [null] })
@@ -273,7 +273,7 @@ const базаСКастетом = (slots, extra = {}) => ({
 const момент = '2026-10-24T00:00:00.000Z'
 
 const исходная = базаСКастетом(вРуке(кастет()))
-const раз = migrateFistHands(исходная, idsКастетов, момент)
+const раз = migrateTwoHanded(исходная, idsКастетов, момент)
 равно('кастет мигрировал', раз.changed, true)
 равно('правая рука без spans', раз.db.chars[0].slots.rhand, [кастет()])
 равно(
@@ -284,7 +284,7 @@ const раз = migrateFistHands(исходная, idsКастетов, моме�
 равно('при пустой левой руке в казну ничего не ушло', раз.moved, [])
 равно('казна не тронута', раз.db.warehouse, исходная.warehouse)
 
-const повтор = migrateFistHands(раз.db, idsКастетов, момент)
+const повтор = migrateTwoHanded(раз.db, idsКастетов, момент)
 равно('повторная миграция ничего не меняет', повтор.changed, false)
 правда('повторная миграция возвращает ту же базу', повтор.db === раз.db)
 
@@ -293,7 +293,7 @@ const сЩитом = базаСКастетом({
   lhand: [{ itemId: 100, mod: 5, sa: 'Health', rare: true }],
 })
 сЩитом.warehouse = { stacks: [{ itemId: 100, count: 2 }], log: [] }
-const снят = migrateFistHands(сЩитом, idsКастетов, момент)
+const снят = migrateTwoHanded(сЩитом, idsКастетов, момент)
 равно('снятая вещь отмечена', снят.moved, [100])
 равно(
   'снятая вещь добавлена в существующую стопку',
@@ -322,7 +322,7 @@ const сНовым = базаСКастетом({
   rhand: [кастет()],
   lhand: [{ itemId: 101 }],
 })
-const новый = migrateFistHands(сНовым, idsКастетов, момент)
+const новый = migrateTwoHanded(сНовым, idsКастетов, момент)
 равно('новая вещь в казне одной штукой', новый.db.warehouse.stacks, [
   { itemId: 101, count: 1 },
 ])
@@ -345,7 +345,7 @@ const ветки = базаСКастетом(
     ],
   },
 )
-const поВсемВеткам = migrateFistHands(ветки, idsКастетов, момент)
+const поВсемВеткам = migrateTwoHanded(ветки, idsКастетов, момент)
 равно(
   'в сабе вторая рука занята',
   поВсемВеткам.db.chars[0].subs[0].slots.lhand,
@@ -372,7 +372,7 @@ const двеВещи = базаСКастетом({
   rhand: [кастет()],
   lhand: [кастет(3)],
 })
-const однаВещь = migrateFistHands(двеВещи, idsКастетов, момент)
+const однаВещь = migrateTwoHanded(двеВещи, idsКастетов, момент)
 равно('второй кастет не пропал', однаВещь.moved, [idКастета])
 равно('второй кастет лёг в казну', однаВещь.db.warehouse.stacks, [
   { itemId: idКастета, count: 1 },
@@ -382,7 +382,7 @@ const готово = базаСКастетом({
   rhand: [кастет()],
   lhand: [{ ...кастет(), spans: true }],
 })
-равно('исправленная база не переписывается', migrateFistHands(готово, idsКастетов).changed, false)
+равно('исправленная база не переписывается', migrateTwoHanded(готово, idsКастетов).changed, false)
 
 /*
  * Порядок полей не должен означать изменение.
@@ -399,7 +399,7 @@ const поПорядкуХранилища = базаСКастетом({
 })
 равно(
   'порядок полей не считается изменением',
-  migrateFistHands(поПорядкуХранилища, idsКастетов, момент).changed,
+  migrateTwoHanded(поПорядкуХранилища, idsКастетов, момент).changed,
   false,
 )
 
@@ -409,7 +409,7 @@ const сSAПоПорядкуХранилища = базаСКастетом({
 })
 равно(
   'порядок полей с SA не считается изменением',
-  migrateFistHands(сSAПоПорядкуХранилища, idsКастетов, момент).changed,
+  migrateTwoHanded(сSAПоПорядкуХранилища, idsКастетов, момент).changed,
   false,
 )
 
@@ -417,17 +417,37 @@ const неКастет = базаСКастетом({
   rhand: [{ itemId: 5 }],
   lhand: [{ itemId: 6 }],
 })
-const безКастетов = migrateFistHands(неКастет, idsКастетов)
+const безКастетов = migrateTwoHanded(неКастет, idsКастетов)
 равно('обычное оружие не трогается', безКастетов.changed, false)
-правда('база без кастетов возвращается как есть', безКастетов.db === неКастет)
-равно('пустой набор кастетов ничего не делает', migrateFistHands(исходная, new Set()).changed, false)
+правда('база без двуручных возвращается как есть', безКастетов.db === неКастет)
+равно('пустой набор двуручных ничего не делает', migrateTwoHanded(исходная, new Set()).changed, false)
+
+/*
+ * Копьё — тоже двуручное. Признак приходит из справочника, поэтому миграция
+ * обязана закрыть левую руку и у него, а не только у кастета.
+ */
+const idКопья = 297
+const idsКопий = twoHandedIds([
+  { id: idКопья, weaponClass: 'Копья', twoHanded: true },
+  { id: idКастета, weaponClass: 'Кастеты', twoHanded: true },
+])
+const копьё = { itemId: idКопья, mod: 4, sa: 'Guidance' }
+const сКопьём = базаСКастетом(вРуке(копьё))
+const миграцияКопья = migrateTwoHanded(сКопьём, idsКопий, момент)
+равно('копьё мигрировало', миграцияКопья.changed, true)
+равно(
+  'у копья вторая рука занята',
+  миграцияКопья.db.chars[0].slots.lhand,
+  [{ ...копьё, spans: true }],
+)
+равно('у копья в казну ничего не ушло', миграцияКопья.moved, [])
 
 // Обёртка хранилища — то, что запускает приложение после загрузки справочника.
 const стараяБаза = базаСКастетом(вРуке(кастет()))
 replaceDb(стараяБаза)
 равно(
   'обёртка мигрирует базу',
-  migrateGear([{ id: idКастета, weaponClass: 'Кастеты' }]),
+  migrateGear([{ id: idКастета, weaponClass: 'Кастеты', twoHanded: true }]),
   true,
 )
 равно(
@@ -437,7 +457,7 @@ replaceDb(стараяБаза)
 )
 равно(
   'повторный запуск обёртки молчит',
-  migrateGear([{ id: idКастета, weaponClass: 'Кастеты' }]),
+  migrateGear([{ id: idКастета, weaponClass: 'Кастеты', twoHanded: true }]),
   false,
 )
 

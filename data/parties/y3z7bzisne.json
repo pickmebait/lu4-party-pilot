@@ -71,8 +71,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-09T21:18:22.219Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-11-10T05:40:04.168Z",
+    "updatedBy": "Миграция",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -248,7 +248,11 @@
                   }
                 ],
                 "lhand": [
-                  null
+                  {
+                    "itemId": 300,
+                    "sa": "Health",
+                    "spans": true
+                  }
                 ]
               }
             ],
@@ -687,7 +691,12 @@
                 }
               ],
               "lhand": [
-                null
+                {
+                  "itemId": 297,
+                  "mod": 4,
+                  "sa": "Guidance",
+                  "spans": true
+                }
               ],
               "head": [
                 {

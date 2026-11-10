@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-23T09:32:36.993Z",
+  "generatedAt": "2026-11-10T05:39:03.432Z",
   "source": "masterwork.wiki · Lu4: Gamma · оружие, бижутерия, доспехи и комплекты",
   "posts": [
     {
@@ -1352,6 +1352,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_long_spear_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 31,
       "atkMag": 21,
       "rareEffect": {
@@ -2477,6 +2478,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_short_spear_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 24,
       "atkMag": 17,
       "rareEffect": {
@@ -4730,6 +4732,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_dwarven_pike_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 64,
       "atkMag": 39,
       "saEffects": [
@@ -4848,6 +4851,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_dwarven_trident_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 51,
       "atkMag": 32,
       "rareEffect": {
@@ -5379,6 +5383,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_glaive_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 92,
       "atkMag": 54,
       "saEffects": [
@@ -6946,6 +6951,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_pike_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 51,
       "atkMag": 32,
       "rareEffect": {
@@ -8905,6 +8911,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_trident_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 40,
       "atkMag": 26,
       "rareEffect": {
@@ -9043,6 +9050,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_war_hammer_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 64,
       "atkMag": 39,
       "saEffects": [
@@ -9087,6 +9095,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_hammer_in_flames_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 79,
       "atkMag": 47,
       "saEffects": [
@@ -9169,6 +9178,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_winged_spear_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 79,
       "atkMag": 47,
       "saEffects": [
@@ -9488,6 +9498,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_bech_de_corbin_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 122,
       "atkMag": 68,
       "saEffects": [
@@ -9601,6 +9612,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_body_slasher_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 107,
       "atkMag": 61,
       "saEffects": [
@@ -13034,6 +13046,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_orcish_glaive_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 107,
       "atkMag": 61,
       "saEffects": [
@@ -13078,6 +13091,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_orcish_poleaxe_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 156,
       "atkMag": 83,
       "saEffects": [
@@ -13462,6 +13476,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_poleaxe_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 139,
       "atkMag": 76,
       "saEffects": [
@@ -14112,6 +14127,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_scorpion_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 144,
       "atkMag": 78,
       "saEffects": [
@@ -14156,6 +14172,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_scythe_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 107,
       "atkMag": 61,
       "saEffects": [
@@ -15350,6 +15367,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_widow_maker_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 144,
       "atkMag": 78,
       "saEffects": [
@@ -17715,6 +17733,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_great_axe_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 175,
       "atkMag": 91,
       "saEffects": [
@@ -18286,6 +18305,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_lancia_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 194,
       "atkMag": 99,
       "saEffects": [
@@ -22738,6 +22758,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_halbard_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 213,
       "atkMag": 107,
       "saEffects": [
@@ -24792,6 +24813,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_tallum_glaive_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 232,
       "atkMag": 114,
       "saEffects": [
@@ -25293,6 +25315,7 @@
       "imageUrl": "https://masterwork.wiki/i64/weapon_tiphon_spear_i00.png",
       "weaponClass": "Копья",
       "weaponType": "Копья",
+      "twoHanded": true,
       "atkPhys": 251,
       "atkMag": 121,
       "saEffects": [

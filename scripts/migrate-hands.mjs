@@ -1,5 +1,5 @@
 /**
- * Разовая миграция баз пати: кастеты занимают обе руки.
+ * Разовая миграция баз пати: двуручное оружие занимает обе руки.
  *
  * Правило зависит от справочника, поэтому логика лежит в
  * src/lib/migrations.ts, а не дублируется здесь. Скрипт только читает файлы
@@ -10,8 +10,8 @@
  * пишется заточка, SA и редкий эффект. Повторный запуск ничего не меняет.
  *
  * Запуск:
- *   node scripts/migrate-fists.mjs --dry-run
- *   node scripts/migrate-fists.mjs
+ *   node scripts/migrate-hands.mjs --dry-run
+ *   node scripts/migrate-hands.mjs
  */
 import { build } from 'esbuild'
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
@@ -22,12 +22,12 @@ import { pathToFileURL } from 'node:url'
 const сухой = process.argv.includes('--dry-run')
 const сейчас = new Date().toISOString()
 
-const папка = mkdtempSync(join(tmpdir(), 'кастеты-'))
+const папка = mkdtempSync(join(tmpdir(), 'двуручные-'))
 const вход = join(папка, 'миграция.mts')
 const выход = join(папка, 'миграция.mjs')
 writeFileSync(
   вход,
-  "export { fistIds, migrateFistHands } from '@/lib/migrations.ts'\n",
+  "export { migrateTwoHanded, twoHandedIds } from '@/lib/migrations.ts'\n",
   'utf8',
 )
 
@@ -42,15 +42,15 @@ try {
     logLevel: 'silent',
     alias: { '@': new URL('../src', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1') },
   })
-  const { fistIds, migrateFistHands } = await import(pathToFileURL(выход).href)
+  const { migrateTwoHanded, twoHandedIds } = await import(pathToFileURL(выход).href)
 
   const каталог = JSON.parse(readFileSync('public/items.json', 'utf8'))
-  const ids = fistIds(каталог.items)
+  const ids = twoHandedIds(каталог.items)
   if (ids.size === 0) {
-    console.error('В справочнике нет кастетов — миграция остановлена.')
+    console.error('В справочнике нет двуручного оружия — миграция остановлена.')
     process.exit(1)
   }
-  console.log(`Кастетов в справочнике: ${ids.size}`)
+  console.log(`Двуручных предметов в справочнике: ${ids.size}`)
 
   const папкаБаз = 'data/parties'
   const файлы = readdirSync(папкаБаз).filter((f) => f.endsWith('.json'))
@@ -76,7 +76,7 @@ try {
       continue
     }
 
-    const итог = migrateFistHands(партия.db, ids, сейчас)
+    const итог = migrateTwoHanded(партия.db, ids, сейчас)
     if (!итог.changed) {
       console.log(`  ${файл}: без изменений`)
       continue

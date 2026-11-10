@@ -65,7 +65,7 @@ import {
 } from './schedule'
 import { uid } from './util'
 import { привестиНик } from './nick'
-import { fistIds, migrateFistHands } from './migrations'
+import { migrateTwoHanded, twoHandedIds } from './migrations'
 
 /**
  * Версия 11: у дней расписания появилась короткая тема прайма.
@@ -747,15 +747,15 @@ export function getDb(): Db {
 /**
  * Миграция снаряжения, которой нужен справочник предметов.
  *
- * Кастеты занимают обе руки, но по одному itemId этого не видно: признак
- * лежит в справочнике, а не в базе пати. Поэтому такая миграция запускается
- * после его загрузки, а не при чтении базы.
+ * Двуручное оружие занимает обе руки, но по одному itemId этого не видно:
+ * признак лежит в справочнике, а не в базе пати. Поэтому такая миграция
+ * запускается после его загрузки, а не при чтении базы.
  *
  * Сохраняем только когда есть что менять: иначе каждая загрузка страницы
  * двигала бы updatedAt, и база уезжала бы на сервер без единой правки.
  */
 export function migrateGear(items: readonly CatalogItem[]): boolean {
-  const итог = migrateFistHands(db, fistIds(items))
+  const итог = migrateTwoHanded(db, twoHandedIds(items))
   if (!итог.changed) return false
   commit(итог.db)
   return true

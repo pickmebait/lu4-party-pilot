@@ -3,9 +3,9 @@
  *
  * Обычные миграции живут в store.ts: там при загрузке любой базы поля
  * приводятся к нынешнему виду. Но есть правила, которые нельзя понять по
- * одному itemId — например, что кастеты занимают обе руки. Это свойство
- * лежит в справочнике, а не в базе пати, поэтому такая миграция запускается
- * после загрузки items.json.
+ * одному itemId — например, что двуручное оружие занимает обе руки. Это
+ * свойство лежит в справочнике, а не в базе пати, поэтому такая миграция
+ * запускается после загрузки items.json.
  *
  * Функции здесь чистые: получают базу и набор id, возвращают новую базу.
  * Так их можно проверить без браузера и без сети.
@@ -13,7 +13,7 @@
 import type { CatalogItem, Char, Db, MoveLog, SlotEntry, WeaponSet } from '@/types'
 import { uid } from './util'
 
-export interface FistHandsMigration {
+export interface TwoHandedMigration {
   db: Db
   changed: boolean
   /** Предметы, снятые с левой руки и убранные в казну. */
@@ -54,20 +54,20 @@ const теЖеЯчейки = (
 ): boolean => a.length === b.length && a.every((ячейка, i) => таЖеЯчейка(ячейка, b[i] ?? null))
 
 /**
- * Кастеты — двуручное оружие.
+ * Двуручное оружие занимает обе руки.
  *
- * В старой базе кастет мог лежать только в правой руке, а слева — щит или
- * вторая пара кулаков. Теперь обе руки заняты одним кастетом. Миграция
- * дорисовывает вторую руку, а всё, что там было, не выбрасывает: снятая
- * вещь уходит в казну и отмечается в её истории. Так данные не исчезают, а
- * человек видит, куда делась вещь.
+ * В старой базе копьё или кастет могли лежать только в правой руке, а
+ * слева — щит или вторая вещь. Теперь обе руки заняты одним предметом.
+ * Миграция дорисовывает вторую руку, а всё, что там было, не выбрасывает:
+ * снятая вещь уходит в казну и отмечается в её истории. Так данные не
+ * исчезают, а человек видит, куда делась вещь.
  */
-export function migrateFistHands(
+export function migrateTwoHanded(
   db: Db,
-  fistIds: ReadonlySet<number>,
+  twoHandedIds: ReadonlySet<number>,
   now = new Date().toISOString(),
-): FistHandsMigration {
-  if (fistIds.size === 0) return { db, changed: false, moved: [] }
+): TwoHandedMigration {
+  if (twoHandedIds.size === 0) return { db, changed: false, moved: [] }
 
   let changed = false
   const moved: number[] = []
@@ -95,7 +95,7 @@ export function migrateFistHands(
         itemId: entry.itemId,
         count: 1,
         dir: 'in',
-        note: `Кастет занимает обе руки: вещь снята с левой руки${
+        note: `Двуручное оружие занимает обе руки: вещь снята с левой руки${
           свойства.length ? ` (${свойства.join(', ')})` : ''
         }`,
       } satisfies MoveLog,
@@ -104,18 +104,18 @@ export function migrateFistHands(
   }
 
   /**
-   * Дорисовывает вторую руку у кастета.
+   * Дорисовывает вторую руку у двуручного предмета.
    *
-   * Возвращает только изменённые ячейки: если кастет уже носит вторую руку,
-   * объект не трогаем, и лишнего сохранения не будет.
+   * Возвращает только изменённые ячейки: если предмет уже занимает вторую
+   * руку, объект не трогаем, и лишнего сохранения не будет.
    */
   const cells = (src: WeaponCells): WeaponCells | null => {
     const right = (src.rhand ?? [])[0] ?? null
-    if (!right || !fistIds.has(right.itemId)) return null
+    if (!right || !twoHandedIds.has(right.itemId)) return null
 
     const left = (src.lhand ?? [])[0] ?? null
     /*
-     * Если слева уже лежит тот же кастет с отметкой spans, это нормальная
+     * Если слева уже лежит тот же предмет с отметкой spans, это нормальная
      * вторая ячейка пары. Всё остальное — отдельная вещь, которая до
      * исправления считалась надетой. Её нельзя просто затереть: отправляем
      * в казну, чтобы она не пропала.
@@ -181,9 +181,13 @@ export function migrateFistHands(
   return { db: changed ? база : db, changed, moved }
 }
 
-/** id всех кастетов в справочнике. */
-export function fistIds(items: readonly CatalogItem[]): Set<number> {
-  return new Set(
-    items.filter((item) => item.weaponClass === 'Кастеты').map((item) => item.id),
-  )
+/**
+ * id всех двуручных предметов в справочнике.
+ *
+ * Признак `twoHanded` ставит сборка каталога: он есть и у «Двуручных …», и
+ * у парных, и у луков, копий и кастетов, которые в статье не названы
+ * двуручными. Поэтому миграция больше не привязана к одному классу оружия.
+ */
+export function twoHandedIds(items: readonly CatalogItem[]): Set<number> {
+  return new Set(items.filter((item) => item.twoHanded).map((item) => item.id))
 }
