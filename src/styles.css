@@ -1974,7 +1974,7 @@ main {
  * время, до того как нажмёт «Назначить».
  */
 .editor-zone {
-  flex-basis: 100%;
+  margin: 0;
   color: var(--muted-dim);
   font-size: 10.5px;
   line-height: 1.3;
@@ -5215,7 +5215,8 @@ main {
 }
 
 .cal-attend-bar > .attend-absent {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--err) 72%, #8a3030), var(--err));
+  /* Тот же #ffb3b3, что и у имён в «Отсутствуют»: полоса не вводит новый красный. */
+  background: #ffb3b3;
 }
 
 .cal-big .cal-away {
@@ -5358,6 +5359,9 @@ main {
  * и двойные отступы, а ширина колонки остаётся прежней.
  */
 .schedule-side .side-scroll .cal-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   max-height: none;
   margin: 0;
   padding: 0;
@@ -5393,63 +5397,113 @@ main {
 }
 
 /*
- * Редактор в правой колонке.
+ * Редактор в сайдбаре — как в варианте «режимы в сайдбаре».
  *
- * Прайм и отсутствие стоят рядом: это два независимых действия, и держать их
- * друг под другом значило отдать форме всю высоту колонки, оставив сводке
- * узкую полоску. В 420 пикселях каждому блоку достаётся по 195 — полям
- * времени и кнопкам этого хватает. Кнопки внутри блока идут сеткой: главная
- * во всю ширину, две второстепенные — половинками.
+ * Выделение — отдельной карточкой, прайм и отсутствие — двумя карточками
+ * друг под другом во всю ширину колонки. В 420 пикселях две колонки
+ * оставляли каждому блоку по 195, и поля времени с кнопками разъезжались
+ * на три строки. Календарь остаётся на месте: форма занимает только
+ * правую колонку и прокручивается внутри неё.
  */
-.schedule-side .editor-what {
+.schedule-side .side-scroll .editor-what {
+  align-items: flex-start;
   gap: 6px;
-  flex-wrap: wrap;
-  padding-bottom: 6px;
-  font-size: 13px;
-}
-
-.schedule-side .editor-count,
-.schedule-side .editor-now {
-  font-size: 10.5px;
-}
-
-.schedule-side .editor-now {
-  margin-left: auto;
-}
-
-.schedule-side .editor-grid {
-  gap: 12px;
-  padding-top: 8px;
-}
-
-.schedule-side .editor-block h4 {
-  margin-bottom: 4px;
+  padding: 7px 9px;
+  border: 1px solid var(--accent-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent-deep) 55%, var(--surface));
   font-size: 12px;
 }
 
-.schedule-side .cal-editor .row {
+.schedule-side .side-scroll .editor-what strong {
+  color: var(--accent-2);
+  font-weight: 600;
+}
+
+.schedule-side .side-scroll .editor-what-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.schedule-side .side-scroll .editor-what-line {
+  display: flex;
+  align-items: baseline;
   gap: 6px;
-  margin-top: 6px;
+  min-width: 0;
 }
 
-.schedule-side .cal-editor label {
-  font-size: 11px;
+.schedule-side .side-scroll .editor-count,
+.schedule-side .side-scroll .editor-now {
+  font-size: 10.5px;
 }
 
-.schedule-side .cal-editor .input.time {
-  width: 86px;
-  padding: 3px 6px;
-  font-size: 13px;
+.schedule-side .side-scroll .editor-count {
+  color: var(--muted);
+}
+
+.schedule-side .side-scroll .editor-now {
+  margin-left: 0;
+  color: var(--muted);
+  white-space: normal;
+}
+
+.schedule-side .side-scroll .editor-what > .icon-btn {
+  flex: none;
+  margin-left: auto;
+}
+
+.schedule-side .side-scroll .editor-zone {
+  margin: -2px 0 0;
+  padding: 0 1px;
+  color: var(--muted-dim);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.schedule-side .side-scroll .editor-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 0;
+}
+
+.schedule-side .side-scroll .editor-block {
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg-2) 72%, transparent);
+}
+
+.schedule-side .side-scroll .editor-block h4 {
+  margin-bottom: 7px;
+  font-size: 12px;
+}
+
+.schedule-side .side-scroll .cal-editor .row {
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.schedule-side .side-scroll .cal-editor label {
+  font-size: 10.5px;
+}
+
+.schedule-side .side-scroll .cal-editor .input.time {
+  width: 82px;
+  padding: 4px 6px;
+  font-size: 12px;
 }
 
 /* Тема — на всю ширину блока: она длиннее времени и переноситься не должна. */
-.schedule-side .cal-editor .theme-field {
-  margin-top: 6px;
+.schedule-side .side-scroll .cal-editor .theme-field {
+  margin-top: 7px;
 }
 
-.schedule-side .cal-editor .theme-field .input {
+.schedule-side .side-scroll .cal-editor .theme-field .input {
   width: 100%;
-  padding: 3px 6px;
+  padding: 4px 6px;
   font-size: 12px;
 }
 
@@ -5466,46 +5520,54 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
-.schedule-side .block-head {
-  min-height: 24px;
-  margin-bottom: 5px;
+.schedule-side .side-scroll .block-head {
+  min-height: 26px;
+  margin-bottom: 7px;
 }
 
-.schedule-side .block-head h4 {
+.schedule-side .side-scroll .block-head h4 {
   margin: 0;
 }
 
-.schedule-side .block-head .who,
-.schedule-side .block-head .who-fixed {
-  max-width: 60%;
+.schedule-side .side-scroll .block-head .who,
+.schedule-side .side-scroll .block-head .who-fixed {
+  max-width: 62%;
   padding: 3px 6px;
-  font-size: 12px;
+  font-size: 11.5px;
 }
 
-.schedule-side .segment {
-  margin-top: 4px;
+.schedule-side .side-scroll .segment {
+  margin-top: 7px;
 }
 
-.schedule-side .cal-editor .seg {
-  padding: 4px 10px;
+.schedule-side .side-scroll .cal-editor .seg {
+  padding: 5px 10px;
   font-size: 11px;
 }
 
-.schedule-side .cal-editor .editor-block > .row:not(.time-row) {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: stretch;
+.schedule-side .side-scroll .cal-editor .hint {
+  margin: 6px 0 0;
+  color: var(--muted-dim);
+  font-size: 9.5px;
+  line-height: 1.35;
 }
 
-.schedule-side .cal-editor .editor-block > .row:not(.time-row) > .btn {
-  padding: 5px 7px;
-  font-size: 11.5px;
+/*
+ * Кнопки — обычной строкой, как в макете. Главная не растягивается на всю
+ * ширину: иначе блок снова читался бы как форма из двух колонок.
+ */
+.schedule-side .side-scroll .cal-editor .editor-block > .row:not(.time-row) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.schedule-side .side-scroll .cal-editor .editor-block > .row:not(.time-row) > .btn {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  font-size: 11px;
   line-height: 1.2;
-  white-space: normal;
-}
-
-.schedule-side .cal-editor .editor-block > .row:not(.time-row) > .btn.primary:first-child {
-  grid-column: 1 / -1;
+  white-space: nowrap;
 }
 
 /*
@@ -5809,7 +5871,8 @@ main {
 }
 
 .sum-attend-bar > .attend-absent {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--err) 72%, #8a3030), var(--err));
+  /* Тот же #ffb3b3, что и у имён в «Отсутствуют»: полоса не вводит новый красный. */
+  background: #ffb3b3;
 }
 
 /* Пришедшие — чипами: их большинство, и полные строки на каждого растягивали
