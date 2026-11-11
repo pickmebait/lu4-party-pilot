@@ -68,7 +68,7 @@ import {
 import { isMarked, toggleChecklist, useChecklistMarks } from '@/lib/checklistSession'
 import { useAccess, useOwnCharName } from '@/lib/access'
 import { РедакторДней } from './ScheduleEditor'
-import { IconClose, IconEvent } from './Icons'
+import { IconClose } from './Icons'
 import { ScheduleNote } from './ReadOnlyNote'
 
 /*
@@ -150,7 +150,7 @@ export function ScheduleView() {
   const [выбор, setВыбор] = useState<string[]>([])
   const [якорь, setЯкорь] = useState<string | null>(null)
   const [кто, setКто] = useState('')
-  const [вкладка, setВкладка] = useState<'день' | 'чеклист'>('день')
+  const [вкладка, setВкладка] = useState<'день' | 'чеклист' | 'редактор'>('день')
   /** Счётчик прокруток к сегодняшнему дню: нужен, когда месяц не меняется. */
   const [кСегодня, setКСегодня] = useState(0)
   const тянем = useRef(false)
@@ -230,7 +230,13 @@ export function ScheduleView() {
     setВыбор(daysBetween(якорь, key))
   }
 
-  const открытьДень = () => setВкладка('день')
+  /*
+   * Выбор дня открывает карточку, но не выбивает из редактора: там дни
+   * выделяют протяжкой, и переключение вкладки на каждом нажатии не дало бы
+   * довести выбор до конца.
+   */
+  const открытьДень = () =>
+    setВкладка((текущая) => (текущая === 'редактор' ? текущая : 'день'))
 
   const начать = (клетка: DayCell) => {
     тянем.current = true
@@ -455,7 +461,7 @@ export function ScheduleView() {
                 className={`event-legend kind-${event.kind}`}
                 title={`${eventTitle(event, пояс)} · ${eventSchedule(event, пояс)}`}
               >
-                <EventIcon />
+                <span className="event-dot" aria-hidden="true" />
                 <span>{event.name}</span>
                 <span className="event-legend-time">{eventTimeLabel(event, undefined, пояс)}</span>
               </span>
@@ -550,10 +556,25 @@ export function ScheduleView() {
                 <span className="side-tab-count">{db.schedule.checklist.length}</span>
               )}
             </button>
+            {(мастер || свойId) && (
+              <button
+                className={`side-tab${вкладка === 'редактор' ? ' on' : ''}`}
+                role="tab"
+                aria-selected={вкладка === 'редактор'}
+                onClick={() => setВкладка('редактор')}
+              >
+                Редактор
+              </button>
+            )}
           </div>
 
+          {/*
+            Правка живёт вкладкой рядом с карточкой и подготовкой. Выбрал
+            дни в календаре — перешёл в «Редактор», и форма уже на экране;
+            ширина колонки при этом не меняется.
+          */}
           <div className="side-scroll" role="tabpanel">
-            {вкладка === 'день' ? (
+            {вкладка === 'день' && (
               <DaySummary
                 день={выбор.length > 0 ? выбор[0] : сегодня}
                 выбрано={выбор.length}
@@ -561,36 +582,31 @@ export function ScheduleView() {
                 schedule={db.schedule}
                 timeZone={пояс}
               />
-            ) : (
-              <Checklist />
             )}
-          </div>
 
-          {/*
-            Правка живёт в правой колонке, а не под всей раскладкой. Выбрал
-            дни — блок уже на экране, и не надо прокручивать страницу вниз,
-            чтобы назначить прайм. Карточка дня над ним прокручивается внутри
-            своей области, поэтому форма не уезжает за край.
-          */}
-          {(мастер || свойId) && границы ? (
-            <РедакторДней
-              выбор={выбор}
-              герой={герой}
-              chars={db.chars}
-              мастер={мастер}
-              пояс={пояс}
-              onСменаГероя={setКто}
-              onСнятьВыделение={() => setВыбор([])}
-            />
-          ) : (
-            <div className="side-empty">
-              <strong>Выберите дни</strong>
-              <span>
-                Зажмите день в календаре и протяните до последнего — здесь появятся прайм и
-                отметка отсутствия.
-              </span>
-            </div>
-          )}
+            {вкладка === 'чеклист' && <Checklist />}
+
+            {вкладка === 'редактор' &&
+              ((мастер || свойId) && границы ? (
+                <РедакторДней
+                  выбор={выбор}
+                  герой={герой}
+                  chars={db.chars}
+                  мастер={мастер}
+                  пояс={пояс}
+                  onСменаГероя={setКто}
+                  onСнятьВыделение={() => setВыбор([])}
+                />
+              ) : (
+                <div className="side-empty">
+                  <strong>Выберите дни</strong>
+                  <span>
+                    Зажмите день в календаре и протяните до последнего — здесь появятся прайм и
+                    отметка отсутствия.
+                  </span>
+                </div>
+              ))}
+          </div>
         </aside>
       </div>
     </section>
@@ -722,6 +738,10 @@ function DayBox({
     </span>
   )
 
+  /* Доля пришедших на полосе явки: остаток красный — это отсутствующие. */
+  const процентЯвки = состав ? Math.round((пойдут / состав) * 100) : 0
+  const неПридут = Math.max(0, состав - пойдут)
+
   const классы = ['cal-day']
   if (клетка.чужой) классы.push('other')
   if (крупно) классы.push('big')
@@ -826,13 +846,19 @@ function DayBox({
           <span className="cal-foot">
             {блокОтсутствующих}
 
-            <span className="cal-attend" title={`Придут ${пойдут} из ${состав} состава`}>
+            <span
+              className="cal-attend"
+              title={`Придут ${пойдут} из ${состав} состава${неПридут ? ` · не смогут ${неПридут}` : ''}`}
+            >
               <span className="cal-attend-head">
                 <b>{пойдут}</b>
                 <span>придут из {состав}</span>
               </span>
               <span className="cal-attend-bar">
-                <span style={{ width: `${состав ? Math.round((пойдут / состав) * 100) : 0}%` }} />
+                <span className="attend-ok" style={{ width: `${процентЯвки}%` }} />
+                {неПридут > 0 && (
+                  <span className="attend-absent" style={{ width: `${100 - процентЯвки}%` }} />
+                )}
               </span>
             </span>
           </span>
@@ -893,12 +919,12 @@ function DayBox({
 }
 
 /*
- * Значок и подпись события.
+ * Подпись события в месячной сетке.
  *
- * В клетке имя идёт первой строкой, а время — второй: «Осады замков» с
- * диапазоном «19:00–21:00» в одну строку не помещаются. Вид события красит
- * значок: эпические боссы одним цветом, осады другим, не золотым — иначе
- * осада сливалась бы с полосой прайма.
+ * Цветная точка, название и время стоят в одну строку — так же, как событие
+ * выглядит на оси в неделе и «Ближайшем». Две строки в низкой клетке месяца
+ * отнимали высоту у отсутствующих и прайма, а звезда ещё и читалась как
+ * отдельная категория.
  */
 function EventBadge({
   event,
@@ -911,25 +937,11 @@ function EventBadge({
 }) {
   return (
     <span className={`event-badge kind-${event.kind}`} title={eventTitle(event, timeZone, dayKey)}>
-      <span className="event-badge-icon">
-        <EventIcon size={9} />
-      </span>
+      <span className="event-dot" aria-hidden="true" />
       <span className="event-badge-name">{event.name}</span>
       <span className="event-badge-time">{eventTimeLabel(event, dayKey, timeZone)}</span>
     </span>
   )
-}
-
-/*
- * Значок события один на все виды.
- *
- * Раньше у королевы была корона, у Орфена капля, у Кора пламя, у осад щит и
- * башня. Пять разных рисунков в маленькой клетке читались как пять разных
- * категорий, хотя это одно и то же — «сегодня вечером событие сервера».
- * Общая звезда уравнивает их и оставляет название главным.
- */
-function EventIcon({ size = 11 }: { size?: number }) {
-  return <IconEvent size={size} />
 }
 
 /**
@@ -1142,6 +1154,7 @@ function DaySummary({
   const уходят = chars.filter((c) => c.away?.[день])
   const пойдут = состав.filter((c) => !c.away?.[день])
   const процент = состав.length ? Math.round((пойдут.length / состав.length) * 100) : 0
+  const неПридут = Math.max(0, состав.length - пойдут.length)
   const длительность = прайм.kind === 'окно' ? прайм.window.to - прайм.window.from : 0
 
   return (
@@ -1188,8 +1201,7 @@ function DaySummary({
       {/*
         Ось вечера: прайм полупрозрачной полосой, события — точками своего
         цвета. Точки не золотые, как прайм: иначе осада сливалась бы с полосой
-        и её приходилось бы искать глазами. Красных полос отсутствий здесь
-        нет — они остаются в списке ниже, где видно время ухода.
+        и её приходилось бы искать глазами.
       */}
       <EventTrack
         день={день}
@@ -1199,7 +1211,10 @@ function DaySummary({
         timeZone={timeZone}
       />
 
-      <div className="sum-attend" title={`Придут ${пойдут.length} из ${состав.length} состава`}>
+      <div
+        className="sum-attend"
+        title={`Придут ${пойдут.length} из ${состав.length} состава${неПридут ? ` · не смогут ${неПридут}` : ''}`}
+      >
         <span className="sum-attend-num">{пойдут.length}</span>
         <span className="sum-attend-cap">
           придут из <b>{состав.length}</b>
@@ -1208,9 +1223,14 @@ function DaySummary({
         </span>
         <span
           className="sum-attend-bar"
-          aria-label={`Придут ${пойдут.length} из ${состав.length} состава`}
+          aria-label={`Придут ${пойдут.length} из ${состав.length} состава${
+            неПридут ? `, не смогут ${неПридут}` : ''
+          }`}
         >
-          <span style={{ width: `${процент}%` }} />
+          <span className="attend-ok" style={{ width: `${процент}%` }} />
+          {неПридут > 0 && (
+            <span className="attend-absent" style={{ width: `${100 - процент}%` }} />
+          )}
         </span>
       </div>
 

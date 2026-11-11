@@ -1556,9 +1556,16 @@ main {
   font-weight: 800;
 }
 
+/*
+ * Выделенный день — полупрозрачная окантовка и лёгкая заливка.
+ *
+ * Раньше рамка была сплошным акцентом и спорила с «сегодня»: два соседних
+ * дня выглядели одинаково важными. Теперь у выбранного дня окантовка тише,
+ * а у сегодняшнего остаются плотная рамка, подпись и тонированная шапка.
+ */
 .cal-day.picked {
-  border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 44%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
 /*
@@ -1580,7 +1587,9 @@ main {
 }
 
 .cal-day.today.picked {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent),
+  /* Сегодняшняя плотная рамка остаётся: выделение видно по заливке и кольцу. */
+  border-color: color-mix(in srgb, var(--accent) 75%, var(--line));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent),
     0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent),
     0 8px 22px rgba(0, 0, 0, 0.28);
 }
@@ -1715,11 +1724,11 @@ main {
 }
 
 /*
- * События в клетке: имя строкой, время строкой под ним.
+ * Событие в месячной клетке: точка, название и время одной строкой.
  *
- * Полные названия «Осады замков» и «Осады КХ» вместе с диапазоном в одну
- * строку не влезают. Значок стоит слева от имени, время выровнено по имени:
- * колонка «что — во сколько» читается сверху вниз.
+ * Так же выглядят события на оси в неделе и «Ближайшем». Точка красится по
+ * виду события, а название при нехватке места обрезается многоточием: время
+ * важнее полного имени и остаётся видимым.
  */
 .cal-events {
   flex: none;
@@ -1731,34 +1740,24 @@ main {
 }
 
 .cal-events .event-badge {
-  display: grid;
-  grid-template-columns: 11px minmax(0, 1fr);
-  grid-template-areas:
-    'icon name'
-    '. time';
-  column-gap: 4px;
-  row-gap: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   padding: 0;
   border-radius: 0;
   background: none;
   line-height: 1.25;
-  white-space: normal;
-}
-
-.cal-events .event-badge-icon {
-  grid-area: icon;
-  width: 11px;
-  height: 11px;
+  white-space: nowrap;
 }
 
 .cal-events .event-badge-name {
-  grid-area: name;
+  flex: 0 1 auto;
   font-size: 9px;
   line-height: 11px;
 }
 
 .cal-events .event-badge-time {
-  grid-area: time;
+  flex: none;
   font-size: 8px;
   line-height: 10px;
 }
@@ -1780,26 +1779,23 @@ main {
 }
 
 /*
- * Значок вида: эпические боссы — синие, осады — сиреневые. Цвет один на вид,
+ * Точка вида: эпические боссы — синие, осады — сиреневые. Цвет один на вид,
  * а не на событие: по нему видно, босс это или осада, не читая название.
  * Осада не золотая: золото занято праймом, и на оси вечера событие сливалось
  * бы с его полосой.
  */
-.event-badge-icon {
+.event-dot {
+  --dot: var(--event-epic);
   flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 13px;
-  height: 13px;
-  border-radius: 3px;
-  background: color-mix(in srgb, var(--event-epic) 14%, transparent);
-  color: var(--event-epic);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dot);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dot) 18%, transparent);
 }
 
-.event-badge.kind-siege .event-badge-icon {
-  background: color-mix(in srgb, var(--event-siege) 15%, transparent);
-  color: var(--event-siege);
+.kind-siege .event-dot {
+  --dot: var(--event-siege);
 }
 
 .event-badge-name {
@@ -1834,17 +1830,14 @@ main {
 .event-legend {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   color: var(--muted);
   white-space: nowrap;
 }
 
-.event-legend.kind-epic svg {
-  color: var(--event-epic);
-}
-
-.event-legend.kind-siege svg {
-  color: var(--event-siege);
+.event-legend .event-dot {
+  width: 8px;
+  height: 8px;
 }
 
 .event-legend-time {
@@ -5203,7 +5196,7 @@ main {
 }
 
 .cal-attend-bar {
-  display: block;
+  display: flex;
   flex: none;
   width: 100%;
   height: 5px;
@@ -5215,8 +5208,14 @@ main {
 .cal-attend-bar > span {
   display: block;
   height: 100%;
-  border-radius: inherit;
+}
+
+.cal-attend-bar > .attend-ok {
   background: linear-gradient(90deg, #2f9d68, var(--ok));
+}
+
+.cal-attend-bar > .attend-absent {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--err) 72%, #8a3030), var(--err));
 }
 
 .cal-big .cal-away {
@@ -5351,6 +5350,27 @@ main {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 8px 10px 9px;
+}
+
+/*
+ * В режиме-вкладке редактор живёт внутри side-scroll: рамку, фон и прокрутку
+ * даёт он, а не вложенная карточка. Иначе получалась бы карточка в карточке
+ * и двойные отступы, а ширина колонки остаётся прежней.
+ */
+.schedule-side .side-scroll .cal-editor {
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  background: none;
+  border: 0;
+  border-radius: 0;
+}
+
+.side-scroll .side-empty {
+  padding: 2px 0;
+  background: none;
+  border: 0;
 }
 
 .side-empty {
@@ -5769,6 +5789,7 @@ main {
 }
 
 .sum-attend-bar {
+  display: flex;
   flex: 1 1 auto;
   height: 6px;
   min-width: 40px;
@@ -5780,9 +5801,15 @@ main {
 .sum-attend-bar > span {
   display: block;
   height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #2f9d68, var(--ok));
   transition: width 0.2s;
+}
+
+.sum-attend-bar > .attend-ok {
+  background: linear-gradient(90deg, #2f9d68, var(--ok));
+}
+
+.sum-attend-bar > .attend-absent {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--err) 72%, #8a3030), var(--err));
 }
 
 /* Пришедшие — чипами: их большинство, и полные строки на каждого растягивали
