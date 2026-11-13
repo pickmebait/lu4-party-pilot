@@ -510,7 +510,7 @@ function ПраймБлок({
             Не {offWord(выбор.length)}
           </button>
         ) : (
-          <button className="btn" onClick={onОтметитьВыходной} title="Пати не собирается в эти дни">
+          <button className="btn primary" onClick={onОтметитьВыходной} title="Пати не собирается в эти дни">
             Назначить {offWord(выбор.length)}
           </button>
         )}

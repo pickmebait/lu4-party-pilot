@@ -384,7 +384,20 @@ export function ScheduleView() {
               </button>
             ))}
           </div>
-          <span className="head-note">{периодСловами(часовПрайма, выходныхВПериоде)}</span>
+          <span className="head-note">
+            {периодСловами(часовПрайма, выходныхВПериоде)}
+            {/*
+              Пояс подписан здесь же, рядом с периодом: иначе «22:00» в клетке
+              у человека из другого города выглядит как ошибка, а «время по
+              Москве» после неудачного чтения Intl — как обычное местное.
+            */}
+            <span
+              className="cal-zone-note"
+              title="Время событий, прайма и отсутствий пересчитано из московского в ваш пояс. Дни календаря остаются прежними."
+            >
+              {zoneLabel(поясБраузера)}
+            </span>
+          </span>
         </div>
         <div className="cal-nav">
           <button
@@ -408,7 +421,7 @@ export function ScheduleView() {
           >
             ›
           </button>
-          <button className="btn tiny" onClick={вернутьсяКСегодня}>
+          <button className="btn tiny primary" onClick={вернутьсяКСегодня}>
             Сегодня
           </button>
         </div>
@@ -451,42 +464,43 @@ export function ScheduleView() {
           </div>
 
           {/*
-            Легенда событий стоит под календарём, а не в подсказке: значки в
-            клетках должны читаться без наведения на каждую дату по очереди.
+            Легенды под календарём одной строкой: события слева, дни справа.
+            Значки в клетках должны читаться без наведения на каждую дату,
+            а расшифровка дней стоит там же, где и раньше, — только не
+            отнимает отдельную строку у календаря.
           */}
-          <div className="cal-event-legend" aria-label="События сервера">
-            {GAME_EVENTS.map((event) => (
-              <span
-                key={event.id}
-                className={`event-legend kind-${event.kind}`}
-                title={`${eventTitle(event, пояс)} · ${eventSchedule(event, пояс)}`}
-              >
-                <span className="event-dot" aria-hidden="true" />
-                <span>{event.name}</span>
-                <span className="event-legend-time">{eventTimeLabel(event, undefined, пояс)}</span>
+          <div className="cal-legends">
+            <div className="cal-event-legend" aria-label="События сервера">
+              {GAME_EVENTS.map((event) => (
+                <span
+                  key={event.id}
+                  className={`event-legend kind-${event.kind}`}
+                  title={`${eventTitle(event, пояс)} · ${eventSchedule(event, пояс)}`}
+                >
+                  <span className="event-dot" aria-hidden="true" />
+                  <span>{event.name}</span>
+                  <span className="event-legend-time">{eventTimeLabel(event, undefined, пояс)}</span>
+                </span>
+              ))}
+            </div>
+
+            <div className="cal-legend">
+              <span className="legend workday" title="Рабочий день, объявленный на выходном, и сокращённый предпраздничный день">
+                рабочий
               </span>
-            ))}
+              <span className="legend weekend">выходной</span>
+              <span className="legend off">выходной пати</span>
+              <span className="legend away">кто-то отсутствует</span>
+            </div>
           </div>
 
           {/*
-            Пояс подписан явно: иначе «22:00» в клетке у человека из другого
-            города выглядит как ошибка, а «время по Москве» после неудачного
-            чтения Intl — как обычное местное.
+            Заготовки выделения стоят отдельной полосой под легендами:
+            календарь занимает почти весь экран, и ещё две высокие строки под
+            ним заставляли бы прокручивать страницу.
           */}
-          <div
-            className="cal-zone-note"
-            title="Время событий, прайма и отсутствий пересчитано из московского в ваш пояс. Дни календаря остаются прежними."
-          >
-            {zoneLabel(поясБраузера)}
-          </div>
-
-          {/*
-            Заготовки выделения и расшифровка дней в одной строке: календарь
-            занимает почти весь экран, и ещё две высокие строки под ним
-            заставляли бы прокручивать страницу.
-          */}
-          <div className="cal-tools">
-            {!крупныйВид && (
+          {!крупныйВид && (
+            <div className="cal-tools">
               <div className="cal-pick">
                 <span
                   className="cal-pick-label"
@@ -517,17 +531,8 @@ export function ScheduleView() {
                   </button>
                 )}
               </div>
-            )}
-
-            <div className="cal-legend">
-              <span className="legend workday" title="Рабочий день, объявленный на выходном, и сокращённый предпраздничный день">
-                рабочий
-              </span>
-              <span className="legend weekend">выходной</span>
-              <span className="legend off">выходной пати</span>
-              <span className="legend away">кто-то отсутствует</span>
             </div>
-          </div>
+          )}
         </div>
 
         <aside className="schedule-side">

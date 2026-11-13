@@ -1845,27 +1845,53 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
-/* Подпись пояса под легендой: почему время именно такое. */
+/*
+ * Пояс подписан рядом с периодом: без этого «22:00» в клетке у человека из
+ * другого города выглядит как ошибка. Текст мелкий и приглушённый, чтобы не
+ * спорить с периодом, но остаётся в той же строке шапки.
+ */
 .cal-zone-note {
-  flex: none;
-  padding: 0 2px;
   color: var(--muted-dim);
   font-size: 10.5px;
-  line-height: 1.35;
+  line-height: inherit;
+  white-space: normal;
 }
 
-/* Строка выделения и расшифровка дней под календарём — одной полосой. */
-.cal-tools {
+.cal-zone-note::before {
+  content: '·';
+  margin: 0 5px;
+}
+
+.schedule-head .head-note {
+  white-space: normal;
+}
+
+/* Легенды под календарём: события слева, дни справа, одной строкой. */
+.cal-legends {
   flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
+  gap: 5px 16px;
+}
+
+.cal-legends .cal-legend {
+  margin-top: 0;
+  margin-left: auto;
+}
+
+/* Строка выделения под легендами. */
+.cal-tools {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
   gap: 6px 12px;
 }
 
-.cal-tools .cal-pick,
-.cal-tools .cal-legend {
+.cal-tools .cal-pick {
   margin-top: 0;
 }
 
@@ -2673,6 +2699,26 @@ main {
   white-space: nowrap;
 }
 
+/*
+ * Заглушка вместо вкладок сабов.
+ *
+ * Полоса остаётся на месте, даже когда квест не пройден: иначе снаряжение
+ * в такой карточке начинается выше, чем у соседей, и в ленте ломается общая
+ * линия. Внутри только «Осн.» — она есть всегда; «+ саб» не показываем,
+ * потому что добавить его до квеста нельзя.
+ */
+.sub-tabs.stub-tabs {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--line-2) 70%, transparent);
+}
+
+.sub-tabs.stub-tabs button.on {
+  flex: 0 1 auto;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--bg-3) 55%, transparent);
+  font-weight: 400;
+}
+
 .edit-sub {
   font-size: 12px;
   color: var(--accent-2);
@@ -2716,6 +2762,16 @@ main {
  */
 .char-meta .chip.cls {
   flex: none;
+}
+
+/*
+ * Уровень живёт в одной плашке с профессией. Между ними только пробел:
+ * точка-разделитель и подпись «ур.» съедали ширину, из-за которой строка
+ * с сабом вылезала за край карточки.
+ */
+.char-meta .chip.cls .meta-lvl {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Все слоты заняты: состояние, а не счёт. */
@@ -7104,10 +7160,16 @@ main {
   }
 
   /*
-   * Строка выделения и легенда раньше не помещались в 788 пикселей и
+   * Легенды и строка выделения раньше не помещались в 788 пикселей и
    * переносились на вторую строку, отнимая у календаря 24 пикселя. Без
-   * подписи «Выделить» кнопки и легенда укладываются в одну полосу.
+   * подписи «Выделить» кнопки укладываются в одну полосу, а легенды стоят
+   * над ними парой: события слева, дни справа.
    */
+  .cal-legends {
+    flex-wrap: nowrap;
+    gap: 6px 12px;
+  }
+
   .cal-tools {
     flex-wrap: nowrap;
     gap: 6px;
@@ -7122,7 +7184,7 @@ main {
     display: none;
   }
 
-  .cal-tools .cal-legend {
+  .cal-legends .cal-legend {
     flex-wrap: nowrap;
     gap: 9px;
     font-size: 11px;

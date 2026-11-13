@@ -650,6 +650,64 @@ function отметитьТокен(file: PartyFile, tokenId: string, when: stri
   }
 }
 
+/**
+ * Убирает токены персонажей, которых больше нет в базе.
+ *
+ * Токен персонажа существует только ради своего героя. После удаления героя
+ * он переставал работать по смыслу, но запись оставалась в файле: мастер
+ * видел в списке токен несуществующего персонажа, а сам токен продолжал
+ * проходить проверку и мог читать базу пати. Чистим при записи базы, при
+ * показе списка и при входе — это заодно убирает хвосты от удалений,
+ * сделанных до появления этой проверки.
+ */
+function безТокеновУдалённых(file: PartyFile): PartyFile {
+  const chars = (file.db as { chars?: unknown } | null | undefined)?.chars
+  if (!Array.isArray(chars)) return file
+
+  const живые = new Set(
+    chars
+      .map((c) => (c as { id?: unknown } | null)?.id)
+      .filter((id): id is string => typeof id === 'string'),
+  )
+  const tokens = file.tokens.filter((t) => живые.has(t.charId))
+  return tokens.length === file.tokens.length ? file : { ...file, tokens }
+}
+
+/**
+ * Закрепляет чистку токенов удалённых персонажей в репозитории.
+ *
+ * Если писать не удалось (например, файл только что изменил кто-то другой),
+ * возвращаем исходный файл: показывать список, которого нет на сервере,
+ * значит обещать несуществующее. Следующий запрос повторит чистку.
+ */
+async function отозватьТокеныУдалённых(
+  env: Env,
+  partyId: string,
+  file: PartyFile,
+  sha: string,
+): Promise<{ file: PartyFile; sha: string }> {
+  const очищенный = безТокеновУдалённых(file)
+  if (очищенный === file) return { file, sha }
+
+  try {
+    const saved = await writeFile(
+      env,
+      partyId,
+      очищенный,
+      sha,
+      `${file.name}: отозваны токены удалённых персонажей`,
+    )
+    return 'error' in saved ? { file, sha } : { file: очищенный, sha: saved.sha }
+  } catch {
+    /*
+     * Чистка не должна мешать чтению базы и входу: если GitHub ответил
+     * ошибкой, отдаём данные как есть. Следующий запрос повторит попытку,
+     * а пока в списке токенов просто останется лишняя запись.
+     */
+    return { file, sha }
+  }
+}
+
 /** Проверка доступа по файлу пати. Возвращает, чем именно вход. */
 type Access =
   | {
@@ -704,6 +762,14 @@ async function authorize(env: Env, request: Request): Promise<Access> {
   const выпущен = file.data.tokens.find((t) => t.hash === hash)
   if (!выпущен) return denied('Токен недействителен: его отозвали или мастер выпустил новый.')
   if (выпущен.charId !== parsed.charId) return denied('Токен недействителен')
+  /*
+   * Запись токена могла остаться от удалённого персонажа — например, если
+   * почистить файл в тот момент не удалось. Отказываем по самой базе, а не
+   * только по списку токенов: доступ не должен зависеть от удачной записи.
+   */
+  if (!естьПерсонаж(file.data.db, parsed.charId)) {
+    return denied('Токен недействителен: персонажа больше нет в пати.')
+  }
 
   return {
     ok: true,
@@ -865,31 +931,48 @@ async function openSession(request: Request, env: Env, cors: Cors): Promise<Resp
   if ('error' in file) return json({ error: file.error }, 502, cors)
   if (!file.data) return json({ error: 'Токен не подходит. Проверь, что скопировал целиком.' }, 401, cors)
 
+  /*
+   * Токен персонажа, которого уже нет в базе, перестаёт работать до
+   * проверки пароля. Заодно убираем все такие хвосты: иначе токен удалённого
+   * героя мог бы читать пати, пока мастер не откроет список токенов.
+   */
+  const очищенный = await отозватьТокеныУдалённых(env, parsed.partyId, file.data, file.sha)
+  const данные = очищенный.file
+  const sha = очищенный.sha
+
   const hash = await hashHex(parsed.secret)
 
   if (parsed.kind === 'M') {
-    if (hash !== file.data.masterHash) {
+    if (hash !== данные.masterHash) {
       return json({ error: 'Токен не подходит. Проверь, что скопировал целиком.' }, 401, cors)
     }
     return json(
       {
-        partyId: file.data.partyId,
-        name: file.data.name,
+        partyId: данные.partyId,
+        name: данные.name,
         role: 'master',
-        chars: countChars(file.data.db),
+        chars: countChars(данные.db),
       },
       200,
       cors,
     )
   }
 
-  const выпущен = file.data.tokens.find((t) => t.hash === hash)
+  const выпущен = данные.tokens.find((t) => t.hash === hash)
   if (!выпущен || выпущен.charId !== parsed.charId) {
     return json(
       { error: 'Токен не подходит: его отозвали или мастер выпустил новый.' },
       401,
       cors,
     )
+  }
+
+  /*
+   * Если почистить файл не удалось, запись токена ещё здесь. Героя при этом
+   * уже нет, и входить от его имени нельзя.
+   */
+  if (!естьПерсонаж(данные.db, parsed.charId)) {
+    return json({ error: 'Токен не подходит: персонажа больше нет в пати.' }, 401, cors)
   }
 
   /*
@@ -906,9 +989,9 @@ async function openSession(request: Request, env: Env, cors: Cors): Promise<Resp
       await writeFile(
         env,
         parsed.partyId,
-        отметитьТокен(file.data, выпущен.id, сейчас),
-        file.sha,
-        `${file.data.name}: вход по токену «${выпущен.charName}»`,
+        отметитьТокен(данные, выпущен.id, сейчас),
+        sha,
+        `${данные.name}: вход по токену «${выпущен.charName}»`,
         false,
       )
     } catch {
@@ -918,12 +1001,12 @@ async function openSession(request: Request, env: Env, cors: Cors): Promise<Resp
 
   return json(
     {
-      partyId: file.data.partyId,
-      name: file.data.name,
+      partyId: данные.partyId,
+      name: данные.name,
       role: 'char',
       charId: parsed.charId,
-      charName: charName(file.data.db, parsed.charId),
-      chars: countChars(file.data.db),
+      charName: charName(данные.db, parsed.charId),
+      chars: countChars(данные.db),
     },
     200,
     cors,
@@ -933,31 +1016,34 @@ async function openSession(request: Request, env: Env, cors: Cors): Promise<Resp
 async function readData(request: Request, env: Env, cors: Cors): Promise<Response> {
   const access = await authorize(env, request)
   if (!access.ok) return json({ error: access.error }, access.status, cors)
-  return json(access.file.db ?? emptyDb(new Date().toISOString()), 200, cors)
+  const file = await отозватьТокеныУдалённых(env, access.partyId, access.file, access.sha)
+  return json(file.file.db ?? emptyDb(new Date().toISOString()), 200, cors)
 }
 
 async function readMeta(request: Request, env: Env, cors: Cors): Promise<Response> {
   const access = await authorize(env, request)
   if (!access.ok) return json({ error: access.error }, access.status, cors)
 
-  const db = access.file.db as { updatedAt?: string; updatedBy?: string }
+  const очищенный = await отозватьТокеныУдалённых(env, access.partyId, access.file, access.sha)
+  const file = очищенный.file
+  const db = file.db as { updatedAt?: string; updatedBy?: string }
   const тело: Record<string, unknown> = {
-    name: access.file.name,
-    partyId: access.file.partyId,
-    createdAt: access.file.createdAt,
+    name: file.name,
+    partyId: file.partyId,
+    createdAt: file.createdAt,
     role: access.master ? 'master' : 'char',
     ownCharId: access.charId,
     updatedAt: db?.updatedAt ?? null,
     updatedBy: db?.updatedBy ?? null,
-    chars: countChars(access.file.db),
+    chars: countChars(file.db),
   }
 
   // Список выпущенных токенов видит только мастер: он их и выдаёт.
   if (access.master) {
-    тело.tokens = access.file.tokens.map((t) => ({
+    тело.tokens = file.tokens.map((t) => ({
       id: t.id,
       charId: t.charId,
-      charName: charName(access.file.db, t.charId) ?? t.charName,
+      charName: charName(file.db, t.charId) ?? t.charName,
       createdAt: t.createdAt,
       lastUsedAt: t.lastUsedAt ?? null,
     }))
@@ -1070,9 +1156,11 @@ async function writeData(request: Request, env: Env, cors: Cors): Promise<Respon
    * висит «активности не было». Отметка уходит тем же PUT, что и база, так
    * что отдельной записи в репозиторий не появляется.
    */
-  const party: PartyFile = access.master
-    ? { ...access.file, db }
-    : отметитьТокен({ ...access.file, db }, access.tokenId, now)
+  const party: PartyFile = безТокеновУдалённых(
+    access.master
+      ? { ...access.file, db }
+      : отметитьТокен({ ...access.file, db }, access.tokenId, now),
+  )
 
   const who = party.db && typeof party.db === 'object' ? (party.db as { updatedBy?: string }).updatedBy : ''
   const saved = await writeFile(
@@ -1260,6 +1348,16 @@ function неизменяемое(db: unknown, ownCharId: string): string {
       .sort((a, b) => String(a?.id ?? '').localeCompare(String(b?.id ?? '')))
   }
   return JSON.stringify(d)
+}
+
+/** Есть ли в базе персонаж с таким id. Имя может быть пустым — это не важно. */
+function естьПерсонаж(db: unknown, charId: string): boolean {
+  if (!db || typeof db !== 'object') return false
+  const chars = (db as { chars?: unknown }).chars
+  return (
+    Array.isArray(chars) &&
+    chars.some((c) => (c as { id?: unknown } | null)?.id === charId)
+  )
 }
 
 function charName(db: unknown, charId: string): string | null {

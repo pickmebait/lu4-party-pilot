@@ -104,7 +104,7 @@ export function SubBar({
         )}
       </div>
 
-      {char.subUnlocked && (
+      {char.subUnlocked ? (
         <div className="segmented sub-tabs">
           <button
             type="button"
@@ -125,6 +125,18 @@ export function SubBar({
               {s.cls || `Саб ${i + 1}`}
             </button>
           ))}
+        </div>
+      ) : (
+        /*
+         * Пока квест не пройден, вкладок нет, но полоса нужна: без неё
+         * снаряжение в карточке поднимается выше, чем у соседей, и в строке
+         * карточек ломается общая линия. «Осн.» — единственная вкладка,
+         * которая есть всегда; «+ саб» не показываем, добавить его нельзя.
+         */
+        <div className="segmented sub-tabs stub-tabs">
+          <button type="button" className="on" title="Основная профессия" onClick={() => onSelect(null)}>
+            Осн.
+          </button>
         </div>
       )}
     </div>

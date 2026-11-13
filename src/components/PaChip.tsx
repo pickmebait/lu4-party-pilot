@@ -14,7 +14,7 @@ import { paDateRu, paLeft, paUrgency, paUntil } from '@/lib/pa'
  * Незаполненный премиум виден красным вопросом, а не пропадает: молчаливое
  * отсутствие читается как «всё в порядке», а вопрос — как «не сказано».
  */
-export function PaChip({ pa }: { pa?: Pa }) {
+export function PaChip({ pa, compact = false }: { pa?: Pa; compact?: boolean }) {
   const [дата, setДата] = useState(false)
   const осталось = paLeft(pa)
 
@@ -27,8 +27,11 @@ export function PaChip({ pa }: { pa?: Pa }) {
    */
   if (осталось === null || !pa) {
     return (
-      <span className="chip pa low" title="Премиум аккаунт не заполнен: не указаны дата покупки и срок">
-        Премиум ?
+      <span
+        className={`chip pa low${compact ? ' compact' : ''}`}
+        title="Премиум аккаунт не заполнен: не указаны дата покупки и срок"
+      >
+        {compact ? 'ПА ?' : 'Премиум ?'}
       </span>
     )
   }
@@ -39,15 +42,21 @@ export function PaChip({ pa }: { pa?: Pa }) {
    * глазом в разметке, ни проверке стилей.
    */
   const срочность = paUrgency(осталось)
-  const класс = `chip pa${срочность === 'low' ? ' low' : ''}`
+  const класс = `chip pa${compact ? ' compact' : ''}${срочность === 'low' ? ' low' : ''}`
   const конец = paUntil(pa)
-  const подпись = дата
-    ? осталось <= 0
-      ? `истёк ${paDateRu(конец)}`
-      : `до ${paDateRu(конец)}`
-    : осталось <= 0
-      ? 'Премиум истёк'
-      : `Премиум ${осталось} дн.`
+  const подпись = compact
+    ? дата
+      ? `ПА ${paDateRu(конец).slice(0, 5)}`
+      : осталось <= 0
+        ? 'ПА истёк'
+        : `ПА ${осталось} дн.`
+    : дата
+      ? осталось <= 0
+        ? `истёк ${paDateRu(конец)}`
+        : `до ${paDateRu(конец)}`
+      : осталось <= 0
+        ? 'Премиум истёк'
+        : `Премиум ${осталось} дн.`
 
   return (
     <button

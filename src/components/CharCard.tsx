@@ -145,9 +145,10 @@ export function CharCard({
             </div>
 
             {/*
-              Профессия, уровень, состояние слотов и премиум — в одну строку.
-              Раньше плашки переносились на вторую и третью, и шапка
-              персонажа съедала по высоте целую ячейку экипировки.
+              Профессия и уровень — одной плашкой через пробел, слоты
+              записаны коротко «4/12», премиум — «ПА 12 дн.». Так даже у
+              самой длинной профессии с сабом все плашки помещаются в
+              строку: раньше последняя выходила за край карточки на 31 px.
 
               Премиум стоит здесь же, после счётчика слотов. Он занимал место
               рядом с кнопками и толкал их вправо, хотя это свойство аккаунта,
@@ -158,22 +159,24 @@ export function CharCard({
             */}
             <div className="char-meta">
               {саб && <span className="chip branch" title="Показан саб-класс">саб</span>}
-              {cls && <span className="chip cls">{cls}</span>}
-              {level > 0 && <span className="chip lvl">ур. {level}</span>}
+              {cls && (
+                <span className="chip cls">
+                  {cls}
+                  {level > 0 && <span className="meta-lvl"> {level}</span>}
+                </span>
+              )}
+              {!cls && level > 0 && <span className="chip lvl">ур. {level}</span>}
               {filled === total ? (
                 <span className="chip slots full" title={`Все ${total} слотов заняты`}>
                   <IconCheck />
-                  Заполнено
+                  {filled}/{total}
                 </span>
               ) : (
-                // Без слова «слотов»: в строке уже есть профессия и
-                // уровень, и на «Elemental Summoner · ур. 75 · 11 из 12»
-                // всё умещается, а с «слотов» профессия не влезала.
                 <span className="chip slots" title={`${filled} из ${total} слотов занято`}>
-                  {filled} из {total}
+                  {filled}/{total}
                 </span>
               )}
-              <PaChip pa={char.pa} />
+              <PaChip pa={char.pa} compact />
             </div>
 
             <ContactsBlock char={char} onEdit={правый ? () => setEditContacts(true) : undefined} />
