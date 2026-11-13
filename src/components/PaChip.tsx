@@ -46,7 +46,7 @@ export function PaChip({ pa, compact = false }: { pa?: Pa; compact?: boolean }) 
   const конец = paUntil(pa)
   const подпись = compact
     ? дата
-      ? `ПА ${paDateRu(конец).slice(0, 5)}`
+      ? `ПА до ${paDateRu(конец)}`
       : осталось <= 0
         ? 'ПА истёк'
         : `ПА ${осталось} дн.`
