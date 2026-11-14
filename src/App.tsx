@@ -162,7 +162,7 @@ export default function App() {
   }, [session])
 
   // Без токена пати приложением пользоваться нельзя: вся база живёт на сервере.
-  if (!session) return <Landing onDone={() => undefined} />
+  if (!session) return <Landing />
 
   return (
     <div className={`app${tab === 'schedule' ? ' app-schedule' : ''}`}>
