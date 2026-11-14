@@ -1,0 +1,1192 @@
+/*
+ * Лендинг для неавторизованного посетителя.
+ *
+ * Стили собраны под общим корнем .landing: в приложении уже есть свои
+ * .brand, .btn, .tabs и .input, и без области видимости одноимённые правила
+ * перекрашивали бы шапку приложения. Цвета берутся из переменных палитры,
+ * поэтому лендинг следует за выбранной темой.
+ */
+
+.landing {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 620px at 76% -12%, var(--glow), transparent 62%),
+    radial-gradient(
+      900px 500px at 6% 34%,
+      color-mix(in srgb, var(--accent) 3.5%, transparent),
+      transparent 60%
+    ),
+    var(--bg);
+  color: var(--text);
+}
+
+.landing a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.landing main {
+  display: block;
+  flex: none;
+}
+
+.landing .wrap {
+  width: min(1200px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.landing .hero,
+.landing .section,
+.landing .cta,
+.landing .auth-slot {
+  scroll-margin-top: 84px;
+}
+
+/* ---------------------------------------------------------------- шапка */
+
+.landing .site-head {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.landing .site-head .wrap {
+  height: 68px;
+  display: flex;
+  align-items: center;
+  gap: 34px;
+}
+
+.landing .brand {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.landing .brand .logo {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--accent-line);
+  border-radius: 10px;
+  background: var(--accent-deep);
+  color: var(--accent-2);
+  font-size: 19px;
+  box-shadow: inset 0 0 22px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.landing .brand small {
+  display: block;
+  margin-top: 1px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.landing .brand .stage {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 5px;
+  border: 1px solid var(--accent-line);
+  border-radius: 4px;
+  background: var(--accent-deep);
+  color: var(--accent-2);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  vertical-align: 2px;
+}
+
+.landing .nav {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.landing .nav a {
+  transition: color 0.12s;
+}
+
+.landing .nav a:hover {
+  color: var(--text);
+}
+
+.landing .head-palette {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
+.landing .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: var(--bg-3);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+}
+
+.landing .btn:hover:not(:disabled) {
+  border-color: var(--accent-line);
+}
+
+.landing .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.landing .btn.primary {
+  border-color: transparent;
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  color: #211c09;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.landing .btn.primary:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.landing .btn.wide {
+  width: 100%;
+}
+
+.landing .head-login {
+  flex: none;
+}
+
+/* ---------------------------------------------------------------- герой */
+
+.landing .hero {
+  position: relative;
+  overflow: hidden;
+  padding: 82px 0 74px;
+}
+
+.landing .hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(180deg, #000 0%, transparent 82%);
+}
+
+.landing .hero .wrap {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.06fr 0.94fr;
+  gap: 58px;
+  align-items: center;
+}
+
+.landing .kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent-2);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.landing .kicker::before {
+  content: '';
+  width: 22px;
+  height: 1px;
+  background: var(--accent);
+}
+
+.landing h1 {
+  margin: 17px 0 20px;
+  font-size: clamp(42px, 4.8vw, 64px);
+  line-height: 0.99;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+}
+
+.landing h1 .gold {
+  color: var(--accent-2);
+}
+
+.landing .lead {
+  max-width: 555px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.landing .points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 26px;
+}
+
+.landing .point {
+  padding: 7px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-2) 72%, transparent);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.landing .point b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.landing .hero-note {
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.landing .hero-note b {
+  color: var(--accent-2);
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------ вход в пати */
+
+.landing .auth-slot {
+  min-width: 0;
+}
+
+.landing .auth-card {
+  position: relative;
+  width: 100%;
+  padding: 25px;
+  border: 1px solid var(--line-2);
+  border-radius: 18px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg-3) 94%, transparent),
+    color-mix(in srgb, var(--bg-2) 97%, transparent)
+  );
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.landing .auth-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: 19px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 24%, transparent),
+    transparent 38%,
+    transparent 65%,
+    color-mix(in srgb, var(--accent) 8%, transparent)
+  );
+}
+
+.landing .auth-head {
+  display: flex;
+  align-items: start;
+  gap: 12px;
+}
+
+.landing .auth-head h2 {
+  margin: 0;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+}
+
+.landing .auth-head p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.landing .auth-badge {
+  margin-left: auto;
+  padding: 3px 7px;
+  border: 1px solid var(--accent-line);
+  border-radius: 5px;
+  background: var(--accent-deep);
+  color: var(--accent-2);
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.landing .tabs {
+  display: flex;
+  gap: 3px;
+  margin: 18px 0 15px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--bg);
+  overflow: visible;
+}
+
+.landing .tabs button {
+  flex: 1;
+  padding: 8px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  text-align: center;
+  cursor: pointer;
+  white-space: normal;
+}
+
+.landing .tabs button:hover {
+  color: var(--text);
+}
+
+.landing .tabs button.on {
+  background: var(--bg-3);
+  color: var(--text);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.landing .field {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.landing .field label {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.landing .field .input {
+  display: block;
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+}
+
+.landing .field .input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.landing .field .input.mono {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  letter-spacing: 0.3px;
+}
+
+.landing .auth-card .btn.wide {
+  padding: 10px 14px;
+}
+
+.landing .auth-note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.landing .auth-note code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--bg-3);
+  font-size: 10px;
+}
+
+.landing .auth-sep {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 15px 0 12px;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.landing .auth-sep::before,
+.landing .auth-sep::after {
+  content: '';
+  height: 1px;
+  flex: 1;
+  background: var(--line);
+}
+
+.landing .auth-error {
+  margin-top: 12px;
+  padding: 8px 10px;
+  border: 1px solid #5a2a2a;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--err) 8%, transparent);
+  color: #ffb3b3;
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+.landing .auth-warning {
+  margin-top: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--accent-line);
+  border-radius: 8px;
+  background: var(--accent-deep);
+  color: var(--accent-2);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+.landing .token-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0;
+  padding: 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.landing .token-box code {
+  flex: 1;
+  min-width: 180px;
+  color: var(--accent-2);
+  font: 12px/1.4 ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  letter-spacing: 0.3px;
+  word-break: break-all;
+}
+
+.landing .auth-foot {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.landing .auth-foot .lock {
+  color: var(--ok);
+}
+
+/* ---------------------------------------------------------------- секции */
+
+.landing .section {
+  padding: 78px 0;
+  border-top: 1px solid var(--line);
+}
+
+.landing .section-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 34px;
+}
+
+.landing .eyebrow {
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.landing h2 {
+  margin: 8px 0 10px;
+  font-size: clamp(28px, 3.2vw, 42px);
+  line-height: 1.07;
+  letter-spacing: -0.025em;
+}
+
+.landing .section-head p {
+  max-width: 530px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.landing .section-head > p {
+  text-align: right;
+}
+
+.landing .feature {
+  display: grid;
+  grid-template-columns: 0.82fr 1.18fr;
+  gap: 48px;
+  align-items: center;
+  padding: 34px 0;
+}
+
+.landing .feature + .feature {
+  border-top: 1px solid var(--line);
+}
+
+.landing .feature.flip {
+  grid-template-columns: 1.18fr 0.82fr;
+}
+
+.landing .feature.flip .feature-copy {
+  order: 2;
+}
+
+.landing .feature-copy h3 {
+  margin: 0 0 11px;
+  font-size: 27px;
+  letter-spacing: -0.02em;
+}
+
+.landing .feature-copy p {
+  margin: 0 0 17px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.landing .checklist {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.landing .checklist li {
+  display: flex;
+  gap: 9px;
+  align-items: start;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.landing .checklist li::before {
+  content: '✓';
+  flex: none;
+  margin-top: 1px;
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.landing .feature-copy,
+.landing .feature-shot,
+.landing .module-card {
+  min-width: 0;
+}
+
+/* ---------------------------------------------------- рамка «приложение» */
+
+.landing .browser {
+  overflow: hidden;
+  max-width: 100%;
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  background: var(--bg-2);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.5);
+}
+
+.landing .browser-bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-3);
+}
+
+.landing .browser-bar i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--line-2);
+}
+
+.landing .browser-bar .address {
+  display: flex;
+  align-items: center;
+  width: 290px;
+  max-width: 58%;
+  height: 17px;
+  margin-left: 8px;
+  padding: 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.landing .browser-bar .live {
+  margin-left: auto;
+  color: var(--ok);
+  font-size: 7px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.landing .app {
+  display: block;
+  height: auto;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.landing .app-shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--bg);
+}
+
+.landing .shot-caption {
+  margin: 8px 2px 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.landing .shot-caption b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.landing .app-body {
+  padding: 12px;
+}
+
+/* -------------------------------------------------------- сводка и казна */
+
+.landing .stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.landing .stat {
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg-2);
+}
+
+.landing .stat b {
+  display: block;
+  color: var(--accent-2);
+  font-size: 16px;
+  line-height: 1.1;
+}
+
+.landing .stat span {
+  color: var(--muted);
+  font-size: 6px;
+}
+
+.landing .summary-row {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.landing .panel {
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg-2);
+}
+
+.landing .panel h4 {
+  margin: 0 0 6px;
+  font-size: 7px;
+  letter-spacing: 0.02em;
+}
+
+.landing .bar-row {
+  display: grid;
+  grid-template-columns: 56px 1fr 20px;
+  gap: 5px;
+  align-items: center;
+  margin: 4px 0;
+  color: var(--muted);
+  font-size: 6px;
+}
+
+.landing .bar {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--bg);
+}
+
+.landing .bar i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.landing .warehouse-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 7px;
+}
+
+.landing .warehouse-row:last-child {
+  border-bottom: 0;
+}
+
+.landing .item-ico {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border: 1px solid var(--line-2);
+  border-radius: 3px;
+  background: radial-gradient(circle at 40% 35%, var(--line), var(--bg-2));
+}
+
+.landing .warehouse-row .name {
+  flex: 1;
+  color: var(--text);
+}
+
+.landing .warehouse-row .qty {
+  color: var(--accent-2);
+  font-weight: 700;
+}
+
+.landing .set-line {
+  margin: 7px 0;
+}
+
+.landing .set-line .top {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 6px;
+}
+
+.landing .set-line .bar {
+  margin-top: 3px;
+  height: 5px;
+}
+
+.landing .goal-row {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.landing .goal-row:last-child {
+  border-bottom: 0;
+}
+
+.landing .goal-top {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 7px;
+}
+
+.landing .goal-top .name {
+  flex: 1;
+  color: var(--text);
+}
+
+.landing .goal-top .count {
+  color: var(--accent-2);
+}
+
+.landing .goal-row .bar {
+  margin-top: 4px;
+}
+
+.landing .goal-row .bar i {
+  background: var(--ok);
+}
+
+/* --------------------------------------------------------- карточки модулей */
+
+.landing .module-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.landing .module-card {
+  position: relative;
+  overflow: hidden;
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: linear-gradient(
+    180deg,
+    var(--bg-2),
+    color-mix(in srgb, var(--bg-2) 55%, transparent)
+  );
+}
+
+.landing .module-card .status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 6px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.landing .module-card .status-tag::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.landing .module-card h3 {
+  margin: 9px 0 4px;
+  font-size: 17px;
+}
+
+.landing .module-card p {
+  min-height: 34px;
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.landing .module-card .browser {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.landing .module-card .browser-bar {
+  height: 20px;
+}
+
+.landing .module-card .browser-bar .address {
+  height: 12px;
+  font-size: 6px;
+}
+
+.landing .module-card .app-body {
+  padding: 7px;
+}
+
+/* ------------------------------------------------------------- как начать */
+
+.landing .steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  counter-reset: step;
+}
+
+.landing .step {
+  position: relative;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg-2);
+}
+
+.landing .step::before {
+  counter-increment: step;
+  content: counter(step, decimal-leading-zero);
+  color: var(--accent-2);
+  font: 700 11px/1 ui-monospace, Consolas, monospace;
+  letter-spacing: 0.12em;
+}
+
+.landing .step h3 {
+  margin: 13px 0 6px;
+  font-size: 17px;
+}
+
+.landing .step p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.landing .step .mini-note {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 4px 7px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+/* ---------------------------------------------------------------- развитие */
+
+.landing .roadmap {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.landing .road-col {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg-2);
+}
+
+.landing .road-col h3 {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.landing .road-item {
+  display: flex;
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.landing .road-item:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.landing .road-item .status {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  margin-top: 5px;
+  border-radius: 50%;
+}
+
+.landing .status.done {
+  background: var(--ok);
+}
+
+.landing .status.wip {
+  background: var(--accent);
+}
+
+.landing .status.next {
+  background: var(--muted);
+}
+
+.landing .road-item span {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+/* ------------------------------------------------------------------- CTA */
+
+.landing .cta {
+  padding: 82px 0;
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+
+.landing .cta h2 {
+  margin-bottom: 12px;
+}
+
+.landing .cta p {
+  max-width: 540px;
+  margin: 0 auto 24px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.landing .cta .actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.landing .cta .note {
+  margin-top: 15px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+/* ---------------------------------------------------------------- подвал */
+
+.landing .footer {
+  padding: 24px 0;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.landing .footer .wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.landing .footer .links {
+  display: flex;
+  gap: 18px;
+}
+
+.landing .footer a:hover {
+  color: var(--text);
+}
+
+/* ------------------------------------------------------------ мобильный */
+
+@media (max-width: 1020px) {
+  .landing .hero .wrap {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .landing .hero-copy {
+    max-width: 680px;
+  }
+
+  .landing .auth-card {
+    max-width: 520px;
+  }
+
+  .landing .feature,
+  .landing .feature.flip {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .landing .feature.flip .feature-copy {
+    order: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .landing .wrap {
+    width: min(100% - 32px, 1200px);
+  }
+
+  .landing .site-head .wrap {
+    height: 60px;
+    gap: 14px;
+  }
+
+  .landing .nav {
+    display: none;
+  }
+
+  .landing .head-palette {
+    display: none;
+  }
+
+  .landing .head-login {
+    margin-left: auto;
+  }
+
+  .landing .hero {
+    padding: 48px 0 44px;
+  }
+
+  .landing h1 {
+    font-size: 42px;
+  }
+
+  .landing .lead {
+    font-size: 15px;
+  }
+
+  .landing .section {
+    padding: 52px 0;
+  }
+
+  .landing .section-head {
+    display: block;
+  }
+
+  .landing .section-head > p {
+    margin-top: 10px;
+    text-align: left;
+  }
+
+  .landing .feature {
+    padding: 24px 0;
+  }
+
+  .landing .feature-copy h3 {
+    font-size: 23px;
+  }
+
+  .landing .module-grid,
+  .landing .steps,
+  .landing .roadmap {
+    grid-template-columns: 1fr;
+  }
+
+  .landing .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .landing .summary-row {
+    grid-template-columns: 1fr;
+  }
+
+  .landing .cta {
+    padding: 54px 0;
+  }
+
+  .landing .cta .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .landing .footer .wrap {
+    display: block;
+  }
+
+  .landing .footer .links {
+    margin-top: 8px;
+  }
+}

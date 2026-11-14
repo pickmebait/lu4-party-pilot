@@ -2,23 +2,31 @@ import { useState } from 'react'
 import { createParty, fetchDb, openSession, type PartyInfo } from '@/lib/api'
 import { API_URL, CONFIGURED } from '@/lib/config'
 import { replaceDb, signIn, signOut } from '@/lib/store'
-import { AppTitle } from './AppTitle'
-import { PaletteBar } from './PaletteBar'
-import { Tagline } from './Tagline'
+
+export type AuthMode = 'enter' | 'create'
 
 /**
  * Вход в приложение.
  *
  * Два пути: вставить токен, который выдал лидер пати, или завести свою пати
- * и получить токен, чтобы передать игрокам.
+ * и получить токен, чтобы передать игрокам. Карточка стоит прямо в первом
+ * экране лендинга, поэтому её высота и ширина рассчитаны на соседство с
+ * заголовком, а не на отдельную страницу.
  *
  * Адрес базы вшит в сборку при развёртывании (VITE_API_URL) — вводить его
  * здесь незачем, поэтому и не предлагаем.
  */
-export function Login({ onDone }: { onDone: (name: string) => void }) {
+export function Login({
+  onDone,
+  mode,
+  onModeChange,
+}: {
+  onDone: (name: string) => void
+  mode: AuthMode
+  onModeChange: (mode: AuthMode) => void
+}) {
   const [token, setToken] = useState('')
   const [partyName, setPartyName] = useState('')
-  const [mode, setMode] = useState<'enter' | 'create'>('enter')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [issued, setIssued] = useState<{
@@ -76,7 +84,7 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
 
     /*
      * О неудачном чтении здесь предупредить нечем: следующая строка переключает
-     * приложение на основной экраном, и надпись уйдёт вместе с этим экраном.
+     * приложение на основной экран, и надпись уйдёт вместе с этим экраном.
      * Про пустую базу скажет полоса синхронизации — она останется на виду и
      * дотянет данные сама, как только связь вернётся.
      */
@@ -145,73 +153,110 @@ export function Login({ onDone }: { onDone: (name: string) => void }) {
   }
 
   return (
-    <div className="login-wrap">
-      <div className="login">
-        <div className="login-brand">
-          <span className="logo">⚔</span>
-          <div>
-            <AppTitle />
-            <Tagline />
-          </div>
-          {/* Палитра действует на всё приложение, значит её можно выбрать и
-              не заходя внутрь — тем более, что цвет страницы тут и виден. */}
-          <PaletteBar />
+    <div className="auth-card">
+      <div className="auth-head">
+        <div>
+          <h2>Вход в пати</h2>
+          <p>Один токен — и вы внутри.</p>
         </div>
+        <span className="auth-badge">pre-alpha</span>
+      </div>
 
-        <div className="segmented login-tabs">
-          <button className={mode === 'enter' ? 'on' : ''} onClick={() => { setMode('enter'); setError(null) }}>
+      <div className="tabs" role="group" aria-label="Вход или создание пати">
+        <button
+          aria-pressed={mode === 'enter'}
+          className={mode === 'enter' ? 'on' : ''}
+          onClick={() => {
+            onModeChange('enter')
+            setError(null)
+          }}
+        >
+          Войти по токену
+        </button>
+        <button
+          aria-pressed={mode === 'create'}
+          className={mode === 'create' ? 'on' : ''}
+          onClick={() => {
+            onModeChange('create')
+            setError(null)
+          }}
+        >
+          Создать пати
+        </button>
+      </div>
+
+      {mode === 'enter' ? (
+        <>
+          <div className="field">
+            <label htmlFor="party-token">Токен пати</label>
+            <input
+              id="party-token"
+              className="input mono"
+              autoFocus
+              placeholder="p2p_…"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && enter()}
+            />
+          </div>
+          <button className="btn primary wide" disabled={busy} onClick={enter}>
+            {busy ? 'Проверяю…' : 'Войти'}
+          </button>
+          <p className="auth-note">
+            Токен выдаёт мастер пати. Он хранится только в этом браузере и не связан с GitHub.
+          </p>
+
+          <div className="auth-sep">или</div>
+          <button
+            className="btn wide"
+            onClick={() => {
+              onModeChange('create')
+              setError(null)
+            }}
+          >
+            Создать пати и получить мастер-токен
+          </button>
+        </>
+      ) : (
+        <>
+          <div className="field">
+            <label htmlFor="party-name">Название пати</label>
+            <input
+              id="party-name"
+              className="input"
+              autoFocus
+              placeholder="например: Ночная гильдия"
+              value={partyName}
+              onChange={(e) => setPartyName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && create()}
+            />
+          </div>
+          <button className="btn primary wide" disabled={busy} onClick={create}>
+            {busy ? 'Создаю…' : 'Создать пати и получить мастер-токен'}
+          </button>
+          <p className="auth-note">
+            Мастер-токен остаётся у лидера. Игрокам выдаются отдельные токены — по одному на
+            персонажа. Токены никак не связаны с GitHub.
+          </p>
+
+          <div className="auth-sep">или</div>
+          <button
+            className="btn wide"
+            onClick={() => {
+              onModeChange('enter')
+              setError(null)
+            }}
+          >
             Войти по токену
           </button>
-          <button className={mode === 'create' ? 'on' : ''} onClick={() => { setMode('create'); setError(null) }}>
-            Создать свою пати
-          </button>
-        </div>
+        </>
+      )}
 
-        {mode === 'enter' ? (
-          <div className="form">
-            <p className="hint">
-              Токен выдаёт тот, у кого мастер-токен, — он в Дискорде, в чате или в личке.
-              Токен хранится только в этом браузере.
-            </p>
-            <label>
-              Токен пати
-              <input
-                className="input mono"
-                autoFocus
-                placeholder="p2p_…"
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && enter()}
-              />
-            </label>
-            <button className="btn primary wide" disabled={busy} onClick={enter}>
-              {busy ? 'Проверяю…' : 'Войти'}
-            </button>
-          </div>
-        ) : (
-          <div className="form">
-            <p className="hint">
-              Создай пати и получи мастер-токен: он остаётся у тебя, а игрокам ты
-              выпускаешь отдельный токен на каждого — по нему они видят всю пати, но
-              правят только своего персонажа. Токены никак не связаны с GitHub.
-            </p>
-            <label>
-              Название пати
-              <input
-                className="input"
-                autoFocus
-                placeholder="например: Ночная гильдия"
-                value={partyName}
-                onChange={(e) => setPartyName(e.target.value)}
-              />
-            </label>
-            <button className="btn primary wide" disabled={busy} onClick={create}>
-              {busy ? 'Создаю…' : 'Создать пати и получить мастер-токен'}
-            </button>
-          </div>
-        )}
+      {error && <div className="auth-error">{error}</div>}
 
-        {error && <div className="sync-msg err">{error}</div>}
+      <div className="auth-foot">
+        <span className="lock">●</span> Мастер-токен показывается один раз. Игрокам — отдельные
+        токены.
       </div>
     </div>
   )
@@ -232,39 +277,35 @@ function TokenIssued({ token, name, onDone }: { token: string; name: string; onD
   }
 
   return (
-    <div className="login-wrap">
-      <div className="login">
-        <div className="login-brand">
-          <span className="logo">⚔</span>
-          <div>
-            <h1>Пати «{name}» создана</h1>
-            <p className="tag">это твой токен доступа</p>
-          </div>
+    <div className="auth-card">
+      <div className="auth-head">
+        <div>
+          <h2>Пати «{name}» создана</h2>
+          <p>Это твой токен доступа.</p>
         </div>
+      </div>
 
-        <div className="token-box">
-          <code>{token}</code>
-          <button className="btn" onClick={copy}>
-            {copied ? 'Скопировано' : 'Скопировать'}
-          </button>
-        </div>
-
-        <div className="sync-msg err">
-          Мастер-токен показывается один раз. Если потеряешь — перевыпусти в меню
-          доступа справа вверху; прежний сразу перестанет работать вместе со всеми
-          токенами игроков.
-        </div>
-
-        <p className="hint">
-          Этот токен остаётся у тебя. Игрокам выпускай отдельные токены — по одному
-          на персонажа, из меню «{name}» в правом верхнем углу. Там же видно, кому
-          какой выдан, и можно перевыпустить или отозвать любой.
-        </p>
-
-        <button className="btn primary wide" onClick={onDone}>
-          Войти в пати
+      <div className="token-box">
+        <code>{token}</code>
+        <button className="btn" onClick={copy}>
+          {copied ? 'Скопировано' : 'Скопировать'}
         </button>
       </div>
+
+      <div className="auth-warning">
+        Мастер-токен показывается один раз. Если потеряешь — перевыпусти в меню доступа справа
+        вверху; прежний сразу перестанет работать вместе со всеми токенами игроков.
+      </div>
+
+      <p className="auth-note">
+        Этот токен остаётся у тебя. Игрокам выпускай отдельные токены — по одному на персонажа, из
+        меню «{name}» в правом верхнем углу. Там же видно, кому какой выдан, и можно перевыпустить
+        или отозвать любой.
+      </p>
+
+      <button className="btn primary wide" onClick={onDone}>
+        Войти в пати
+      </button>
     </div>
   )
 }
@@ -272,26 +313,22 @@ function TokenIssued({ token, name, onDone }: { token: string; name: string; onD
 /** Сборка без адреса базы: приложение нельзя использовать до настройки. */
 function NotConfigured() {
   return (
-    <div className="login-wrap">
-      <div className="login">
-        <div className="login-brand">
-          <span className="logo">⚔</span>
-          <div>
-            <h1>Приложение не настроено</h1>
-            <p className="tag">нет адреса базы</p>
-          </div>
+    <div className="auth-card">
+      <div className="auth-head">
+        <div>
+          <h2>Приложение не настроено</h2>
+          <p>Нет адреса базы.</p>
         </div>
-        <p className="hint">
-          Адрес базы должен быть зашит в сборку, но при сборке не был задан.
-          Это значит, что разворачивал не ты — напиши тому, кто размещал сайт.
-        </p>
-        <p className="hint">
-          Тому, кто разворачивает: задай переменную{' '}
-          <code>VITE_API_URL</code> в репозитории (Settings → Secrets and
-          variables → Actions → Variables) со значением адреса Worker'а и
-          перезапусти деплой.
-        </p>
       </div>
+      <p className="auth-note">
+        Адрес базы должен быть зашит в сборку, но при сборке не был задан. Это значит, что
+        разворачивал не ты — напиши тому, кто размещал сайт.
+      </p>
+      <p className="auth-note">
+        Тому, кто разворачивает: задай переменную <code>VITE_API_URL</code> в репозитории (Settings →
+        Secrets and variables → Actions → Variables) со значением адреса Worker'а и перезапусти
+        деплой.
+      </p>
     </div>
   )
 }

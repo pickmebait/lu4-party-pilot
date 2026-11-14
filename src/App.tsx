@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CharsView } from './components/Chars'
-import { Login } from './components/Login'
+import { Landing } from './components/Landing'
 import { PaletteBar } from './components/PaletteBar'
 import { SyncBar } from './components/SyncBar'
 import { WarehouseView } from './components/Warehouse'
@@ -162,7 +162,7 @@ export default function App() {
   }, [session])
 
   // Без токена пати приложением пользоваться нельзя: вся база живёт на сервере.
-  if (!session) return <Login onDone={() => undefined} />
+  if (!session) return <Landing onDone={() => undefined} />
 
   return (
     <div className={`app${tab === 'schedule' ? ' app-schedule' : ''}`}>
