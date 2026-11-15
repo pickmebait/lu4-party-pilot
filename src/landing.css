@@ -336,39 +336,99 @@
   white-space: nowrap;
 }
 
+/*
+ * Переключатель режима — две карточки, а не две подписи.
+ *
+ * Раньше это была полоса с текстом, и выбранный режим отличался только
+ * фоном. Значок и вторая строка объясняют выбор до нажатия, а общая сетка
+ * держит карточки одной высоты, даже когда подпись переносится на телефоне.
+ */
 .landing .tabs {
-  display: flex;
-  gap: 3px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
   margin: 18px 0 15px;
-  padding: 3px;
+  padding: 4px;
   border: 1px solid var(--line);
-  border-radius: 9px;
-  background: var(--bg);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg) 76%, transparent);
   overflow: visible;
 }
 
 .landing .tabs button {
-  flex: 1;
-  padding: 8px 6px;
-  border: 0;
-  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  min-height: 52px;
+  padding: 7px 9px;
+  border: 1px solid transparent;
+  border-radius: 9px;
   background: transparent;
   color: var(--muted);
   font: inherit;
-  font-size: 11px;
-  text-align: center;
+  text-align: left;
   cursor: pointer;
-  white-space: normal;
+  transition: color 0.15s, background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
 .landing .tabs button:hover {
+  background: color-mix(in srgb, var(--bg-3) 58%, transparent);
   color: var(--text);
 }
 
 .landing .tabs button.on {
-  background: var(--bg-3);
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--line-2));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 13%, var(--bg-3)),
+    color-mix(in srgb, var(--bg-3) 92%, var(--bg))
+  );
   color: var(--text);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.landing .tab-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: var(--bg-2);
+  color: var(--muted);
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.landing .tabs button.on .tab-icon {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line-2));
+  background: var(--accent-deep);
+  color: var(--accent-2);
+}
+
+.landing .tab-copy {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.landing .tab-title {
+  color: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.landing .tab-hint {
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.2;
+}
+
+.landing .tabs button.on .tab-hint {
+  color: var(--accent-2);
+  opacity: 0.8;
 }
 
 .landing .field {
@@ -407,8 +467,34 @@
   letter-spacing: 0.3px;
 }
 
+.landing .auth-body {
+  display: flex;
+  flex-direction: column;
+}
+
 .landing .auth-card .btn.wide {
+  min-height: 40px;
   padding: 10px 14px;
+}
+
+/*
+ * Пояснения обоих режимов лежат в одной ячейке сетки. Видимое задаёт высоту,
+ * скрытое резервирует место под более длинный текст, поэтому при
+ * переключении вкладки карточка не меняет высоту ни на широком экране, ни на
+ * узком, где строк становится больше.
+ */
+.landing .auth-notes {
+  display: grid;
+  margin-top: 10px;
+}
+
+.landing .auth-notes .auth-note {
+  grid-area: 1 / 1;
+  margin: 0;
+}
+
+.landing .auth-notes .auth-note.reserve {
+  visibility: hidden;
 }
 
 .landing .auth-note {
@@ -423,25 +509,6 @@
   border-radius: 4px;
   background: var(--bg-3);
   font-size: 10px;
-}
-
-.landing .auth-sep {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 15px 0 12px;
-  color: var(--muted);
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.landing .auth-sep::before,
-.landing .auth-sep::after {
-  content: '';
-  height: 1px;
-  flex: 1;
-  background: var(--line);
 }
 
 .landing .auth-error {

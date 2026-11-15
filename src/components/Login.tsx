@@ -10,6 +10,11 @@ import { NotConfigured, TokenIssued } from './AuthStates'
  * экране лендинга, поэтому её высота и ширина рассчитаны на соседство с
  * заголовком, а не на отдельную страницу.
  *
+ * Переключение режима не должно двигать карточку: оба пути занимают ровно
+ * одну и ту же высоту. Поэтому поле и главная кнопка у режимов общие, а
+ * пояснения лежат стопкой в одной ячейке сетки — видимое задаёт высоту,
+ * скрытое резервирует место под более длинный текст.
+ *
  * Адрес базы вшит в сборку при развёртывании (VITE_API_URL) — вводить его
  * здесь незачем, поэтому и не предлагаем.
  */
@@ -35,6 +40,9 @@ export function Login({
     auth.clearError()
   }
 
+  const вход = mode === 'enter'
+  const подписьКнопки = auth.busy ? (вход ? 'Проверяю…' : 'Создаю…') : вход ? 'Войти' : 'Создать пати'
+
   return (
     <div className="auth-card">
       <div className="auth-head">
@@ -47,75 +55,74 @@ export function Login({
 
       <div className="tabs" role="group" aria-label="Вход или создание пати">
         <button
-          aria-pressed={mode === 'enter'}
-          className={mode === 'enter' ? 'on' : ''}
+          type="button"
+          aria-pressed={вход}
+          className={вход ? 'on' : ''}
           onClick={() => сменить('enter')}
         >
-          Войти по токену
+          <span className="tab-icon" aria-hidden="true">
+            <IconKey />
+          </span>
+          <span className="tab-copy">
+            <span className="tab-title">Войти по токену</span>
+            <span className="tab-hint">есть приглашение</span>
+          </span>
         </button>
         <button
-          aria-pressed={mode === 'create'}
-          className={mode === 'create' ? 'on' : ''}
+          type="button"
+          aria-pressed={!вход}
+          className={вход ? '' : 'on'}
           onClick={() => сменить('create')}
         >
-          Создать пати
+          <span className="tab-icon" aria-hidden="true">
+            <IconPlus />
+          </span>
+          <span className="tab-copy">
+            <span className="tab-title">Создать пати</span>
+            <span className="tab-hint">я лидер</span>
+          </span>
         </button>
       </div>
 
-      {mode === 'enter' ? (
-        <>
-          <div className="field">
-            <label htmlFor="party-token">Токен пати</label>
-            <input
-              id="party-token"
-              className="input mono"
-              autoFocus
-              placeholder="p2p_…"
-              value={auth.token}
-              onChange={(e) => auth.setToken(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && auth.enterByToken()}
-            />
-          </div>
-          <button className="btn primary wide" disabled={auth.busy} onClick={auth.enterByToken}>
-            {auth.busy ? 'Проверяю…' : 'Войти'}
-          </button>
-          <p className="auth-note">
+      <div className="auth-body">
+        <div className="field">
+          <label htmlFor={вход ? 'party-token' : 'party-name'}>
+            {вход ? 'Токен пати' : 'Название пати'}
+          </label>
+          <input
+            key={mode}
+            id={вход ? 'party-token' : 'party-name'}
+            className={`input${вход ? ' mono' : ''}`}
+            autoFocus
+            placeholder={вход ? 'p2p_…' : 'например: Ночная гильдия'}
+            value={вход ? auth.token : auth.partyName}
+            onChange={(e) => (вход ? auth.setToken(e.target.value) : auth.setPartyName(e.target.value))}
+            onKeyDown={(e) => {
+              if (e.key !== 'Enter') return
+              if (вход) auth.enterByToken()
+              else auth.createNewParty()
+            }}
+          />
+        </div>
+
+        <button
+          className="btn primary wide"
+          disabled={auth.busy}
+          onClick={вход ? auth.enterByToken : auth.createNewParty}
+        >
+          {подписьКнопки}
+        </button>
+
+        <div className="auth-notes">
+          <p className={вход ? 'auth-note' : 'auth-note reserve'} aria-hidden={!вход}>
             Токен выдаёт мастер пати. Он хранится только в этом браузере и не связан с GitHub.
           </p>
-
-          <div className="auth-sep">или</div>
-          <button className="btn wide" onClick={() => сменить('create')}>
-            Создать пати и получить мастер-токен
-          </button>
-        </>
-      ) : (
-        <>
-          <div className="field">
-            <label htmlFor="party-name">Название пати</label>
-            <input
-              id="party-name"
-              className="input"
-              autoFocus
-              placeholder="например: Ночная гильдия"
-              value={auth.partyName}
-              onChange={(e) => auth.setPartyName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && auth.createNewParty()}
-            />
-          </div>
-          <button className="btn primary wide" disabled={auth.busy} onClick={auth.createNewParty}>
-            {auth.busy ? 'Создаю…' : 'Создать пати и получить мастер-токен'}
-          </button>
-          <p className="auth-note">
+          <p className={вход ? 'auth-note reserve' : 'auth-note'} aria-hidden={вход}>
             Мастер-токен остаётся у лидера. Игрокам выдаются отдельные токены — по одному на
             персонажа. Токены никак не связаны с GitHub.
           </p>
-
-          <div className="auth-sep">или</div>
-          <button className="btn wide" onClick={() => сменить('enter')}>
-            Войти по токену
-          </button>
-        </>
-      )}
+        </div>
+      </div>
 
       {auth.error && <div className="auth-error">{auth.error}</div>}
 
@@ -124,5 +131,43 @@ export function Login({
         токены.
       </div>
     </div>
+  )
+}
+
+/** Ключ: вход по готовому приглашению. */
+function IconKey() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="7" cy="12" r="4" />
+      <path d="M11 12h10M16 12v3M20 12v3" />
+    </svg>
+  )
+}
+
+/** Плюс: создать свою пати. */
+function IconPlus() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <path d="M12 5v14M5 12h14" />
+    </svg>
   )
 }

@@ -57,7 +57,7 @@ export function LandingHero({
     <section className="hero">
       <div className="wrap">
         <div className="hero-copy">
-          <span className="kicker">LU4.org</span>
+          <span className="kicker">Трекер пати для LU4.org</span>
           <h1>
             Вся пати
             <br />

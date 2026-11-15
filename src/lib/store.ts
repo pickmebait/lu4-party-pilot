@@ -711,7 +711,11 @@ function subscribe(cb: () => void): () => void {
 }
 
 export function useDb(): Db {
-  return useSyncExternalStore(subscribe, () => db)
+  return useSyncExternalStore(
+    subscribe,
+    () => db,
+    () => db,
+  )
 }
 
 /**
@@ -1964,6 +1968,7 @@ export function useSession(): PartySession | null {
       return () => sessionListeners.delete(cb)
     },
     () => session,
+    () => session,
   )
 }
 
@@ -2051,6 +2056,7 @@ export function useОткрытаяФорма(): boolean {
       formListeners.add(cb)
       return () => formListeners.delete(cb)
     },
+    () => открытыхФорм > 0,
     () => открытыхФорм > 0,
   )
 }
