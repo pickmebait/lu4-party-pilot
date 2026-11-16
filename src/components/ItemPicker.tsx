@@ -54,6 +54,8 @@ interface Props {
    */
   multi?: number[]
   onPickMany?: (itemIds: number[]) => void
+  /** Подпись кнопки множественного выбора: при правке выбор заменяет список. */
+  manyLabel?: string
   onClose: () => void
 }
 
@@ -70,7 +72,17 @@ interface Props {
  * показывается при любом выборе. Иначе фильтр молча прятал бы вещи,
  * и игрок решил бы, что их не существует.
  */
-export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPickMany, onClose }: Props) {
+export function ItemPicker({
+  catalog,
+  slot,
+  accepts,
+  title,
+  onPick,
+  multi,
+  onPickMany,
+  manyLabel = 'Добавить выбранное',
+  onClose,
+}: Props) {
   const [q, setQ] = useState('')
   const [type, setType] = useState<string | null>(null)
   const [itemType, setItemType] = useState<string | null>(null)
@@ -475,7 +487,7 @@ export function ItemPicker({ catalog, slot, accepts, title, onPick, multi, onPic
                   disabled={отмечено.length === 0}
                   onClick={() => onPickMany?.(отмечено)}
                 >
-                  Добавить выбранное
+                  {manyLabel}
                 </button>
               </div>
             )}

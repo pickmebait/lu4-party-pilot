@@ -37,6 +37,7 @@ import {
   адресатДоступен,
   idЦели,
   normalizeGoals,
+  предметыПослеПравки,
   цельВыполнена,
   цельМоя,
   type Goal,
@@ -1755,6 +1756,45 @@ export function можетСоздаватьДля(charId: string | undefined): 
 export function addGoal(цель: Omit<Goal, 'id'>): void {
   if (цель.items.length === 0) return
   commit({ ...db, goals: [...db.goals, { id: idЦели(), ...цель }] })
+}
+
+/** Что можно поменять в заведённой цели. */
+export interface ПравкаЦели {
+  priority: Goal['priority']
+  forCharId?: string
+  note?: string
+  /** Новый набор требований: предмет и желаемая заточка. */
+  items: { itemId: number; mod?: number }[]
+}
+
+/**
+ * Правка заведённой цели.
+ *
+ * Список предметов пересобирается, а не заменяется целиком: одинаковые вещь
+ * и заточка сохраняют отметку «добыто». Иначе исправление опечатки в
+ * комментарии обнуляло бы прогресс, и человеку пришлось бы отмечать всё
+ * заново.
+ *
+ * Отклонённая цель остаётся отклонённой, пока в ней есть недобытые предметы.
+ * Если правкой из неё убрали всё несделанное, состояние «отклонена и при
+ * этом выполнена» становится невозможным — отказ снимается.
+ */
+export function updateGoal(id: string, правка: ПравкаЦели): void {
+  const цель = найтиЦель(id)
+  if (!цель || правка.items.length === 0) return
+
+  const items = предметыПослеПравки(цель.items, правка.items)
+  const rejected = цель.rejected === true && items.some((п) => !п.готово)
+
+  заменитьЦель(id, (прежняя) => ({
+    ...прежняя,
+    priority: правка.priority,
+    forCharId: правка.forCharId || undefined,
+    note: правка.note?.trim() || undefined,
+    items,
+    rejected,
+    rejectedAt: rejected ? прежняя.rejectedAt : undefined,
+  }))
 }
 
 function заменитьЦель(id: string, правка: (цель: Goal) => Goal): void {
