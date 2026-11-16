@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-16T08:25:27.274Z",
+    "updatedAt": "2026-11-16T08:25:33.816Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -2066,7 +2066,7 @@
         "name": "pigger",
         "cls": "Bladedancer",
         "level": 60,
-        "affil": "roster",
+        "affil": "window",
         "slots": {
           "rhand": [
             null
