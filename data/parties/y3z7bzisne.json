@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-16T08:25:33.816Z",
+    "updatedAt": "2026-11-16T08:25:51.630Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -2065,6 +2065,50 @@
         "id": "cmwj00gq851y2qu",
         "name": "pigger",
         "cls": "Bladedancer",
+        "level": 60,
+        "affil": "window",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      },
+      {
+        "id": "cmwj00zjb7bw5am",
+        "name": "VirginMLT",
+        "cls": "Swordsinger",
         "level": 60,
         "affil": "window",
         "slots": {
