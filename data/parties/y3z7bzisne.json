@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-16T07:45:51.733Z",
+    "updatedAt": "2026-11-16T07:45:58.564Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -1929,8 +1929,7 @@
         "forCharId": "cmvjobl1z1pc1lm",
         "создатель": "Мастер",
         "note": "нужны рецы, куски и точки",
-        "rejected": true,
-        "rejectedAt": "2026-11-16T07:45:48.354Z"
+        "rejected": false
       }
     ],
     "sets": [],
