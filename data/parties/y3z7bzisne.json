@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-16T08:24:01.549Z",
+    "updatedAt": "2026-11-16T08:24:54.112Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -1972,6 +1972,50 @@
           "from": "2026-09-29",
           "days": 30
         }
+      },
+      {
+        "id": "cmwizzqqn15u5ej",
+        "name": "Swine",
+        "cls": "Warcryer",
+        "level": 68,
+        "affil": "window",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
       }
     ],
     "warehouse": {
