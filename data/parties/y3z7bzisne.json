@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-16T08:25:09.760Z",
+    "updatedAt": "2026-11-16T08:25:27.274Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -2023,6 +2023,50 @@
         "cls": "Prophet",
         "level": 61,
         "affil": "window",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      },
+      {
+        "id": "cmwj00gq851y2qu",
+        "name": "pigger",
+        "cls": "Bladedancer",
+        "level": 60,
+        "affil": "roster",
         "slots": {
           "rhand": [
             null
