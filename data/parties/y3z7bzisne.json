@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-16T08:25:03.939Z",
+    "updatedAt": "2026-11-16T08:25:09.760Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -2022,7 +2022,7 @@
         "name": "wmz",
         "cls": "Prophet",
         "level": 61,
-        "affil": "roster",
+        "affil": "window",
         "slots": {
           "rhand": [
             null
