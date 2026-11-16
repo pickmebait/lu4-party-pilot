@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-16T08:25:51.630Z",
+    "updatedAt": "2026-11-16T08:26:18.523Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -2110,6 +2110,50 @@
         "name": "VirginMLT",
         "cls": "Swordsinger",
         "level": 60,
+        "affil": "window",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      },
+      {
+        "id": "cmwj01jxd9dsn1h",
+        "name": "Ellina",
+        "cls": "Elven Elder",
+        "level": 62,
         "affil": "window",
         "slots": {
           "rhand": [
