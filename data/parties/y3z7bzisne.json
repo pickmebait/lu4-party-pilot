@@ -71,7 +71,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-16T07:45:58.564Z",
+    "updatedAt": "2026-11-16T08:11:38.158Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -876,6 +876,12 @@
             "whole": true
           },
           "2026-11-13": {
+            "whole": true
+          },
+          "2026-11-14": {
+            "whole": true
+          },
+          "2026-11-15": {
             "whole": true
           }
         },
