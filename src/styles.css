@@ -6620,6 +6620,1410 @@ main {
   gap: 2px;
 }
 
+/* --------------------------------------------------------------- сводка */
+
+/*
+ * Два режима сводки — «Штаб» и «Ритм» — живут в одном разделе, поэтому
+ * общая сетка и карточки у них одни. Режим меняет только содержимое:
+ * «Штаб» показывает сегодняшнее состояние, «Ритм» — историю за период.
+ *
+ * Классы начинаются с dash-, а не с sum-: sum- уже занят блоками
+ * расписания, и одинаковые имена связывали бы две разные разметки.
+ */
+
+.dash-view {
+  padding-bottom: 20px;
+}
+
+.dash-head {
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.dash-head .view-actions.affil {
+  flex: 1 1 auto;
+}
+
+.dash-crumb {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Цифры режима: сверху подпись, под ней значение и пояснение. */
+
+.dash-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.dash-kpi {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  padding: 10px 12px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: linear-gradient(180deg, var(--bg-2), var(--bg));
+}
+
+.dash-kpi::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--accent) 55%, transparent),
+    transparent
+  );
+  opacity: 0.55;
+}
+
+.dash-kpi-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dash-kpi-value {
+  margin-top: 2px;
+  font-size: 23px;
+  line-height: 1.15;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.dash-kpi-value small {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
+.dash-kpi-sub {
+  margin-top: 3px;
+  min-height: 15px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+.dash-accent {
+  color: var(--accent-2);
+}
+
+.dash-warn-text {
+  color: var(--warn, #e0aa4c);
+}
+
+.dash-bad-text {
+  color: #ffb3b3;
+}
+
+/* Сетки блоков: геройская часть, нижний ряд и история. */
+
+.dash-grid-hero,
+.dash-grid-bottom,
+.dash-grid-rhythm {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.dash-grid-hero {
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 1fr);
+}
+
+.dash-grid-bottom {
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+}
+
+.dash-grid-rhythm {
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+}
+
+.dash-grid-matrix {
+  align-items: start;
+}
+
+.dash-card {
+  min-width: 0;
+  padding: 13px 15px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: linear-gradient(
+    180deg,
+    var(--bg-2),
+    color-mix(in srgb, var(--bg-2) 70%, var(--bg))
+  );
+}
+
+/* ------------------------------------------------------- ближайший прайм */
+
+.dash-prime-card {
+  padding: 15px 17px 13px;
+  background:
+    radial-gradient(
+      900px 240px at 10% -40%,
+      color-mix(in srgb, var(--accent) 14%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      var(--bg-2),
+      color-mix(in srgb, var(--bg-2) 70%, var(--bg))
+    );
+}
+
+.dash-prime-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.dash-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dash-mark.gold {
+  border-color: var(--accent-line);
+  background: var(--accent-deep);
+  color: var(--accent-2);
+}
+
+.dash-prime-time {
+  margin: 7px 0 2px;
+  font-size: clamp(26px, 3vw, 38px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.dash-prime-time.dash-prime-empty {
+  font-size: 28px;
+  color: var(--muted);
+}
+
+.dash-prime-sub {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.dash-prime-sub b {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.dash-shift {
+  color: var(--muted);
+}
+
+.dash-countdown {
+  flex: none;
+  padding-top: 4px;
+  text-align: right;
+}
+
+.dash-countdown b {
+  display: block;
+  font-size: 20px;
+  font-weight: 650;
+  color: var(--accent-2);
+  white-space: nowrap;
+}
+
+.dash-countdown span {
+  display: block;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/*
+ * Ось вечера. Шкала строится вокруг окна прайма, а не вокруг суток:
+ * на сутках два с половиной часа превратились бы в тонкую спичку.
+ */
+
+.dash-timeline {
+  position: relative;
+  height: 46px;
+  margin: 20px 2px 12px;
+}
+
+.dash-tl-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 16px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--bg-3);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.dash-tl-seg {
+  position: absolute;
+  top: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 55%, transparent),
+    var(--accent)
+  );
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.dash-tl-now {
+  position: absolute;
+  top: 6px;
+  bottom: 8px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--text);
+  opacity: 0.8;
+}
+
+.dash-tl-now em {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.dash-tl-ticks {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 30px;
+  height: 14px;
+}
+
+.dash-tl-ticks span {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 9.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-tl-ticks span.first {
+  transform: none;
+}
+
+.dash-tl-ticks span.last {
+  transform: translateX(-100%);
+}
+
+.dash-prime-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+
+.dash-free {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.dash-free b {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.dash-free.bad b {
+  color: #ffb3b3;
+}
+
+.dash-free-names {
+  color: var(--muted);
+}
+
+.dash-pulse {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ok);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 16%, transparent);
+}
+
+.dash-pulse.bad {
+  background: var(--err);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--err) 16%, transparent);
+}
+
+.dash-pulse.warn {
+  background: var(--warn, #e0aa4c);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--warn, #e0aa4c) 16%, transparent);
+}
+
+.dash-muted-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.dash-btn {
+  padding: 5px 9px;
+  border-radius: 6px;
+  font-size: 11.5px;
+}
+
+/* ------------------------------------------------------------- чеклист */
+
+.dash-check-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.dash-check-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dash-check-top h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dash-check-count {
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-progress {
+  height: 4px;
+  margin: 8px 0 9px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--bg-3);
+}
+
+.dash-progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 55%, transparent),
+    var(--accent)
+  );
+  transition: width 0.2s ease;
+}
+
+.dash-check-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dash-check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: calc(100% + 10px);
+  margin: 0 -5px;
+  padding: 4px 5px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 11.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dash-check-item:hover {
+  background: var(--bg-3);
+}
+
+.dash-check-item.done {
+  color: var(--muted);
+}
+
+.dash-check-box {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  margin-top: 1px;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--bg);
+}
+
+.dash-check-item.done .dash-check-box {
+  border-color: color-mix(in srgb, var(--ok) 70%, var(--line));
+  background: var(--ok);
+}
+
+.dash-check-item.done > span:last-child {
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--muted) 55%, transparent);
+}
+
+.dash-check-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 9px;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.dash-mini {
+  margin: 4px 0 0;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+/* -------------------------------------------------------- ближайшие дни */
+
+.dash-strip-card {
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+}
+
+.dash-strip-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.dash-strip-head h3 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.dash-strip-sub {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.dash-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-left: auto;
+  font-size: 9.5px;
+  color: var(--muted);
+}
+
+.dash-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.dash-sw {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--line-2);
+}
+
+.dash-sw.today {
+  background: var(--text);
+}
+
+.dash-sw.prime {
+  background: var(--accent);
+}
+
+.dash-sw.full {
+  background: color-mix(in srgb, var(--ok) 70%, var(--bg));
+}
+
+.dash-sw.nine {
+  background: color-mix(in srgb, var(--ok) 48%, var(--bg));
+}
+
+.dash-sw.eight {
+  background: color-mix(in srgb, var(--warn, #e0aa4c) 55%, var(--bg));
+}
+
+.dash-sw.seven,
+.dash-sw.bad {
+  background: color-mix(in srgb, var(--err) 60%, var(--bg));
+}
+
+.dash-sw.off {
+  border: 1px dashed var(--line-2);
+  background: transparent;
+}
+
+.dash-days-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding-bottom: 2px;
+}
+
+.dash-days {
+  display: grid;
+  grid-template-columns: repeat(14, minmax(54px, 1fr));
+  gap: 6px;
+}
+
+.dash-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  min-height: 72px;
+  padding: 6px 4px 5px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--bg-2);
+  color: var(--muted);
+}
+
+.dash-day-dow {
+  font-size: 8.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dash-day-num {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text);
+}
+
+.dash-day-bar {
+  width: 100%;
+  height: 3px;
+  margin: 3px 0 1px;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.dash-day-meta {
+  overflow: hidden;
+  max-width: 100%;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-day.today {
+  border-color: color-mix(in srgb, var(--text) 55%, var(--line));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 18%, transparent);
+}
+
+.dash-day.today .dash-day-dow {
+  font-weight: 700;
+  color: var(--accent-2);
+}
+
+.dash-day.prime {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-2));
+}
+
+.dash-day.prime .dash-day-bar {
+  background: linear-gradient(90deg, var(--accent-line), var(--accent));
+}
+
+.dash-day.prime .dash-day-meta {
+  color: var(--accent-2);
+}
+
+.dash-day.partial {
+  border-color: color-mix(in srgb, var(--warn, #e0aa4c) 40%, var(--line));
+}
+
+.dash-day.partial .dash-day-bar {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--warn, #e0aa4c) 55%, var(--accent)),
+    var(--accent)
+  );
+}
+
+.dash-day.off {
+  background: repeating-linear-gradient(
+    135deg,
+    transparent 0 5px,
+    color-mix(in srgb, var(--muted) 7%, transparent) 5px 10px
+  );
+}
+
+.dash-day.off .dash-day-num,
+.dash-day.off .dash-day-meta {
+  color: var(--muted);
+}
+
+.dash-day.none .dash-day-bar {
+  opacity: 0.6;
+}
+
+/* ------------------------------------------------------ требует внимания */
+
+.dash-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-bottom: 9px;
+}
+
+.dash-card-head h3 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.dash-card-sub {
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.dash-card-tail {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.dash-att-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dash-att-row {
+  display: flex;
+  gap: 8px;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-left-width: 3px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--bg-3) 40%, transparent);
+}
+
+.dash-att-row.bad {
+  border-left-color: var(--err);
+}
+
+.dash-att-row.warn {
+  border-left-color: var(--warn, #e0aa4c);
+}
+
+.dash-att-ico {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--line-2);
+  border-radius: 5px;
+  background: var(--bg);
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.dash-att-body {
+  min-width: 0;
+}
+
+.dash-att-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.dash-att-note {
+  margin-top: 1px;
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.dash-pill {
+  display: inline-grid;
+  place-items: center;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 4px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.dash-pill.bad {
+  background: color-mix(in srgb, var(--err) 22%, transparent);
+  color: #ffb3b3;
+}
+
+.dash-pill.warn {
+  background: color-mix(in srgb, var(--warn, #e0aa4c) 20%, transparent);
+  color: var(--warn, #e0aa4c);
+}
+
+.dash-all-clear {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 9px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--ok) 25%, var(--line));
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--ok) 7%, transparent);
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.dash-all-clear b {
+  color: var(--text);
+}
+
+.dash-all-clear.warn {
+  border-color: color-mix(in srgb, var(--warn, #e0aa4c) 30%, var(--line));
+  background: color-mix(in srgb, var(--warn, #e0aa4c) 7%, transparent);
+}
+
+/* --------------------------------------------------------- кто в пати */
+
+.dash-affil-bar {
+  display: flex;
+  height: 6px;
+  margin-bottom: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--bg-3);
+}
+
+.dash-affil-bar i {
+  height: 100%;
+}
+
+.dash-affil-roster {
+  background: var(--accent);
+}
+
+.dash-affil-decade {
+  background: var(--in);
+}
+
+.dash-affil-window {
+  background: color-mix(in srgb, var(--muted) 55%, var(--bg));
+}
+
+.dash-affil-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.dash-affil-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dash-affil-legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.dash-role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.dash-role {
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg-3) 35%, transparent);
+}
+
+.dash-role b {
+  float: right;
+  font-size: 13px;
+  color: var(--accent-2);
+}
+
+.dash-role > span {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dash-role small {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  color: var(--text);
+}
+
+.dash-role.empty b {
+  color: var(--muted);
+}
+
+.dash-levels {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 11px;
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
+}
+
+.dash-level-line {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.dash-level-line > span:first-child {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-level-line b {
+  text-align: right;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.dash-lv-bar {
+  height: 5px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--bg-3);
+}
+
+.dash-lv-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--in) 65%, var(--bg));
+}
+
+.dash-roles-foot {
+  margin-top: 7px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* -------------------------------------------------------- календарь явки */
+
+.dash-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.dash-cal-dow {
+  padding-bottom: 2px;
+  text-align: center;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dash-cal-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  min-height: 50px;
+  padding: 4px 5px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.dash-cal-date {
+  font-size: 10.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-cal-mark {
+  align-self: flex-end;
+  font-size: 8.5px;
+  color: color-mix(in srgb, var(--text) 75%, transparent);
+}
+
+.dash-cal-cell.full {
+  border-color: color-mix(in srgb, var(--ok) 38%, var(--line));
+  background: color-mix(in srgb, var(--ok) 30%, var(--bg-2));
+}
+
+.dash-cal-cell.nine {
+  border-color: color-mix(in srgb, var(--ok) 28%, var(--line));
+  background: color-mix(in srgb, var(--ok) 19%, var(--bg-2));
+}
+
+.dash-cal-cell.eight {
+  border-color: color-mix(in srgb, var(--warn, #e0aa4c) 32%, var(--line));
+  background: color-mix(in srgb, var(--warn, #e0aa4c) 18%, var(--bg-2));
+}
+
+.dash-cal-cell.seven {
+  border-color: color-mix(in srgb, var(--err) 32%, var(--line));
+  background: color-mix(in srgb, var(--err) 18%, var(--bg-2));
+}
+
+.dash-cal-cell.off {
+  border-style: dashed;
+  background: repeating-linear-gradient(
+    135deg,
+    transparent 0 5px,
+    color-mix(in srgb, var(--muted) 7%, transparent) 5px 10px
+  );
+  color: var(--muted);
+}
+
+.dash-cal-cell.none {
+  opacity: 0.55;
+}
+
+.dash-cal-cell.out {
+  border-color: transparent;
+  background: transparent;
+  opacity: 0.28;
+}
+
+/* ---------------------------------------------------------- кто пропускал */
+
+.dash-miss-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.dash-miss-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 118px) minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 7px;
+}
+
+.dash-miss-name {
+  overflow: hidden;
+  font-size: 11px;
+  color: var(--text);
+}
+
+.dash-miss-name small {
+  display: block;
+  overflow: hidden;
+  font-size: 9.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.dash-miss-bar {
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--bg-3);
+}
+
+.dash-miss-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--err) 65%, transparent),
+    var(--err)
+  );
+}
+
+.dash-miss-num {
+  text-align: right;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #ffb3b3;
+}
+
+.dash-miss-foot {
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* --------------------------------------------------------- матрица явки */
+
+.dash-matrix-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding-bottom: 2px;
+}
+
+.dash-matrix {
+  display: grid;
+  gap: 2px;
+  align-items: center;
+}
+
+.dash-mx-head {
+  padding-bottom: 2px;
+  text-align: center;
+  font-size: 8.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.dash-mx-head.month {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.dash-mx-name {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  padding-right: 8px;
+  overflow: hidden;
+  background: linear-gradient(90deg, var(--bg-2) 85%, transparent);
+}
+
+.dash-mx-name b {
+  display: block;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.dash-mx-cell {
+  height: 13px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ok) 46%, var(--bg-2));
+}
+
+.dash-mx-cell.no {
+  background: color-mix(in srgb, var(--err) 65%, var(--bg-2));
+}
+
+.dash-mx-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 9.5px;
+  color: var(--muted);
+}
+
+.dash-mx-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dash-mx-tail {
+  margin-left: auto;
+}
+
+/* --------------------------------------------------------- часы и вывод */
+
+.dash-rhythm-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.dash-hours-card h3,
+.dash-conclusion h3 {
+  margin: 0 0 9px;
+  font-size: 13px;
+}
+
+.dash-hours {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 112px;
+  padding-top: 4px;
+}
+
+.dash-hour-col {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  min-width: 0;
+  height: 100%;
+}
+
+.dash-hour-col b {
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.dash-hour-bar {
+  width: 100%;
+  max-width: 56px;
+  min-height: 2px;
+  border-radius: 4px 4px 2px 2px;
+  background: linear-gradient(
+    180deg,
+    var(--accent),
+    color-mix(in srgb, var(--accent) 28%, var(--bg))
+  );
+}
+
+.dash-hour-col span {
+  font-size: 9px;
+  color: var(--muted);
+}
+
+.dash-hours-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.dash-hours-foot b {
+  color: var(--text);
+}
+
+.dash-conclusion p {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.dash-conclusion p + p {
+  margin-top: 7px;
+}
+
+.dash-conclusion b {
+  color: var(--text);
+}
+
+.dash-hl {
+  color: var(--accent-2);
+}
+
+.dash-note {
+  margin: 0;
+  padding: 9px 12px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg-2) 50%, transparent);
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* --------------------------------------------------------- адаптив сводки */
+
+@media (max-width: 1100px) {
+  .dash-grid-hero,
+  .dash-grid-bottom,
+  .dash-grid-rhythm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dash-rhythm-side {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+@media (max-width: 760px) {
+  .dash-head {
+    align-items: flex-start;
+  }
+
+  .dash-head .view-actions.affil {
+    flex: 1 1 100%;
+  }
+
+  .dash-crumb {
+    order: 2;
+    margin-left: 0;
+  }
+
+  .dash-kpi-value {
+    font-size: 20px;
+  }
+
+  .dash-prime-top {
+    flex-direction: column;
+  }
+
+  .dash-countdown {
+    text-align: left;
+  }
+
+  .dash-muted-note {
+    margin-left: 0;
+  }
+
+  .dash-rhythm-side {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dash-days {
+    grid-template-columns: repeat(14, 52px);
+  }
+
+  .dash-cal-cell {
+    min-height: 44px;
+    padding: 3px 4px;
+  }
+
+  .dash-role-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .dash-card {
+    padding: 11px 12px 10px;
+  }
+
+  .dash-prime-card {
+    padding: 13px 13px 11px;
+  }
+
+  .dash-prime-time {
+    font-size: 26px;
+  }
+
+  .dash-prime-sub {
+    font-size: 11px;
+  }
+
+  .dash-countdown b {
+    font-size: 17px;
+  }
+
+  .dash-strip-head {
+    align-items: flex-start;
+  }
+
+  .dash-legend {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .dash-miss-row {
+    grid-template-columns: minmax(76px, 100px) minmax(0, 1fr) 24px;
+  }
+
+  .dash-att-row {
+    padding: 6px 7px;
+  }
+
+  .dash-days {
+    grid-template-columns: repeat(14, 50px);
+  }
+
+  .dash-cal-cell {
+    min-height: 38px;
+  }
+
+  .dash-cal-mark {
+    display: none;
+  }
+
+  .dash-hours {
+    height: 96px;
+  }
+}
+
 @media (max-width: 560px) {
   .sum-big {
     font-size: 26px;

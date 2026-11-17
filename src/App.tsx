@@ -194,7 +194,9 @@ export default function App() {
       </header>
 
       <main>
-        {tab === 'summary' && <SummaryView catalog={catalog} />}
+        {tab === 'summary' && (
+          <SummaryView onOpenSchedule={() => сменитьВкладку('schedule')} />
+        )}
         {tab === 'chars' && <CharsView catalog={catalog} />}
         {tab === 'schedule' && <ScheduleView />}
         {tab === 'warehouse' && <WarehouseView catalog={catalog} />}
