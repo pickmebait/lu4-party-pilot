@@ -5186,7 +5186,7 @@ main {
 
 .cal-big .cal-away {
   gap: 3px;
-  font-size: 10.5px;
+  font-size: 9px;
 }
 
 /*
@@ -5203,7 +5203,16 @@ main {
   text-transform: none;
 }
 
+.cal-big .cal-away-flow {
+  gap: 3px 4px;
+}
+
 .cal-big .cal-away-badge {
+  padding: 2px 5px;
+  font-size: 9px;
+}
+
+.cal-big .cal-away-more {
   padding: 2px 5px;
   font-size: 9px;
 }
@@ -6136,12 +6145,17 @@ main {
 /*
  * Отсутствующие в клетке дня.
  *
- * Строка прижата к прайму распоркой `margin-top: auto`: события остаются
- * сверху, а «−2 PickMe, Ирока» стоит там, где её ищут, — прямо над планом.
- * Имена полные и не переносятся; не влезшие сворачиваются в «ещё N».
- * Полный список в столбик открывается наведением на цифру.
+ * Блок прижат к прайму распоркой `margin-top: auto`: события остаются
+ * сверху, а «−5 PickMeBait, DaintyWilder, +3» стоит там, где его ищут, —
+ * прямо над планом.
+ *
+ * Имена идут потоком и переносятся только целиком: сосед не сжимает ник, а
+ * многоточие появляется лишь тогда, когда имя шире самой клетки. Сколько
+ * имён оставить и сколько свернуть в «+N», решает JS: CSS не умеет
+ * зарезервировать место под счётчик, которого ещё нет.
  */
 .cal-away {
+  position: relative;
   flex: none;
   display: flex;
   flex-direction: column;
@@ -6171,49 +6185,111 @@ main {
   text-transform: uppercase;
 }
 
-.cal-away-row {
+/*
+ * Поток имён: в месяце одна строка, в неделе и «Ближайшем» — до двух.
+ * `width: 100%` обязателен: иначе `align-items: flex-start` у родителя
+ * сжимает поток до ширины имён, и свободная ширина клетки пропадает.
+ */
+.cal-away-flow {
   display: flex;
-  align-items: center;
-  gap: 4px;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  align-items: baseline;
+  gap: 2px 4px;
+  width: 100%;
   min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
 }
 
+.cal-away-flow.one,
+.cal-away-flow.cut {
+  flex-wrap: nowrap;
+}
+
+/* Счётчик отсутствующих стоит в начале первой строки. */
 .cal-away-badge {
   flex: none;
+  align-self: center;
   padding: 1px 4px;
   border: 1px solid rgba(239, 95, 95, 0.25);
   border-radius: 999px;
   background: rgba(239, 95, 95, 0.14);
   color: #ffb3b3;
-  font-size: 7.5px;
+  font-size: 8px;
   font-weight: 800;
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
   cursor: default;
 }
 
-.cal-away-names {
-  display: flex;
-  min-width: 0;
-  overflow: hidden;
-}
-
+/*
+ * Имя не сжимается соседями. Поток переносит его целиком, а многоточие
+ * включается только у `.cut` — когда первый ник шире клетки и деваться
+ * некуда.
+ */
 .cal-away-name {
+  flex: 0 0 auto;
+  max-width: 100%;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.cal-away-name + .cal-away-name::before {
-  content: ', ';
+.cal-away-name::after {
+  content: ',';
+  color: #d98a8a;
 }
 
+.cal-away-flow > .cal-away-name:last-child::after {
+  content: none;
+}
+
+.cal-away-name.cut {
+  flex: 1 1 auto;
+}
+
+/* «+N» — сколько имён не поместилось; стоит в конце последней строки. */
 .cal-away-more {
   flex: none;
-  color: #d98a8a;
+  align-self: center;
+  padding: 1px 4px;
+  border-radius: 999px;
+  background: rgba(239, 95, 95, 0.14);
+  color: #ffb3b3;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* В одной строке «+N» прижат к правому краю, как отдельный счётчик. */
+.cal-away-flow.one .cal-away-more,
+.cal-away-flow.cut .cal-away-more {
+  margin-left: auto;
+}
+
+/*
+ * Скрытая копия потока для измерения. Абсолютная, чтобы не занимать место;
+ * ширина по содержимому, чтобы ни одно имя не сжалось до замера.
+ */
+.cal-away-probe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0;
+  width: max-content;
+  max-width: none;
+  margin: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.cal-away-probe .cal-away-name {
+  flex: none;
+  max-width: none;
+  overflow: visible;
 }
 
 /*
@@ -8565,6 +8641,11 @@ main {
   }
 
   .schedule-main .cal-away-badge {
+    padding: 0 4px;
+    font-size: 7.5px;
+  }
+
+  .schedule-main .cal-away-more {
     padding: 0 4px;
     font-size: 7.5px;
   }
