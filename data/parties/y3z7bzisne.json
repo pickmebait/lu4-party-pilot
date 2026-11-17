@@ -37,7 +37,8 @@
       "hash": "702caa679533db50920cda481f85168431a49d6b25d276a58427a16e775e4e88",
       "charId": "cmvjpcbwzbar5dm",
       "charName": "band1tos",
-      "createdAt": "2026-10-22T15:34:51.134Z"
+      "createdAt": "2026-10-22T15:34:51.134Z",
+      "lastUsedAt": "2026-11-17T19:53:42.552Z"
     },
     {
       "id": "7kbrbef2xw",
@@ -71,8 +72,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-17T18:27:11.289Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-11-17T19:53:42.552Z",
+    "updatedBy": "band1tos",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1362,7 +1363,8 @@
               "mod": 5
             },
             {
-              "itemId": 886
+              "itemId": 886,
+              "mod": 5
             }
           ]
         },
