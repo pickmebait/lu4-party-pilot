@@ -52,7 +52,8 @@
       "hash": "85571fe9fa910909f1d0cd6710b940945db0bc56cc256fc540740ad42ae3edcb",
       "charId": "cmvjpdktjft6xe4",
       "charName": "DOKTOP",
-      "createdAt": "2026-10-22T15:35:47.746Z"
+      "createdAt": "2026-10-22T15:35:47.746Z",
+      "lastUsedAt": "2026-11-17T20:22:47.415Z"
     },
     {
       "id": "64bxutry6w",
@@ -72,8 +73,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-17T20:22:26.565Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-11-17T20:22:47.415Z",
+    "updatedBy": "DOKTOP",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
