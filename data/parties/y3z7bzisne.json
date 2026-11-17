@@ -72,7 +72,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-17T20:15:58.965Z",
+    "updatedAt": "2026-11-17T20:16:08.245Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -2060,47 +2060,7 @@
           ]
         },
         "subUnlocked": true,
-        "subs": [
-          {
-            "id": "smwl4u3o12zvi44",
-            "cls": "",
-            "level": 0,
-            "slots": {
-              "rhand": [
-                null
-              ],
-              "lhand": [
-                null
-              ],
-              "head": [
-                null
-              ],
-              "chest": [
-                null
-              ],
-              "legs": [
-                null
-              ],
-              "gloves": [
-                null
-              ],
-              "feet": [
-                null
-              ],
-              "neck": [
-                null
-              ],
-              "ear": [
-                null,
-                null
-              ],
-              "ring": [
-                null,
-                null
-              ]
-            }
-          }
-        ],
+        "subs": [],
         "away": {}
       },
       {
