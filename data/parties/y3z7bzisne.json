@@ -72,8 +72,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-17T19:53:42.552Z",
-    "updatedBy": "band1tos",
+    "updatedAt": "2026-11-17T20:15:50.117Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -2059,7 +2059,7 @@
             null
           ]
         },
-        "subUnlocked": false,
+        "subUnlocked": true,
         "subs": [],
         "away": {}
       },
