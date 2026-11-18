@@ -25,9 +25,10 @@ import { DayBox } from '@/components/ScheduleDay.tsx'
 import { DaySummary } from '@/components/ScheduleSummary.tsx'
 import { Checklist } from '@/components/ScheduleChecklist.tsx'
 import { EventTrack } from '@/components/ScheduleEvents.tsx'
+import { SummaryView } from '@/components/Summary.tsx'
 import { eventsOn } from '@/lib/l2events.ts'
 import { primeOf, rangeCells } from '@/lib/schedule.ts'
-import { emptyDb, replaceDb } from '@/lib/store.ts'
+import { emptyChar, emptyDb, replaceDb } from '@/lib/store.ts'
 
 let пройдено = 0
 const ошибки: string[] = []
@@ -390,6 +391,70 @@ const чеклист = renderToStaticMarkup(<Checklist />)
 есть('полоса готовности нарисована', чеклист, 'class="checklist-bar"')
 есть('пункт можно править', чеклист, 'class="checklist-text"')
 есть('пункт можно убрать', чеклист, 'title="Убрать пункт"')
+
+replaceDb(emptyDb())
+
+/* ------------------------------------------------------------------ сводка */
+
+/*
+ * Сводка показывает то же время, что и расписание: московское окно
+ * пересчитывается в пояс пользователя. Момент задан явно, иначе проверка
+ * зависела бы от дня запуска.
+ */
+const сводкаПоПоясу = (пояс, момент, дни) => {
+  const база = emptyDb()
+  const а = emptyChar()
+  а.id = 'c1'
+  а.name = 'PickMe'
+  а.cls = 'Sorcerer'
+  а.level = 80
+  const б = emptyChar()
+  б.id = 'c2'
+  б.name = '2345'
+  б.cls = 'Paladin'
+  б.level = 79
+  база.chars = [а, б]
+  база.schedule.prime = {}
+  for (const день of дни) {
+    база.schedule.prime[день] = { from: 21 * 60, to: 23 * 60 + 30 }
+  }
+  replaceDb(база)
+  return renderToStaticMarkup(
+    <SummaryView часовойПояс={пояс} момент={new Date(момент)} />,
+  )
+}
+
+const дниСводки = ['2026-11-17', '2026-11-18', '2026-11-19']
+
+const сводкаМосква = сводкаПоПоясу('Europe/Moscow', '2026-11-17T18:40:00+03:00', дниСводки)
+есть('сводка в Москве показывает московское окно', сводкаМосква, 'class="dash-prime-time">21:00–23:30</h2>')
+есть('сводка в Москве считает один и тот же прайм', сводкаМосква, 'class="dash-strip-sub">прайм 21:00–23:30')
+
+const сводкаВладивосток = сводкаПоПоясу('Asia/Vladivostok', '2026-11-18T05:00:00+10:00', дниСводки)
+есть('сводка на востоке пересчитывает окно', сводкаВладивосток, 'class="dash-prime-time">04:00–06:30</h2>')
+есть('сводка на востоке называет сдвиг дня', сводкаВладивосток, '(+1 дн.)')
+есть('сводка на востоке показывает местные часы', сводкаВладивосток, 'среда, 18 ноября · 05:00')
+есть('сводка на востоке ставит «сейчас» на ось', сводкаВладивосток, 'class="dash-tl-now"')
+
+const дниПерехода = [
+  '2027-03-22', '2027-03-23', '2027-03-24', '2027-03-25', '2027-03-26', '2027-03-27',
+  '2027-03-28', '2027-03-29', '2027-03-30', '2027-03-31', '2027-04-01', '2027-04-02',
+  '2027-04-03', '2027-04-04',
+]
+const сводкаБерлин = сводкаПоПоясу('Europe/Berlin', '2027-03-22T12:00:00+01:00', дниПерехода)
+есть('сводка в Берлине пересчитывает окно', сводкаБерлин, 'class="dash-prime-time">19:00–21:30</h2>')
+есть(
+  'сводка не склеивает окна через переход на летнее время',
+  сводкаБерлин,
+  'class="dash-strip-sub">прайм по расписанию',
+)
+
+const сводкаМоскваПереход = сводкаПоПоясу('Europe/Moscow', '2027-03-22T12:00:00+03:00', дниПерехода)
+есть(
+  'в Москве одинаковые окна по-прежнему названы одним временем',
+  сводкаМоскваПереход,
+  'class="dash-strip-sub">прайм 21:00–23:30',
+)
 
 replaceDb(emptyDb())
 
