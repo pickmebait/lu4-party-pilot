@@ -7019,6 +7019,30 @@ main {
   transform: translateX(-100%);
 }
 
+/*
+ * Событие на оси прайма: точка своего цвета, как на полосе вечера в
+ * расписании. Стоит над полосой, чтобы не спорить с отметкой «сейчас».
+ */
+.dash-tl-mark {
+  position: absolute;
+  top: 1px;
+  z-index: 1;
+  width: 9px;
+  height: 9px;
+  transform: translateX(-50%);
+  border: 2px solid var(--surface-lit);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.dash-tl-mark.kind-epic {
+  background: var(--event-epic);
+}
+
+.dash-tl-mark.kind-siege {
+  background: var(--event-siege);
+}
+
 .dash-prime-foot {
   display: flex;
   align-items: center;
@@ -7635,6 +7659,8 @@ main {
 }
 
 .dash-lv-bar {
+  display: flex;
+  gap: 1px;
   height: 5px;
   border-radius: 999px;
   overflow: hidden;
@@ -7645,7 +7671,6 @@ main {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: color-mix(in srgb, var(--in) 65%, var(--bg));
 }
 
 .dash-roles-foot {
@@ -7968,17 +7993,6 @@ main {
 
 .dash-hl {
   color: var(--accent-2);
-}
-
-.dash-note {
-  margin: 0;
-  padding: 9px 12px;
-  border: 1px dashed var(--line);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--bg-2) 50%, transparent);
-  font-size: 10.5px;
-  line-height: 1.5;
-  color: var(--muted);
 }
 
 /* --------------------------------------------------------- адаптив сводки */

@@ -228,7 +228,12 @@ export interface Явка {
   датыНеполных: { день: string; отсутствуют: string[] }[]
 }
 
-export function явкаЗаПериод(db: Db, сОт: string | null, сегодня: string): Явка {
+export function явкаЗаПериод(
+  db: Db,
+  сОт: string | null,
+  сегодня: string,
+  chars: readonly Char[] = db.chars,
+): Явка {
   const дниПрайма = дниПраймов(db.schedule, сОт, сегодня)
 
   const поПерсонажам: Пропуски[] = []
@@ -236,7 +241,7 @@ export function явкаЗаПериод(db: Db, сОт: string | null, сего
   let всегоПриходов = 0
   const датыНеполных: Явка['датыНеполных'] = []
 
-  for (const c of db.chars) {
+  for (const c of chars) {
     const пропусков = дниПрайма.filter((d) => c.away?.[d]).length
     поПерсонажам.push({
       charId: c.id,
@@ -248,7 +253,7 @@ export function явкаЗаПериод(db: Db, сОт: string | null, сего
   }
 
   for (const день of дниПрайма) {
-    const отсутствуют = db.chars.filter((c) => c.away?.[день]).map((c) => c.name || 'Без имени')
+    const отсутствуют = chars.filter((c) => c.away?.[день]).map((c) => c.name || 'Без имени')
     if (отсутствуют.length === 0) полных++
     else датыНеполных.push({ день, отсутствуют })
   }
@@ -923,6 +928,9 @@ export function снаряжение(db: Db): Снаряжение {
  * Средняя заточка — только по вещам, у которых заточка задана. Вещь без
  * заточки не значит «+0»: у неё просто не заполнено поле, и подмешивать её
  * нулём значило бы занижать среднюю всей пати.
+ *
+ * chars позволяет считать только основной состав: «Окно» — запасные, и их
+ * экипировка не должна размывать готовность пати.
  */
 export interface ОсновнаяГотовность {
   charId: string
@@ -949,12 +957,15 @@ export interface ОсновнаяСводка {
   заточенных: number
 }
 
-export function основнаяГотовность(db: Db): ОсновнаяСводка {
+export function основнаяГотовность(
+  db: Db,
+  chars: readonly Char[] = db.chars,
+): ОсновнаяСводка {
   const поПерсонажам: ОсновнаяГотовность[] = []
   const всеМоды: number[] = []
   let слотов = 0
 
-  for (const c of db.chars) {
+  for (const c of chars) {
     let занято = 0
     let всего = 0
     const моды: number[] = []
