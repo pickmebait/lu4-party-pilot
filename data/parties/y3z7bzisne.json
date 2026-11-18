@@ -73,8 +73,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-17T20:22:47.415Z",
-    "updatedBy": "DOKTOP",
+    "updatedAt": "2026-11-18T00:34:36.417Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -364,7 +364,7 @@
           {
             "id": "smvjom2r34az0e1",
             "cls": "Destroyer",
-            "level": 64,
+            "level": 66,
             "slots": {
               "rhand": [
                 {
