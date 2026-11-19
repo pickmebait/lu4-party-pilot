@@ -46,7 +46,7 @@
       "charId": "cmvjpcx8wdx14b9",
       "charName": "zarra",
       "createdAt": "2026-10-22T15:35:18.275Z",
-      "lastUsedAt": "2026-11-19T12:46:57.932Z"
+      "lastUsedAt": "2026-11-19T12:47:06.199Z"
     },
     {
       "id": "sakgev6h3n",
@@ -74,7 +74,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-19T12:46:57.932Z",
+    "updatedAt": "2026-11-19T12:47:06.199Z",
     "updatedBy": "zarra",
     "chars": [
       {
@@ -1620,7 +1620,9 @@
             }
           ],
           "gloves": [
-            null
+            {
+              "itemId": 5768
+            }
           ],
           "feet": [
             null
