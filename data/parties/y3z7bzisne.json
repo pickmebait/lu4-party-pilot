@@ -73,7 +73,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-18T15:25:49.456Z",
+    "updatedAt": "2026-11-19T08:33:01.055Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -1287,23 +1287,20 @@
       {
         "id": "cmvjpcbwzbar5dm",
         "name": "band1tos",
-        "cls": "Sorcerer",
-        "level": 64,
+        "cls": "Overlord",
+        "level": 75,
         "affil": "roster",
         "slots": {
           "rhand": [
             {
-              "itemId": 92,
-              "mod": 4,
+              "itemId": 7894,
+              "mod": 3,
               "sa": "Acumen"
             }
           ],
           "lhand": [
             {
-              "itemId": 92,
-              "mod": 4,
-              "spans": true,
-              "sa": "Acumen"
+              "itemId": 641
             }
           ],
           "head": [
@@ -1373,15 +1370,15 @@
           {
             "rhand": [
               {
-                "itemId": 195,
-                "sa": "Empower"
+                "itemId": 34933,
+                "mod": 4
               }
             ],
             "lhand": [
               {
-                "itemId": 195,
-                "spans": true,
-                "sa": "Empower"
+                "itemId": 34933,
+                "mod": 4,
+                "spans": true
               }
             ]
           }
@@ -1396,19 +1393,22 @@
         "subs": [
           {
             "id": "smvkssgkl1mttje",
-            "cls": "Overlord",
-            "level": 75,
+            "cls": "Sorcerer",
+            "level": 64,
             "slots": {
               "rhand": [
                 {
-                  "itemId": 7894,
-                  "mod": 3,
+                  "itemId": 92,
+                  "mod": 4,
                   "sa": "Acumen"
                 }
               ],
               "lhand": [
                 {
-                  "itemId": 641
+                  "itemId": 92,
+                  "mod": 4,
+                  "spans": true,
+                  "sa": "Acumen"
                 }
               ],
               "head": [
@@ -1478,15 +1478,15 @@
               {
                 "rhand": [
                   {
-                    "itemId": 34933,
-                    "mod": 4
+                    "itemId": 195,
+                    "sa": "Empower"
                   }
                 ],
                 "lhand": [
                   {
-                    "itemId": 34933,
-                    "mod": 4,
-                    "spans": true
+                    "itemId": 195,
+                    "spans": true,
+                    "sa": "Empower"
                   }
                 ]
               }
