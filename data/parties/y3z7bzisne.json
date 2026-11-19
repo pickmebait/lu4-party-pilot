@@ -46,7 +46,7 @@
       "charId": "cmvjpcx8wdx14b9",
       "charName": "zarra",
       "createdAt": "2026-10-22T15:35:18.275Z",
-      "lastUsedAt": "2026-11-19T12:49:29.826Z"
+      "lastUsedAt": "2026-11-19T12:49:42.825Z"
     },
     {
       "id": "sakgev6h3n",
@@ -74,8 +74,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-19T12:49:29.826Z",
-    "updatedBy": "zarra",
+    "updatedAt": "2026-11-19T12:49:42.825Z",
+    "updatedBy": "Zarra",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1612,12 +1612,14 @@
           ],
           "chest": [
             {
-              "itemId": 2382
+              "itemId": 2382,
+              "mod": 1
             }
           ],
           "legs": [
             {
               "itemId": 2382,
+              "mod": 1,
               "spans": true
             }
           ],
