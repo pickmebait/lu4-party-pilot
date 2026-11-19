@@ -46,7 +46,7 @@
       "charId": "cmvjpcx8wdx14b9",
       "charName": "zarra",
       "createdAt": "2026-10-22T15:35:18.275Z",
-      "lastUsedAt": "2026-11-19T12:47:59.171Z"
+      "lastUsedAt": "2026-11-19T12:49:29.826Z"
     },
     {
       "id": "sakgev6h3n",
@@ -74,7 +74,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-19T12:47:59.171Z",
+    "updatedAt": "2026-11-19T12:49:29.826Z",
     "updatedBy": "zarra",
     "chars": [
       {
@@ -1587,7 +1587,7 @@
       },
       {
         "id": "cmvjpcx8wdx14b9",
-        "name": "zarra",
+        "name": "Zarra",
         "cls": "",
         "level": 0,
         "affil": "roster",
