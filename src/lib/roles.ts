@@ -14,15 +14,7 @@
  */
 import { normalize } from './util'
 
-export const РОЛИ = [
-  'танк',
-  'хил',
-  'бард',
-  'саппорт',
-  'ДД',
-  'добыча',
-  'без роли',
-] as const
+export const РОЛИ = ['танк', 'хил', 'бард', 'баф', 'ДД', 'без роли'] as const
 
 export type Роль = (typeof РОЛИ)[number]
 
@@ -31,9 +23,8 @@ export const РОЛЬ_ПОДПИСЬ: Record<Роль, string> = {
   танк: 'Танк',
   хил: 'Хил',
   бард: 'Бард',
-  саппорт: 'Саппорт',
+  баф: 'Баф',
   ДД: 'ДД',
-  добыча: 'Добыча',
   'без роли': 'Без роли',
 }
 
@@ -60,20 +51,17 @@ const РОЛИ_ПО_КЛАССУ: Record<string, Роль> = {
   swordsinger: 'бард',
   bladedancer: 'бард',
 
-  // Саппорт: бафферы и полевые усилители.
-  prophet: 'саппорт',
-  warcryer: 'саппорт',
-  overlord: 'саппорт',
-
-  // Добыча: спойлер и крафтер.
-  'bounty hunter': 'добыча',
-  warsmith: 'добыча',
+  // Баф: бафферы и полевые усилители.
+  prophet: 'баф',
+  warcryer: 'баф',
+  overlord: 'баф',
 
   // ДД.
+  'bounty hunter': 'ДД',
+  warsmith: 'ДД',
   gladiator: 'ДД',
   warlord: 'ДД',
   tyrant: 'ДД',
-  destroyer: 'ДД',
   hawkeye: 'ДД',
   'silver ranger': 'ДД',
   'phantom ranger': 'ДД',

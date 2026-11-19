@@ -25,11 +25,13 @@ import {
   emptyDb,
   equipItem,
   getDb,
+  makeSubMain,
   migrateGear,
   removeArmorSet,
   removeWeaponSet,
   replaceDb,
   setSubUnlocked,
+  updateSub,
 } from '@/lib/store.ts'
 import { migrateTwoHanded, twoHandedIds } from '@/lib/migrations.ts'
 import { levelForInput, levelToSave, LEVEL_MIN, LEVEL_MAX } from '@/lib/classes.ts'
@@ -249,6 +251,52 @@ removeArmorSet(main, 1)
   ] }),
   { занято: 11, всего: 18 },
 )
+
+/* ---------------------------------------------------- смена основы и саба */
+
+/*
+ * «Сделать основой» меняет профили местами целиком: профессию, уровень,
+ * экипировку и дополнительные наборы. Иначе новая основа осталась бы с
+ * чужими доспехами. Саб при этом сохраняет id, чтобы открытая вкладка не
+ * потерялась, а остальные сабы не меняются.
+ */
+const обмен = addChar({ name: 'Обмен', cls: 'Sorcerer', level: 80 })
+setSubUnlocked(обмен, true)
+const сабОбмена = addSub(обмен)
+updateSub(обмен, сабОбмена, { cls: 'Paladin', level: 75 })
+const второйСаб = addSub(обмен)
+updateSub(обмен, второйСаб, { cls: 'Bishop', level: 60 })
+
+const основаВетка = { charId: обмен, subId: null }
+const сабВетка = { charId: обмен, subId: сабОбмена }
+equipItem(основаВетка, 'rhand', 0, { id: 301 })
+equipItem(сабВетка, 'rhand', 0, { id: 302 })
+addWeaponSet(основаВетка)
+addWeaponSet(сабВетка)
+equipItem({ ...основаВетка, weaponSet: 1 }, 'rhand', 0, { id: 401 })
+equipItem({ ...сабВетка, weaponSet: 1 }, 'rhand', 0, { id: 402 })
+
+const обменянный = () => getDb().chars.find((c) => c.id === обмен)
+const бывшийСаб = () => обменянный().subs.find((s) => s.id === сабОбмена)
+const историяДо = (getDb().history ?? []).length
+
+правда('обмен основы и саба выполнен', makeSubMain(обмен, сабОбмена))
+равно('саб стал основной профессией', обменянный().cls, 'Paladin')
+равно('вместе с профессией переехал уровень', обменянный().level, 75)
+равно('новая основа получила экипировку саба', обменянный().slots.rhand[0].itemId, 302)
+равно('новой основе достался набор саба', обменянный().extraWeaponSets[0].rhand[0].itemId, 402)
+равно('основа стала сабом', бывшийСаб().cls, 'Sorcerer')
+равно('в саб переехал уровень основы', бывшийСаб().level, 80)
+равно('в сабе осталась экипировка основы', бывшийСаб().slots.rhand[0].itemId, 301)
+равно('в сабе остался набор основы', бывшийСаб().extraWeaponSets[0].rhand[0].itemId, 401)
+равно('id саба не изменился', бывшийСаб().id, сабОбмена)
+равно(
+  'остальные сабы не тронуты',
+  обменянный().subs.find((s) => s.id === второйСаб).cls,
+  'Bishop',
+)
+равно('несуществующий саб не меняет основу', makeSubMain(обмен, 'нет-такого'), false)
+равно('обмен не пишет историю переодевания', (getDb().history ?? []).length, историяДо)
 
 /* ------------------------------------------------ миграция двуручного оружия */
 

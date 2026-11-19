@@ -6,7 +6,7 @@ import {
   type Sub,
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
-import { removeChar, removeSub, updateChar, updateSub, type Branch } from '@/lib/store'
+import { makeSubMain, removeChar, removeSub, updateChar, updateSub, type Branch } from '@/lib/store'
 import { useПерсонаж } from '@/lib/useChar'
 import { CharEditForm } from './CharEditForm'
 import { ContactsModal } from './ContactsModal'
@@ -190,6 +190,9 @@ export function CharCard({
         активный={саб?.id ?? null}
         правый={правый}
         onSelect={setВыбранный}
+        onPromote={(id) => {
+          if (makeSubMain(char.id, id)) setВыбранный(null)
+        }}
         onRemove={(id) => setУбираемыйСаб(сабы.find((s) => s.id === id) ?? null)}
       />
 
@@ -227,9 +230,9 @@ export function CharCard({
 
       {убираемыйСаб && (
         <ConfirmModal
-          заголовок={`Убрать саб-класс${убираемыйСаб.cls ? ` «${убираемыйСаб.cls}»` : ''}?`}
+          заголовок={`Удалить саб-класс${убираемыйСаб.cls ? ` «${убираемыйСаб.cls}»` : ''}?`}
           текст="Вместе с саб-классом пропадёт его снаряжение. Основная профессия и остальные сабы не пострадают."
-          кнопка="Убрать саб"
+          кнопка="Удалить саб"
           onConfirm={() => {
             removeSub(char.id, убираемыйСаб.id)
             setВыбранный(null)

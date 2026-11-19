@@ -11,7 +11,7 @@ import {
   type Sub,
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
-import { removeChar, removeSub, updateChar, updateSub, type Branch } from '@/lib/store'
+import { makeSubMain, removeChar, removeSub, updateChar, updateSub, type Branch } from '@/lib/store'
 import { armorSetsOf, weaponSetsOf } from '@/lib/slots'
 import { ItemIcon } from './ItemIcon'
 import { useПерсонаж } from '@/lib/useChar'
@@ -225,14 +225,26 @@ export function CharRow({
           {занято} из {всего}
         </span>
         {саб && правый && (
-          <button
-            type="button"
-            className="btn tiny danger sub-del"
-            title="Убрать выбранный саб-класс вместе с его экипировкой"
-            onClick={() => setУбираемыйСаб(саб)}
-          >
-            Убрать саб
-          </button>
+          <>
+            <button
+              type="button"
+              className="btn tiny sub-promote"
+              title="Сделать выбранный саб основной профессией. Основа встанет на его место"
+              onClick={() => {
+                if (makeSubMain(char.id, саб.id)) setВыбранный(null)
+              }}
+            >
+              Сделать основой
+            </button>
+            <button
+              type="button"
+              className="btn tiny danger sub-del"
+              title="Удалить выбранный саб-класс вместе с его экипировкой"
+              onClick={() => setУбираемыйСаб(саб)}
+            >
+              Удалить саб
+            </button>
+          </>
         )}
       </div>
 
@@ -268,9 +280,9 @@ export function CharRow({
 
       {убираемыйСаб && (
         <ConfirmModal
-          заголовок={`Убрать саб-класс${убираемыйСаб.cls ? ` «${убираемыйСаб.cls}»` : ''}?`}
+          заголовок={`Удалить саб-класс${убираемыйСаб.cls ? ` «${убираемыйСаб.cls}»` : ''}?`}
           текст="Вместе с саб-классом пропадёт его снаряжение. Основная профессия и остальные сабы не пострадают."
-          кнопка="Убрать саб"
+          кнопка="Удалить саб"
           onConfirm={() => {
             removeSub(char.id, убираемыйСаб.id)
             setВыбранный(null)

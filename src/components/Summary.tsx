@@ -903,22 +903,28 @@ function Штаб({
 
           {роли.length > 0 ? (
             <div className="dash-role-grid">
-              {роли.map(({ роль, люди }) => (
-                <div key={роль} className={`dash-role${роль === 'без роли' ? ' empty' : ''}`}>
-                  <b>{люди.length}</b>
-                  <span>{РОЛЬ_ПОДПИСЬ[роль]}</span>
-                  <small title={люди.map((c) => c.name || 'Без имени').join(', ')}>
-                    {люди.map((c) => c.name || 'Без имени').join(', ')}
-                    {роль === 'без роли' &&
-                    люди.length === 1 &&
-                    !люди[0].cls.trim() &&
-                    (готовность.поПерсонажам.find((п) => п.charId === люди[0].id)?.занято ?? 0) ===
-                      0
-                      ? ' — пустой профиль'
-                      : ''}
-                  </small>
-                </div>
-              ))}
+              {роли.map(({ роль, люди }) => {
+                const пустойПрофиль =
+                  роль === 'без роли' &&
+                  люди.length === 1 &&
+                  !люди[0].cls.trim() &&
+                  (готовность.поПерсонажам.find((п) => п.charId === люди[0].id)?.занято ?? 0) === 0
+                return (
+                  <div key={роль} className={`dash-role${роль === 'без роли' ? ' empty' : ''}`}>
+                    <b>{люди.length}</b>
+                    <span>{РОЛЬ_ПОДПИСЬ[роль]}</span>
+                    <small title={люди.map((c) => c.name || 'Без имени').join(', ')}>
+                      {люди.map((c, i) => (
+                        <Fragment key={c.id}>
+                          {i > 0 && ', '}
+                          <span className={`dash-name-${c.affil}`}>{c.name || 'Без имени'}</span>
+                        </Fragment>
+                      ))}
+                      {пустойПрофиль ? ' — пустой профиль' : ''}
+                    </small>
+                  </div>
+                )
+              })}
             </div>
           ) : (
             <p className="hint">Классы не заданы — роли считать не из чего.</p>

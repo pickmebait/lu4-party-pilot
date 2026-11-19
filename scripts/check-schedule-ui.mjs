@@ -28,6 +28,7 @@ import { EventTrack } from '@/components/ScheduleEvents.tsx'
 import { SummaryView } from '@/components/Summary.tsx'
 import { eventsOn } from '@/lib/l2events.ts'
 import { primeOf, rangeCells } from '@/lib/schedule.ts'
+import { roleOfClass } from '@/lib/roles.ts'
 import { emptyChar, emptyDb, replaceDb } from '@/lib/store.ts'
 
 let пройдено = 0
@@ -491,7 +492,54 @@ const сводкаОкна = сводкаПоПоясу(
 есть('подсказка точки называет ивент', сводкаОкна, 'title="Core ·')
 есть('полоса уровня красится по составу', сводкаОкна, 'title="Состав: 1"')
 есть('полоса уровня красится по окну', сводкаОкна, 'title="Окно: 1"')
+есть('ник в роли красится по составу', сводкаОкна, 'class="dash-name-roster">PickMe')
+есть('ник в роли красится по десятке', сводкаОкна, 'class="dash-name-decade">2345')
+есть('ник в роли красится по окну', сводкаОкна, 'class="dash-name-window">Swine')
 нет('сводка обходится без dash-note', сводкаОкна, 'dash-note')
+
+/*
+ * Роли в «Кто в пати» — ровно по списку из задачи. Спойлер и крафтер теперь
+ * ДД, баферы вынесены в отдельную роль; старых «добычи» и «саппорта» больше
+ * нет. Проверяется каждый класс списка: пропущенный или перепутанный класс
+ * иначе просто переехал бы в «Без роли» и никто бы не заметил.
+ */
+const ролиПоКлассам = {
+  'Abyss Walker': 'ДД',
+  'Bounty Hunter': 'ДД',
+  'Elemental Summoner': 'ДД',
+  Gladiator: 'ДД',
+  Hawkeye: 'ДД',
+  Necromancer: 'ДД',
+  'Phantom Ranger': 'ДД',
+  'Phantom Summoner': 'ДД',
+  Plainswalker: 'ДД',
+  'Silver Ranger': 'ДД',
+  Sorcerer: 'ДД',
+  Spellhowler: 'ДД',
+  Spellsinger: 'ДД',
+  'Treasure Hunter': 'ДД',
+  Tyrant: 'ДД',
+  Warlock: 'ДД',
+  Warlord: 'ДД',
+  Warsmith: 'ДД',
+  Bishop: 'хил',
+  'Elven Elder': 'хил',
+  'Shillien Elder': 'хил',
+  Bladedancer: 'бард',
+  Swordsinger: 'бард',
+  'Dark Avenger': 'танк',
+  Paladin: 'танк',
+  'Shillien Knight': 'танк',
+  'Temple Knight': 'танк',
+  Overlord: 'баф',
+  Prophet: 'баф',
+  Warcryer: 'баф',
+}
+for (const [класс, роль] of Object.entries(ролиПоКлассам)) {
+  равно('роль ' + класс, roleOfClass(класс), роль)
+}
+равно('Destroyer не попал в список и остался без роли', roleOfClass('Destroyer'), 'без роли')
+равно('незнакомый класс остался без роли', roleOfClass('Some Custom Class'), 'без роли')
 
 replaceDb(emptyDb())
 

@@ -1231,6 +1231,50 @@ export function removeSub(charId: string, subId: string): void {
 }
 
 /**
+ * Делает выбранный саб основной профессией, а основу ставит на его место.
+ *
+ * Меняются местами целые профили: профессия, уровень и экипировка. Иначе
+ * бывшая основа осталась бы с чужими доспехами, а новый основной — без
+ * своих. Саб сохраняет id, чтобы открытая вкладка не потерялась.
+ *
+ * История здесь не пишется: это не переодевание и не рост уровня, а обмен
+ * местами. Иначе один клик записал бы десятки «снял/надел» по каждому слоту
+ * и вытеснил бы из неё настоящие изменения.
+ */
+export function makeSubMain(charId: string, subId: string): boolean {
+  const char = findChar(charId)
+  const sub = char?.subs.find((s) => s.id === subId)
+  if (!char || !sub) return false
+
+  const бывшаяОснова: Sub = {
+    id: sub.id,
+    cls: char.cls,
+    level: char.level,
+    slots: char.slots,
+    extraWeaponSets: char.extraWeaponSets,
+    extraArmorSets: char.extraArmorSets,
+  }
+
+  commit({
+    ...db,
+    chars: db.chars.map((c) =>
+      c.id === charId
+        ? {
+            ...c,
+            cls: sub.cls,
+            level: sub.level,
+            slots: sub.slots,
+            extraWeaponSets: sub.extraWeaponSets,
+            extraArmorSets: sub.extraArmorSets,
+            subs: c.subs.map((s) => (s.id === subId ? бывшаяОснова : s)),
+          }
+        : c,
+    ),
+  })
+  return true
+}
+
+/**
  * Добавляет пустой набор оружия и возвращает его номер.
  *
  * Номер — тот же, что ждёт Branch.weaponSet: 1 у второго набора, 2 у
