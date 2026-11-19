@@ -59,6 +59,7 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
             <button
               type="button"
               className={фильтр === 'все' ? 'on' : ''}
+              data-label="Все"
               onClick={() => выбратьФильтр('все')}
             >
               Все
@@ -68,6 +69,7 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
                 key={a.key}
                 type="button"
                 className={фильтр === a.key ? 'on' : ''}
+                data-label={a.label}
                 onClick={() => выбратьФильтр(a.key)}
               >
                 {a.label}
@@ -80,6 +82,7 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
                 key={в.key}
                 type="button"
                 className={вид === в.key ? 'on' : ''}
+                data-label={в.label}
                 title={в.подсказка}
                 onClick={() => выбратьВид(в.key)}
               >

@@ -196,7 +196,12 @@ export function GoalsView({ catalog }: { catalog: CatalogApi }) {
         <div className="view-actions">
           <div className="segmented" role="group" aria-label="Срез">
             {СРЕЗЫ.map((с) => (
-              <button key={с.key} className={срез === с.key ? 'on' : ''} onClick={() => setСрез(с.key)}>
+              <button
+                key={с.key}
+                className={срез === с.key ? 'on' : ''}
+                data-label={с.подпись}
+                onClick={() => setСрез(с.key)}
+              >
                 {с.подпись}
               </button>
             ))}

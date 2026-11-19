@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="dark light" />
     <meta
       name="description"
       content="Трекер экипировки пати, общей казны и хотелок для Lineage 2"
@@ -26,7 +26,7 @@
       (function () {
         try {
           var v = localStorage.getItem('pp:palette')
-          if (v && ['gold', 'blood', 'emerald', 'ice', 'amethyst', 'coal'].indexOf(v) !== -1) {
+          if (v && ['gold', 'blood', 'emerald', 'ice', 'amethyst', 'coal', 'light', 'graphite'].indexOf(v) !== -1) {
             document.documentElement.dataset.palette = v
           }
         } catch (e) {

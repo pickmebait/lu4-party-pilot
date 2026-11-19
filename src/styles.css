@@ -21,6 +21,29 @@
   /* Подложка логотипа и акцентные плашки. */
   --accent-deep: #2a2412;
   --accent-line: #4a3f1c;
+  /* Текст на акцентной заливке: на золоте он тёмный, на синем — белый. */
+  --on-accent: #10131b;
+  /*
+   * Блик и затемнение поверх палитры. На тёмной теме подсветка белая, на
+   * светлой — чёрная: иначе «стеклянные» полоски на белом фоне исчезают.
+   */
+  --lift: #fff;
+  --backdrop: rgba(6, 8, 13, 0.75);
+  /* Смысловые цвета статусов: один набор на все палитры, кроме светлой. */
+  --ok-text: #9ee7c0;
+  --ok-line: #23543c;
+  --ok-soft: rgba(60, 190, 120, 0.16);
+  --warn: #e0aa4c;
+  --warn-text: #e0a35e;
+  --warn-soft: rgba(224, 170, 76, 0.16);
+  --err-text: #ffb3b3;
+  --err-muted: #d98a8a;
+  --err-strong: #ff9d9d;
+  --err-line: #5a2a2a;
+  --err-deep: #3a1d1d;
+  --err-deep-hover: #4a2222;
+  --err-line-hover: #7a3535;
+  --err-pale: #ffd0d0;
   --radius: 10px;
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
 
@@ -142,6 +165,143 @@
   --accent-line: #563b17;
 }
 
+/*
+ * Светлая классика: белые карточки, графитовый текст и синий акцент.
+ *
+ * Это не «инверсия золота»: статусы и подложки здесь должны быть темнее
+ * фона, поэтому смысловые токены переопределены отдельно. Иначе красный
+ * var(--err-text) и зелёный var(--ok-text) на белом читались бы как бледные пятна.
+ */
+[data-palette='light'] {
+  color-scheme: light;
+  --bg: #f6f7f9;
+  --bg-2: #ffffff;
+  --bg-3: #eef1f5;
+  --line: #d7dce4;
+  --line-2: #bcc4d0;
+  --text: #1a1f28;
+  --muted: #616b7a;
+  --accent: #2f6feb;
+  --accent-2: #1d4ed8;
+  --ok: #2e8b57;
+  --err: #c62f2f;
+  --in: #2563eb;
+  --glow: #e8eef9;
+  --accent-deep: #e8efff;
+  --accent-line: #b9ccf3;
+  --on-accent: #ffffff;
+  --lift: #0b1220;
+  --backdrop: rgba(23, 30, 42, 0.42);
+  --warn: #b7791f;
+  --warn-text: #8a5a12;
+  --warn-soft: rgba(183, 121, 31, 0.14);
+  --ok-text: #176b3f;
+  --ok-line: #9ccfb3;
+  --ok-soft: rgba(46, 139, 87, 0.12);
+  --err-text: #a12626;
+  --err-muted: #9a5a5a;
+  --err-strong: #d14343;
+  --err-line: #e0b4b4;
+  --err-deep: #fbecec;
+  --err-deep-hover: #f7dcdc;
+  --err-line-hover: #c98a8a;
+  --err-pale: #7f1d1d;
+  --event-epic: #2f6fbf;
+  --event-siege: #7a4bbf;
+  --surface-deep: color-mix(in srgb, var(--bg) 88%, #000);
+  --shadow: 0 10px 30px rgba(20, 30, 60, 0.14);
+}
+
+/* Графит: чёрно-серые карточки и нейтральный светлый акцент. */
+[data-palette='graphite'] {
+  --bg: #101113;
+  --bg-2: #17191c;
+  --bg-3: #202327;
+  --line: #2e3237;
+  --line-2: #40454c;
+  --text: #e8eaed;
+  --muted: #9298a1;
+  --accent: #b9bec7;
+  --accent-2: #e3e6ea;
+  --ok: #66b27c;
+  --err: #de6b63;
+  --in: #8aa9d6;
+  --glow: #22252a;
+  --accent-deep: #26282c;
+  --accent-line: #4a4e55;
+  --on-accent: #14161a;
+}
+
+/*
+ * Светлая тема для цветных значков редкости и статусов.
+ *
+ * Эти цвета заданы не палитрой, а смыслом: редкость, бонус, эпический
+ * предмет. На тёмной подложке они светлые, на белой — должны стать
+ * темнее, иначе текст на плашке не читается.
+ */
+[data-palette='light'] .tag.grade.g-A {
+  border-color: #d9a3a3;
+  color: #a12626;
+}
+
+[data-palette='light'] .tag.grade.g-B {
+  border-color: #dcc58b;
+  color: #7a5a11;
+}
+
+[data-palette='light'] .tag.grade.g-C {
+  border-color: #a9c4dd;
+  color: #245b84;
+}
+
+[data-palette='light'] .tag.grade.g-D,
+[data-palette='light'] .tag.grade.g-NG {
+  border-color: #a9cdb7;
+  color: #176b3f;
+}
+
+[data-palette='light'] .tag.epic {
+  border-color: #c9b0e0;
+  background: #f3ecfb;
+  color: #633b8c;
+}
+
+[data-palette='light'] .chip.out {
+  border-color: #d8bce5;
+  background: #f6eefb;
+  color: #633b8c;
+}
+
+[data-palette='light'] .cell-effect.rare {
+  border-color: #c9b0e0;
+  background: #f3ecfb;
+  color: #633b8c;
+}
+
+[data-palette='light'] .cell-effect.bonus {
+  border-color: #d9c58d;
+  background: #fbf5e6;
+  color: #7a5a11;
+}
+
+[data-palette='light'] .chip.reject {
+  border-color: var(--err-line);
+}
+
+[data-palette='light'] .picker-row.in-app {
+  box-shadow: inset 2px 0 0 var(--ok);
+}
+
+/*
+ * Выбранная вкладка в светлой теме: --bg-3 почти сливается с белой
+ * карточкой, поэтому у выбранной кнопки мягкая синяя подложка. В тёмных
+ * палитрах такого контраста хватает и без отдельного правила.
+ */
+[data-palette='light'] .segmented button.on {
+  background: var(--accent-deep);
+  color: var(--accent-2);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -245,7 +405,7 @@ main {
   color: var(--accent);
 }
 
-/* Палитры: шесть кружков, у каждого три цвета самой палитры. */
+/* Палитры: у каждого кружка три цвета самой палитры. */
 .palettes {
   flex: none;
   display: flex;
@@ -419,13 +579,13 @@ main {
 }
 
 .sync-msg.ok {
-  border-color: #23543c;
-  color: #9ee7c0;
+  border-color: var(--ok-line);
+  color: var(--ok-text);
 }
 
 .sync-msg.err {
-  border-color: #5a2a2a;
-  color: #ffb3b3;
+  border-color: var(--err-line);
+  color: var(--err-text);
 }
 
 /*
@@ -583,13 +743,13 @@ main {
 }
 
 .party-role.master {
-  background: rgba(60, 190, 120, 0.16);
-  color: #7fe0ab;
+  background: var(--ok-soft);
+  color: var(--ok-text);
 }
 
 .party-role.char {
-  background: rgba(226, 178, 60, 0.16);
-  color: #f0cd7a;
+  background: var(--warn-soft);
+  color: var(--warn-text);
 }
 
 .party-panel {
@@ -844,7 +1004,7 @@ main {
   margin: 0 0 12px;
   padding: 8px 12px;
   border: 1px solid var(--line-2);
-  border-left: 3px solid var(--warn, #e2b23c);
+  border-left: 3px solid var(--warn);
   border-radius: 8px;
   background: var(--bg-3);
   font-size: 12px;
@@ -968,8 +1128,8 @@ main {
 }
 
 .btn.danger {
-  border-color: #5a2a2a;
-  color: #ffb3b3;
+  border-color: var(--err-line);
+  color: var(--err-text);
 }
 
 .btn.tiny {
@@ -999,8 +1159,8 @@ main {
 }
 
 .icon-btn.danger:hover {
-  color: #ff9d9d;
-  border-color: #5a2a2a;
+  color: var(--err-strong);
+  border-color: var(--err-line);
 }
 
 .icon-btn.tiny {
@@ -1050,6 +1210,24 @@ main {
   background: var(--bg-3);
   color: var(--accent-2);
   font-weight: 600;
+}
+
+/*
+ * Ширина кнопок в шапке раздела — по самому широкому состоянию.
+ *
+ * В выбранном состоянии подпись становится полужирной и кнопка чуть
+ * раздаётся; при переключении вкладок весь ряд прыгал. Невидимая копия
+ * подписи той же жирности резервирует место заранее, поэтому ширина не
+ * зависит от того, что выбрано сейчас.
+ */
+.view-head .segmented button::after {
+  content: attr(data-label);
+  display: block;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-weight: 600;
+  pointer-events: none;
 }
 
 /*
@@ -1175,7 +1353,7 @@ main {
  * приглушённая строка проскочила бы мимо взгляда.
  */
 .hint.err-hint {
-  color: #ffb3b3;
+  color: var(--err-text);
   margin: 4px 0 0;
 }
 
@@ -1435,8 +1613,8 @@ main {
   gap: 4px;
   min-height: 25px;
   padding: 4px 7px;
-  background: color-mix(in srgb, #fff 3%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, #fff 5.5%, transparent);
+  background: color-mix(in srgb, var(--lift) 3%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--lift) 5.5%, transparent);
 }
 
 /*
@@ -1458,7 +1636,7 @@ main {
   padding: 1px 5px;
   border-radius: 999px;
   background: var(--accent);
-  color: #17130a;
+  color: var(--on-accent);
   font-size: 7.5px;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -1687,7 +1865,7 @@ main {
  * относится: он выглядит как назначенный прайм, только без часов.
  */
 .cal-plan.none {
-  border-top-color: color-mix(in srgb, #fff 8%, transparent);
+  border-top-color: color-mix(in srgb, var(--lift) 8%, transparent);
   background: transparent;
 }
 
@@ -2572,9 +2750,9 @@ main {
  */
 .chip.own {
   flex: none;
-  color: #7fe0ab;
-  background: rgba(60, 190, 120, 0.16);
-  border-color: rgba(60, 190, 120, 0.4);
+  color: var(--ok-text);
+  background: var(--ok-soft);
+  border-color: color-mix(in srgb, var(--ok) 40%, transparent);
 }
 
 /*
@@ -2667,9 +2845,9 @@ main {
    привыкает к одному предупреждению. */
 .sub-del {
   background: none;
-  border: 1px solid #5a2a2a;
+  border: 1px solid var(--err-line);
   border-radius: 7px;
-  color: #ffb3b3;
+  color: var(--err-text);
   padding: 4px 7px;
   font: inherit;
   font-size: 12px;
@@ -2679,7 +2857,7 @@ main {
 }
 
 .sub-del:hover {
-  background: #3a1d1d;
+  background: var(--err-deep);
 }
 
 /* Вкладки занимают естественную ширину, а не равные доли: короткая «Осн.»
@@ -2825,9 +3003,9 @@ main {
 }
 
 .chip.pa.low {
-  color: #ffb3b3;
-  background: color-mix(in srgb, #5a2a2a 60%, transparent);
-  border-color: #5a2a2a;
+  color: var(--err-text);
+  background: color-mix(in srgb, var(--err-line) 60%, transparent);
+  border-color: var(--err-line);
 }
 
 /*
@@ -2859,7 +3037,7 @@ main {
 }
 
 .pa-edit-left.low {
-  color: #ffb3b3;
+  color: var(--err-text);
 }
 
 /*
@@ -3271,12 +3449,12 @@ main {
 
 /* Предмет, который уже есть в пати: полоска слева. */
 .picker-row.in-app {
-  box-shadow: inset 2px 0 0 #4c7a5a;
+  box-shadow: inset 2px 0 0 var(--ok-line);
 }
 
 .tag.in-app-mark {
-  border-color: #3f6b4c;
-  color: #93e0a8;
+  border-color: var(--ok-line);
+  color: var(--ok-text);
 }
 
 /* Кнопка-ссылка: сброс фильтров в пикере. */
@@ -3332,7 +3510,7 @@ main {
 .tag.grade.g-D,
 .tag.grade.g-NG {
   border-color: #3f5a45;
-  color: #93e0a8;
+  color: var(--ok-text);
 }
 
 /* Эпическая бижутерия: метка о редкости, а не о слоте. */
@@ -3356,9 +3534,9 @@ main {
 }
 
 .chip.in {
-  border-color: #23543c;
-  color: #9ee7c0;
-  background: #0f2a1e;
+  border-color: var(--ok-line);
+  color: var(--ok-text);
+  background: var(--ok-soft);
 }
 
 .chip.out {
@@ -3499,18 +3677,18 @@ main {
   width: 22px;
   height: 22px;
   padding: 0;
-  border: 1px solid #5a2a2a;
+  border: 1px solid var(--err-line);
   border-radius: 6px;
-  background: #3a1d1d;
-  color: #ffb3b3;
+  background: var(--err-deep);
+  color: var(--err-text);
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 
 .set-del:hover:not(:disabled) {
-  background: #4a2222;
-  border-color: #7a3535;
-  color: #ffd0d0;
+  background: var(--err-deep-hover);
+  border-color: var(--err-line-hover);
+  color: var(--err-pale);
 }
 
 .set-del:disabled {
@@ -3628,7 +3806,7 @@ main {
 .cell-effect.bonus {
   border-color: #6b5a2d;
   background: #2a2414;
-  color: #e5c86a;
+  color: var(--warn-text);
 }
 
 /* Номер предмета: нужен складу и комплектам. В ячейке персонажа он уехал
@@ -3727,14 +3905,14 @@ main {
 }
 
 .cell-remove:hover {
-  color: #c0392b;
+  color: var(--err);
   background: var(--surface-deep);
 }
 
 /* Грейды предметов: чем выше, тем «ценнее» цвет рамки. */
 .g16,
 .g15 {
-  border-left-color: #c0392b;
+  border-left-color: var(--err);
 }
 .g14,
 .g13 {
@@ -3879,8 +4057,8 @@ main {
 }
 
 .set-card.complete {
-  border-color: #23543c;
-  background: linear-gradient(180deg, #10201a, var(--bg-2));
+  border-color: var(--ok-line);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ok) 12%, var(--bg-2)), var(--bg-2));
 }
 
 .set-card header {
@@ -3921,7 +4099,7 @@ main {
 }
 
 .set-card.complete .bar span {
-  background: linear-gradient(90deg, #1f6b46, var(--ok));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ok) 62%, #000), var(--ok));
 }
 
 .pieces {
@@ -3948,7 +4126,7 @@ main {
 }
 
 .pieces .stored {
-  color: #9fc4ee;
+  color: color-mix(in srgb, var(--in) 62%, var(--text));
 }
 
 .pieces .stored .tick {
@@ -3999,7 +4177,7 @@ main {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(6, 8, 13, 0.75);
+  background: var(--backdrop);
   display: grid;
   place-items: center;
   z-index: 100;
@@ -4185,7 +4363,7 @@ main {
   padding: 0 4px;
   border-radius: 8px;
   background: var(--accent);
-  color: #10131b;
+  color: var(--on-accent);
   font-size: 10px;
   font-weight: 700;
   line-height: 1;
@@ -4375,7 +4553,7 @@ main {
 .picker-row.chosen .picker-check {
   border-color: var(--accent);
   background: var(--accent);
-  color: #10131b;
+  color: var(--on-accent);
 }
 
 .picker-main {
@@ -4527,7 +4705,7 @@ main {
 }
 
 .picker-effect.epic .picker-effect-name {
-  color: #d8b45c;
+  color: var(--accent-2);
 }
 
 .picker-effect.enchant .picker-effect-name {
@@ -4610,7 +4788,7 @@ main {
   display: inline-grid;
   place-items: center;
   border-radius: 3px;
-  background: #1b2130;
+  background: var(--bg-3);
   border: 1px solid var(--line-2);
   color: var(--muted);
   font-weight: 700;
@@ -5176,12 +5354,12 @@ main {
 }
 
 .cal-attend-bar > .attend-ok {
-  background: linear-gradient(90deg, #2f9d68, var(--ok));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ok) 72%, #000), var(--ok));
 }
 
 .cal-attend-bar > .attend-absent {
-  /* Тот же #ffb3b3, что и у имён в «Отсутствуют»: полоса не вводит новый красный. */
-  background: #ffb3b3;
+  /* Тот же var(--err-text), что и у имён в «Отсутствуют»: полоса не вводит новый красный. */
+  background: var(--err-text);
 }
 
 .cal-big .cal-away {
@@ -5645,7 +5823,7 @@ main {
    * и у неё есть верхний блик, как у жёлоба.
    */
   --tl-track: color-mix(in srgb, var(--line-2) 78%, var(--bg-3));
-  --tl-track-edge: color-mix(in srgb, #fff 7%, transparent);
+  --tl-track-edge: color-mix(in srgb, var(--lift) 7%, transparent);
   --tl-tick: color-mix(in srgb, var(--muted) 60%, transparent);
   --tl-tick-text: color-mix(in srgb, var(--muted) 90%, transparent);
   position: relative;
@@ -5669,7 +5847,7 @@ main {
  */
 .sum-tl.day-off {
   --tl-track: color-mix(in srgb, var(--line-2) 68%, var(--surface-deep));
-  --tl-track-edge: color-mix(in srgb, #fff 10%, transparent);
+  --tl-track-edge: color-mix(in srgb, var(--lift) 10%, transparent);
   --tl-tick: color-mix(in srgb, var(--muted) 55%, transparent);
 }
 
@@ -5841,12 +6019,12 @@ main {
 }
 
 .sum-attend-bar > .attend-ok {
-  background: linear-gradient(90deg, #2f9d68, var(--ok));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ok) 72%, #000), var(--ok));
 }
 
 .sum-attend-bar > .attend-absent {
-  /* Тот же #ffb3b3, что и у имён в «Отсутствуют»: полоса не вводит новый красный. */
-  background: #ffb3b3;
+  /* Тот же var(--err-text), что и у имён в «Отсутствуют»: полоса не вводит новый красный. */
+  background: var(--err-text);
 }
 
 /* Пришедшие — чипами: их большинство, и полные строки на каждого растягивали
@@ -5919,7 +6097,7 @@ main {
 }
 
 .sum-block-bad {
-  border-color: color-mix(in srgb, #ff9d9d 26%, var(--line));
+  border-color: color-mix(in srgb, var(--err-strong) 26%, var(--line));
 }
 
 .sum-block-ok {
@@ -5946,7 +6124,7 @@ main {
 }
 
 .sum-block-bad .sum-title::before {
-  background: #ff9d9d;
+  background: var(--err-strong);
 }
 
 .sum-block-ok .sum-title::before {
@@ -5968,8 +6146,8 @@ main {
 }
 
 .sum-block-bad .sum-count {
-  background: color-mix(in srgb, #ff9d9d 16%, transparent);
-  color: #ffb3b3;
+  background: color-mix(in srgb, var(--err-strong) 16%, transparent);
+  color: var(--err-text);
 }
 
 .sum-block-ok .sum-count {
@@ -5998,7 +6176,7 @@ main {
 }
 
 .sum-block-bad .sum-who > span:first-child {
-  color: #ffb3b3;
+  color: var(--err-text);
 }
 
 /* Ник и подпись под ним одной группой: без группы «профессия · уровень»
@@ -6164,7 +6342,7 @@ main {
   min-width: 0;
   margin-top: auto;
   overflow: hidden;
-  color: #ffb3b3;
+  color: var(--err-text);
   font-size: 9px;
   line-height: 1.2;
 }
@@ -6178,7 +6356,7 @@ main {
 }
 
 .cal-away-head {
-  color: #d98a8a;
+  color: var(--err-muted);
   font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -6210,10 +6388,10 @@ main {
   flex: none;
   align-self: center;
   padding: 1px 4px;
-  border: 1px solid rgba(239, 95, 95, 0.25);
+  border: 1px solid color-mix(in srgb, var(--err) 25%, transparent);
   border-radius: 999px;
-  background: rgba(239, 95, 95, 0.14);
-  color: #ffb3b3;
+  background: color-mix(in srgb, var(--err) 14%, transparent);
+  color: var(--err-text);
   font-size: 8px;
   font-weight: 800;
   line-height: 1.2;
@@ -6237,7 +6415,7 @@ main {
 
 .cal-away-name::after {
   content: ',';
-  color: #d98a8a;
+  color: var(--err-muted);
 }
 
 .cal-away-flow > .cal-away-name:last-child::after {
@@ -6254,8 +6432,8 @@ main {
   align-self: center;
   padding: 1px 4px;
   border-radius: 999px;
-  background: rgba(239, 95, 95, 0.14);
-  color: #ffb3b3;
+  background: color-mix(in srgb, var(--err) 14%, transparent);
+  color: var(--err-text);
   font-size: 8px;
   font-weight: 700;
   line-height: 1.2;
@@ -6360,21 +6538,21 @@ main {
 .cal-away-tip li {
   font-size: 11.5px;
   line-height: 1.35;
-  color: #ffb3b3;
+  color: var(--err-text);
 }
 
 .cal-legend .off::before {
   background: repeating-linear-gradient(
     135deg,
     var(--surface-deep) 0 2px,
-    color-mix(in srgb, #fff 16%, var(--surface-deep)) 2px 4px
+    color-mix(in srgb, var(--lift) 16%, var(--surface-deep)) 2px 4px
   );
   border-color: var(--line-2);
 }
 
 .cal-legend .away::before {
-  background: #5a2a2a;
-  border-color: #5a2a2a;
+  background: var(--err-line);
+  border-color: var(--err-line);
 }
 
 
@@ -6531,16 +6709,16 @@ main {
 }
 
 .sum-rows li.warn .sum-row-tail {
-  color: #e0a35e;
+  color: var(--warn-text);
 }
 
 /* Знак прироста заточки: плюс и минус видны сразу, без чтения всей строки. */
 .sum-row-tail .gain {
-  color: #6fcf97;
+  color: var(--ok-text);
 }
 
 .sum-row-tail .lose {
-  color: #e08a8a;
+  color: var(--err-muted);
 }
 
 /* Полоска занятых слотов между именем и цифрами. */
@@ -6799,11 +6977,11 @@ main {
 }
 
 .dash-warn-text {
-  color: var(--warn, #e0aa4c);
+  color: var(--warn);
 }
 
 .dash-bad-text {
-  color: #ffb3b3;
+  color: var(--err-text);
 }
 
 /* Сетки блоков: геройская часть, нижний ряд и история. */
@@ -6943,16 +7121,62 @@ main {
  */
 
 .dash-timeline {
+  --tl-shift: 0px;
   position: relative;
-  height: 46px;
+  height: calc(58px + var(--tl-shift));
   margin: 20px 2px 12px;
+}
+
+/*
+ * Подписи ивентов над осью. Ряды считает компонент: у событий, попавших на
+ * одно время, названия стоят друг над другом, а не поверх друг друга.
+ */
+.dash-tl-labels {
+  position: absolute;
+  inset: 0 0 auto;
+  height: var(--tl-shift);
+}
+
+.dash-tl-label {
+  position: absolute;
+  max-width: 100%;
+  overflow: hidden;
+  transform: translateX(-50%);
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-tl-label.start {
+  transform: none;
+}
+
+.dash-tl-label.end {
+  transform: translateX(-100%);
+}
+
+.dash-tl-label.kind-epic {
+  color: var(--event-epic);
+}
+
+.dash-tl-label.kind-siege {
+  color: var(--event-siege);
+}
+
+.dash-tl-label > span {
+  color: var(--muted);
+  font-size: 8.5px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
 }
 
 .dash-tl-track {
   position: absolute;
   left: 0;
   right: 0;
-  top: 16px;
+  top: calc(16px + var(--tl-shift));
   height: 4px;
   border-radius: 999px;
   background: var(--bg-3);
@@ -6961,7 +7185,7 @@ main {
 
 .dash-tl-seg {
   position: absolute;
-  top: 12px;
+  top: calc(12px + var(--tl-shift));
   height: 12px;
   border-radius: 999px;
   background: linear-gradient(
@@ -6972,10 +7196,15 @@ main {
   box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
+/*
+ * «Сейчас» — вертикальная нить через полосу и подпись под часами. Подпись
+ * ушла вниз: сверху теперь ряды ивентов, и слово «сейчас» спорило бы с ними
+ * ровно в тот момент, когда событие начинается.
+ */
 .dash-tl-now {
   position: absolute;
-  top: 6px;
-  bottom: 8px;
+  top: calc(6px + var(--tl-shift));
+  height: 40px;
   width: 2px;
   margin-left: -1px;
   background: var(--text);
@@ -6984,7 +7213,7 @@ main {
 
 .dash-tl-now em {
   position: absolute;
-  top: -14px;
+  top: 40px;
   left: 50%;
   transform: translateX(-50%);
   font-style: normal;
@@ -6995,11 +7224,22 @@ main {
   white-space: nowrap;
 }
 
+.dash-tl-now.start em {
+  left: 0;
+  transform: none;
+}
+
+.dash-tl-now.end em {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
 .dash-tl-ticks {
   position: absolute;
   left: 0;
   right: 0;
-  top: 30px;
+  top: calc(30px + var(--tl-shift));
   height: 14px;
 }
 
@@ -7021,14 +7261,15 @@ main {
 
 /*
  * Событие на оси прайма: точка своего цвета, как на полосе вечера в
- * расписании. Стоит над полосой, чтобы не спорить с отметкой «сейчас».
+ * расписании. Стоит ровно на полосе прайма — её центр совпадает с центром
+ * точки, поэтому отметка больше не висит над линией.
  */
 .dash-tl-mark {
   position: absolute;
-  top: 1px;
+  top: calc(11px + var(--tl-shift));
   z-index: 1;
-  width: 9px;
-  height: 9px;
+  width: 14px;
+  height: 14px;
   transform: translateX(-50%);
   border: 2px solid var(--surface-lit);
   border-radius: 50%;
@@ -7067,7 +7308,7 @@ main {
 }
 
 .dash-free.bad b {
-  color: #ffb3b3;
+  color: var(--err-text);
 }
 
 .dash-free-names {
@@ -7089,8 +7330,8 @@ main {
 }
 
 .dash-pulse.warn {
-  background: var(--warn, #e0aa4c);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--warn, #e0aa4c) 16%, transparent);
+  background: var(--warn);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--warn) 16%, transparent);
 }
 
 .dash-muted-note {
@@ -7293,7 +7534,7 @@ main {
 }
 
 .dash-sw.eight {
-  background: color-mix(in srgb, var(--warn, #e0aa4c) 55%, var(--bg));
+  background: color-mix(in srgb, var(--warn) 55%, var(--bg));
 }
 
 .dash-sw.seven,
@@ -7385,13 +7626,13 @@ main {
 }
 
 .dash-day.partial {
-  border-color: color-mix(in srgb, var(--warn, #e0aa4c) 40%, var(--line));
+  border-color: color-mix(in srgb, var(--warn) 40%, var(--line));
 }
 
 .dash-day.partial .dash-day-bar {
   background: linear-gradient(
     90deg,
-    color-mix(in srgb, var(--warn, #e0aa4c) 55%, var(--accent)),
+    color-mix(in srgb, var(--warn) 55%, var(--accent)),
     var(--accent)
   );
 }
@@ -7460,7 +7701,7 @@ main {
 }
 
 .dash-att-row.warn {
-  border-left-color: var(--warn, #e0aa4c);
+  border-left-color: var(--warn);
 }
 
 .dash-att-ico {
@@ -7509,12 +7750,12 @@ main {
 
 .dash-pill.bad {
   background: color-mix(in srgb, var(--err) 22%, transparent);
-  color: #ffb3b3;
+  color: var(--err-text);
 }
 
 .dash-pill.warn {
-  background: color-mix(in srgb, var(--warn, #e0aa4c) 20%, transparent);
-  color: var(--warn, #e0aa4c);
+  background: color-mix(in srgb, var(--warn) 20%, transparent);
+  color: var(--warn);
 }
 
 .dash-all-clear {
@@ -7536,8 +7777,8 @@ main {
 }
 
 .dash-all-clear.warn {
-  border-color: color-mix(in srgb, var(--warn, #e0aa4c) 30%, var(--line));
-  background: color-mix(in srgb, var(--warn, #e0aa4c) 7%, transparent);
+  border-color: color-mix(in srgb, var(--warn) 30%, var(--line));
+  background: color-mix(in srgb, var(--warn) 7%, transparent);
 }
 
 /* --------------------------------------------------------- кто в пати */
@@ -7734,8 +7975,8 @@ main {
 }
 
 .dash-cal-cell.eight {
-  border-color: color-mix(in srgb, var(--warn, #e0aa4c) 32%, var(--line));
-  background: color-mix(in srgb, var(--warn, #e0aa4c) 18%, var(--bg-2));
+  border-color: color-mix(in srgb, var(--warn) 32%, var(--line));
+  background: color-mix(in srgb, var(--warn) 18%, var(--bg-2));
 }
 
 .dash-cal-cell.seven {
@@ -7816,7 +8057,7 @@ main {
   font-size: 11px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: #ffb3b3;
+  color: var(--err-text);
 }
 
 .dash-miss-foot {
@@ -8236,9 +8477,9 @@ main {
 }
 
 .goal-card.done {
-  background: linear-gradient(180deg, #10201a, var(--bg-2));
-  border-color: #23543c;
-  border-left-color: #3f8f66;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ok) 12%, var(--bg-2)), var(--bg-2));
+  border-color: var(--ok-line);
+  border-left-color: var(--ok);
 }
 
 .goal-card.rejected {
@@ -8318,7 +8559,7 @@ main {
 }
 
 .goal-card.done .goal-bar > span {
-  background: linear-gradient(90deg, #3f8f66, #6fcf97);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ok) 62%, #000), var(--ok));
 }
 
 .goal-pct {
@@ -8425,7 +8666,7 @@ main {
 
 .chip.reject {
   border-color: #6a3a3a;
-  color: #e0a3a3;
+  color: var(--err-muted);
 }
 
 /* Широкая форма: пятнадцать предметов в узкой колонке превращаются в список

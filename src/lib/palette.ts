@@ -22,6 +22,8 @@ export const PALETTES: Palette[] = [
   { id: 'ice', name: 'Лёд', swatch: ['#08111a', '#3fa9d4', '#e2eff7'] },
   { id: 'amethyst', name: 'Аметист', swatch: ['#0f0a18', '#9a6bd4', '#ece5f7'] },
   { id: 'coal', name: 'Уголь', swatch: ['#0e0e0f', '#d98324', '#ecebe9'] },
+  { id: 'light', name: 'Светлая', swatch: ['#f6f7f9', '#2f6feb', '#1b1f27'] },
+  { id: 'graphite', name: 'Графит', swatch: ['#101113', '#b9bec7', '#e8eaed'] },
 ]
 
 export const DEFAULT_PALETTE = PALETTES[0].id

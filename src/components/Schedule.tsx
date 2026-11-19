@@ -327,6 +327,7 @@ export function ScheduleView() {
                 key={р.key}
                 type="button"
                 className={режим === р.key ? 'on' : ''}
+                data-label={р.label}
                 title={р.подсказка}
                 onClick={() => выбратьРежим(р.key)}
               >

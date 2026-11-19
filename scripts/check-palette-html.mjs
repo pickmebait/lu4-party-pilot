@@ -10,6 +10,7 @@ import { readFileSync } from 'node:fs'
 import { PALETTES } from '../src/lib/palette.ts'
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
+const css = readFileSync(new URL('../src/styles.css', import.meta.url), 'utf8')
 
 /** Идентификаторы, перечисленные во встроенном скрипте. */
 const скрипт = html.match(/localStorage\.getItem\('pp:palette'\)[\s\S]*?indexOf\(v\) !== -1/)
@@ -31,6 +32,19 @@ const забытые = настоящие.filter((id) => !перечислены
 if (лишние.length || забытые.length) {
   if (забытые.length) console.error('В index.html нет палитр:', забытые.join(', '))
   if (лишние.length) console.error('В index.html лишние палитры:', лишние.join(', '))
+  process.exit(1)
+}
+
+/*
+ * У каждой палитры, кроме золотой, должен быть свой блок цветов. Золотая
+ * живёт в :root, остальные — в [data-palette='…']; забытый блок выглядит
+ * как рабочая кнопка, которая ничего не меняет.
+ */
+const безЦветов = настоящие.filter(
+  (id) => id !== 'gold' && !css.includes(`[data-palette='${id}']`),
+)
+if (безЦветов.length) {
+  console.error('В styles.css нет блоков палитр:', безЦветов.join(', '))
   process.exit(1)
 }
 

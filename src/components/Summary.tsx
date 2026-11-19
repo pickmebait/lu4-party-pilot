@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Fragment, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useDb } from '@/lib/store'
 import {
   дниПраймов,
@@ -55,6 +55,10 @@ interface СобытиеОси {
   id: string
   kind: EventKind
   минута: number
+  /** Короткое имя для подписи над осью. */
+  name: string
+  /** Время начала на часах пользователя. */
+  время: string
   title: string
 }
 
@@ -299,6 +303,7 @@ export function SummaryView({
                 key={String(р.key)}
                 type="button"
                 className={режим === р.key ? 'on' : ''}
+                data-label={р.label}
                 onClick={() => выбрать(р.key)}
               >
                 {р.label}
@@ -417,6 +422,8 @@ function Штаб({
           минута:
             окно.from.minutes +
             dayShiftBetween(местноеОкно.from.key, окно.from.key) * 1440,
+          name: event.name,
+          время: formatMinutes(окно.from.minutes),
           title: eventTitle(event, часовойПояс, день),
         })
       }
@@ -1497,8 +1504,75 @@ function ОсьПрайма({
     })
   }
 
+  const позицияСобытия = (минута: number) => ((минута - начало) / длина) * 100
+
+  /*
+   * Подписи событий раскладываются по рядам, как в расписании, но ещё и с
+   * проверкой на наложение: у Core и Orfen время совпадает, и две подписи в
+   * одну строку превратились бы в кашу. Ширину оцениваем по числу знаков —
+   * настоящую здесь не измерить до отрисовки, а запас в пару процентов
+   * надёжнее, чем тесно прижатые слова.
+   */
+  const подписи: {
+    событие: СобытиеОси
+    позиция: number
+    край: '' | 'start' | 'end'
+    ряд: number
+  }[] = []
+  const занятые: { from: number; to: number }[][] = []
+  for (const событие of [...близкие].sort((a, b) => a.минута - b.минута)) {
+    const позиция = позицияСобытия(событие.минута)
+    const ширинаПодписи = Math.min(
+      42,
+      3 + (событие.name.length + событие.время.length + 1) * 0.86,
+    )
+    const край =
+      позиция - ширинаПодписи / 2 < 0
+        ? 'start'
+        : позиция + ширинаПодписи / 2 > 100
+          ? 'end'
+          : ''
+    const from =
+      край === 'start'
+        ? позиция
+        : край === 'end'
+          ? позиция - ширинаПодписи
+          : позиция - ширинаПодписи / 2
+    const to =
+      край === 'start'
+        ? позиция + ширинаПодписи
+        : край === 'end'
+          ? позиция
+          : позиция + ширинаПодписи / 2
+    let ряд = 0
+    while ((занятые[ряд] ?? []).some((з) => from < з.to && to > з.from)) ряд++
+    if (!занятые[ряд]) занятые[ряд] = []
+    занятые[ряд].push({ from, to })
+    подписи.push({ событие, позиция, край, ряд })
+  }
+  /*
+   * Ряды подписей поднимают всю ось вниз: иначе названия ивентов налезли бы
+   * на полосу прайма. Без событий сдвиг нулевой, и ось остаётся компактной.
+   */
+  const сдвигОси = занятые.length === 0 ? 0 : занятые.length * 13 + 3
+  const стильОси = { '--tl-shift': `${сдвигОси}px` } as CSSProperties
+
   return (
-    <div className="dash-timeline" aria-hidden="true">
+    <div className="dash-timeline" style={стильОси} aria-hidden="true">
+      {подписи.length > 0 && (
+        <div className="dash-tl-labels">
+          {подписи.map(({ событие, позиция, край, ряд }) => (
+            <span
+              key={событие.id}
+              className={`dash-tl-label kind-${событие.kind}${край ? ` ${край}` : ''}`}
+              style={{ left: `${позиция}%`, top: `${ряд * 13}px` }}
+              title={событие.title}
+            >
+              {событие.name} <span>{событие.время}</span>
+            </span>
+          ))}
+        </div>
+      )}
       <div className="dash-tl-track" />
       <div
         className="dash-tl-seg"
@@ -1508,12 +1582,15 @@ function ОсьПрайма({
         <span
           key={с.id}
           className={`dash-tl-mark kind-${с.kind}`}
-          style={{ left: `${((с.минута - начало) / длина) * 100}%` }}
+          style={{ left: `${позицияСобытия(с.минута)}%` }}
           title={с.title}
         />
       ))}
       {сейчасВШкале && (
-        <div className="dash-tl-now" style={{ left: `${позицияСейчас}%` }}>
+        <div
+          className={`dash-tl-now${позицияСейчас < 6 ? ' start' : позицияСейчас > 94 ? ' end' : ''}`}
+          style={{ left: `${позицияСейчас}%` }}
+        >
           <em>сейчас</em>
         </div>
       )}
