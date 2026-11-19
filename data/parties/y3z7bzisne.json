@@ -45,7 +45,8 @@
       "hash": "45d64f26b0216d4de7ebb6d70087d629e0b52c6a06fc00da1de33046c788b461",
       "charId": "cmvjpcx8wdx14b9",
       "charName": "zarra",
-      "createdAt": "2026-10-22T15:35:18.275Z"
+      "createdAt": "2026-10-22T15:35:18.275Z",
+      "lastUsedAt": "2026-11-19T12:46:35.775Z"
     },
     {
       "id": "sakgev6h3n",
@@ -73,8 +74,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-19T08:33:01.055Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-11-19T12:46:35.775Z",
+    "updatedBy": "zarra",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1592,10 +1593,15 @@
         "affil": "roster",
         "slots": {
           "rhand": [
-            null
+            {
+              "itemId": 35518
+            }
           ],
           "lhand": [
-            null
+            {
+              "itemId": 35518,
+              "spans": true
+            }
           ],
           "head": [
             null
