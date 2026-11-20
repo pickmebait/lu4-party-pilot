@@ -74,8 +74,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-19T12:49:50.895Z",
-    "updatedBy": "Zarra",
+    "updatedAt": "2026-11-20T09:16:44.875Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -2271,6 +2271,22 @@
         "создатель": "Мастер",
         "note": "нужны рецы, куски и точки",
         "rejected": false
+      },
+      {
+        "id": "gmworlu2g1",
+        "items": [
+          {
+            "itemId": 893,
+            "mod": 3,
+            "rare": true,
+            "count": 1,
+            "готово": false
+          }
+        ],
+        "priority": 2,
+        "seeker": "Мастер",
+        "forCharId": "cmvjobl1z1pc1lm",
+        "создатель": "Мастер"
       }
     ],
     "sets": [],
