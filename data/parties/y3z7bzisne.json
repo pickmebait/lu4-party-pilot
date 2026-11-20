@@ -60,7 +60,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-20T09:16:44.875Z",
+    "updatedAt": "2026-11-20T22:19:04.360Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -878,202 +878,6 @@
         "pa": {
           "from": "2026-09-24",
           "days": 100
-        }
-      },
-      {
-        "id": "cmvjpah777383dy",
-        "name": "Nocturnal",
-        "cls": "Shillien Elder",
-        "level": 75,
-        "affil": "roster",
-        "slots": {
-          "rhand": [
-            {
-              "itemId": 7889,
-              "mod": 6,
-              "sa": "Acumen"
-            }
-          ],
-          "lhand": [
-            {
-              "itemId": 110
-            }
-          ],
-          "head": [
-            {
-              "itemId": 2419
-            }
-          ],
-          "chest": [
-            {
-              "itemId": 2409
-            }
-          ],
-          "legs": [
-            {
-              "itemId": 2409,
-              "spans": true
-            }
-          ],
-          "gloves": [
-            {
-              "itemId": 5776
-            }
-          ],
-          "feet": [
-            {
-              "itemId": 5788
-            }
-          ],
-          "neck": [
-            {
-              "itemId": 924,
-              "mod": 1
-            }
-          ],
-          "ear": [
-            {
-              "itemId": 855,
-              "mod": 5
-            },
-            {
-              "itemId": 855,
-              "mod": 5
-            }
-          ],
-          "ring": [
-            {
-              "itemId": 895,
-              "mod": 5
-            },
-            {
-              "itemId": 895,
-              "mod": 5
-            }
-          ]
-        },
-        "contacts": {
-          "realName": "Мишель",
-          "telegram": "@lutial"
-        },
-        "subUnlocked": true,
-        "subs": [
-          {
-            "id": "smvjpzw0d2zknj3",
-            "cls": "Bounty Hunter",
-            "level": 46,
-            "slots": {
-              "rhand": [
-                {
-                  "itemId": 34933,
-                  "mod": 4
-                }
-              ],
-              "lhand": [
-                {
-                  "itemId": 34933,
-                  "mod": 4,
-                  "spans": true
-                }
-              ],
-              "head": [
-                {
-                  "itemId": 517
-                }
-              ],
-              "chest": [
-                {
-                  "itemId": 398
-                }
-              ],
-              "legs": [
-                {
-                  "itemId": 418
-                }
-              ],
-              "gloves": [
-                {
-                  "itemId": 2455
-                }
-              ],
-              "feet": [
-                {
-                  "itemId": 2431
-                }
-              ],
-              "neck": [
-                {
-                  "itemId": 119
-                }
-              ],
-              "ear": [
-                {
-                  "itemId": 855,
-                  "mod": 5
-                },
-                {
-                  "itemId": 855,
-                  "mod": 5
-                }
-              ],
-              "ring": [
-                {
-                  "itemId": 885
-                },
-                {
-                  "itemId": 885
-                }
-              ]
-            }
-          }
-        ],
-        "away": {
-          "2026-10-21": {
-            "whole": true
-          },
-          "2026-10-15": {
-            "whole": true
-          },
-          "2026-11-04": {
-            "whole": true
-          },
-          "2026-11-05": {
-            "whole": true
-          },
-          "2026-11-06": {
-            "whole": true
-          },
-          "2026-11-07": {
-            "whole": true
-          },
-          "2026-11-08": {
-            "whole": true
-          },
-          "2026-11-09": {
-            "whole": true
-          },
-          "2026-11-10": {
-            "whole": true
-          },
-          "2026-11-11": {
-            "whole": true
-          },
-          "2026-11-12": {
-            "whole": true
-          },
-          "2026-11-13": {
-            "whole": true
-          },
-          "2026-11-14": {
-            "whole": true
-          },
-          "2026-11-15": {
-            "whole": true
-          }
-        },
-        "pa": {
-          "from": "2026-10-09",
-          "days": 30
         }
       },
       {
@@ -2272,7 +2076,8 @@
         "priority": 2,
         "seeker": "Мастер",
         "forCharId": "cmvjobl1z1pc1lm",
-        "создатель": "Мастер"
+        "создатель": "Мастер",
+        "rejected": false
       }
     ],
     "sets": [],
