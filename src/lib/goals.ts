@@ -33,6 +33,15 @@ export interface ЦельПредмет {
    * Печати +14» — разные цели, и вторая сильно дороже.
    */
   mod?: number
+  /**
+   * Выбранный SA-эффект. Пусто — «любой»: цель закроет вещь с любым SA.
+   *
+   * Как и заточка, это часть требования: «Меч с Haste» и «Меч с Critical
+   * Damage» — разные вещи, хотя itemId у них один.
+   */
+  sa?: string
+  /** Нужен ли именно редкий вариант вещи. */
+  rare?: boolean
   count: number
   /** Добыт ли именно этот предмет. */
   готово: boolean
@@ -127,10 +136,19 @@ function нормальныйПредмет(
   return {
     itemId,
     mod: Number.isFinite(mod) && mod > 0 ? Math.min(MAX_MOD, mod) : undefined,
+    sa: нормальныйSA(п.sa),
+    rare: п.rare === true || undefined,
     count: Math.max(1, Math.trunc(Number(п.count)) || 1),
     готово: готово || п.готово === true,
     готовоAt: готовоAt ?? (typeof п.готовоAt === 'string' ? п.готовоAt : undefined),
   }
+}
+
+/** SA из чего угодно: пустая строка и мусор значат «любой». */
+function нормальныйSA(сырое: unknown): string | undefined {
+  if (typeof сырое !== 'string') return undefined
+  const sa = сырое.trim()
+  return sa || undefined
 }
 
 function приоритет(сырое: unknown): 1 | 2 | 3 {
@@ -141,10 +159,11 @@ function приоритет(сырое: unknown): 1 | 2 | 3 {
 /**
  * Пересобрать предметы цели после правки.
  *
- * Требование цели — это пара «предмет + заточка». Если она не изменилась,
- * отметка «добыто» и её дата переносятся, даже когда предмет переехал в
- * списке. Изменённая заточка — уже другое требование: +14 не закрывает +15,
- * поэтому такой предмет начинается недобытым.
+ * Требование цели — это «предмет + заточка + SA + редкий вариант». Если оно
+ * не изменилось, отметка «добыто» и её дата переносятся, даже когда предмет
+ * переехал в списке. Изменённая заточка — уже другое требование: +14 не
+ * закрывает +15. То же с SA и редким эффектом: вещь с Haste не закрывает
+ * цель, где нужен Critical Damage.
  *
  * Старые записи расходуются по одной. В цели может лежать один и тот же
  * предмет дважды — например, две пары перчаток, — и одна отметка не должна
@@ -152,7 +171,7 @@ function приоритет(сырое: unknown): 1 | 2 | 3 {
  */
 export function предметыПослеПравки(
   старые: ЦельПредмет[],
-  новые: { itemId: number; mod?: number }[],
+  новые: { itemId: number; mod?: number; sa?: string; rare?: boolean }[],
 ): ЦельПредмет[] {
   const остаток = [...старые]
   const итог: ЦельПредмет[] = []
@@ -165,12 +184,18 @@ export function предметыПослеПравки(
       typeof новая.mod === 'number' && Number.isFinite(новая.mod) && новая.mod > 0
         ? Math.min(MAX_MOD, Math.trunc(новая.mod))
         : undefined
+    const sa = нормальныйSA(новая.sa)
+    const rare = новая.rare === true || undefined
 
     const найден = остаток.findIndex(
-      (п) => п.itemId === itemId && (п.mod ?? undefined) === mod,
+      (п) =>
+        п.itemId === itemId &&
+        (п.mod ?? undefined) === mod &&
+        нормальныйSA(п.sa) === sa &&
+        (п.rare === true || undefined) === rare,
     )
     if (найден >= 0) итог.push(остаток.splice(найден, 1)[0])
-    else итог.push({ itemId, mod, count: 1, готово: false })
+    else итог.push({ itemId, mod, sa, rare, count: 1, готово: false })
   }
 
   return итог

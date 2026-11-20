@@ -16,7 +16,7 @@ import {
 } from '@/lib/analytics'
 import { isMarked, toggleChecklist, useChecklistMarks } from '@/lib/checklistSession'
 import { eventsOn, eventTitle, eventWindow, type EventKind } from '@/lib/l2events'
-import { РОЛИ, РОЛЬ_ПОДПИСЬ, roleOfClass } from '@/lib/roles'
+import { РОЛИ, РОЛЬ_ПОДПИСЬ, roleOfBranch, roleOfClass } from '@/lib/roles'
 import {
   ДНИ_НЕДЕЛИ,
   addDays,
@@ -38,8 +38,8 @@ import {
   wallTimeAt,
   type WallTime,
 } from '@/lib/timezone'
-import { AFFILIATIONS, affiliationOrder, type Char, type Db } from '@/types'
-import { plural } from '@/lib/util'
+import { AFFILIATIONS, MAX_SUBS, affiliationOrder, type Char, type Db } from '@/types'
+import { formatAgo, plural } from '@/lib/util'
 
 /**
  * Режимы сводки.
@@ -78,6 +78,9 @@ const РЕЖИМЫ: { key: Режим; label: string }[] = [
  * и он должен переживать переключение вкладок.
  */
 let выбранныйРежим: Режим = 'сегодня'
+
+/** Ветка классов в «Кто в пати»: null — основа, 0…2 — саб по порядку. */
+let выбраннаяВетка: number | null = null
 
 /* --------------------------------------------------------------- мелочи */
 
@@ -376,6 +379,12 @@ function Штаб({
 }) {
   useChecklistMarks()
 
+  const [ветка, setВетка] = useState<number | null>(выбраннаяВетка)
+  const выбратьВетку = (новая: number | null) => {
+    выбраннаяВетка = новая
+    setВетка(новая)
+  }
+
   const всего = db.chars.length
   const всегоОсновных = основные.length
   const составПоМестам = AFFILIATIONS.map((a) => ({
@@ -474,9 +483,19 @@ function Штаб({
   const готово = отметки.filter((п) => isMarked(п.id)).length
   const прогресс = отметки.length ? Math.round((готово / отметки.length) * 100) : 0
 
+  /*
+   * Ветка — не саб конкретного человека: у каждого свои классы, а смотрим
+   * пати целиком. Поэтому номер ветки общий, а у кого такого саба нет, тот
+   * в этой ветке не участвует и из ролей выпадает.
+   */
+  const сабов = Math.max(
+    0,
+    ...db.chars.map((c) => Math.min(MAX_SUBS, c.subs.length)),
+  )
+  const активнаяВетка = ветка !== null && ветка < сабов ? ветка : null
   const роли = РОЛИ.map((роль) => ({
     роль,
-    люди: db.chars.filter((c) => roleOfClass(c.cls) === роль),
+    люди: db.chars.filter((c) => roleOfBranch(c, активнаяВетка) === роль),
   })).filter((г) => г.люди.length > 0)
 
   const поУровням = new Map<number, Char[]>()
@@ -518,12 +537,56 @@ function Штаб({
     ? основные.filter((c) => c.away?.[следующий.день]).map((c) => c.name || 'Без имени')
     : []
 
+  /*
+   * Роль не закрыта — про основной состав, а не про сабы: искать в первую
+   * очередь нужно человека на место, которое в основе пустует.
+   */
+  const нужныеРоли = ['танк', 'хил', 'бард', 'баф'] as const
+  const ролиОсновных = new Set(основные.map((c) => roleOfClass(c.cls)))
+  const нетРолей = нужныеРоли.filter((роль) => !ролиОсновных.has(роль))
+  const рольНеЗакрыта = основные.length > 0 && нетРолей.length > 0
+
+  const безПА = премиум.поПерсонажам.filter((п) => п.осталось === null)
+
+  /*
+   * Прайм на ближайшую неделю: окна должны быть, и все — одного времени.
+   * Сравниваем уже местные окна: при переходе на летнее время московские
+   * 21:00 могут стать разными часами, и это действительно рваный прайм.
+   */
+  const дни7 = daysAround(сегодня, 0, 6)
+  const праймы7 = дни7.filter((д) => primeOf(db.schedule, д).kind === 'окно')
+  const местныеОкна7: { label: string; key: string }[] = []
+  for (const день of праймы7) {
+    const состояние = primeOf(db.schedule, день)
+    if (состояние.kind !== 'окно') continue
+    const местное = userWindow(день, состояние.window, часовойПояс)
+    const сдвиг = dayShiftBetween(местное.from.key, местное.to.key)
+    местныеОкна7.push({
+      label: `${formatZoneWindow(местное)}${сдвиг ? ` (${сдвигДня(сдвиг)})` : ''}`,
+      key: `${местное.from.minutes}:${местное.to.minutes}:${сдвиг}`,
+    })
+  }
+  const разныеОкна7 = new Set(местныеОкна7.map((о) => о.key)).size > 1
+  const праймНеЗадан = праймы7.length === 0 || разныеОкна7
+  const окна7Словами = [...new Map(местныеОкна7.map((о) => [о.key, о.label])).values()]
+
+  const обновлено = Date.parse(db.updatedAt)
+  const днейБезОбновления = Number.isFinite(обновлено)
+    ? Math.floor((сейчас.getTime() - обновлено) / 86_400_000)
+    : null
+  const данныеСтары = днейБезОбновления !== null && днейБезОбновления > 7
+
   const поводов =
+    (рольНеЗакрыта ? 1 : 0) +
+    (праймНеЗадан ? 1 : 0) +
     (истекли.length > 0 ? 1 : 0) +
     (истекают.length > 0 ? 1 : 0) +
+    (безПА.length > 0 ? 1 : 0) +
+    (безУровня.length > 0 ? 1 : 0) +
     (безСвязи.length > 0 ? 1 : 0) +
     (пустые.length > 0 ? 1 : 0) +
-    (отсутствия14.length > 0 ? 1 : 0)
+    (отсутствия14.length > 0 ? 1 : 0) +
+    (данныеСтары ? 1 : 0)
 
   return (
     <>
@@ -799,11 +862,30 @@ function Штаб({
             <div className="dash-all-clear">
               <span className="dash-pulse" />
               <span>
-                <b>Всё в порядке.</b> ПА продлён, контакты заполнены, снаряжение собрано.
+                <b>Всё в порядке.</b> Роли закрыты, прайм назначен, ПА продлён, контакты
+                заполнены, снаряжение собрано.
               </span>
             </div>
           ) : (
             <div className="dash-att-list">
+              {рольНеЗакрыта && (
+                <Повод tag="Р" tone="bad" title="Роль не закрыта" count={нетРолей.length}>
+                  в основном составе нет:{' '}
+                  {нетРолей.map((роль) => РОЛЬ_ПОДПИСЬ[роль].toLowerCase()).join(', ')}.
+                </Повод>
+              )}
+              {праймНеЗадан && (
+                <Повод
+                  tag="ПР"
+                  tone={праймы7.length === 0 ? 'bad' : 'warn'}
+                  title="Прайм не задан"
+                  count={праймы7.length === 0 ? 7 : окна7Словами.length}
+                >
+                  {праймы7.length === 0
+                    ? 'на ближайшие 7 дней окна не назначены — составу не на что ориентироваться.'
+                    : `окна разного времени: ${окна7Словами.join(', ')}.`}
+                </Повод>
+              )}
               {истекли.length > 0 && (
                 <Повод tag="ПА" tone="bad" title="Премиум истёк" count={истекли.length}>
                   {истекли.map((п) => п.имя).join(', ')} — без премиума; проверить, не мешает ли
@@ -815,6 +897,18 @@ function Штаб({
                   {истекают
                     .map((п) => `${п.имя} — ${срокСловами(п.осталось)}`)
                     .join(' · ')}
+                </Повод>
+              )}
+              {безПА.length > 0 && (
+                <Повод tag="ПА" tone="warn" title="ПА не указан" count={безПА.length}>
+                  {безПА.map((п) => п.имя).join(', ')} — не заполнена дата премиума, поэтому
+                  проверка срока таких людей пропускает.
+                </Повод>
+              )}
+              {безУровня.length > 0 && (
+                <Повод tag="УР" tone="warn" title="Не указан уровень" count={безУровня.length}>
+                  {безУровня.map((c) => c.name || 'Без имени').join(', ')} — уровень не
+                  заполнен, и средний уровень считается без них.
                 </Повод>
               )}
               {безСвязи.length > 0 && (
@@ -831,7 +925,6 @@ function Штаб({
                       const причины = [
                         !c.cls.trim() ? 'не задан класс' : '',
                         `${г?.занято ?? 0} из ${г?.всего ?? 0} слотов`,
-                        c.level > 0 ? '' : 'нет уровня',
                       ]
                         .filter(Boolean)
                         .join(', ')
@@ -850,6 +943,12 @@ function Штаб({
                   {отсутствия14
                     .map((п) => `${п.персонаж.name || 'Без имени'} — ${датыСловами(п.дни)}`)
                     .join(' · ')}
+                </Повод>
+              )}
+              {данныеСтары && (
+                <Повод tag="БД" tone="warn" title="Данные давно не обновлялись" count={1}>
+                  последнее изменение — {formatAgo(db.updatedAt)}. Если правки были, возможно,
+                  синхронизация молча отвалилась.
                 </Повод>
               )}
             </div>
@@ -883,6 +982,37 @@ function Штаб({
             </span>
           </div>
 
+          {/* Ветки те же, что у карточки персонажа, но переключают всю пати:
+              так видно, какими ролями она закроется на сабах. */}
+          {сабов > 0 && (
+            <div className="segmented sub-tabs dash-role-tabs" role="group" aria-label="Ветка классов">
+              <button
+                type="button"
+                className={активнаяВетка === null ? 'on' : ''}
+                title="Основные профессии"
+                onClick={() => выбратьВетку(null)}
+              >
+                Осн.
+              </button>
+              {Array.from({ length: сабов }, (_, i) => {
+                const классы = db.chars
+                  .map((c) => c.subs[i]?.cls)
+                  .filter((cls): cls is string => !!cls)
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    className={активнаяВетка === i ? 'on' : ''}
+                    title={классы.length ? `Саб-классы: ${классы.join(', ')}` : `Саб-класс ${i + 1}`}
+                    onClick={() => выбратьВетку(i)}
+                  >
+                    Саб {i + 1}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
           <div className="dash-affil-bar">
             {составПоМестам.map((м) => (
               <i
@@ -910,7 +1040,7 @@ function Штаб({
                   !люди[0].cls.trim() &&
                   (готовность.поПерсонажам.find((п) => п.charId === люди[0].id)?.занято ?? 0) === 0
                 return (
-                  <div key={роль} className={`dash-role${роль === 'без роли' ? ' empty' : ''}`}>
+                  <div key={роль} className={`dash-role${роль === 'без роли' ? ' norole' : ''}`}>
                     <b>{люди.length}</b>
                     <span>{РОЛЬ_ПОДПИСЬ[роль]}</span>
                     <small title={люди.map((c) => c.name || 'Без имени').join(', ')}>

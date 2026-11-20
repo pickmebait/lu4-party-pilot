@@ -1807,8 +1807,8 @@ export interface ПравкаЦели {
   priority: Goal['priority']
   forCharId?: string
   note?: string
-  /** Новый набор требований: предмет и желаемая заточка. */
-  items: { itemId: number; mod?: number }[]
+  /** Новый набор требований: предмет, заточка и выбранные эффекты. */
+  items: { itemId: number; mod?: number; sa?: string; rare?: boolean }[]
 }
 
 /**

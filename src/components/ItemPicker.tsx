@@ -32,12 +32,39 @@ const SEARCH_LIMIT = 5000
  */
 export const МНОЖЕСТВЕННЫЙ_ПОТОЛОК = 15
 
+/** Фильтры пикера. Слот задаёт свои, но целям нужен выбор раздела. */
+export interface PickerFilters {
+  type?: 'weapon' | 'armor' | 'jewelry'
+  grade?: boolean
+  itemType?: boolean
+  /**
+   * Показывать раздел «Оружие / Броня / Бижутерия».
+   *
+   * В слоте персонажа раздел уже известен, а цель может быть на любую вещь.
+   * Без этого фильтра список целей пришлось бы листать целиком.
+   */
+  category?: boolean
+}
+
+/** Выбранная вещь вместе с её эффектами. Так цель помнит не только id. */
+export interface PickerChoice extends ItemEffectChoice {
+  itemId: number
+}
+
+const РАЗДЕЛЫ = [
+  { value: 'weapon', label: 'Оружие' },
+  { value: 'armor', label: 'Броня' },
+  { value: 'jewelry', label: 'Бижутерия' },
+] as const
+
 interface Props {
   catalog: CatalogApi
   /** Слот экранировки: задаёт и то, что подходит, и какие фильтры показывать. */
   slot?: SlotDef
   /** Для мест без слота — казны и целей: просто ограничение по типу. */
   accepts?: (item: CatalogItem) => boolean
+  /** Фильтры для мест без слота: у целей это раздел и грейд. */
+  filters?: PickerFilters
   title?: string
   /**
    * Выбор предмета. Вторым аргументом приходят только выбранные свойства:
@@ -52,8 +79,8 @@ interface Props {
    * один заход перечисляет список: пятнадцать целей подряд выбирать по одному
    * и каждый раз открывать пикер заново — пятнадцать лишних кругов.
    */
-  multi?: number[]
-  onPickMany?: (itemIds: number[]) => void
+  multi?: PickerChoice[]
+  onPickMany?: (choices: PickerChoice[]) => void
   /** Подпись кнопки множественного выбора: при правке выбор заменяет список. */
   manyLabel?: string
   onClose: () => void
@@ -76,6 +103,7 @@ export function ItemPicker({
   catalog,
   slot,
   accepts,
+  filters: filtersProp,
   title,
   onPick,
   multi,
@@ -84,6 +112,7 @@ export function ItemPicker({
   onClose,
 }: Props) {
   const [q, setQ] = useState('')
+  const [category, setCategory] = useState<string | null>(null)
   const [type, setType] = useState<string | null>(null)
   const [itemType, setItemType] = useState<string | null>(null)
   const [grade, setGrade] = useState<string | null>(null)
@@ -95,21 +124,46 @@ export function ItemPicker({
 
   // Множественный выбор живёт здесь, а не у вызывающего: пикер открыт поверх
   // формы цели, и держать набор в её состоянии значило бы терять его при
-  // каждом перерисовывании формы.
-  const [отмечено, setОтмечено] = useState<number[]>(multi ?? [])
+  // каждом перерисовывании формы. Эффекты хранятся вместе с id: цель — это
+  // требование, и «любой меч» от «меча с Haste» отличается.
+  const [отмечено, setОтмечено] = useState<PickerChoice[]>(multi ?? [])
   const множественный = !!onPickMany
   const полный = множественный && отмечено.length >= МНОЖЕСТВЕННЫЙ_ПОТОЛОК
 
   const переключить = (id: number) => {
     setОтмечено((прежние) => {
-      if (прежние.includes(id)) return прежние.filter((x) => x !== id)
+      if (прежние.some((в) => в.itemId === id)) return прежние.filter((в) => в.itemId !== id)
       if (прежние.length >= МНОЖЕСТВЕННЫЙ_ПОТОЛОК) return прежние
-      return [...прежние, id]
+      return [...прежние, { itemId: id }]
+    })
+  }
+
+  /**
+   * Смена SA или редкого эффекта у выбранной вещи.
+   *
+   * Если вещь ещё не отмечена, она отмечается сама: человек уже сказал, что
+   * она нужна, — иначе выбор эффекта пропал бы вместе с неотмеченной строкой.
+   */
+  const изменитьЭффект = (id: number, правка: ItemEffectChoice) => {
+    setОтмечено((прежние) => {
+      const есть = прежние.some((в) => в.itemId === id)
+      if (!есть) {
+        if (прежние.length >= МНОЖЕСТВЕННЫЙ_ПОТОЛОК) return прежние
+        return [...прежние, { itemId: id, ...правка }]
+      }
+      return прежние.map((в) => (в.itemId === id ? { ...в, ...правка } : в))
     })
   }
 
   const acceptsFn = useMemo(() => accepts ?? slot?.accepts ?? (() => true), [accepts, slot])
-  const filters = slot?.filters ?? {}
+  const filters: PickerFilters = slot?.filters ?? filtersProp ?? {}
+  const выбратьРаздел = (значение: string | null) => {
+    setCategory(значение)
+    setType(null)
+    setItemType(null)
+    setPage(0)
+    listRef.current?.scrollTo({ top: 0 })
+  }
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -137,35 +191,54 @@ export function ItemPicker({
     [catalog, acceptsFn],
   )
 
+  /*
+   * В слоте раздел уже известен. У цели его выбирает человек: без этого
+   * «Тип оружия» показывался бы и для брони, а список оставался бы общим.
+   */
+  const показыватьКатегорию = filters.category === true
+  const типРаздела: 'weapon' | 'armor' | 'jewelry' | null = показыватьКатегорию
+    ? category === 'weapon' || category === 'armor' || category === 'jewelry'
+      ? category
+      : null
+    : (filters.type ?? null)
   const typeField =
-    filters.type === 'weapon' ? 'weaponType' : filters.type === 'armor' ? 'armorType' : filters.type === 'jewelry' ? 'jewelryType' : null
+    типРаздела === 'weapon'
+      ? 'weaponType'
+      : типРаздела === 'armor'
+        ? 'armorType'
+        : типРаздела === 'jewelry'
+          ? 'jewelryType'
+          : null
   const typeFilterLabel =
-    filters.type === 'weapon' || filters.type === 'armor' || filters.type === 'jewelry'
-      ? filters.type === 'weapon'
-        ? 'Тип оружия'
-        : filters.type === 'armor'
-          ? 'Тип брони'
-          : 'Тип бижутерии'
-      : 'Тип'
+    типРаздела === 'weapon'
+      ? 'Тип оружия'
+      : типРаздела === 'armor'
+        ? 'Тип брони'
+        : типРаздела === 'jewelry'
+          ? 'Тип бижутерии'
+          : 'Тип'
 
   const typeOptions = useMemo(() => {
-    if (filters.type === 'weapon') return WEAPON_TYPE_LABELS.map((v) => ({ value: v, label: v }))
-    if (filters.type === 'armor') return ARMOR_TYPE_OPTIONS.map((v) => ({ value: v.value, label: v.label }))
-    if (filters.type === 'jewelry') return JEWELRY_TYPE_OPTIONS.map((v) => ({ value: v.value, label: v.label }))
+    if (типРаздела === 'weapon') return WEAPON_TYPE_LABELS.map((v) => ({ value: v, label: v }))
+    if (типРаздела === 'armor') return ARMOR_TYPE_OPTIONS.map((v) => ({ value: v.value, label: v.label }))
+    if (типРаздела === 'jewelry') return JEWELRY_TYPE_OPTIONS.map((v) => ({ value: v.value, label: v.label }))
     return []
-  }, [filters.type])
+  }, [типРаздела])
 
   /**
    * Тип предмета брони: верх, низ, полные, шлем, перчатки, ботинки, щит,
-   * аксессуар. Показываем только если в слоте действительно есть больше
-   * одного типа: в слоте «Низ» отдельный фильтр был бы кнопкой с одним
+   * аксессуар. Показываем только если в выбранном разделе действительно есть
+   * больше одного типа: в слоте «Низ» отдельный фильтр был бы кнопкой с одним
    * значением.
    */
+  const показыватьТипПредметаПолей = filters.itemType || типРаздела === 'armor'
   const itemTypeOptions = useMemo(() => {
-    if (!filters.itemType) return []
-    const есть = new Set(pool.map((it) => it.armorItemType).filter(Boolean))
+    if (!показыватьТипПредметаПолей) return []
+    const есть = new Set(
+      pool.filter((it) => passesCategory(it, category)).map((it) => it.armorItemType).filter(Boolean),
+    )
     return ARMOR_ITEM_TYPE_OPTIONS.filter((o) => есть.has(o.value))
-  }, [filters.itemType, pool])
+  }, [показыватьТипПредметаПолей, category, pool])
 
   const показыватьТипПредмета = itemTypeOptions.length > 1
 
@@ -181,14 +254,19 @@ export function ItemPicker({
 
   const matches = (it: CatalogItem) =>
     acceptsFn(it) &&
+    passesCategory(it, category) &&
     passesType(it, typeField, type) &&
     passesItemType(it, itemType) &&
     passesGrade(it, grade)
+
+  const categoryCount = (value: string) =>
+    pool.filter((it) => passesCategory(it, value) && passesGrade(it, grade)).length
 
   /** Сколько предметов в слоте с указанным типом и выбранным грейдом. */
   const typeCount = (value: string) =>
     pool.filter(
       (it) =>
+        passesCategory(it, category) &&
         passesType(it, typeField, value) &&
         passesItemType(it, itemType) &&
         passesGrade(it, grade),
@@ -197,6 +275,7 @@ export function ItemPicker({
   const itemTypeCount = (value: string) =>
     pool.filter(
       (it) =>
+        passesCategory(it, category) &&
         passesType(it, typeField, type) &&
         passesItemType(it, value) &&
         passesGrade(it, grade),
@@ -205,10 +284,35 @@ export function ItemPicker({
   const gradeCount = (value: string) =>
     pool.filter(
       (it) =>
+        passesCategory(it, category) &&
         passesType(it, typeField, type) &&
         passesItemType(it, itemType) &&
         passesGrade(it, value),
     ).length
+
+  /*
+   * «Все» в каждой строке показывает, сколько останется, если снять именно
+   * этот фильтр. Иначе после выбора «Оружие» строка типов предлагала бы
+   * «все 769», хотя оружия в справочнике 440.
+   */
+  const typeTotal = pool.filter(
+    (it) =>
+      passesCategory(it, category) &&
+      passesItemType(it, itemType) &&
+      passesGrade(it, grade),
+  ).length
+  const itemTypeTotal = pool.filter(
+    (it) =>
+      passesCategory(it, category) &&
+      passesType(it, typeField, type) &&
+      passesGrade(it, grade),
+  ).length
+  const gradeTotal = pool.filter(
+    (it) =>
+      passesCategory(it, category) &&
+      passesType(it, typeField, type) &&
+      passesItemType(it, itemType),
+  ).length
 
   // С пустым поиском берём весь список слота по алфавиту. С поиском —
   // ранжированную выдачу справочника, она умеет искать по синонимам
@@ -216,11 +320,16 @@ export function ItemPicker({
   const query = q.trim()
   const results = useMemo(
     () => (query ? catalog.search(q, SEARCH_LIMIT) : pool).filter(matches),
-    [query, q, catalog, pool, acceptsFn, type, itemType, grade, typeField], // eslint-disable-line react-hooks/exhaustive-deps
+    [query, q, catalog, pool, acceptsFn, category, type, itemType, grade, typeField], // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const total = pool.length
-  const filtered = query.length > 0 || type !== null || itemType !== null || grade !== null
+  const filtered =
+    query.length > 0 ||
+    category !== null ||
+    type !== null ||
+    itemType !== null ||
+    grade !== null
 
   const pages = Math.max(1, Math.ceil(results.length / pageSize))
   const pageNo = Math.min(page, pages - 1)
@@ -245,6 +354,10 @@ export function ItemPicker({
    * и снять одно условие, не трогая остальные.
    */
   const активные: { key: string; label: string; clear: () => void }[] = []
+  if (category) {
+    const метка = РАЗДЕЛЫ.find((р) => р.value === category)?.label ?? category
+    активные.push({ key: 'category', label: `Раздел: ${метка}`, clear: () => выбратьРаздел(null) })
+  }
   if (type) {
     const метка = typeOptions.find((o) => o.value === type)?.label ?? type
     активные.push({ key: 'type', label: `${typeFilterLabel}: ${метка}`, clear: () => onType(null) })
@@ -256,6 +369,7 @@ export function ItemPicker({
   if (grade) активные.push({ key: 'grade', label: `Грейд: ${grade}`, clear: () => onGrade(null) })
 
   const сброситьВсё = () => {
+    setCategory(null)
     setType(null)
     setItemType(null)
     setGrade(null)
@@ -264,7 +378,8 @@ export function ItemPicker({
     listRef.current?.scrollTo({ top: 0 })
   }
   const естьУсловия = q.length > 0 || активные.length > 0
-  const естьФильтры = показыватьТип || показыватьТипПредмета || !!filters.grade
+  const естьФильтры =
+    показыватьКатегорию || показыватьТип || показыватьТипПредмета || !!filters.grade
 
   const итог = filtered ? `Найдено ${results.length} из ${total}` : `Всего ${total}`
   const диапазон = results.length > 0 ? ` · ${from}–${to}` : ''
@@ -367,12 +482,22 @@ export function ItemPicker({
 
         {естьФильтры && (
           <div className={`filters${filtersOpen ? ' open' : ''}`}>
+            {показыватьКатегорию && (
+              <FilterRow
+                label="Раздел"
+                options={РАЗДЕЛЫ.map((р) => ({ value: р.value, label: р.label }))}
+                value={category}
+                total={total}
+                countFor={categoryCount}
+                onChange={выбратьРаздел}
+              />
+            )}
             {показыватьТип && (
               <FilterRow
                 label={typeFilterLabel}
                 options={typeOptions}
                 value={type}
-                total={total}
+                total={typeTotal}
                 countFor={typeCount}
                 onChange={onType}
               />
@@ -382,7 +507,7 @@ export function ItemPicker({
                 label="Тип предмета"
                 options={itemTypeOptions}
                 value={itemType}
-                total={total}
+                total={itemTypeTotal}
                 countFor={itemTypeCount}
                 onChange={onItemType}
               />
@@ -392,7 +517,7 @@ export function ItemPicker({
                 label="Грейд"
                 options={GRADE_OPTIONS.map((g) => ({ value: g, label: g }))}
                 value={grade}
-                total={total}
+                total={gradeTotal}
                 countFor={gradeCount}
                 onChange={onGrade}
               />
@@ -411,18 +536,27 @@ export function ItemPicker({
               </p>
             </div>
           )}
-          {shown.map((it) => (
-            <Row
-              key={it.id}
-              it={it}
-              inApp={catalog.knownIds.has(it.id)}
-              multi={множественный}
-              chosen={отмечено.includes(it.id)}
-              blocked={полный && !отмечено.includes(it.id)}
-              onPick={множественный ? переключить : onPick}
-              onClose={onClose}
-            />
-          ))}
+          {shown.map((it) => {
+            const choice = отмечено.find((в) => в.itemId === it.id)
+            return (
+              <Row
+                key={it.id}
+                it={it}
+                inApp={catalog.knownIds.has(it.id)}
+                multi={множественный}
+                chosen={!!choice}
+                effect={choice}
+                blocked={полный && !choice}
+                onPick={множественный ? переключить : onPick}
+                onEffect={
+                  множественный
+                    ? (правка) => изменитьЭффект(it.id, правка)
+                    : undefined
+                }
+                onClose={onClose}
+              />
+            )
+          })}
         </div>
 
         <footer className="picker-footer">
@@ -510,6 +644,23 @@ function jewelryTypeOf(it: CatalogItem): string | null {
   return null
 }
 
+function passesCategory(it: CatalogItem, value: string | null): boolean {
+  if (!value) return true
+  if (value === 'weapon') return it.slot === 'r_hand' || it.slot === 'l_hand'
+  if (value === 'armor') {
+    return (
+      it.slot === 'head' ||
+      it.slot === 'chest' ||
+      it.slot === 'legs' ||
+      it.slot === 'gloves' ||
+      it.slot === 'feet'
+    )
+  }
+  if (value === 'jewelry') return it.slot === 'neck' || it.slot === 'l_ear' || it.slot === 'l_ring'
+  // Неизвестный раздел не прячет вещь: лучше показать лишнее, чем потерять.
+  return true
+}
+
 function passesType(
   it: CatalogItem,
   field: 'weaponType' | 'armorType' | 'jewelryType' | null,
@@ -573,13 +724,26 @@ function FilterRow({
   )
 }
 
+/** Есть ли у вещи что выбирать: SA-варианты или редкий эффект. */
+export function hasEffectChoices(item?: CatalogItem | null): boolean {
+  if (!item) return false
+  const редкие = item.rareEffects?.length
+    ? item.rareEffects
+    : item.rareEffect
+      ? [item.rareEffect]
+      : []
+  return (item.saEffects?.length ?? 0) > 0 || редкие.length > 0
+}
+
 function Row({
   it,
   inApp,
   multi,
   chosen,
+  effect,
   blocked,
   onPick,
+  onEffect,
   onClose,
 }: {
   it: CatalogItem
@@ -588,9 +752,13 @@ function Row({
   /** Режим множественного выбора: строка не закрывает список. */
   multi?: boolean
   chosen?: boolean
+  /** Уже выбранные эффекты вещи в режиме списка. */
+  effect?: ItemEffectChoice
   /** Потолок выбора достигнут — строка гасится, но не исчезает. */
   blocked?: boolean
   onPick: (itemId: number, choice?: ItemEffectChoice) => void
+  /** Смена SA или редкого эффекта в режиме списка. */
+  onEffect?: (choice: ItemEffectChoice) => void
   onClose: () => void
 }) {
   const stats: string[] = []
@@ -606,8 +774,15 @@ function Row({
   if (it.fullbody) stats.push('цельное')
 
   const [effectsOpen, setEffectsOpen] = useState(false)
-  const [sa, setSa] = useState<string | null>(null)
-  const [rare, setRare] = useState(false)
+  const [localSa, setLocalSa] = useState<string | null>(null)
+  const [localRare, setLocalRare] = useState(false)
+  /*
+   * В режиме списка эффекты принадлежат вызывающему: он хранит их вместе с
+   * выбранным предметом. Иначе свёрнутая и снова раскрытая строка теряла бы
+   * выбор, а форма цели — то, что человек уже отметил.
+   */
+  const sa = multi ? (effect?.sa ?? null) : localSa
+  const rare = multi ? effect?.rare === true : localRare
   const редкие = it.rareEffects?.length
     ? it.rareEffects
     : it.rareEffect
@@ -622,13 +797,25 @@ function Row({
   /*
    * У оружия с SA или редким эффектом один клик по строке не надевает вещь:
    * сначала нужно выбрать эффект. Поэтому строка раскрывает выбор, а вещь
-   * надевается кнопкой «Выбрать». В множественном выборе (цели) свойства не
-   * нужны — там клик по-прежнему просто отмечает предмет.
+   * надевается кнопкой «Выбрать». В множественном выборе клик по-прежнему
+   * отмечает предмет, но эффекты тоже доступны — иначе цель не смогла бы
+   * потребовать конкретный SA.
    *
    * Бонус заточки и общий SA-бонус — справочные: они не мешают надеть вещь
    * одним кликом и просто показываются в раскрытом блоке.
    */
-  const выбираетЭффекты = !multi && ((it.saEffects?.length ?? 0) > 0 || редкие.length > 0)
+  const естьВыборЭффектов = hasEffectChoices(it)
+  const выбираетЭффекты = !multi && естьВыборЭффектов
+
+  const setSa = (имя: string | null) => {
+    if (multi) onEffect?.({ sa: имя ?? undefined, rare })
+    else setLocalSa(имя)
+  }
+
+  const setRare = (включён: boolean) => {
+    if (multi) onEffect?.({ sa: sa ?? undefined, rare: включён })
+    else setLocalRare(включён)
+  }
 
   const выбрать = () => {
     onPick(it.id, { sa: sa ?? undefined, rare: rare || undefined })
@@ -703,6 +890,18 @@ function Row({
                   {ARMOR_ITEM_TYPE_LABELS[it.armorItemType] ?? it.armorItemType}
                 </span>
               )}
+            {/* В списке видно, что уже выбрано: иначе после закрытия эффектов
+                пришлось бы открывать строку снова, чтобы вспомнить SA. */}
+            {multi && (sa || rare) && (
+              <span className="cell-effects">
+                {sa && <span className="cell-effect">{sa}</span>}
+                {rare && (
+                  <span className="cell-effect rare" title="Редкий эффект">
+                    R
+                  </span>
+                )}
+              </span>
+            )}
             {stats.length > 0 && (
               <span className="picker-stats">{stats.slice(0, 3).join(' · ')}</span>
             )}
@@ -727,14 +926,16 @@ function Row({
     </div>
     {effectsOpen && естьЭффекты && (
       <div className="picker-effects">
-        {выбираетЭффекты ? (
+        {естьВыборЭффектов ? (
           <>
             <EffectChoices item={it} sa={sa} rare={rare} onSa={setSa} onRare={setRare} />
-            <div className="picker-effects-actions">
-              <button className="btn primary" onClick={выбрать}>
-                Выбрать
-              </button>
-            </div>
+            {!multi && (
+              <div className="picker-effects-actions">
+                <button className="btn primary" onClick={выбрать}>
+                  Выбрать
+                </button>
+              </div>
+            )}
           </>
         ) : (
           <EffectDetails item={it} />
@@ -758,13 +959,23 @@ export function EffectChoices({
   rare,
   onSa,
   onRare,
+  group,
 }: {
   item: CatalogItem
   sa: string | null
   rare: boolean
   onSa: (name: string | null) => void
   onRare: (on: boolean) => void
+  /**
+   * Различает радиогруппы одинаковых вещей в одной форме.
+   *
+   * В цели один и тот же предмет может стоять дважды — две пары перчаток.
+   * Без метки у обеих строк было бы одно имя группы, и браузер считал бы их
+   * одним выбором, хотя это два разных требования.
+   */
+  group?: string
 }) {
+  const имяГруппы = `sa-${item.id}${group ? `-${group}` : ''}`
   const эффекты = item.saEffects ?? []
   const редкие = item.rareEffects?.length
     ? item.rareEffects
@@ -789,7 +1000,7 @@ export function EffectChoices({
           <label className="picker-choice">
             <input
               type="radio"
-              name={`sa-${item.id}`}
+              name={имяГруппы}
               checked={sa === null}
               onChange={() => onSa(null)}
             />
@@ -802,7 +1013,7 @@ export function EffectChoices({
               <label className="picker-choice" key={i}>
                 <input
                   type="radio"
-                  name={`sa-${item.id}`}
+                  name={имяГруппы}
                   checked={sa === имя}
                   onChange={() => onSa(имя || null)}
                 />

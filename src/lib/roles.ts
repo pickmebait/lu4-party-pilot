@@ -82,3 +82,19 @@ export function roleOfClass(cls: string | undefined): Роль {
   const ключ = normalize(cls ?? '')
   return РОЛИ_ПО_КЛАССУ[ключ] ?? 'без роли'
 }
+
+/**
+ * Роль персонажа в выбранной ветке.
+ *
+ * null — у персонажа нет такого саба, и в этой ветке его просто нет. Это не
+ * «без роли»: без роли значит «класс есть, но роли у него нет», а тут человек
+ * в ветке не участвует вовсе.
+ */
+export function roleOfBranch(
+  char: { cls: string; subs: { cls: string }[] },
+  branch: number | null,
+): Роль | null {
+  if (branch === null) return roleOfClass(char.cls)
+  const sub = char.subs[branch]
+  return sub ? roleOfClass(sub.cls) : null
+}

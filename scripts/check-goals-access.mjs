@@ -25,6 +25,7 @@ const модель = fs.readFileSync('src/lib/goals.ts', 'utf8')
 const хранилище = fs.readFileSync('src/lib/store.ts', 'utf8')
 const слияние = fs.readFileSync('src/lib/merge.ts', 'utf8')
 const пикер = fs.readFileSync('src/components/ItemPicker.tsx', 'utf8')
+const стили = fs.readFileSync('src/styles.css', 'utf8')
 const склад = fs.readFileSync('src/components/Warehouse.tsx', 'utf8')
 const app = fs.readFileSync('src/App.tsx', 'utf8')
 const сплющено = (текст) => текст.replace(/\s+/g, ' ')
@@ -144,6 +145,49 @@ console.log('\nПрава в разделе целей')
     /manyLabel = 'Добавить выбранное'/.test(пикер),
   'кнопка пикера при правке обещает сохранить выбор, а не добавить его',
   '«Добавить выбранное» при правке заменяет список и путает',
+)
+
+/* ------------------------------------------------- эффекты в целях */
+
+шаг(
+  /filters=\{\{ category: true, grade: true \}\}/.test(цели) &&
+    /filters\.category === true/.test(пикер),
+  'в пикере цели есть раздел и грейд',
+  'цель может быть на любую вещь, а список без раздела приходится листать целиком',
+)
+
+шаг(
+  /multi=\{пачка\?\.map\(\(часть\) => \(\{[\s\S]*?sa: часть\.sa[\s\S]*?rare: часть\.rare/.test(цели),
+  'пикер получает уже выбранные эффекты',
+  'иначе при повторном открытии цель теряет SA и редкий вариант',
+)
+
+шаг(
+  /from '\.\/ItemPicker'/.test(форма) || /from '\.\/ItemPicker\.tsx'/.test(форма)
+    ? /EffectChoices/.test(форма) && /hasEffectChoices/.test(форма)
+    : false,
+  'в форме цели можно выбрать SA и редкий эффект',
+  'без этого цель умеет требовать только предмет и заточку',
+)
+
+шаг(
+  /cell-effects/.test(карточка) && /предмет\.sa/.test(карточка) && /предмет\.rare/.test(карточка),
+  'карточка цели показывает SA и редкий эффект',
+  'требование «меч с Haste» выглядело бы как «просто меч»',
+)
+
+шаг(
+  /const изменитьЭффект = \(id: number, правка: ItemEffectChoice\)/.test(пикер) &&
+    /onEffect=/.test(пикер) &&
+    /onEffect\?\.\(\{ sa: имя \?\? undefined, rare \}\)/.test(пикер),
+  'в списке можно поменять эффект у выбранной вещи',
+  'иначе SA выбирается только при надевании, а цель — нет',
+)
+
+шаг(
+  /\.goal-item-effects \.picker-choice \{[\s\S]*?display: grid/.test(стили),
+  'выбор эффектов в форме не ломает сетку общей формы',
+  'общее правило .form label делает label блоком, и имя слипается с описанием',
 )
 
 /* ------------------------------------------- слияние: правда на конфликте */

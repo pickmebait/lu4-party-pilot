@@ -116,6 +116,25 @@ export function GoalCard({
             <ItemIcon item={catalog.byId(предмет.itemId)} name={catalog.nameOf(предмет.itemId)} size={22} />
             <span className="goal-item-name">{catalog.nameOf(предмет.itemId)}</span>
             {/*
+              Эффекты — такие же метки, как в снаряжении персонажа: SA
+              подписан названием, редкий вариант — буквой R с подсказкой.
+              Без них цель «Меч с Haste» выглядела бы как «просто меч».
+            */}
+            {(предмет.sa || предмет.rare) && (
+              <span className="cell-effects">
+                {предмет.sa && (
+                  <span className="cell-effect" title={`SA: ${предмет.sa}`}>
+                    {предмет.sa}
+                  </span>
+                )}
+                {предмет.rare && (
+                  <span className="cell-effect rare" title="Нужен редкий эффект">
+                    R
+                  </span>
+                )}
+              </span>
+            )}
+            {/*
               Заточка показывается тем же блоком, что и в разделе персонажей:
               здесь она требование к вещи, а не состояние, поэтому кнопок «−» и
               «+» нет — только число, которое и сравнивают между целями.

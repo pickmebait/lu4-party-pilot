@@ -9,7 +9,12 @@ import {
   формаОткрыта,
 } from '@/lib/store'
 import { прогрессЦели, статусЦели, type Goal } from '@/lib/goals'
-import { ItemPicker, matches, МНОЖЕСТВЕННЫЙ_ПОТОЛОК } from './ItemPicker'
+import {
+  ItemPicker,
+  matches,
+  МНОЖЕСТВЕННЫЙ_ПОТОЛОК,
+  type PickerChoice,
+} from './ItemPicker'
 import { GoalCard, заголовокЦели } from './GoalCard'
 import { GoalForm, type Общее, type Черновик } from './GoalForm'
 
@@ -48,13 +53,16 @@ function пустоеОбщее(): Общее {
  *
  * Заточка уже выбранных предметов сохраняется: человек, который заново
  * открыл справочник, чтобы добавить одну вещь, не должен заново вводить
- * заточки у всех остальных.
+ * заточки у всех остальных. Эффекты берутся из пикера: если их там поменяли,
+ * новое требование важнее старого.
  */
-function черновикиИзВыбора(ids: number[], прежние: Черновик[]): Черновик[] {
+function черновикиИзВыбора(выбор: PickerChoice[], прежние: Черновик[]): Черновик[] {
   const остаток = [...прежние]
-  return ids.map((itemId) => {
-    const найден = остаток.findIndex((часть) => часть.itemId === itemId)
-    return найден >= 0 ? остаток.splice(найден, 1)[0] : { itemId, mod: null }
+  return выбор.map((в) => {
+    const найден = остаток.findIndex((часть) => часть.itemId === в.itemId)
+    if (найден < 0) return { itemId: в.itemId, mod: null, sa: в.sa, rare: в.rare }
+    const прежняя = остаток.splice(найден, 1)[0]
+    return { ...прежняя, sa: в.sa, rare: в.rare }
   })
 }
 
@@ -131,6 +139,8 @@ export function GoalsView({ catalog }: { catalog: CatalogApi }) {
       цель.items.map((предмет) => ({
         itemId: предмет.itemId,
         mod: предмет.mod ?? null,
+        sa: предмет.sa,
+        rare: предмет.rare,
       })),
     )
     setОбщее({
@@ -146,6 +156,8 @@ export function GoalsView({ catalog }: { catalog: CatalogApi }) {
       items: пачка.map((часть) => ({
         itemId: часть.itemId,
         mod: часть.mod ?? undefined,
+        sa: часть.sa,
+        rare: часть.rare,
         count: 1,
         готово: false,
       })),
@@ -171,6 +183,8 @@ export function GoalsView({ catalog }: { catalog: CatalogApi }) {
       items: пачка.map((часть) => ({
         itemId: часть.itemId,
         mod: часть.mod ?? undefined,
+        sa: часть.sa,
+        rare: часть.rare,
       })),
     })
     закрытьФорму()
@@ -274,11 +288,16 @@ export function GoalsView({ catalog }: { catalog: CatalogApi }) {
               ? 'Список предметов цели'
               : `Что нужно? Отметь до ${МНОЖЕСТВЕННЫЙ_ПОТОЛОК} предметов`
           }
-          multi={пачка?.map((часть) => часть.itemId)}
+          filters={{ category: true, grade: true }}
+          multi={пачка?.map((часть) => ({
+            itemId: часть.itemId,
+            sa: часть.sa,
+            rare: часть.rare,
+          }))}
           manyLabel={правка ? 'Сохранить выбор' : undefined}
           onPick={() => undefined}
-          onPickMany={(itemIds) => {
-            setПачка((прежняя) => черновикиИзВыбора(itemIds, прежняя ?? []))
+          onPickMany={(выбор) => {
+            setПачка((прежняя) => черновикиИзВыбора(выбор, прежняя ?? []))
             setPicking(false)
             // Токен персонажа сразу получает единственного допустимого
             // адресата: показывать ему выбор «для кого» с чужими именами было

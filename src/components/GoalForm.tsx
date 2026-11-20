@@ -4,12 +4,14 @@ import { useAccess } from '@/lib/access'
 import { можетСоздаватьДля, useDb } from '@/lib/store'
 import { plural } from '@/lib/util'
 import { ItemIcon } from './ItemIcon'
-import { МНОЖЕСТВЕННЫЙ_ПОТОЛОК } from './ItemPicker'
+import { EffectChoices, hasEffectChoices, МНОЖЕСТВЕННЫЙ_ПОТОЛОК } from './ItemPicker'
 
-/** Предмет в форме цели: выбранная вещь и желаемая заточка. */
+/** Предмет в форме цели: вещь, заточка и выбранные эффекты. */
 export interface Черновик {
   itemId: number
   mod: number | null
+  sa?: string
+  rare?: boolean
 }
 
 /** Общие поля цели — одни и те же при заведении и при правке. */
@@ -127,37 +129,66 @@ export function GoalForm({
           </div>
 
           <p className="hint">
-            Заточка указывается на каждый предмет отдельно. Прочерк значит «любая»: «Кольцо
-            Печати» и «Кольцо Печати +14» — разные цели, и вторая сильно дороже.
+            Заточка, SA и редкий эффект указываются на каждый предмет отдельно. Прочерк
+            значит «любой»: «Кольцо Печати» и «Кольцо Печати +14» — разные цели, и вторая
+            сильно дороже.
           </p>
 
           <ul className="goal-items goal-items-form">
-            {пачка.map((часть, номер) => (
-              // В цели может лежать один и тот же предмет дважды — например,
-              // две пары перчаток, — поэтому номер в ключе обязателен.
-              <li key={`${часть.itemId}-${номер}`}>
-                <ItemIcon item={catalog.byId(часть.itemId)} name={catalog.nameOf(часть.itemId)} size={22} />
-                <span className="goal-item-name">{catalog.nameOf(часть.itemId)}</span>
-                <input
-                  className="input tiny-input"
-                  inputMode="numeric"
-                  placeholder="любая"
-                  value={часть.mod ?? ''}
-                  onChange={(e) => {
-                    const цифры = e.target.value.replace(/[^\d]/g, '').slice(0, 2)
-                    const мод = цифры === '' ? null : Math.min(MAX_MOD, Number(цифры))
-                    onПачка(пачка.map((ч, i) => (i === номер ? { ...ч, mod: мод } : ч)))
-                  }}
-                />
-                <button
-                  className="icon-btn tiny"
-                  title="Убрать из цели"
-                  onClick={() => onПачка(пачка.filter((_, i) => i !== номер))}
-                >
-                  ✕
-                </button>
-              </li>
-            ))}
+            {пачка.map((часть, номер) => {
+              const item = catalog.byId(часть.itemId)
+              const изменить = (правка: Partial<Черновик>) =>
+                onПачка(пачка.map((ч, i) => (i === номер ? { ...ч, ...правка } : ч)))
+              return (
+                // В цели может лежать один и тот же предмет дважды — например,
+                // две пары перчаток, — поэтому номер в ключе обязателен.
+                <li key={`${часть.itemId}-${номер}`}>
+                  <div className="goal-form-row">
+                    <ItemIcon item={item} name={catalog.nameOf(часть.itemId)} size={22} />
+                    <span className="goal-item-name">{catalog.nameOf(часть.itemId)}</span>
+                    <input
+                      className="input tiny-input"
+                      inputMode="numeric"
+                      placeholder="любая"
+                      value={часть.mod ?? ''}
+                      onChange={(e) => {
+                        const цифры = e.target.value.replace(/[^\d]/g, '').slice(0, 2)
+                        const мод = цифры === '' ? null : Math.min(MAX_MOD, Number(цифры))
+                        изменить({ mod: мод })
+                      }}
+                    />
+                    <button
+                      className="icon-btn tiny"
+                      title="Убрать из цели"
+                      onClick={() => onПачка(пачка.filter((_, i) => i !== номер))}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  {hasEffectChoices(item) && (
+                    <details className="goal-item-effects">
+                      <summary>
+                        <span>Эффекты</span>
+                        {часть.sa && <span className="cell-effect">{часть.sa}</span>}
+                        {часть.rare && (
+                          <span className="cell-effect rare" title="Редкий эффект">
+                            R
+                          </span>
+                        )}
+                      </summary>
+                      <EffectChoices
+                        item={item!}
+                        sa={часть.sa ?? null}
+                        rare={!!часть.rare}
+                        group={String(номер)}
+                        onSa={(sa) => изменить({ sa: sa ?? undefined })}
+                        onRare={(rare) => изменить({ rare: rare || undefined })}
+                      />
+                    </details>
+                  )}
+                </li>
+              )
+            })}
           </ul>
 
           {правка && (

@@ -7851,6 +7851,12 @@ main {
 
 .dash-role {
   min-width: 0;
+  /*
+   * Строка сетки тянется по самому высокому соседу, но «Без роли» часто
+   * остаётся одна на последней строке — и тогда ячейка ниже остальных.
+   * Нижняя граница высоты держит её такого же размера, как роли выше.
+   */
+  min-height: 70px;
   padding: 6px 8px;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -7898,8 +7904,26 @@ main {
   color: var(--muted);
 }
 
-.dash-role.empty b {
+/*
+ * «Без роли» — такая же ячейка, как остальные.
+ *
+ * Класс когда-то назывался empty и попадал под общий стиль пустых состояний:
+ * пунктирная рамка, большие отступы и собственный margin. Одна ячейка в сетке
+ * раздувалась, и роли переставали быть одинаковыми. norole — только цвет.
+ */
+.dash-role.norole b {
   color: var(--muted);
+}
+
+/* Вкладки веток в «Кто в пати»: те же, что у карточки персонажа, но одни
+   на всю пати — классы у людей разные, а ветка общая. */
+.dash-role-tabs {
+  margin-top: 10px;
+}
+
+.dash-role-tabs button {
+  padding: 5px 8px;
+  font-size: 12px;
 }
 
 .dash-levels {
@@ -8714,7 +8738,60 @@ main {
 }
 
 .goal-items-form li {
+  display: block;
+  padding: 5px 0;
   border-bottom: 1px solid var(--line);
+}
+
+.goal-form-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/*
+ * Выбор SA и редкого эффекта в форме цели.
+ *
+ * Свёрнут по умолчанию: пятнадцать раскрытых блоков превратили бы форму в
+ * простыню. В заголовке видны уже выбранные метки, поэтому состояние понятно
+ * без раскрытия.
+ */
+.goal-item-effects {
+  margin: 4px 0 2px 29px;
+}
+
+.goal-item-effects > summary {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  cursor: pointer;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.goal-item-effects > summary:hover {
+  color: var(--text);
+}
+
+.goal-item-effects[open] > summary {
+  margin-bottom: 5px;
+}
+
+/*
+ * Общая форма красит все label в блок с отступом снизу. Для выбора эффектов
+ * это ломает сетку: имя и описание слипаются в одну строку. Возвращаем
+ * пикерную сетку — она уже рассчитана на радио и две колонки текста.
+ */
+.goal-item-effects .picker-choice {
+  display: grid;
+  margin-bottom: 0;
+  color: inherit;
+  font-size: 12px;
+}
+
+.goal-item-effects .picker-choice.rare {
+  margin-top: 2px;
 }
 
 @media (max-width: 560px) {
