@@ -60,7 +60,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-20T22:19:11.179Z",
+    "updatedAt": "2026-11-20T22:24:30.919Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -760,45 +760,6 @@
           },
           {
             "id": "smvpiqbod2s2x8t",
-            "cls": "",
-            "level": 0,
-            "slots": {
-              "rhand": [
-                null
-              ],
-              "lhand": [
-                null
-              ],
-              "head": [
-                null
-              ],
-              "chest": [
-                null
-              ],
-              "legs": [
-                null
-              ],
-              "gloves": [
-                null
-              ],
-              "feet": [
-                null
-              ],
-              "neck": [
-                null
-              ],
-              "ear": [
-                null,
-                null
-              ],
-              "ring": [
-                null,
-                null
-              ]
-            }
-          },
-          {
-            "id": "smvyar15h1ab6dk",
             "cls": "",
             "level": 0,
             "slots": {
