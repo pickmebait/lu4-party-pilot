@@ -60,7 +60,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-21T08:53:32.517Z",
+    "updatedAt": "2026-11-21T08:54:53.275Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -1879,6 +1879,50 @@
       {
         "id": "cmwq67vwh5tkd9a",
         "name": "MrQxq",
+        "cls": "",
+        "level": 0,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      },
+      {
+        "id": "cmwq69mfp768etk",
+        "name": "VanillaRaf",
         "cls": "",
         "level": 0,
         "affil": "roster",
