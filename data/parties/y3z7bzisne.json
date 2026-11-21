@@ -97,7 +97,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-21T14:56:11.111Z",
+    "updatedAt": "2026-11-21T14:56:26.779Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -1983,7 +1983,7 @@
         "subs": [
           {
             "id": "smwqj68nv167lgd",
-            "cls": "",
+            "cls": "Gladiator",
             "level": 0,
             "slots": {
               "rhand": [
