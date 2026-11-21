@@ -97,8 +97,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-21T09:43:56.516Z",
-    "updatedBy": "MrQxq",
+    "updatedAt": "2026-11-21T14:56:11.111Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1916,8 +1916,8 @@
       {
         "id": "cmwq67vwh5tkd9a",
         "name": "MrQxq",
-        "cls": "",
-        "level": 0,
+        "cls": "Paladin",
+        "level": 70,
         "affil": "roster",
         "slots": {
           "rhand": [
@@ -1980,7 +1980,47 @@
           ]
         },
         "subUnlocked": true,
-        "subs": [],
+        "subs": [
+          {
+            "id": "smwqj68nv167lgd",
+            "cls": "",
+            "level": 0,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          }
+        ],
         "away": {}
       },
       {
@@ -11326,6 +11366,14 @@
         "вид": "уровень",
         "было": 0,
         "стало": 74
+      },
+      {
+        "ts": "2026-11-21T14:56:07.972Z",
+        "кто": "Мастер",
+        "charId": "cmwq67vwh5tkd9a",
+        "вид": "уровень",
+        "было": 0,
+        "стало": 70
       }
     ]
   }
