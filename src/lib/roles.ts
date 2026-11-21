@@ -84,17 +84,18 @@ export function roleOfClass(cls: string | undefined): Роль {
 }
 
 /**
- * Роль персонажа в выбранной ветке.
+ * Все роли, которые персонаж закрывает своими сабами.
  *
- * null — у персонажа нет такого саба, и в этой ветке его просто нет. Это не
- * «без роли»: без роли значит «класс есть, но роли у него нет», а тут человек
- * в ветке не участвует вовсе.
+ * Одна вкладка «Сабы» показывает сразу весь набор: у человека бывает до трёх
+ * профессий, и если две из них — разные роли, он должен стоять в обеих
+ * ячейках. Повторы внутри набора убираются, а незаполненный саб не считается
+ * «Без роли»: это пустая строка, а не класс.
  */
-export function roleOfBranch(
-  char: { cls: string; subs: { cls: string }[] },
-  branch: number | null,
-): Роль | null {
-  if (branch === null) return roleOfClass(char.cls)
-  const sub = char.subs[branch]
-  return sub ? roleOfClass(sub.cls) : null
+export function rolesOfSubs(char: { subs: { cls: string }[] }): Роль[] {
+  const роли = new Set<Роль>()
+  for (const sub of char.subs) {
+    if (!sub.cls.trim()) continue
+    роли.add(roleOfClass(sub.cls))
+  }
+  return [...роли]
 }
