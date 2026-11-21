@@ -77,7 +77,7 @@
       "charId": "cmwq67vwh5tkd9a",
       "charName": "MrQxq",
       "createdAt": "2026-11-21T08:59:39.170Z",
-      "lastUsedAt": "2026-11-21T09:42:41.906Z"
+      "lastUsedAt": "2026-11-21T09:42:49.360Z"
     },
     {
       "id": "t6hdwty46a",
@@ -97,7 +97,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-21T09:42:41.906Z",
+    "updatedAt": "2026-11-21T09:42:49.360Z",
     "updatedBy": "MrQxq",
     "chars": [
       {
@@ -1953,7 +1953,9 @@
             }
           ],
           "feet": [
-            null
+            {
+              "itemId": 5783
+            }
           ],
           "neck": [
             null
