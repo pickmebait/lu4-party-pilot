@@ -511,15 +511,27 @@ function Штаб({
    */
   const естьСабы = db.chars.some((c) => c.subs.some((s) => s.cls.trim()))
   const показыватьСабы = сабы && естьСабы
+  /*
+   * На вкладке сабов в счёт идут только персонажи с заполненным сабом:
+   * остальные не участвуют в ролях, уровнях и распределении по местам.
+   * Вкладка «основ» по-прежнему показывает всю пати.
+   */
+  const участники = показыватьСабы
+    ? db.chars.filter((c) => c.subs.some((s) => s.cls.trim()))
+    : db.chars
+  const участникиПоМестам = AFFILIATIONS.map((a) => ({
+    ...a,
+    сколько: участники.filter((c) => c.affil === a.key).length,
+  }))
   const роли = РОЛИ.map((роль) => ({
     роль,
-    люди: db.chars.filter((c) =>
+    люди: участники.filter((c) =>
       показыватьСабы ? rolesOfSubs(c).includes(роль) : roleOfClass(c.cls) === роль,
     ),
-  })).filter((г) => г.люди.length > 0)
+  }))
 
   const поУровням = new Map<number, Char[]>()
-  for (const c of db.chars) {
+  for (const c of участники) {
     const люди = поУровням.get(c.level) ?? []
     люди.push(c)
     поУровням.set(c.level, люди)
@@ -536,11 +548,11 @@ function Штаб({
       })).filter((м) => м.сколько > 0),
     }))
   const максимумУровня = Math.max(1, ...уровни.map((у) => у.сколько))
-  const сУровнем = db.chars.filter((c) => c.level > 0)
+  const сУровнем = участники.filter((c) => c.level > 0)
   const среднийУровень = сУровнем.length
     ? Math.round(сУровнем.reduce((всего, c) => всего + c.level, 0) / сУровнем.length)
     : 0
-  const безУровня = db.chars.filter((c) => c.level <= 0)
+  const безУровня = участники.filter((c) => c.level <= 0)
 
   const истекли = премиум.поПерсонажам.filter(
     (п): п is typeof п & { осталось: number } => п.осталось !== null && п.осталось <= 0,
@@ -998,7 +1010,7 @@ function Штаб({
           <div className="dash-card-head">
             <h3>Кто в пати</h3>
             <span className="dash-card-tail">
-              {всего} {plural(всего, 'персонаж', 'персонажа', 'персонажей')}
+              {участники.length} {plural(участники.length, 'персонаж', 'персонажа', 'персонажей')}
             </span>
           </div>
 
@@ -1027,16 +1039,16 @@ function Штаб({
           )}
 
           <div className="dash-affil-bar">
-            {составПоМестам.map((м) => (
+            {участникиПоМестам.map((м) => (
               <i
                 key={м.key}
                 className={`dash-affil-${м.key}`}
-                style={{ width: `${(м.сколько / всего) * 100}%` }}
+                style={{ width: `${(м.сколько / участники.length) * 100}%` }}
               />
             ))}
           </div>
           <div className="dash-affil-legend">
-            {составПоМестам.map((м) => (
+            {участникиПоМестам.map((м) => (
               <span key={м.key}>
                 <i className={`dash-affil-${м.key}`} />
                 {м.label} {м.сколько}
@@ -1044,48 +1056,45 @@ function Штаб({
             ))}
           </div>
 
-          {роли.length > 0 ? (
-            <div className="dash-role-grid">
-              {роли.map(({ роль, люди }) => {
-                const пустойПрофиль =
-                  роль === 'без роли' &&
-                  люди.length === 1 &&
-                  !люди[0].cls.trim() &&
-                  (готовность.поПерсонажам.find((п) => п.charId === люди[0].id)?.занято ?? 0) === 0
-                /*
-                 * На вкладке сабов один и тот же ник может стоять в разных
-                 * ролях. Подсказка у имени называет именно те сабы, из-за
-                 * которых человек попал в эту ячейку.
-                 */
-                const подписьСаба = (c: Char) => {
-                  if (!показыватьСабы) return undefined
-                  const классы = c.subs
-                    .filter((s) => s.cls.trim() && roleOfClass(s.cls) === роль)
-                    .map((s) => s.cls)
-                  return классы.length ? `${c.name || 'Без имени'}: ${классы.join(', ')}` : undefined
-                }
-                return (
-                  <div key={роль} className={`dash-role${роль === 'без роли' ? ' norole' : ''}`}>
-                    <b>{люди.length}</b>
-                    <span>{РОЛЬ_ПОДПИСЬ[роль]}</span>
-                    <small title={люди.map((c) => c.name || 'Без имени').join(', ')}>
-                      {люди.map((c, i) => (
-                        <Fragment key={c.id}>
-                          {i > 0 && ', '}
-                          <span className={`dash-name-${c.affil}`} title={подписьСаба(c)}>
-                            {c.name || 'Без имени'}
-                          </span>
-                        </Fragment>
-                      ))}
-                      {пустойПрофиль ? ' — пустой профиль' : ''}
-                    </small>
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <p className="hint">Классы не заданы — роли считать не из чего.</p>
-          )}
+          <div className="dash-role-grid">
+            {роли.map(({ роль, люди }) => {
+              const пустойПрофиль =
+                !показыватьСабы &&
+                роль === 'без роли' &&
+                люди.length === 1 &&
+                !люди[0].cls.trim() &&
+                (готовность.поПерсонажам.find((п) => п.charId === люди[0].id)?.занято ?? 0) === 0
+              /*
+               * На вкладке сабов один и тот же ник может стоять в разных
+               * ролях. Подсказка у имени называет именно те сабы, из-за
+               * которых человек попал в эту ячейку.
+               */
+              const подписьСаба = (c: Char) => {
+                if (!показыватьСабы) return undefined
+                const классы = c.subs
+                  .filter((s) => s.cls.trim() && roleOfClass(s.cls) === роль)
+                  .map((s) => s.cls)
+                return классы.length ? `${c.name || 'Без имени'}: ${классы.join(', ')}` : undefined
+              }
+              return (
+                <div key={роль} className={`dash-role${роль === 'без роли' ? ' norole' : ''}`}>
+                  <b>{люди.length}</b>
+                  <span>{РОЛЬ_ПОДПИСЬ[роль]}</span>
+                  <small title={люди.map((c) => c.name || 'Без имени').join(', ')}>
+                    {люди.map((c, i) => (
+                      <Fragment key={c.id}>
+                        {i > 0 && ', '}
+                        <span className={`dash-name-${c.affil}`} title={подписьСаба(c)}>
+                          {c.name || 'Без имени'}
+                        </span>
+                      </Fragment>
+                    ))}
+                    {пустойПрофиль ? ' — пустой профиль' : ''}
+                  </small>
+                </div>
+              )
+            })}
+          </div>
 
           {уровни.length > 0 && (
             <>

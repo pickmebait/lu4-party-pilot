@@ -58,6 +58,7 @@ const РОЛИ_ПО_КЛАССУ: Record<string, Роль> = {
 
   // ДД.
   'bounty hunter': 'ДД',
+  destroyer: 'ДД',
   warsmith: 'ДД',
   gladiator: 'ДД',
   warlord: 'ДД',
