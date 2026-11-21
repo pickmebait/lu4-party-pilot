@@ -95,7 +95,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-21T09:03:57.435Z",
+    "updatedAt": "2026-11-21T09:04:49.015Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -612,72 +612,70 @@
       {
         "id": "cmvjp83fc32841q",
         "name": "DaintyWilder",
-        "cls": "Swordsinger",
-        "level": 75,
+        "cls": "Gladiator",
+        "level": 25,
         "affil": "roster",
         "slots": {
           "rhand": [
             {
-              "itemId": 34934,
-              "mod": 4
+              "itemId": 297,
+              "mod": 4,
+              "sa": "Guidance"
             }
           ],
           "lhand": [
             {
-              "itemId": 34934,
+              "itemId": 297,
               "mod": 4,
-              "spans": true
+              "spans": true,
+              "sa": "Guidance"
             }
           ],
           "head": [
             {
-              "itemId": 547
+              "itemId": 2411
             }
           ],
           "chest": [
             {
-              "itemId": 2382
+              "itemId": 396
             }
           ],
           "legs": [
             {
-              "itemId": 2382,
+              "itemId": 396,
               "spans": true
             }
           ],
           "gloves": [
             {
-              "itemId": 5768
+              "itemId": 607
             }
           ],
           "feet": [
             {
-              "itemId": 5780
+              "itemId": 2427
             }
           ],
           "neck": [
             {
-              "itemId": 924
+              "itemId": 914
             }
           ],
           "ear": [
             {
-              "itemId": 864,
-              "mod": 3
+              "itemId": 851
             },
             {
-              "itemId": 864,
-              "mod": 3
+              "itemId": 851
             }
           ],
           "ring": [
             {
-              "itemId": 895,
-              "mod": 5
+              "itemId": 882
             },
             {
-              "itemId": 895,
-              "mod": 5
+              "itemId": 882
             }
           ]
         },
@@ -685,15 +683,17 @@
           {
             "rhand": [
               {
-                "itemId": 127,
-                "mod": 5,
-                "sa": "Health"
+                "itemId": 70,
+                "mod": 4,
+                "sa": "Focus"
               }
             ],
             "lhand": [
               {
-                "itemId": 110,
-                "mod": 3
+                "itemId": 70,
+                "mod": 4,
+                "spans": true,
+                "sa": "Focus"
               }
             ]
           }
@@ -707,69 +707,71 @@
         "subs": [
           {
             "id": "smvk1047y1mv177",
-            "cls": "Gladiator",
-            "level": 25,
+            "cls": "Swordsinger",
+            "level": 75,
             "slots": {
               "rhand": [
                 {
-                  "itemId": 297,
-                  "mod": 4,
-                  "sa": "Guidance"
+                  "itemId": 34934,
+                  "mod": 4
                 }
               ],
               "lhand": [
                 {
-                  "itemId": 297,
+                  "itemId": 34934,
                   "mod": 4,
-                  "spans": true,
-                  "sa": "Guidance"
+                  "spans": true
                 }
               ],
               "head": [
                 {
-                  "itemId": 2411
+                  "itemId": 547
                 }
               ],
               "chest": [
                 {
-                  "itemId": 396
+                  "itemId": 2382
                 }
               ],
               "legs": [
                 {
-                  "itemId": 396,
+                  "itemId": 2382,
                   "spans": true
                 }
               ],
               "gloves": [
                 {
-                  "itemId": 607
+                  "itemId": 5768
                 }
               ],
               "feet": [
                 {
-                  "itemId": 2427
+                  "itemId": 5780
                 }
               ],
               "neck": [
                 {
-                  "itemId": 914
+                  "itemId": 924
                 }
               ],
               "ear": [
                 {
-                  "itemId": 851
+                  "itemId": 864,
+                  "mod": 3
                 },
                 {
-                  "itemId": 851
+                  "itemId": 864,
+                  "mod": 3
                 }
               ],
               "ring": [
                 {
-                  "itemId": 882
+                  "itemId": 895,
+                  "mod": 5
                 },
                 {
-                  "itemId": 882
+                  "itemId": 895,
+                  "mod": 5
                 }
               ]
             },
@@ -777,17 +779,15 @@
               {
                 "rhand": [
                   {
-                    "itemId": 70,
-                    "mod": 4,
-                    "sa": "Focus"
+                    "itemId": 127,
+                    "mod": 5,
+                    "sa": "Health"
                   }
                 ],
                 "lhand": [
                   {
-                    "itemId": 70,
-                    "mod": 4,
-                    "spans": true,
-                    "sa": "Focus"
+                    "itemId": 110,
+                    "mod": 3
                   }
                 ]
               }
