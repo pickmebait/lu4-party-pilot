@@ -97,7 +97,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-21T14:56:26.779Z",
+    "updatedAt": "2026-11-21T14:57:43.246Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -1918,7 +1918,7 @@
         "name": "MrQxq",
         "cls": "Paladin",
         "level": 70,
-        "affil": "roster",
+        "affil": "decade",
         "slots": {
           "rhand": [
             {
