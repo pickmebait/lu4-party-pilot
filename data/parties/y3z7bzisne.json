@@ -60,7 +60,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-21T08:49:47.900Z",
+    "updatedAt": "2026-11-21T08:52:41.910Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -1747,6 +1747,50 @@
       {
         "id": "cmwq61oy41h41b9",
         "name": "Murzyaka",
+        "cls": "",
+        "level": 0,
+        "affil": "roster",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      },
+      {
+        "id": "cmwq66t2r1qd67x",
+        "name": "MGR",
         "cls": "",
         "level": 0,
         "affil": "roster",
