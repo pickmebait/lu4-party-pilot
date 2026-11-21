@@ -84,6 +84,13 @@
       "charId": "cmwq66t2r1qd67x",
       "charName": "MGR",
       "createdAt": "2026-11-21T09:00:05.320Z"
+    },
+    {
+      "id": "sxztnw2dbw",
+      "hash": "7bac776224b7ec75623ca348d0c751e1ea488ec2789aa9de4061f0c5cd37f598",
+      "charId": "cmwq69mfp768etk",
+      "charName": "VanillaRaf",
+      "createdAt": "2026-11-21T09:00:46.488Z"
     }
   ],
   "db": {
