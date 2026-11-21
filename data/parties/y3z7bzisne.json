@@ -60,7 +60,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-20T22:24:37.843Z",
+    "updatedAt": "2026-11-21T08:48:43.248Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -1706,6 +1706,50 @@
         "cls": "Elven Elder",
         "level": 62,
         "affil": "window",
+        "slots": {
+          "rhand": [
+            null
+          ],
+          "lhand": [
+            null
+          ],
+          "head": [
+            null
+          ],
+          "chest": [
+            null
+          ],
+          "legs": [
+            null
+          ],
+          "gloves": [
+            null
+          ],
+          "feet": [
+            null
+          ],
+          "neck": [
+            null
+          ],
+          "ear": [
+            null,
+            null
+          ],
+          "ring": [
+            null,
+            null
+          ]
+        },
+        "subUnlocked": false,
+        "subs": [],
+        "away": {}
+      },
+      {
+        "id": "cmwq61oy41h41b9",
+        "name": "Murzyaka",
+        "cls": "",
+        "level": 0,
+        "affil": "roster",
         "slots": {
           "rhand": [
             null
