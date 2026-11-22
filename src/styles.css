@@ -2352,203 +2352,604 @@ main {
 
 /* -------------------------------------------- персонажи: вид «колонка» */
 
-/* -------------------------------------------- персонажи: вид «колонка» */
-
 /*
- * Второй вид раздела: персонажи друг под другом, по строке на человека.
+ * Второй вид раздела: пати одной таблицей, по строке на человека.
  *
  * Задача другая, чем у карточек: не рассмотреть персонажа целиком, а
  * сравнить пати между собой — у кого что надето и где дыры. Поэтому строка
- * плоская и широкая, предмет сведён к иконке с заточкой, а контактов нет:
- * они не про снаряжение, и в этом виде только отнимали бы ширину.
+ * плоская, предмет сведён к иконке с заточкой, а двенадцать слотов стоят
+ * на своих местах: шлем под шлемом, кольцо под кольцом.
+ *
+ * Ширины колонок заданы один раз на таблице и повторяются в шапке и в
+ * каждой строке. Имя тянется, снаряжение — нет: если бы ячейки слотов
+ * подстраивались под содержимое, у одного персонажа они встали бы шире,
+ * у другого уже, и вертикаль сломалась бы. На узком экране таблица
+ * прокручивается вбок, а колонка имени остаётся на месте.
  */
 .chars-col {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  min-width: 0;
 }
 
-.char-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.chars-matrix {
+  --mx-id: minmax(264px, 1fr);
+  --mx-role: 66px;
+  --mx-class: 136px;
+  --mx-gear: 455px;
+  --mx-count: 50px;
+  --mx-links: 92px;
+  --mx-pa: 76px;
+  --mx-cell: 34px;
+  --mx-cell-gap: 3px;
+  --mx-group-gap: 10px;
+
   background: var(--bg-2);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 6px 10px;
+  overflow: hidden;
+}
+
+/* Прокручивается только сама таблица: шапка фильтров и низ раздела стоят. */
+.mx-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.mx-scroll::-webkit-scrollbar {
+  height: 10px;
+}
+
+.mx-scroll::-webkit-scrollbar-thumb {
+  background: var(--line-2);
+  border-radius: 6px;
+}
+
+.mx-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+.mx-scroll::-webkit-scrollbar-track {
+  background: var(--bg-3);
+  border-radius: 6px;
 }
 
 /*
- * Персонаж, которого правит этот токен: окантовка в цвете темы.
- *
- * Раньше зелёный цвет был зашит в правило, и в шести палитрах он не значил
- * ничего: рамка оставалась чужой набору цветов страницы. Теперь берётся
- * --accent-line от палитры, что выбрана, и рамка всегда своего оттенка.
- *
- * Толщины одного пикселя не хватало: в пати из десяти человек своя строка
- * терялась среди соседних. Добавлено кольцо снаружи на два пикселя — оно
- * не сдвигает вёрстку, в отличие от толстой рамки, и потому не поднимает
- * свою строку над остальными на пиксель.
- *
- * Искать свою строку в пати вручную не нужно — токен персонажа правит
- * ровно одного, и он находится взглядом сразу.
+ * Сетка одна на шапку и на строки. min-width — сумма всех колонок с
+ * зазорами; меньше неё таблица не сжимается, а уходит в прокрутку.
  */
-.char-row.own,
+.mx-head,
+.char-row {
+  display: grid;
+  grid-template-columns:
+    var(--mx-id) var(--mx-role) var(--mx-class) var(--mx-gear)
+    var(--mx-count) var(--mx-links) var(--mx-pa);
+  gap: 10px;
+  min-width: 1185px;
+}
+
+/* --------------------------------------------------------- шапка таблицы */
+
+.mx-head {
+  align-items: end;
+  padding: 7px 0 6px;
+  border-bottom: 1px solid var(--line-2);
+  background: var(--bg-3);
+  color: var(--muted);
+}
+
+.mx-h {
+  padding-bottom: 2px;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.mx-h-gear {
+  padding-bottom: 0;
+}
+
+/*
+ * Имя закреплено при прокрутке вбок: иначе на узком экране уезжает влево
+ * ровно то, по чему строки и сравниваются. Фон непрозрачный — под ячейку
+ * уходят остальные колонки.
+ */
+.mx-h-id {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  align-self: stretch;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 0 2px 12px;
+  background: var(--bg-3);
+}
+
+.mx-gear-head {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--mx-group-gap);
+}
+
+.mx-slot-label {
+  color: var(--muted);
+  font-size: 8.5px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-align: center;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.mx-group-label {
+  margin-bottom: 3px;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* -------------------------------------------------------------- строки */
+
+.char-row {
+  align-items: center;
+  min-height: 54px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-2);
+  transition: background 0.1s;
+}
+
+.char-row:last-child {
+  border-bottom: none;
+}
+
+.char-row:hover {
+  background: color-mix(in srgb, var(--bg-3) 48%, var(--bg-2));
+}
+
+/*
+ * Своя строка в таблице: не рамка вокруг, как у карточки, а полоса слева
+ * и лёгкая заливка. Рамка сломала бы общую сетку, полоса — нет.
+ */
+.char-row.own {
+  background: color-mix(in srgb, var(--accent-deep) 24%, var(--bg-2));
+}
+
+.char-row.own:hover {
+  background: color-mix(in srgb, var(--accent-deep) 44%, var(--bg-2));
+}
+
+/*
+ * Карточка вида «Строка» осталась с окантовкой: там своя строка живёт
+ * отдельно от соседей, и рамка её не сдвигает.
+ */
 .char-card.own {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--accent-line);
 }
 
-.char-row:hover {
-  border-color: var(--line-2);
-}
-
-.char-row.own:hover,
 .char-card.own:hover {
   border-color: var(--accent-2);
   box-shadow: 0 0 0 2px var(--accent);
 }
 
-/*
- * Левая часть — кто это и какая ветка на экране.
- *
- * Фиксированная ширина, три строки, и все три есть у всех: имя с
- * принадлежностью, плашки (профессия, уровень, премиум) и переключатель
- * веток. Переключатель нарисован всегда — даже там, где переключать нечего.
- * Раньше он появлялся только при отметке о квесте, и блок снаряжения у тех,
- * у кого сабы есть, уезжал вправо на его ширину: голова одного персонажа
- * оказывалась там, где у другого наплечники. Постоянная высота вдобавок
- * держит иконки снаряжения на одной горизонтали по всей пати.
- *
- * Ширина подобрана под худший случай: «Elemental Summoner» (122) плюс
- * «ур. 75» (47) плюс «Премиум 100 дн.» (96) и зазоры — 273. Профессия
- * никогда не длиннее, класс хранится строкой, а новые значения в список не
- * складываются.
- */
-.row-id {
-  width: 286px;
-  flex: none;
-  min-width: 0;
+/* ------------------------------------------------------- кто это */
+
+.mx-id {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  align-self: stretch;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 3px;
+  min-width: 0;
+  padding-left: 12px;
+  background: var(--bg-2);
 }
 
-/*
- * Имя — кнопка: клик открывает контакты.
- *
- * Значков действий в строке нет, а контакты нужны здесь же: без кнопки
- * они были бы недостижимы из этого вида вовсе.
- */
-.row-name {
+.char-row.own .mx-id {
+  box-shadow: inset 2px 0 var(--accent);
+  background: color-mix(in srgb, var(--accent-deep) 24%, var(--bg-2));
+}
+
+.char-row:hover .mx-id {
+  background: color-mix(in srgb, var(--bg-3) 48%, var(--bg-2));
+}
+
+.char-row.own:hover .mx-id {
+  background: color-mix(in srgb, var(--accent-deep) 44%, var(--bg-2));
+}
+
+.mx-id-top {
   display: flex;
   align-items: center;
   gap: 5px;
   min-width: 0;
-  font-size: 14px;
+}
+
+/*
+ * Имя — кнопка: клик открывает контакты. Значков действий в строке нет, а
+ * контакты нужны здесь же: без кнопки они были бы недостижимы из этого вида.
+ */
+.mx-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
   padding: 0;
   border: none;
   background: none;
   color: inherit;
-  font-family: inherit;
+  font: inherit;
   text-align: left;
   cursor: pointer;
 }
 
-.row-name svg {
-  flex: none;
-  color: var(--accent);
+.mx-name:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
-/* Имя в строке — тоже целиком: см. .char-name-row h3. */
-.row-name strong {
+.mx-name strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.15;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/*
- * Строка в колонке: имя прижато к значку, контакты открываются щелчком по
- * нему самому, поэтому запас справа не нужен.
- */
-.row-meta {
-  display: flex;
-  gap: 4px;
-  min-width: 0;
-  overflow: hidden;
+.mx-name strong.own {
+  color: var(--accent-2);
+}
+
+/* Буква вместо аватара: в данных её нет, а строке нужен якорь слева. */
+.mx-ava {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--accent-line);
+  border-radius: 6px;
+  background: var(--accent-deep);
+  color: var(--accent-2);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.mx-id-top .chip {
+  flex: none;
+  height: 15px;
+  padding: 0 5px;
+  font-size: 9px;
+  line-height: 13px;
 }
 
 /*
- * Переключатель веток.
- *
- * Вкладки не растягиваются: в прошлый раз делили ширину поровну, и две
- * вкладки на 176 пикселях выглядели растянутыми пустыми кнопками. Теперь
- * каждая по своей подписи, а лишнее обрезается — длинная профессия есть в
- * подсказке.
- *
- * Высота задана ровно: переключатель и заглушка «сабов нет» должны
- * занимать одинаковое место, иначе строки пати отличаются на пиксель и
- * иконки снаряжения не ложатся на одну горизонталь.
+ * Переключатель веток — вторая строка слева. Он есть у всех, даже там, где
+ * переключать нечего: пустая строка вместо блока выглядит дырой, а
+ * постоянная высота держит строки одной высоты.
  */
-.row-tabs {
-  height: 22px;
-  min-width: 0;
-  overflow: hidden;
+.mx-tabs {
   display: flex;
   align-items: center;
+  gap: 4px;
+  min-width: 0;
+  height: 18px;
+  overflow: hidden;
 }
 
-.row-tabs .segmented {
+.mx-tabs .segmented {
   max-width: 100%;
+  border-radius: 6px;
 }
 
-.row-tabs .segmented button {
+.mx-tabs .segmented button {
   flex: 0 1 auto;
   min-width: 0;
-  padding: 2px 7px;
-  font-size: 11px;
-  line-height: 16px;
+  max-width: 92px;
   overflow: hidden;
+  padding: 0 5px;
+  font-size: 9.5px;
+  line-height: 16px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 /* Сабов нет: строка на месте, но пустая и тихая. */
-.row-tabs-empty {
-  font-size: 11px;
+.mx-quiet {
+  overflow: hidden;
   color: var(--muted-dim);
-  line-height: 1;
+  font-size: 9.5px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Снаряжение: иконки в ряд, у каждой своё число заточки. */
-.row-gear {
-  flex: 1 1 auto;
+/*
+ * Действия выбранного саба. В карточке они стоят отдельной полосой, здесь
+ * ужимаются до двух подписей в строке с вкладками: третья строка подняла
+ * бы одну строку таблицы над соседними.
+ */
+.mx-sub-tools {
   display: flex;
+  gap: 2px;
+  flex: none;
+}
+
+.mx-sub-act {
+  padding: 0 3px;
+  border: 1px dashed var(--line-2);
+  border-radius: 4px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 8px;
+  line-height: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.mx-sub-act:hover {
+  color: var(--text);
+  border-color: var(--line-2);
+}
+
+.mx-sub-act.danger {
+  border-color: var(--err-line);
+  color: var(--err-text);
+}
+
+.mx-sub-act.danger:hover {
+  background: var(--err-deep);
+}
+
+/* ------------------------------------------------------------ роль */
+
+.mx-role {
+  display: inline-flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 3px;
+  gap: 5px;
+  color: var(--text);
+  font-size: 10px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.mx-role::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--role, var(--muted-dim));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--role, var(--muted-dim)) 14%, transparent);
+}
+
+.mx-role.tank {
+  --role: var(--in);
+}
+
+.mx-role.heal {
+  --role: var(--ok);
+}
+
+.mx-role.bard {
+  --role: #c08cff;
+}
+
+.mx-role.buff {
+  --role: var(--accent);
+}
+
+.mx-role.dd {
+  --role: #ff8f6b;
+}
+
+.mx-role.none {
+  --role: var(--muted-dim);
+  color: var(--muted);
+}
+
+/* ------------------------------------------------------ класс и уровень */
+
+.mx-class {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
   min-width: 0;
 }
 
-.row-gear-group {
-  display: flex;
-  align-items: center;
-  gap: 3px;
+.mx-class b {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Тонкая перегородка между оружием, бронёй и бижутерией: без неё двенадцать
-   подряд идущих иконок читаются как одна куча. */
-.row-gear-gap {
-  width: 1px;
-  height: 22px;
-  margin: 0 4px;
-  background: var(--line-2);
+.mx-class small {
+  color: var(--muted);
+  font-size: 9.5px;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ----------------------------------------------------------- снаряжение */
+
+.mx-gear {
+  display: flex;
+  align-items: center;
+  gap: var(--mx-group-gap);
+  min-width: 0;
+}
+
+.mx-group {
   flex: none;
 }
 
-.row-tail {
+.mx-slots {
+  display: grid;
+  gap: var(--mx-cell-gap);
+}
+
+.mx-group.weapon .mx-slots {
+  grid-template-columns: repeat(2, var(--mx-cell));
+}
+
+.mx-group.armor .mx-slots,
+.mx-group.jewelry .mx-slots {
+  grid-template-columns: repeat(5, var(--mx-cell));
+}
+
+/* Пустая ячейка в просмотре: место видно, действия нет. */
+.slot-icon.mx-empty {
+  cursor: default;
+  opacity: 0.55;
+  font-size: 11px;
+}
+
+/* ------------------------------------------------------------- числа */
+
+.mx-count {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.mx-count b {
+  color: var(--text);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.mx-count.full b {
+  color: var(--accent-2);
+}
+
+.mx-count small {
+  color: var(--muted-dim);
+  font-size: 8.5px;
+}
+
+/*
+ * Переключатель набора: чтение, а не правка, поэтому живёт в счётчике.
+ * Одна строка на набор — второй набор не добавляет ячеек в матрицу.
+ */
+.mx-set {
+  align-self: flex-start;
+  padding: 0 4px;
+  border: 1px solid var(--accent-line);
+  border-radius: 4px;
+  background: var(--accent-deep);
+  color: var(--accent-2);
+  font: inherit;
+  font-size: 8px;
+  line-height: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.mx-set:hover {
+  border-color: var(--accent);
+}
+
+/* ------------------------------------------------------------ связь */
+
+.mx-links {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  min-height: 19px;
+}
+
+.mx-link {
+  display: inline-grid;
+  place-items: center;
   flex: none;
+  width: 19px;
+  height: 19px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--bg-3);
+  color: var(--muted);
+  text-decoration: none;
+}
+
+a.mx-link:hover {
+  border-color: var(--accent-line);
+  color: var(--accent-2);
+}
+
+.mx-link svg {
+  width: 11px;
+  height: 11px;
+}
+
+.mx-none {
+  color: var(--muted-dim);
+  font-size: 10px;
+}
+
+/* ---------------------------------------------------------------- ПА */
+
+.mx-pa {
+  display: flex;
+  align-items: center;
+  padding-right: 12px;
+}
+
+.mx-pa .chip.pa {
+  padding: 0 6px;
+  font-size: 9.5px;
+  line-height: 16px;
+}
+
+/* --------------------------------------------------------- низ таблицы */
+
+.mx-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 6px 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted-dim);
+  font-size: 9.5px;
+  line-height: 1.4;
+}
+
+.mx-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.mx-foot b {
+  color: var(--muted);
+  font-weight: 500;
 }
 
 .slot-icon {
@@ -2640,13 +3041,6 @@ main {
   min-width: 58px;
   justify-content: center;
 }
-.row-tail {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: none;
-}
-
 .char-card {
   flex: 0 0 var(--card-w);
   width: var(--card-w);
@@ -2722,8 +3116,7 @@ main {
  * место у единственной строки с профессией, уровнем и премиумом. Подсказка при
  * наведении объясняет, что выделение значит.
  */
-.char-name-row h3.own,
-.row-name strong.own {
+.char-name-row h3.own {
   color: var(--accent-2);
 }
 

@@ -1,22 +1,28 @@
+import { useState, type ReactNode } from 'react'
 import {
-  ARMOR_SLOTS,
   MAX_MOD,
-  SLOTS,
-  SLOT_GROUPS,
-  WEAPON_SLOTS,
   affiliationLabel,
+  gradeCode,
   type Char,
+  type SlotEntry,
   type SlotKey,
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
 import type { Branch } from '@/lib/store'
-import { armorSetsOf, weaponSetsOf } from '@/lib/slots'
+import { armorSetSlots, armorSetsOf, weaponSetSlots, weaponSetsOf } from '@/lib/slots'
+import { РОЛЬ_ПОДПИСЬ, roleOfClass, type Роль } from '@/lib/roles'
+import {
+  discordLabel,
+  discordLink,
+  phoneLink,
+  telegramLabel,
+  telegramLink,
+} from '@/lib/contacts'
 import { ItemIcon } from './ItemIcon'
 import { useПерсонаж } from '@/lib/useChar'
 import { useДействияПерсонажа } from '@/lib/useCharActions'
-import { CharEditForm } from './CharEditForm'
 import { CharDialogs } from './CharDialogs'
-import { IconUser } from './Icons'
+import { IconDiscord, IconPhone, IconTelegram, IconUser } from './Icons'
 import { PaChip } from './PaChip'
 
 /**
@@ -27,20 +33,215 @@ import { PaChip } from './PaChip'
  * вбок. Здесь наоборот — вся пати по вертикали, по одной строке на
  * персонажа, и видно сразу, у кого что надето и где не хватает.
  *
- * Отсюда и всё урезано: предмет — иконкой и заточкой без названия и ранга.
- * Название и ранг остались в подсказке: навести и прочитать можно всегда, а
- * на глаз двадцать названий не сравнить.
+ * Строка — не лента иконок, а таблица. Двенадцать слотов стоят на своих
+ * местах: шлем под шлемом, кольцо под кольцом. Раньше пустые ячейки
+ * пропускались, и у одного персонажа двенадцать значков шли подряд, у
+ * другого — девять: сравнить по вертикали было нельзя. Теперь пустая
+ * ячейка остаётся на месте и в просмотре показывает прочерк, а не плюс:
+ * плюс выглядит действием, которого у чужого персонажа нет.
  *
- * Кнопок правки, контактов и удаления в строке нет: три значка в хвосте
- * съедали 135 пикселей и делали строку похожей на панель управления, а
- * правка и так делается в виде «Строка». Контакты открываются двойным щелчком
- * по имени, удаление — из карточки.
+ * Второй набор оружия и брони не добавляет колонок, а переключается
+ * кнопкой в счётчике: иначе броня и бижутерия уезжали вправо, и общая
+ * вертикаль ломалась. Какой набор показан, видно по подписи кнопки.
  *
- * Слева три строки — имя, плашки, переключатель веток — и все три есть у
- * всех, даже там, где переключать нечего. Пустая строка вместо блока
- * выглядит дырой; постоянная высота держит иконки снаряжения на одной
- * горизонтали по всей пати, а это ради вида и затевалось.
+ * Роль выводится из класса, как в сводке: отдельного поля в базе нет, и
+ * при смене профессии роль должна поехать за ней сама.
  */
+
+interface СлотМатрицы {
+  key: SlotKey
+  /** Номер ячейки внутри слота: у серёг и колец их по две. */
+  index: number
+  short: string
+  label: string
+}
+
+interface ГруппаМатрицы {
+  key: 'weapon' | 'armor' | 'jewelry'
+  label: string
+  slots: СлотМатрицы[]
+}
+
+/**
+ * Двенадцать колонок снаряжения в том порядке, в каком они сравниваются.
+ *
+ * Это не SLOT_GROUPS из справочника: там слоты перечислены для выбора
+ * предмета, а здесь важен порядок ячеек и короткие подписи, которые
+ * помещаются в 34 пикселя.
+ */
+const ГРУППЫ_МАТРИЦЫ: ГруппаМатрицы[] = [
+  {
+    key: 'weapon',
+    label: 'Оружие',
+    slots: [
+      { key: 'rhand', index: 0, short: 'Пр.', label: 'Правая рука' },
+      { key: 'lhand', index: 0, short: 'Лев.', label: 'Левая рука' },
+    ],
+  },
+  {
+    key: 'armor',
+    label: 'Броня',
+    slots: [
+      { key: 'head', index: 0, short: 'Шлем', label: 'Шлем' },
+      { key: 'chest', index: 0, short: 'Верх', label: 'Верх' },
+      { key: 'legs', index: 0, short: 'Низ', label: 'Низ' },
+      { key: 'gloves', index: 0, short: 'Перч.', label: 'Перчатки' },
+      { key: 'feet', index: 0, short: 'Боты', label: 'Ботинки' },
+    ],
+  },
+  {
+    key: 'jewelry',
+    label: 'Бижутерия',
+    slots: [
+      { key: 'neck', index: 0, short: 'Ожер.', label: 'Ожерелье' },
+      { key: 'ear', index: 0, short: 'Сер. 1', label: 'Серьга 1' },
+      { key: 'ear', index: 1, short: 'Сер. 2', label: 'Серьга 2' },
+      { key: 'ring', index: 0, short: 'Кол. 1', label: 'Кольцо 1' },
+      { key: 'ring', index: 1, short: 'Кол. 2', label: 'Кольцо 2' },
+    ],
+  },
+]
+
+/** Класс роли для цвета точки. Ключи ролей — из сводки. */
+const КЛАСС_РОЛИ: Record<Роль, string> = {
+  танк: 'tank',
+  хил: 'heal',
+  бард: 'bard',
+  баф: 'buff',
+  ДД: 'dd',
+  'без роли': 'none',
+}
+
+/**
+ * Шапка матрицы: одна на весь список, поэтому живёт отдельно от строки.
+ *
+ * Подписи групп и слотов повторяют сетку строки один в один: колонки
+ * обязаны совпасть, иначе таблица читается как набор значков.
+ */
+export function CharRowHead() {
+  return (
+    <div className="mx-head">
+      <div className="mx-h mx-h-id">Персонаж</div>
+      <div className="mx-h">Роль</div>
+      <div className="mx-h">Класс · ур.</div>
+      <div className="mx-h mx-h-gear">
+        <div className="mx-gear-head">
+          {ГРУППЫ_МАТРИЦЫ.map((group) => (
+            <div key={group.key} className={`mx-group ${group.key}`}>
+              <div className="mx-group-label">{group.label}</div>
+              <div className="mx-slots">
+                {group.slots.map((slot) => (
+                  <span
+                    key={`${slot.key}-${slot.index}`}
+                    className="mx-slot-label"
+                    title={slot.label}
+                  >
+                    {slot.short}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="mx-h">Слоты</div>
+      <div className="mx-h">Связь</div>
+      <div className="mx-h">ПА</div>
+    </div>
+  )
+}
+
+/** Подпись под матрицей: что значат прочерк, заточка и переключатель. */
+export function CharRowFoot() {
+  return (
+    <div className="mx-foot">
+      <span className="mx-legend">
+        <span>
+          <b>—</b> пусто
+        </span>
+        <span>
+          <b>+</b> надеть
+        </span>
+        <span>
+          <b>+12</b> заточка
+        </span>
+        <span>наборы — переключателем в строке</span>
+      </span>
+      <span>роль — производная от класса</span>
+    </div>
+  )
+}
+
+interface СтрокаСвязи {
+  ключ: string
+  подпись: string
+  значение: string
+  ссылка?: string
+  иконка: ReactNode
+}
+
+/**
+ * Контакты теми же правилами, что и в карточке: телефон — tel:, телеграм и
+ * дискорд — ссылкой на профиль. Имя остаётся подписью без ссылки.
+ *
+ * Здесь они сведены к значкам: в таблице ширина считается по колонкам, а
+ * раскрытый список контактов открывается щелчком по имени.
+ */
+function строкиСвязи(char: Char): СтрокаСвязи[] {
+  const контакты = char.contacts
+  if (!контакты) return []
+
+  const строки: СтрокаСвязи[] = []
+
+  const имя = контакты.realName?.trim() ?? ''
+  if (имя) {
+    строки.push({
+      ключ: 'realName',
+      подпись: 'Имя',
+      значение: имя,
+      иконка: <IconUser size={11} />,
+    })
+  }
+
+  const телефон = контакты.phone?.trim() ?? ''
+  const телефонСсылка = телефон ? phoneLink(телефон) : null
+  if (телефон && телефонСсылка) {
+    строки.push({
+      ключ: 'phone',
+      подпись: 'Телефон',
+      значение: телефон,
+      ссылка: телефонСсылка,
+      иконка: <IconPhone size={11} />,
+    })
+  }
+
+  const телеграм = контакты.telegram?.trim() ?? ''
+  const телеграмСсылка = телеграм ? telegramLink(телеграм) : null
+  if (телеграм && телеграмСсылка) {
+    строки.push({
+      ключ: 'telegram',
+      подпись: 'Телеграм',
+      значение: telegramLabel(телеграм),
+      ссылка: телеграмСсылка,
+      иконка: <IconTelegram size={11} />,
+    })
+  }
+
+  const дискорд = контакты.discord?.trim() ?? ''
+  const дискордСсылка = дискорд ? discordLink(дискорд) : null
+  if (дискорд && дискордСсылка) {
+    строки.push({
+      ключ: 'discord',
+      подпись: 'Дискорд',
+      значение: discordLabel(дискорд),
+      ссылка: дискордСсылка,
+      иконка: <IconDiscord size={11} />,
+    })
+  }
+
+  return строки
+}
+
 export function CharRow({
   char,
   catalog,
@@ -51,12 +252,39 @@ export function CharRow({
   onPick: (ветка: Branch, slot: SlotKey, index: number) => void
 }) {
   // Как и на карточке: ветка, права и счётчик слотов выводит общий хук.
-  const { сабы, саб, выбратьСаб: setВыбранный, ветка, слоты, допНаборы, допБроня, cls, level, правый, свой, счётчик } =
-    useПерсонаж(char)
+  const {
+    сабы,
+    саб,
+    выбратьСаб: setВыбранный,
+    ветка,
+    слоты,
+    допНаборы,
+    допБроня,
+    cls,
+    level,
+    правый,
+    свой,
+    счётчик,
+  } = useПерсонаж(char)
   const наборы = weaponSetsOf(слоты, допНаборы)
   const броня = armorSetsOf(слоты, допБроня)
   const занято = счётчик.занято
   const всего = счётчик.всего
+
+  /*
+   * Наборы переключаются по кругу, а не выбираются из списка: их не больше
+   * трёх, и кнопка в счётчике должна занимать одну строку. Если у саба
+   * наборов меньше, остаток от деления не даст выйти за край.
+   */
+  const [выбранныйНабор, setВыбранныйНабор] = useState(0)
+  const [выбраннаяБроня, setВыбраннаяБроня] = useState(0)
+  const номерОружия = выбранныйНабор % наборы.length
+  const номерБрони = выбраннаяБроня % броня.length
+  const наборОружия = наборы[номерОружия]
+  const наборБрони = броня[номерБрони]
+
+  const роль = roleOfClass(cls)
+  const связи = строкиСвязи(char)
 
   // Правка, контакты и подтверждения — те же действия, что и у карточки:
   // разметка шапки своя, а последствия нажатий общие.
@@ -64,174 +292,191 @@ export function CharRow({
 
   return (
     <article className={`char-row${свой ? ' own' : ''}`}>
-      <div className="row-id">
-        {действия.editing ? (
-          <CharEditForm
-            char={char}
-            саб={саб}
-            onDone={действия.сохранить}
-            onCancel={действия.закрытьПравку}
-          />
-        ) : (
-          <>
-            <button
-              className="row-name"
-              title="Открыть контакты"
-              onClick={действия.открытьКонтакты}
+      <div className="mx-id">
+        <div className="mx-id-top">
+          <button
+            type="button"
+            className="mx-name"
+            title="Открыть контакты"
+            onClick={действия.открытьКонтакты}
+          >
+            <span className="mx-ava" aria-hidden="true">
+              {(char.name || '?').trim().charAt(0).toUpperCase()}
+            </span>
+            <strong
+              className={свой ? 'own' : undefined}
+              title={свой ? 'Персонаж, которого правит этот токен' : undefined}
             >
-              <IconUser />
-              {/*
-                Свой персонаж выделен ником, а не плашкой «твой»: плашка
-                отнимала место у единственной строки, где профессия, уровень и
-                премиум должны помещаться целиком.
-              */}
-              <strong className={свой ? 'own' : undefined} title={свой ? 'Персонаж, которого правит этот токен' : undefined}>
-                {char.name || 'Без имени'}
-              </strong>
-              <span className="chip affil">{affiliationLabel(char.affil)}</span>
-              {саб && <span className="chip branch">саб</span>}
-              {/*
-                Значка с трубкой больше нет. Он стоял подсказкой «здесь
-                открываются контакты», но занимал строку, которая и так
-                отдана имени, а открываются они и так — щелчком по самому
-                имени, оно и есть кнопка.
-              */}
-            </button>
+              {char.name || 'Без имени'}
+            </strong>
+          </button>
+          <span className="chip affil">{affiliationLabel(char.affil)}</span>
+        </div>
 
-            <div className="row-meta">
-              {cls && <span className="chip cls">{cls}</span>}
-              {level > 0 && <span className="chip lvl">ур. {level}</span>}
-              <PaChip pa={char.pa} />
+        <div className="mx-tabs">
+          {сабы.length > 0 ? (
+            <div className="segmented" role="group" aria-label="Ветка персонажа">
+              <button
+                type="button"
+                className={саб === null ? 'on' : ''}
+                title="Основная профессия"
+                onClick={() => setВыбранный(null)}
+              >
+                Осн.
+              </button>
+              {сабы.map((s, i) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  className={саб?.id === s.id ? 'on' : ''}
+                  title={s.cls ? `Саб-класс: ${s.cls}` : `Саб-класс ${i + 1}, профессия не указана`}
+                  onClick={() => setВыбранный(s.id)}
+                >
+                  {s.cls || `Саб ${i + 1}`}
+                </button>
+              ))}
             </div>
+          ) : (
+            <span className="mx-quiet">
+              {char.subUnlocked ? 'сабов нет' : 'сабы недоступны'}
+            </span>
+          )}
+          {саб && правый && (
+            <span className="mx-sub-tools">
+              <button
+                type="button"
+                className="mx-sub-act"
+                title="Сделать выбранный саб основной профессией. Основа встанет на его место"
+                onClick={() => действия.сделатьОсновой(саб.id)}
+              >
+                Осн.
+              </button>
+              <button
+                type="button"
+                className="mx-sub-act danger"
+                title="Удалить выбранный саб-класс вместе с его экипировкой"
+                onClick={() => действия.запроситьУдалениеСаба(саб.id)}
+              >
+                Удал.
+              </button>
+            </span>
+          )}
+        </div>
+      </div>
 
-            <div className="row-tabs">
-              {сабы.length > 0 ? (
-                <div className="segmented">
-                  <button
-                    type="button"
-                    className={саб === null ? 'on' : ''}
-                    title="Основная профессия"
-                    onClick={() => setВыбранный(null)}
-                  >
-                    Осн.
-                  </button>
-                  {сабы.map((s, i) => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      className={саб?.id === s.id ? 'on' : ''}
-                      title={s.cls ? `Саб-класс: ${s.cls}` : `Саб-класс ${i + 1}, профессия не указана`}
-                      onClick={() => setВыбранный(s.id)}
-                    >
-                      {s.cls || `Саб ${i + 1}`}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <span className="row-tabs-empty">{char.subUnlocked ? 'сабов нет' : 'сабы недоступны'}</span>
-              )}
-            </div>
-          </>
-        )}
+      <span className={`mx-role ${КЛАСС_РОЛИ[роль]}`} title={`Роль по классу: ${РОЛЬ_ПОДПИСЬ[роль]}`}>
+        {РОЛЬ_ПОДПИСЬ[роль]}
+      </span>
+
+      <div className="mx-class">
+        <b title={cls || undefined}>{cls || '—'}</b>
+        <small>{level > 0 ? `ур. ${level}` : 'уровень не указан'}</small>
       </div>
 
       {/*
-        Снаряжение идёт теми же тремя группами, что и в карточке: оружие,
-        броня, бижутерия. Порядок объявления слотов в справочнике для сравнения
-        ничего не значит — оружие оказалось бы вразнобой между бронёй и
-        бижутерией, и глаз цеплялся бы не за то.
+        Снаряжение — три группы по фиксированным ячейкам. Источник берётся
+        по группе: у оружия и брони он свой набор, у бижутерии — общий для
+        всех наборов, её не переодевают вместе с доспехом.
       */}
-      <div className="row-gear">
-        {SLOT_GROUPS.map((group, gi) => (
-          <div
-            key={group.key}
-            className="row-gear-group"
-            title={
-              group.key === 'weapon' && наборы.length > 1
-                ? 'Наборы оружия'
-                : group.key === 'armor' && броня.length > 1
-                  ? 'Наборы брони'
-                  : group.label
-            }
-          >
-            {gi > 0 && <span className="row-gear-gap" />}
-            {group.key === 'weapon'
-              ? наборы.flatMap((набор, наборIndex) => {
-                  const веткаНабора =
-                    наборIndex === 0 ? ветка : { ...ветка, weaponSet: наборIndex }
-                  return WEAPON_SLOTS.flatMap((key) =>
-                    (набор[key] ?? []).map((entry, i) => (
-                      <SlotIcon
-                        key={`weapon-${наборIndex}-${key}-${i}`}
-                        catalog={catalog}
-                        slot={key}
-                        entry={entry}
-                        правый={правый}
-                        onPick={() => onPick(веткаНабора, key, i)}
-                      />
-                    )),
-                  )
-                })
+      <div className="mx-gear">
+        {ГРУППЫ_МАТРИЦЫ.map((group) => {
+          const источник: Char['slots'] =
+            group.key === 'weapon'
+              ? weaponSetSlots(наборОружия)
               : group.key === 'armor'
-                ? броня.flatMap((набор, наборIndex) => {
-                    const веткаНабора =
-                      наборIndex === 0 ? ветка : { ...ветка, armorSet: наборIndex }
-                    return ARMOR_SLOTS.flatMap((key) =>
-                      (набор[key] ?? []).map((entry, i) => (
-                        <SlotIcon
-                          key={`armor-${наборIndex}-${key}-${i}`}
-                          catalog={catalog}
-                          slot={key}
-                          entry={entry}
-                          правый={правый}
-                          onPick={() => onPick(веткаНабора, key, i)}
-                        />
-                      )),
-                    )
-                  })
-                : group.slots.flatMap((key) =>
-                    (слоты[key] ?? []).map((entry, i) => (
-                      <SlotIcon
-                        key={key + i}
-                        catalog={catalog}
-                        slot={key}
-                        entry={entry}
-                        правый={правый}
-                        onPick={() => onPick(ветка, key, i)}
-                      />
-                    )),
-                  )}
-          </div>
-        ))}
+                ? armorSetSlots(наборБрони)
+                : слоты
+          const веткаГруппы: Branch =
+            group.key === 'weapon' && номерОружия > 0
+              ? { ...ветка, weaponSet: номерОружия }
+              : group.key === 'armor' && номерБрони > 0
+                ? { ...ветка, armorSet: номерБрони }
+                : ветка
+
+          return (
+            <div key={group.key} className={`mx-group ${group.key}`} title={group.label}>
+              <div className="mx-slots">
+                {group.slots.map((slot) => (
+                  <SlotIcon
+                    key={`${slot.key}-${slot.index}`}
+                    catalog={catalog}
+                    label={slot.label}
+                    entry={(источник[slot.key] ?? [])[slot.index] ?? null}
+                    правый={правый}
+                    onPick={() => onPick(веткаГруппы, slot.key, slot.index)}
+                  />
+                ))}
+              </div>
+            </div>
+          )
+        })}
       </div>
 
-      <div className="row-tail">
-        <span
-          className={`chip slots${занято === всего ? ' full' : ''}`}
-          title={`${занято} из ${всего} слотов занято`}
-        >
-          {занято} из {всего}
-        </span>
-        {саб && правый && (
-          <>
-            <button
-              type="button"
-              className="btn tiny sub-promote"
-              title="Сделать выбранный саб основной профессией. Основа встанет на его место"
-              onClick={() => действия.сделатьОсновой(саб.id)}
-            >
-              Сделать основой
-            </button>
-            <button
-              type="button"
-              className="btn tiny danger sub-del"
-              title="Удалить выбранный саб-класс вместе с его экипировкой"
-              onClick={() => действия.запроситьУдалениеСаба(саб.id)}
-            >
-              Удалить саб
-            </button>
-          </>
+      <div
+        className={`mx-count${занято === всего ? ' full' : ''}`}
+        title={`${занято} из ${всего} слотов занято${
+          наборы.length > 1
+            ? ` · оружие: набор ${номерОружия + 1} из ${наборы.length}`
+            : ''
+        }${броня.length > 1 ? ` · броня: набор ${номерБрони + 1} из ${броня.length}` : ''}`}
+      >
+        <b>
+          {занято}/{всего}
+        </b>
+        <small>слотов</small>
+        {наборы.length > 1 && (
+          <button
+            type="button"
+            className="mx-set"
+            title={`Набор оружия ${номерОружия + 1} из ${наборы.length}. Нажмите, чтобы показать следующий`}
+            onClick={() => setВыбранныйНабор((n) => (n + 1) % наборы.length)}
+          >
+            набор {номерОружия + 1}/{наборы.length}
+          </button>
         )}
+        {броня.length > 1 && (
+          <button
+            type="button"
+            className="mx-set"
+            title={`Набор брони ${номерБрони + 1} из ${броня.length}. Нажмите, чтобы показать следующий`}
+            onClick={() => setВыбраннаяБроня((n) => (n + 1) % броня.length)}
+          >
+            броня {номерБрони + 1}/{броня.length}
+          </button>
+        )}
+      </div>
+
+      <div className="mx-links">
+        {связи.length > 0 ? (
+          связи.map((строка) =>
+            строка.ссылка ? (
+              <a
+                key={строка.ключ}
+                className="mx-link"
+                href={строка.ссылка}
+                target={строка.ссылка.startsWith('http') ? '_blank' : undefined}
+                rel={строка.ссылка.startsWith('http') ? 'noreferrer' : undefined}
+                title={`${строка.подпись}: ${строка.значение}`}
+              >
+                {строка.иконка}
+              </a>
+            ) : (
+              <span
+                key={строка.ключ}
+                className="mx-link"
+                title={`${строка.подпись}: ${строка.значение}`}
+              >
+                {строка.иконка}
+              </span>
+            ),
+          )
+        ) : (
+          <span className="mx-none">—</span>
+        )}
+      </div>
+
+      <div className="mx-pa">
+        <PaChip pa={char.pa} compact />
       </div>
 
       {/*
@@ -255,34 +500,40 @@ export function CharRow({
  * Заточка показана только когда она есть. «+0» на каждом из двадцати
  * слотов всей пати — это двадцать нулей, которые ни о чём не говорят и
  * закрывают собой иконки; в карточке, где на персонажа двенадцать ячеек и
- * видно крупно, нули ещё терпимы, здесь — нет. Сама заточка видна целиком
- * и в подсказке.
+ * видно крупно, нули ещё терпимы, здесь — нет.
+ *
+ * Пустая ячейка у чужого персонажа — прочерк, а не плюс: плюс обещает
+ * действие, которого нет. У владельца она остаётся кнопкой, потому что
+ * надеть предмет можно и из этого вида.
  */
 function SlotIcon({
   catalog,
-  slot,
+  label,
   entry,
   правый,
   onPick,
 }: {
   catalog: CatalogApi
-  slot: SlotKey
-  entry: { itemId: number; mod?: number; spans?: boolean; sa?: string; rare?: boolean } | null
+  label: string
+  entry: SlotEntry | null
   правый: boolean
   onPick: () => void
 }) {
-  const def = SLOTS[slot]
-
   if (!entry) {
     if (!правый) {
       return (
-        <span className="slot-icon void ro" title={`${def.label}: пусто`}>
-          +
+        <span className="slot-icon void ro mx-empty" title={`${label}: пусто`}>
+          —
         </span>
       )
     }
     return (
-      <button className="slot-icon void" title={`${def.label}: пусто`} onClick={onPick}>
+      <button
+        type="button"
+        className="slot-icon void"
+        title={`${label}: пусто — надеть`}
+        onClick={onPick}
+      >
         +
       </button>
     )
@@ -292,26 +543,25 @@ function SlotIcon({
   const name = catalog.nameOf(entry.itemId)
   const mod = entry.mod ?? 0
   const ghost = entry.spans === true
+  const grade = gradeCode(item?.gradeName)
 
   return (
     <button
-      className={`slot-icon filled${ghost ? ' ghost' : ''}`}
+      type="button"
+      className={`slot-icon filled${ghost ? ' ghost' : ''}${grade !== null ? ` g${grade}` : ''}`}
       disabled={!правый}
-      title={
-        ghost
-          ? `${def.label}: ${name} · 2 слота`
-          : [
-              `${def.label}: ${name}`,
-              item?.gradeName ? `ранг ${item.gradeName}` : '',
-              `№${entry.itemId}`,
-              `заточка +${mod} из ${MAX_MOD}`,
-              entry.sa ? `SA: ${entry.sa}` : '',
-              entry.rare ? 'редкий эффект' : '',
-              правый ? '' : 'только просмотр',
-            ]
-              .filter(Boolean)
-              .join(' · ')
-      }
+      title={[
+        `${label}: ${name}`,
+        item?.gradeName ? `ранг ${item.gradeName}` : '',
+        `№${entry.itemId}`,
+        mod > 0 ? `заточка +${mod} из ${MAX_MOD}` : '',
+        entry.sa ? `SA: ${entry.sa}` : '',
+        entry.rare ? 'редкий эффект' : '',
+        ghost ? 'второй слот пары' : '',
+        правый ? '' : 'только просмотр',
+      ]
+        .filter(Boolean)
+        .join(' · ')}
       onClick={onPick}
     >
       <ItemIcon item={item} name={name} size={20} />

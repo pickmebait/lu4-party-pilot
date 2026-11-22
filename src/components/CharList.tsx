@@ -2,7 +2,7 @@ import { affiliationLabel, type Affiliation, type Char, type SlotKey } from '@/t
 import type { CatalogApi } from '@/lib/catalog'
 import type { Branch } from '@/lib/store'
 import { CharCard } from './CharCard'
-import { CharRow } from './CharRow'
+import { CharRow, CharRowFoot, CharRowHead } from './CharRow'
 
 /** Фильтр по принадлежности: любая из трёх либо показывать всех. */
 export type Фильтр = Affiliation | 'все'
@@ -10,9 +10,9 @@ export type Фильтр = Affiliation | 'все'
 /**
  * Вид раздела: карточки в строку или персонажи в столбец.
  *
- * Строка — привычный вид, где персонажа видно целиком. Колонка — для
- * сравнения: вся пати по вертикали, по одной строке на человека, и
- * видно сразу, у кого что надето.
+ * Строка — привычный вид, где персонажа видно целиком. Колонка — таблица
+ * для сравнения: вся пати по вертикали, двенадцать слотов на своих местах,
+ * видно сразу, у кого что надето и где дыры.
  */
 export type Вид = 'строка' | 'колонка'
 
@@ -69,15 +69,30 @@ export function СписокПерсонажей({
     )
   }
 
+  /*
+   * «Колонка» — одна таблица на всю пати, а не набор отдельных строк:
+   * шапка с подписями слотов должна быть общей, иначе двенадцать колонок
+   * не с чем сверить, а границы строк складываются в общую сетку.
+   */
+  if (вид === 'колонка') {
+    return (
+      <div className="chars-matrix">
+        <div className="mx-scroll">
+          <CharRowHead />
+          {chars.map((c) => (
+            <CharRow key={c.id} char={c} catalog={catalog} onPick={onPick} />
+          ))}
+        </div>
+        <CharRowFoot />
+      </div>
+    )
+  }
+
   return (
     <>
-      {chars.map((c) =>
-        вид === 'строка' ? (
-          <CharCard key={c.id} char={c} catalog={catalog} onPick={onPick} />
-        ) : (
-          <CharRow key={c.id} char={c} catalog={catalog} onPick={onPick} />
-        ),
-      )}
+      {chars.map((c) => (
+        <CharCard key={c.id} char={c} catalog={catalog} onPick={onPick} />
+      ))}
     </>
   )
 }
