@@ -48,7 +48,7 @@
       "charId": "cmvjpene6hj7ony",
       "charName": "Sargor",
       "createdAt": "2026-10-22T15:36:38.235Z",
-      "lastUsedAt": "2026-11-22T20:55:12.258Z"
+      "lastUsedAt": "2026-11-22T21:00:43.717Z"
     },
     {
       "id": "hk9grvea26",
@@ -99,7 +99,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-22T20:55:12.258Z",
+    "updatedAt": "2026-11-22T21:00:43.717Z",
     "updatedBy": "Sargor",
     "chars": [
       {
@@ -1486,39 +1486,64 @@
           {
             "id": "smwsbf3sh148nbd",
             "cls": "Warsmith",
-            "level": 0,
+            "level": 49,
             "slots": {
               "rhand": [
-                null
+                {
+                  "itemId": 34933
+                }
               ],
               "lhand": [
-                null
+                {
+                  "itemId": 34933,
+                  "spans": true
+                }
               ],
               "head": [
-                null
+                {
+                  "itemId": 2414
+                }
               ],
               "chest": [
-                null
+                {
+                  "itemId": 398
+                }
               ],
               "legs": [
-                null
+                {
+                  "itemId": 418
+                }
               ],
               "gloves": [
-                null
+                {
+                  "itemId": 2455
+                }
               ],
               "feet": [
-                null
+                {
+                  "itemId": 2431
+                }
               ],
               "neck": [
-                null
+                {
+                  "itemId": 914
+                }
               ],
               "ear": [
-                null,
-                null
+                {
+                  "itemId": 851
+                },
+                {
+                  "itemId": 851
+                }
               ],
               "ring": [
-                null,
-                null
+                {
+                  "itemId": 885
+                },
+                {
+                  "itemId": 885
+                }
               ]
             }
           }
