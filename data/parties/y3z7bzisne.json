@@ -48,7 +48,7 @@
       "charId": "cmvjpene6hj7ony",
       "charName": "Sargor",
       "createdAt": "2026-10-22T15:36:38.235Z",
-      "lastUsedAt": "2026-11-22T21:00:43.717Z"
+      "lastUsedAt": "2026-11-22T21:00:54.762Z"
     },
     {
       "id": "hk9grvea26",
@@ -99,7 +99,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-22T21:00:43.717Z",
+    "updatedAt": "2026-11-22T21:00:54.762Z",
     "updatedBy": "Sargor",
     "chars": [
       {
@@ -1447,7 +1447,7 @@
           {
             "id": "smvy3dgzy1ks5uj",
             "cls": "Phantom Summoner",
-            "level": 49,
+            "level": 54,
             "slots": {
               "rhand": [
                 null
