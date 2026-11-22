@@ -47,7 +47,8 @@
       "hash": "9f9cd861437e169c43af9829f6be70609d16f67d949475488d7474683c8156b6",
       "charId": "cmvjpene6hj7ony",
       "charName": "Sargor",
-      "createdAt": "2026-10-22T15:36:38.235Z"
+      "createdAt": "2026-10-22T15:36:38.235Z",
+      "lastUsedAt": "2026-11-22T20:54:39.275Z"
     },
     {
       "id": "hk9grvea26",
@@ -98,8 +99,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-22T13:32:10.979Z",
-    "updatedBy": "Murzyaka",
+    "updatedAt": "2026-11-22T20:54:39.275Z",
+    "updatedBy": "Sargor",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1447,6 +1448,45 @@
             "id": "smvy3dgzy1ks5uj",
             "cls": "Phantom Summoner",
             "level": 49,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "id": "smwsbf3sh148nbd",
+            "cls": "",
+            "level": 0,
             "slots": {
               "rhand": [
                 null
