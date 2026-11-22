@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import {
   ARMOR_SLOTS,
   MAX_MOD,
@@ -8,18 +7,17 @@ import {
   affiliationLabel,
   type Char,
   type SlotKey,
-  type Sub,
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
-import { makeSubMain, removeChar, removeSub, updateChar, updateSub, type Branch } from '@/lib/store'
+import type { Branch } from '@/lib/store'
 import { armorSetsOf, weaponSetsOf } from '@/lib/slots'
 import { ItemIcon } from './ItemIcon'
 import { useПерсонаж } from '@/lib/useChar'
+import { useДействияПерсонажа } from '@/lib/useCharActions'
 import { CharEditForm } from './CharEditForm'
-import { ContactsModal } from './ContactsModal'
+import { CharDialogs } from './CharDialogs'
 import { IconUser } from './Icons'
 import { PaChip } from './PaChip'
-import { ConfirmModal } from './ConfirmModal'
 
 /**
  * Персонаж строкой — второй вид раздела.
@@ -60,36 +58,26 @@ export function CharRow({
   const занято = счётчик.занято
   const всего = счётчик.всего
 
-  // Состояния правки и подтверждений — к персонажу не относятся, в отличие
-  // от выбранного саба, и живут здесь: у строки своя шапка без кнопок правки,
-  // а форму и окна удаления она всё равно открывает.
-  const [editing, setEditing] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  // Саб, который сейчас убирают: хранится именно он, а не флаг, потому
-  // что в подписи окна нужно назвать, что удаляется.
-  const [убираемыйСаб, setУбираемыйСаб] = useState<Sub | null>(null)
-  const [contactsOpen, setContactsOpen] = useState(false)
+  // Правка, контакты и подтверждения — те же действия, что и у карточки:
+  // разметка шапки своя, а последствия нажатий общие.
+  const действия = useДействияПерсонажа(char, саб, setВыбранный)
 
   return (
     <article className={`char-row${свой ? ' own' : ''}`}>
       <div className="row-id">
-        {editing ? (
+        {действия.editing ? (
           <CharEditForm
             char={char}
             саб={саб}
-            onDone={(патч, патчСаба) => {
-              updateChar(char.id, патч)
-              if (патчСаба) updateSub(char.id, саб!.id, патчСаба)
-              setEditing(false)
-            }}
-            onCancel={() => setEditing(false)}
+            onDone={действия.сохранить}
+            onCancel={действия.закрытьПравку}
           />
         ) : (
           <>
             <button
               className="row-name"
               title="Открыть контакты"
-              onClick={() => setContactsOpen(true)}
+              onClick={действия.открытьКонтакты}
             >
               <IconUser />
               {/*
@@ -230,9 +218,7 @@ export function CharRow({
               type="button"
               className="btn tiny sub-promote"
               title="Сделать выбранный саб основной профессией. Основа встанет на его место"
-              onClick={() => {
-                if (makeSubMain(char.id, саб.id)) setВыбранный(null)
-              }}
+              onClick={() => действия.сделатьОсновой(саб.id)}
             >
               Сделать основой
             </button>
@@ -240,7 +226,7 @@ export function CharRow({
               type="button"
               className="btn tiny danger sub-del"
               title="Удалить выбранный саб-класс вместе с его экипировкой"
-              onClick={() => setУбираемыйСаб(саб)}
+              onClick={() => действия.запроситьУдалениеСаба(саб.id)}
             >
               Удалить саб
             </button>
@@ -248,49 +234,17 @@ export function CharRow({
         )}
       </div>
 
-      {contactsOpen && (
-        <ContactsModal
-          char={char}
-          правый={правый}
-          onClose={() => {
-            setContactsOpen(false)
-            setConfirmDelete(false)
-          }}
-        />
-      )}
-
       {/*
-        Окно подтверждения вместо полоски «Да / Нет» в строке: полоска стояла
+        Окна подтверждения вместо полоски «Да / Нет» в строке: полоска стояла
         вплотную к кнопке удаления и читалась как часть строки, а не как
-        отдельное решение. Открывается отсюда же, если удаление вызвать
-        удалённым способом.
+        отдельное решение. Сами окна общие с карточкой.
       */}
-      {confirmDelete && (
-        <ConfirmModal
-          заголовок={`Удалить «${char.name || 'персонажа'}»?`}
-          текст="Вместе с персонажем пропадёт его снаряжение, отсутствия и контакты. Восстановить это нельзя — придётся собирать заново."
-          кнопка="Удалить"
-          onConfirm={() => {
-            removeChar(char.id)
-            setConfirmDelete(false)
-          }}
-          onCancel={() => setConfirmDelete(false)}
-        />
-      )}
-
-      {убираемыйСаб && (
-        <ConfirmModal
-          заголовок={`Удалить саб-класс${убираемыйСаб.cls ? ` «${убираемыйСаб.cls}»` : ''}?`}
-          текст="Вместе с саб-классом пропадёт его снаряжение. Основная профессия и остальные сабы не пострадают."
-          кнопка="Удалить саб"
-          onConfirm={() => {
-            removeSub(char.id, убираемыйСаб.id)
-            setВыбранный(null)
-            setУбираемыйСаб(null)
-          }}
-          onCancel={() => setУбираемыйСаб(null)}
-        />
-      )}
+      <CharDialogs
+        char={char}
+        правый={правый}
+        действия={действия}
+        onCloseContacts={действия.закрытьУдаление}
+      />
     </article>
   )
 }

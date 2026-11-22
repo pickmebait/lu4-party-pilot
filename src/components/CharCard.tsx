@@ -1,20 +1,18 @@
-import { useState } from 'react'
 import {
   affiliationLabel,
   type Char,
   type SlotKey,
-  type Sub,
 } from '@/types'
 import type { CatalogApi } from '@/lib/catalog'
-import { makeSubMain, removeChar, removeSub, updateChar, updateSub, type Branch } from '@/lib/store'
+import type { Branch } from '@/lib/store'
 import { useПерсонаж } from '@/lib/useChar'
+import { useДействияПерсонажа } from '@/lib/useCharActions'
 import { CharEditForm } from './CharEditForm'
-import { ContactsModal } from './ContactsModal'
+import { CharDialogs } from './CharDialogs'
 import { ContactsBlock } from './ContactsBlock'
 import { GearStack } from './GearStack'
 import { SubBar } from './SubBar'
 import { PaChip } from './PaChip'
-import { ConfirmModal } from './ConfirmModal'
 import { IconCheck } from './Icons'
 
 /**
@@ -37,17 +35,11 @@ export function CharCard({
   catalog: CatalogApi
   onPick: (target: Branch, slot: SlotKey, index: number) => void
 }) {
-  const [editing, setEditing] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  // Саб, который сейчас убирают. Хранится именно он, а не флаг: в подписи
-  // окна нужно назвать, что удаляется, и у флага не было бы что показать.
-  const [убираемыйСаб, setУбираемыйСаб] = useState<Sub | null>(null)
-  const [editContacts, setEditContacts] = useState(false)
-
   // Ветка, слоты, права и счётчик занятых слотов выводит общий хук: то же
   // самое нужно строке, и выводить это дважды значило бы однажды разойтись.
   const { сабы, саб, выбратьСаб: setВыбранный, ветка, слоты, допНаборы, допБроня, cls, level, правый, свой, счётчик } =
     useПерсонаж(char)
+  const действия = useДействияПерсонажа(char, саб, setВыбранный)
 
   const filled = счётчик.занято
   const total = счётчик.всего
@@ -59,19 +51,13 @@ export function CharCard({
   return (
     <article className={`char-card${свой ? ' own' : ''}`}>
       <header className="char-head">
-        {editing ? (
+        {действия.editing ? (
           <div className="char-id">
             <CharEditForm
               char={char}
               саб={саб}
-              onDone={(патч, патчСаба) => {
-                // Профессия и уровень принадлежат ветке: у саба свои. Имя и
-                // принадлежность — самому персонажу, и правятся вместе с ним.
-                updateChar(char.id, патч)
-                if (патчСаба) updateSub(char.id, саб!.id, патчСаба)
-                setEditing(false)
-              }}
-              onCancel={() => setEditing(false)}
+              onDone={действия.сохранить}
+              onCancel={действия.закрытьПравку}
             />
           </div>
         ) : (
@@ -109,7 +95,7 @@ export function CharCard({
                   <button
                     className="icon-btn"
                     title="Редактировать персонажа"
-                    onClick={() => setEditing(true)}
+                    onClick={действия.открытьПравку}
                   >
                     ✎
                   </button>
@@ -129,14 +115,14 @@ export function CharCard({
                   <button
                     className={`icon-btn${контактов === 0 ? ' suggest' : ''}`}
                     title={контактов > 0 ? 'Изменить контакты' : 'Указать контакты'}
-                    onClick={() => setEditContacts(true)}
+                    onClick={действия.открытьКонтакты}
                   >
                     ✆
                   </button>
                   <button
                     className="icon-btn danger"
                     title="Удалить персонажа"
-                    onClick={() => setConfirmDelete(true)}
+                    onClick={действия.открытьУдаление}
                   >
                     🗑
                   </button>
@@ -179,7 +165,7 @@ export function CharCard({
               <PaChip pa={char.pa} compact />
             </div>
 
-            <ContactsBlock char={char} onEdit={правый ? () => setEditContacts(true) : undefined} />
+            <ContactsBlock char={char} onEdit={правый ? действия.открытьКонтакты : undefined} />
           </>
         )}
       </header>
@@ -190,10 +176,8 @@ export function CharCard({
         активный={саб?.id ?? null}
         правый={правый}
         onSelect={setВыбранный}
-        onPromote={(id) => {
-          if (makeSubMain(char.id, id)) setВыбранный(null)
-        }}
-        onRemove={(id) => setУбираемыйСаб(сабы.find((s) => s.id === id) ?? null)}
+        onPromote={действия.сделатьОсновой}
+        onRemove={действия.запроситьУдалениеСаба}
       />
 
       <GearStack
@@ -206,41 +190,13 @@ export function CharCard({
         onPick={onPick}
       />
 
-      {editContacts && (
-        <ContactsModal char={char} правый={правый} onClose={() => setEditContacts(false)} />
-      )}
-
       {/*
         Удаление персонажа и саб-класса спрашивает в окне, а не полоской под
         шапкой: полоска с двумя кнопками «Да» и «Нет» стояла рядом с кнопкой
         удаления и выглядела частью карточки, а не отдельным решением.
+        Сами окна общие со строкой.
       */}
-      {confirmDelete && (
-        <ConfirmModal
-          заголовок={`Удалить «${char.name || 'персонажа'}»?`}
-          текст="Вместе с персонажем пропадёт его снаряжение, отсутствия и контакты. Восстановить это нельзя — придётся собирать заново."
-          кнопка="Удалить"
-          onConfirm={() => {
-            removeChar(char.id)
-            setConfirmDelete(false)
-          }}
-          onCancel={() => setConfirmDelete(false)}
-        />
-      )}
-
-      {убираемыйСаб && (
-        <ConfirmModal
-          заголовок={`Удалить саб-класс${убираемыйСаб.cls ? ` «${убираемыйСаб.cls}»` : ''}?`}
-          текст="Вместе с саб-классом пропадёт его снаряжение. Основная профессия и остальные сабы не пострадают."
-          кнопка="Удалить саб"
-          onConfirm={() => {
-            removeSub(char.id, убираемыйСаб.id)
-            setВыбранный(null)
-            setУбираемыйСаб(null)
-          }}
-          onCancel={() => setУбираемыйСаб(null)}
-        />
-      )}
+      <CharDialogs char={char} правый={правый} действия={действия} />
     </article>
   )
 }
