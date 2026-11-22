@@ -48,7 +48,7 @@
       "charId": "cmvjpene6hj7ony",
       "charName": "Sargor",
       "createdAt": "2026-10-22T15:36:38.235Z",
-      "lastUsedAt": "2026-11-22T20:54:39.275Z"
+      "lastUsedAt": "2026-11-22T20:55:12.258Z"
     },
     {
       "id": "hk9grvea26",
@@ -99,7 +99,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-22T20:54:39.275Z",
+    "updatedAt": "2026-11-22T20:55:12.258Z",
     "updatedBy": "Sargor",
     "chars": [
       {
@@ -1485,7 +1485,7 @@
           },
           {
             "id": "smwsbf3sh148nbd",
-            "cls": "",
+            "cls": "Warsmith",
             "level": 0,
             "slots": {
               "rhand": [
