@@ -87,7 +87,7 @@
       "charId": "cmwq66t2r1qd67x",
       "charName": "MGR",
       "createdAt": "2026-11-21T09:00:05.320Z",
-      "lastUsedAt": "2026-11-23T11:37:36.984Z"
+      "lastUsedAt": "2026-11-23T11:38:22.789Z"
     },
     {
       "id": "sxztnw2dbw",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-23T11:37:36.984Z",
+    "updatedAt": "2026-11-23T11:38:22.789Z",
     "updatedBy": "MGR",
     "chars": [
       {
@@ -2004,33 +2004,34 @@
             }
           ],
           "lhand": [
-            {
-              "itemId": 2497
-            }
+            null
           ],
           "head": [
             {
-              "itemId": 2416
+              "itemId": 2417
             }
           ],
           "chest": [
             {
-              "itemId": 358
+              "itemId": 2392,
+              "rare": true
             }
           ],
           "legs": [
             {
-              "itemId": 2380
+              "itemId": 2392,
+              "spans": true,
+              "rare": true
             }
           ],
           "gloves": [
             {
-              "itemId": 5718
+              "itemId": 5723
             }
           ],
           "feet": [
             {
-              "itemId": 5734
+              "itemId": 5739
             }
           ],
           "neck": [
@@ -2069,34 +2070,33 @@
                 }
               ],
               "lhand": [
-                null
+                {
+                  "itemId": 2497
+                }
               ],
               "head": [
                 {
-                  "itemId": 2417
+                  "itemId": 2416
                 }
               ],
               "chest": [
                 {
-                  "itemId": 2392,
-                  "rare": true
+                  "itemId": 358
                 }
               ],
               "legs": [
                 {
-                  "itemId": 2392,
-                  "spans": true,
-                  "rare": true
+                  "itemId": 2380
                 }
               ],
               "gloves": [
                 {
-                  "itemId": 5723
+                  "itemId": 5718
                 }
               ],
               "feet": [
                 {
-                  "itemId": 5739
+                  "itemId": 5734
                 }
               ],
               "neck": [
