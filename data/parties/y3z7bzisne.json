@@ -87,7 +87,7 @@
       "charId": "cmwq66t2r1qd67x",
       "charName": "MGR",
       "createdAt": "2026-11-21T09:00:05.320Z",
-      "lastUsedAt": "2026-11-23T12:20:13.901Z"
+      "lastUsedAt": "2026-11-23T12:20:31.485Z"
     },
     {
       "id": "sxztnw2dbw",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-23T12:20:13.901Z",
+    "updatedAt": "2026-11-23T12:20:31.485Z",
     "updatedBy": "MGR",
     "chars": [
       {
@@ -2192,8 +2192,8 @@
           },
           {
             "id": "smwt731ae5nb3bb",
-            "cls": "",
-            "level": 0,
+            "cls": "Phantom Ranger",
+            "level": 42,
             "slots": {
               "rhand": [
                 null
