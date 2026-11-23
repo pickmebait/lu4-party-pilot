@@ -87,7 +87,7 @@
       "charId": "cmwq66t2r1qd67x",
       "charName": "MGR",
       "createdAt": "2026-11-21T09:00:05.320Z",
-      "lastUsedAt": "2026-11-23T11:41:18.607Z"
+      "lastUsedAt": "2026-11-23T11:41:31.980Z"
     },
     {
       "id": "sxztnw2dbw",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-23T11:41:18.607Z",
+    "updatedAt": "2026-11-23T11:41:31.980Z",
     "updatedBy": "MGR",
     "chars": [
       {
@@ -2207,7 +2207,9 @@
                 }
               ],
               "chest": [
-                null
+                {
+                  "itemId": 398
+                }
               ],
               "legs": [
                 null
