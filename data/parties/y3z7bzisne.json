@@ -87,7 +87,7 @@
       "charId": "cmwq66t2r1qd67x",
       "charName": "MGR",
       "createdAt": "2026-11-21T09:00:05.320Z",
-      "lastUsedAt": "2026-11-23T11:35:17.597Z"
+      "lastUsedAt": "2026-11-23T11:35:34.946Z"
     },
     {
       "id": "sxztnw2dbw",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-23T11:35:17.597Z",
+    "updatedAt": "2026-11-23T11:35:34.946Z",
     "updatedBy": "MGR",
     "chars": [
       {
@@ -1999,39 +1999,42 @@
         "slots": {
           "rhand": [
             {
-              "itemId": 231,
-              "sa": "Focus"
+              "itemId": 97,
+              "mod": 1,
+              "sa": "Health"
             }
           ],
           "lhand": [
-            null
+            {
+              "itemId": 97,
+              "mod": 1,
+              "spans": true,
+              "sa": "Health"
+            }
           ],
           "head": [
             {
-              "itemId": 2417
+              "itemId": 2416
             }
           ],
           "chest": [
             {
-              "itemId": 2392,
-              "rare": true
+              "itemId": 358
             }
           ],
           "legs": [
             {
-              "itemId": 2392,
-              "spans": true,
-              "rare": true
+              "itemId": 2380
             }
           ],
           "gloves": [
             {
-              "itemId": 5723
+              "itemId": 5718
             }
           ],
           "feet": [
             {
-              "itemId": 5739
+              "itemId": 5734
             }
           ],
           "neck": [
@@ -2065,42 +2068,39 @@
             "slots": {
               "rhand": [
                 {
-                  "itemId": 97,
-                  "mod": 1,
-                  "sa": "Health"
+                  "itemId": 231,
+                  "sa": "Focus"
                 }
               ],
               "lhand": [
-                {
-                  "itemId": 97,
-                  "mod": 1,
-                  "spans": true,
-                  "sa": "Health"
-                }
+                null
               ],
               "head": [
                 {
-                  "itemId": 2416
+                  "itemId": 2417
                 }
               ],
               "chest": [
                 {
-                  "itemId": 358
+                  "itemId": 2392,
+                  "rare": true
                 }
               ],
               "legs": [
                 {
-                  "itemId": 2380
+                  "itemId": 2392,
+                  "spans": true,
+                  "rare": true
                 }
               ],
               "gloves": [
                 {
-                  "itemId": 5718
+                  "itemId": 5723
                 }
               ],
               "feet": [
                 {
-                  "itemId": 5734
+                  "itemId": 5739
                 }
               ],
               "neck": [
