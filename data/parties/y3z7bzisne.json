@@ -87,7 +87,7 @@
       "charId": "cmwq66t2r1qd67x",
       "charName": "MGR",
       "createdAt": "2026-11-21T09:00:05.320Z",
-      "lastUsedAt": "2026-11-23T11:37:03.778Z"
+      "lastUsedAt": "2026-11-23T11:37:18.035Z"
     },
     {
       "id": "sxztnw2dbw",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-23T11:37:03.778Z",
+    "updatedAt": "2026-11-23T11:37:18.035Z",
     "updatedBy": "MGR",
     "chars": [
       {
@@ -2182,7 +2182,9 @@
                 {
                   "itemId": 895
                 },
-                null
+                {
+                  "itemId": 895
+                }
               ]
             }
           }
