@@ -2361,9 +2361,9 @@ main {
  * на своих местах: шлем под шлемом, кольцо под кольцом.
  *
  * Ширины колонок заданы один раз на таблице и повторяются в шапке и в
- * каждой строке. Имя тянется, снаряжение — нет: если бы ячейки слотов
- * подстраивались под содержимое, у одного персонажа они встали бы шире,
- * у другого уже, и вертикаль сломалась бы. На узком экране таблица
+ * каждой строке. Имя тоже фиксировано: растянутое на широком экране, оно
+ * отодвигало роль и всё остальное вправо, оставляя пустоту после ника.
+ * Таблица занимает столько, сколько нужно колонкам. На узком экране она
  * прокручивается вбок, а колонка имени остаётся на месте.
  */
 .chars-col {
@@ -2374,7 +2374,7 @@ main {
 }
 
 .chars-matrix {
-  --mx-id: minmax(264px, 1fr);
+  --mx-id: 270px;
   --mx-role: 66px;
   --mx-class: 136px;
   --mx-gear: 455px;
@@ -2385,6 +2385,8 @@ main {
   --mx-cell-gap: 3px;
   --mx-group-gap: 10px;
 
+  width: fit-content;
+  max-width: 100%;
   background: var(--bg-2);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -2426,7 +2428,7 @@ main {
     var(--mx-id) var(--mx-role) var(--mx-class) var(--mx-gear)
     var(--mx-count) var(--mx-links) var(--mx-pa);
   gap: 10px;
-  min-width: 1199px;
+  min-width: 1205px;
 }
 
 /* --------------------------------------------------------- шапка таблицы */
@@ -2613,23 +2615,6 @@ main {
   color: var(--accent-2);
 }
 
-/* Буква вместо аватара: в данных её нет, а строке нужен якорь слева. */
-.mx-ava {
-  display: inline-grid;
-  place-items: center;
-  flex: none;
-  width: 24px;
-  height: 24px;
-  border: 1px solid var(--accent-line);
-  border-radius: 6px;
-  background: var(--accent-deep);
-  color: var(--accent-2);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
 .mx-id-top .chip {
   flex: none;
   height: 15px;
@@ -2677,44 +2662,6 @@ main {
   line-height: 1.4;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-/*
- * Действия выбранного саба. В карточке они стоят отдельной полосой, здесь
- * ужимаются до двух подписей в строке с вкладками: третья строка подняла
- * бы одну строку таблицы над соседними.
- */
-.mx-sub-tools {
-  display: flex;
-  gap: 2px;
-  flex: none;
-}
-
-.mx-sub-act {
-  padding: 0 3px;
-  border: 1px dashed var(--line-2);
-  border-radius: 4px;
-  background: none;
-  color: var(--muted);
-  font: inherit;
-  font-size: 8px;
-  line-height: 14px;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.mx-sub-act:hover {
-  color: var(--text);
-  border-color: var(--line-2);
-}
-
-.mx-sub-act.danger {
-  border-color: var(--err-line);
-  color: var(--err-text);
-}
-
-.mx-sub-act.danger:hover {
-  background: var(--err-deep);
 }
 
 /* ------------------------------------------------------------ роль */
@@ -2794,7 +2741,7 @@ main {
 
 .mx-gear {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--mx-group-gap);
   min-width: 0;
 }
@@ -2853,11 +2800,19 @@ main {
 }
 
 /*
- * Переключатель набора: чтение, а не правка, поэтому живёт в счётчике.
- * Одна строка на набор — второй набор не добавляет ячеек в матрицу.
+ * Переключатель набора живёт под своей группой: под оружием написано
+ * «Оружие · 1/2», под бронёй — «Броня · 1/2». Так видно, к чему относится
+ * кнопка, а строка не растёт: место под подпись оставлено у всех.
  */
+.mx-set-line {
+  display: flex;
+  align-items: center;
+  height: 13px;
+  margin-top: 2px;
+}
+
 .mx-set {
-  align-self: flex-start;
+  max-width: 100%;
   padding: 0 4px;
   border: 1px solid var(--accent-line);
   border-radius: 4px;
@@ -2865,7 +2820,9 @@ main {
   color: var(--accent-2);
   font: inherit;
   font-size: 8px;
-  line-height: 13px;
+  line-height: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
   cursor: pointer;
 }
