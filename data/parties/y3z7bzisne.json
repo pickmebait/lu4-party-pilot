@@ -95,13 +95,13 @@
       "charId": "cmwq69mfp768etk",
       "charName": "VanillaRaf",
       "createdAt": "2026-11-21T09:00:46.488Z",
-      "lastUsedAt": "2026-11-23T08:53:11.453Z"
+      "lastUsedAt": "2026-11-23T11:36:23.709Z"
     }
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-23T11:36:18.611Z",
-    "updatedBy": "MGR",
+    "updatedAt": "2026-11-23T11:36:23.709Z",
+    "updatedBy": "VanillaRaf",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -2332,46 +2332,146 @@
       {
         "id": "cmwq69mfp768etk",
         "name": "VanillaRaf",
-        "cls": "",
-        "level": 0,
+        "cls": "Swordsinger",
+        "level": 72,
         "affil": "roster",
         "slots": {
           "rhand": [
-            null
+            {
+              "itemId": 234,
+              "sa": "Focus",
+              "rare": true
+            }
           ],
           "lhand": [
-            null
+            {
+              "itemId": 110
+            }
           ],
           "head": [
-            null
+            {
+              "itemId": 2416
+            }
           ],
           "chest": [
-            null
+            {
+              "itemId": 358
+            }
           ],
           "legs": [
-            null
+            {
+              "itemId": 2380
+            }
           ],
           "gloves": [
-            null
+            {
+              "itemId": 5718
+            }
           ],
           "feet": [
-            null
+            {
+              "itemId": 5734
+            }
           ],
           "neck": [
-            null
+            {
+              "itemId": 926
+            }
           ],
           "ear": [
-            null,
-            null
+            {
+              "itemId": 864
+            },
+            {
+              "itemId": 864
+            }
           ],
           "ring": [
-            null,
-            null
+            {
+              "itemId": 895
+            },
+            {
+              "itemId": 895
+            }
           ]
         },
-        "subUnlocked": false,
-        "subs": [],
-        "away": {}
+        "contacts": {
+          "realName": "Максим"
+        },
+        "subUnlocked": true,
+        "subs": [
+          {
+            "id": "smwt199pd1742qz",
+            "cls": "Plainswalker",
+            "level": 48,
+            "slots": {
+              "rhand": [
+                {
+                  "itemId": 34932,
+                  "mod": 4
+                }
+              ],
+              "lhand": [
+                {
+                  "itemId": 34932,
+                  "mod": 4,
+                  "spans": true
+                }
+              ],
+              "head": [
+                {
+                  "itemId": 46
+                }
+              ],
+              "chest": [
+                {
+                  "itemId": 398
+                }
+              ],
+              "legs": [
+                {
+                  "itemId": 418
+                }
+              ],
+              "gloves": [
+                {
+                  "itemId": 2455
+                }
+              ],
+              "feet": [
+                {
+                  "itemId": 2431
+                }
+              ],
+              "neck": [
+                {
+                  "itemId": 914
+                }
+              ],
+              "ear": [
+                {
+                  "itemId": 851
+                },
+                {
+                  "itemId": 851
+                }
+              ],
+              "ring": [
+                {
+                  "itemId": 882
+                },
+                {
+                  "itemId": 882
+                }
+              ]
+            }
+          }
+        ],
+        "away": {},
+        "pa": {
+          "from": "2026-10-10",
+          "days": 100
+        }
       }
     ],
     "warehouse": {
