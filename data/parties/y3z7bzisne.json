@@ -99,8 +99,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-22T21:00:54.762Z",
-    "updatedBy": "Sargor",
+    "updatedAt": "2026-11-23T06:43:53.319Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1213,7 +1213,11 @@
         },
         "subUnlocked": true,
         "subs": [],
-        "away": {}
+        "away": {
+          "2026-11-25": {
+            "whole": true
+          }
+        }
       },
       {
         "id": "cmvjpdktjft6xe4",
