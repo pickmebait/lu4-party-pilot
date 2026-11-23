@@ -95,13 +95,13 @@
       "charId": "cmwq69mfp768etk",
       "charName": "VanillaRaf",
       "createdAt": "2026-11-21T09:00:46.488Z",
-      "lastUsedAt": "2026-11-23T11:36:23.709Z"
+      "lastUsedAt": "2026-11-23T11:42:18.007Z"
     }
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-23T11:41:54.433Z",
-    "updatedBy": "MGR",
+    "updatedAt": "2026-11-23T11:42:18.007Z",
+    "updatedBy": "VanillaRaf",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
