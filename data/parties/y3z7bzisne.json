@@ -87,7 +87,7 @@
       "charId": "cmwq66t2r1qd67x",
       "charName": "MGR",
       "createdAt": "2026-11-21T09:00:05.320Z",
-      "lastUsedAt": "2026-11-23T11:30:50.613Z"
+      "lastUsedAt": "2026-11-23T11:31:09.741Z"
     },
     {
       "id": "sxztnw2dbw",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-23T11:30:50.613Z",
+    "updatedAt": "2026-11-23T11:31:09.741Z",
     "updatedBy": "MGR",
     "chars": [
       {
@@ -2020,12 +2020,14 @@
           "legs": [
             {
               "itemId": 2392,
-              "rare": true,
-              "spans": true
+              "spans": true,
+              "rare": true
             }
           ],
           "gloves": [
-            null
+            {
+              "itemId": 5723
+            }
           ],
           "feet": [
             null
