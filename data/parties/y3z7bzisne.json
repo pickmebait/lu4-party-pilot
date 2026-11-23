@@ -87,7 +87,7 @@
       "charId": "cmwq66t2r1qd67x",
       "charName": "MGR",
       "createdAt": "2026-11-21T09:00:05.320Z",
-      "lastUsedAt": "2026-11-23T11:33:15.384Z"
+      "lastUsedAt": "2026-11-23T11:33:20.775Z"
     },
     {
       "id": "sxztnw2dbw",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-23T11:33:15.384Z",
+    "updatedAt": "2026-11-23T11:33:20.775Z",
     "updatedBy": "MGR",
     "chars": [
       {
@@ -2066,14 +2066,16 @@
               "rhand": [
                 {
                   "itemId": 97,
+                  "mod": 1,
                   "sa": "Health"
                 }
               ],
               "lhand": [
                 {
                   "itemId": 97,
-                  "sa": "Health",
-                  "spans": true
+                  "mod": 1,
+                  "spans": true,
+                  "sa": "Health"
                 }
               ],
               "head": [
