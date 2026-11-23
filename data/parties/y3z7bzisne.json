@@ -87,7 +87,7 @@
       "charId": "cmwq66t2r1qd67x",
       "charName": "MGR",
       "createdAt": "2026-11-21T09:00:05.320Z",
-      "lastUsedAt": "2026-11-23T11:41:54.433Z"
+      "lastUsedAt": "2026-11-23T12:19:28.988Z"
     },
     {
       "id": "sxztnw2dbw",
@@ -100,8 +100,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-23T11:42:18.007Z",
-    "updatedBy": "VanillaRaf",
+    "updatedAt": "2026-11-23T12:19:28.988Z",
+    "updatedBy": "MGR",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1993,8 +1993,8 @@
       {
         "id": "cmwq66t2r1qd67x",
         "name": "MGR",
-        "cls": "",
-        "level": 0,
+        "cls": "Plainswalker",
+        "level": 64,
         "affil": "roster",
         "slots": {
           "rhand": [
