@@ -87,7 +87,7 @@
       "charId": "cmwq66t2r1qd67x",
       "charName": "MGR",
       "createdAt": "2026-11-21T09:00:05.320Z",
-      "lastUsedAt": "2026-11-23T11:41:37.990Z"
+      "lastUsedAt": "2026-11-23T11:41:47.110Z"
     },
     {
       "id": "sxztnw2dbw",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-23T11:41:37.990Z",
+    "updatedAt": "2026-11-23T11:41:47.110Z",
     "updatedBy": "MGR",
     "chars": [
       {
@@ -2217,7 +2217,9 @@
                 }
               ],
               "gloves": [
-                null
+                {
+                  "itemId": 2455
+                }
               ],
               "feet": [
                 null
