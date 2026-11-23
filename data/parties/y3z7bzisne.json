@@ -87,7 +87,7 @@
       "charId": "cmwq66t2r1qd67x",
       "charName": "MGR",
       "createdAt": "2026-11-21T09:00:05.320Z",
-      "lastUsedAt": "2026-11-23T11:35:34.946Z"
+      "lastUsedAt": "2026-11-23T11:35:45.370Z"
     },
     {
       "id": "sxztnw2dbw",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-23T11:35:34.946Z",
+    "updatedAt": "2026-11-23T11:35:45.370Z",
     "updatedBy": "MGR",
     "chars": [
       {
@@ -2123,6 +2123,45 @@
                 {
                   "itemId": 895
                 }
+              ]
+            }
+          },
+          {
+            "id": "smwt6w6s7246f7f",
+            "cls": "",
+            "level": 0,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
               ]
             }
           }
