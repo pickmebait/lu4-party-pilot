@@ -87,7 +87,7 @@
       "charId": "cmwq66t2r1qd67x",
       "charName": "MGR",
       "createdAt": "2026-11-21T09:00:05.320Z",
-      "lastUsedAt": "2026-11-23T11:28:31.008Z"
+      "lastUsedAt": "2026-11-23T11:28:58.580Z"
     },
     {
       "id": "sxztnw2dbw",
@@ -100,8 +100,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-23T08:31:40.189Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-11-23T11:28:58.580Z",
+    "updatedBy": "MGR",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
