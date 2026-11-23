@@ -87,7 +87,7 @@
       "charId": "cmwq66t2r1qd67x",
       "charName": "MGR",
       "createdAt": "2026-11-21T09:00:05.320Z",
-      "lastUsedAt": "2026-11-23T11:35:45.370Z"
+      "lastUsedAt": "2026-11-23T11:35:58.590Z"
     },
     {
       "id": "sxztnw2dbw",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-23T11:35:45.370Z",
+    "updatedAt": "2026-11-23T11:35:58.590Z",
     "updatedBy": "MGR",
     "chars": [
       {
@@ -2132,7 +2132,10 @@
             "level": 0,
             "slots": {
               "rhand": [
-                null
+                {
+                  "itemId": 231,
+                  "sa": "Focus"
+                }
               ],
               "lhand": [
                 null
