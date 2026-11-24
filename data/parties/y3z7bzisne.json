@@ -71,7 +71,7 @@
       "charId": "cmwq61oy41h41b9",
       "charName": "Murzyaka",
       "createdAt": "2026-11-21T08:59:02.721Z",
-      "lastUsedAt": "2026-11-24T05:36:28.603Z"
+      "lastUsedAt": "2026-11-24T09:33:27.724Z"
     },
     {
       "id": "4xxhbu3ug2",
@@ -100,8 +100,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-24T08:48:09.028Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-11-24T09:33:27.724Z",
+    "updatedBy": "Murzyaka",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1991,10 +1991,15 @@
             "level": 36,
             "slots": {
               "rhand": [
-                null
+                {
+                  "itemId": 34932
+                }
               ],
               "lhand": [
-                null
+                {
+                  "itemId": 34932,
+                  "spans": true
+                }
               ],
               "head": [
                 null
