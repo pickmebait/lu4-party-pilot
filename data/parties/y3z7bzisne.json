@@ -100,8 +100,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-24T05:36:28.603Z",
-    "updatedBy": "Murzyaka",
+    "updatedAt": "2026-11-24T08:48:03.816Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1214,7 +1214,11 @@
         },
         "subUnlocked": true,
         "subs": [],
-        "away": {}
+        "away": {
+          "2026-11-25": {
+            "whole": true
+          }
+        }
       },
       {
         "id": "cmvjpdktjft6xe4",
