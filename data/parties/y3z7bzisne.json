@@ -71,7 +71,7 @@
       "charId": "cmwq61oy41h41b9",
       "charName": "Murzyaka",
       "createdAt": "2026-11-21T08:59:02.721Z",
-      "lastUsedAt": "2026-11-24T09:34:06.168Z"
+      "lastUsedAt": "2026-11-24T09:34:33.224Z"
     },
     {
       "id": "4xxhbu3ug2",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-24T09:34:06.168Z",
+    "updatedAt": "2026-11-24T09:34:33.224Z",
     "updatedBy": "Murzyaka",
     "chars": [
       {
@@ -2031,7 +2031,9 @@
                 null
               ],
               "ring": [
-                null,
+                {
+                  "itemId": 882
+                },
                 null
               ]
             }
