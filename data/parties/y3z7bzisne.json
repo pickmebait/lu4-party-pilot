@@ -100,8 +100,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-24T09:34:59.786Z",
-    "updatedBy": "Murzyaka",
+    "updatedAt": "2026-11-24T12:39:47.164Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1219,6 +1219,9 @@
             "whole": true
           },
           "2026-11-27": {
+            "whole": true
+          },
+          "2026-11-24": {
             "whole": true
           }
         }
