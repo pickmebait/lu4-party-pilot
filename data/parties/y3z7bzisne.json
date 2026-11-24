@@ -71,7 +71,7 @@
       "charId": "cmwq61oy41h41b9",
       "charName": "Murzyaka",
       "createdAt": "2026-11-21T08:59:02.721Z",
-      "lastUsedAt": "2026-11-22T13:32:10.979Z"
+      "lastUsedAt": "2026-11-24T05:36:28.603Z"
     },
     {
       "id": "4xxhbu3ug2",
@@ -100,8 +100,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-23T13:20:04.259Z",
-    "updatedBy": "Zarra",
+    "updatedAt": "2026-11-24T05:36:28.603Z",
+    "updatedBy": "Murzyaka",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1904,7 +1904,8 @@
           ],
           "ear": [
             {
-              "itemId": 855
+              "itemId": 864,
+              "rare": true
             },
             {
               "itemId": 855
@@ -1930,6 +1931,46 @@
             "lhand": [
               null
             ]
+          },
+          {
+            "rhand": [
+              {
+                "itemId": 7888,
+                "sa": "Acumen"
+              }
+            ],
+            "lhand": [
+              null
+            ]
+          }
+        ],
+        "extraArmorSets": [
+          {
+            "head": [
+              {
+                "itemId": 547
+              }
+            ],
+            "chest": [
+              {
+                "itemId": 2400
+              }
+            ],
+            "legs": [
+              {
+                "itemId": 2405
+              }
+            ],
+            "gloves": [
+              {
+                "itemId": 5770
+              }
+            ],
+            "feet": [
+              {
+                "itemId": 5782
+              }
+            ]
           }
         ],
         "contacts": {
@@ -1940,7 +1981,7 @@
           {
             "id": "smwrv65yp1cs5w4",
             "cls": "Bounty Hunter",
-            "level": 33,
+            "level": 36,
             "slots": {
               "rhand": [
                 null
