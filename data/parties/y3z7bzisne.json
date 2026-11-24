@@ -71,7 +71,7 @@
       "charId": "cmwq61oy41h41b9",
       "charName": "Murzyaka",
       "createdAt": "2026-11-21T08:59:02.721Z",
-      "lastUsedAt": "2026-11-24T09:33:40.667Z"
+      "lastUsedAt": "2026-11-24T09:34:06.168Z"
     },
     {
       "id": "4xxhbu3ug2",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-24T09:33:40.667Z",
+    "updatedAt": "2026-11-24T09:34:06.168Z",
     "updatedBy": "Murzyaka",
     "chars": [
       {
@@ -2019,7 +2019,9 @@
                 null
               ],
               "feet": [
-                null
+                {
+                  "itemId": 2427
+                }
               ],
               "neck": [
                 null
