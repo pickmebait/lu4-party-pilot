@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-25T07:22:20.784Z",
+    "updatedAt": "2026-11-25T07:22:36.528Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -207,7 +207,7 @@
           {
             "id": "smvjolwxp1w64im",
             "cls": "Bounty Hunter",
-            "level": 55,
+            "level": 57,
             "slots": {
               "rhand": [
                 {
