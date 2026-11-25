@@ -40,7 +40,7 @@
       "charId": "cmvjpdktjft6xe4",
       "charName": "DOKTOP",
       "createdAt": "2026-10-22T15:35:47.746Z",
-      "lastUsedAt": "2026-11-25T11:00:27.520Z"
+      "lastUsedAt": "2026-11-25T11:07:25.640Z"
     },
     {
       "id": "64bxutry6w",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-25T11:00:27.520Z",
+    "updatedAt": "2026-11-25T11:07:25.640Z",
     "updatedBy": "DOKTOP",
     "chars": [
       {
@@ -1352,7 +1352,7 @@
           {
             "id": "smvk1459a1mr82g",
             "cls": "Bishop",
-            "level": 25,
+            "level": 52,
             "slots": {
               "rhand": [
                 null
@@ -1361,30 +1361,55 @@
                 null
               ],
               "head": [
-                null
+                {
+                  "itemId": 2416
+                }
               ],
               "chest": [
-                null
+                {
+                  "itemId": 2398
+                }
               ],
               "legs": [
-                null
+                {
+                  "itemId": 2403
+                }
               ],
               "gloves": [
-                null
+                {
+                  "itemId": 5720
+                }
               ],
               "feet": [
-                null
+                {
+                  "itemId": 5735
+                }
               ],
               "neck": [
-                null
+                {
+                  "itemId": 926,
+                  "mod": 3
+                }
               ],
               "ear": [
-                null,
-                null
+                {
+                  "itemId": 856,
+                  "mod": 3
+                },
+                {
+                  "itemId": 856,
+                  "mod": 3
+                }
               ],
               "ring": [
-                null,
-                null
+                {
+                  "itemId": 887,
+                  "mod": 3
+                },
+                {
+                  "itemId": 887,
+                  "mod": 3
+                }
               ]
             }
           }
