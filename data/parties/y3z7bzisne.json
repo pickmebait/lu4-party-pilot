@@ -32,7 +32,7 @@
       "charId": "cmvjpcx8wdx14b9",
       "charName": "zarra",
       "createdAt": "2026-10-22T15:35:18.275Z",
-      "lastUsedAt": "2026-11-25T06:58:46.916Z"
+      "lastUsedAt": "2026-11-25T06:59:06.371Z"
     },
     {
       "id": "sakgev6h3n",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-25T06:58:46.916Z",
+    "updatedAt": "2026-11-25T06:59:06.371Z",
     "updatedBy": "Zarra",
     "chars": [
       {
@@ -1200,7 +1200,8 @@
           ],
           "ear": [
             {
-              "itemId": 862
+              "itemId": 862,
+              "mod": 1
             },
             {
               "itemId": 862
@@ -1231,8 +1232,8 @@
               "lhand": [
                 {
                   "itemId": 78,
-                  "sa": "Focus",
-                  "spans": true
+                  "spans": true,
+                  "sa": "Focus"
                 }
               ],
               "head": [
