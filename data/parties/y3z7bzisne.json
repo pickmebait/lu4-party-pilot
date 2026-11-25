@@ -71,7 +71,7 @@
       "charId": "cmwq61oy41h41b9",
       "charName": "Murzyaka",
       "createdAt": "2026-11-21T08:59:02.721Z",
-      "lastUsedAt": "2026-11-24T09:34:59.786Z"
+      "lastUsedAt": "2026-11-25T06:46:48.218Z"
     },
     {
       "id": "4xxhbu3ug2",
@@ -100,8 +100,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-25T06:35:20.992Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-11-25T06:46:48.218Z",
+    "updatedBy": "Murzyaka",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1995,12 +1995,14 @@
             "slots": {
               "rhand": [
                 {
-                  "itemId": 34932
+                  "itemId": 34932,
+                  "mod": 4
                 }
               ],
               "lhand": [
                 {
                   "itemId": 34932,
+                  "mod": 4,
                   "spans": true
                 }
               ],
