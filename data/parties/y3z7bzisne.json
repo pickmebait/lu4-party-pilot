@@ -32,7 +32,7 @@
       "charId": "cmvjpcx8wdx14b9",
       "charName": "zarra",
       "createdAt": "2026-10-22T15:35:18.275Z",
-      "lastUsedAt": "2026-11-25T06:53:49.601Z"
+      "lastUsedAt": "2026-11-25T06:54:00.928Z"
     },
     {
       "id": "sakgev6h3n",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-25T06:53:49.601Z",
+    "updatedAt": "2026-11-25T06:54:00.928Z",
     "updatedBy": "Zarra",
     "chars": [
       {
@@ -1216,47 +1216,7 @@
           ]
         },
         "subUnlocked": true,
-        "subs": [
-          {
-            "id": "smwvrnzh91atzr6",
-            "cls": "Gladiator",
-            "level": 0,
-            "slots": {
-              "rhand": [
-                null
-              ],
-              "lhand": [
-                null
-              ],
-              "head": [
-                null
-              ],
-              "chest": [
-                null
-              ],
-              "legs": [
-                null
-              ],
-              "gloves": [
-                null
-              ],
-              "feet": [
-                null
-              ],
-              "neck": [
-                null
-              ],
-              "ear": [
-                null,
-                null
-              ],
-              "ring": [
-                null,
-                null
-              ]
-            }
-          }
-        ],
+        "subs": [],
         "away": {
           "2026-11-25": {
             "whole": true
