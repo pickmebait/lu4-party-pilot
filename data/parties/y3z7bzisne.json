@@ -32,7 +32,7 @@
       "charId": "cmvjpcx8wdx14b9",
       "charName": "zarra",
       "createdAt": "2026-10-22T15:35:18.275Z",
-      "lastUsedAt": "2026-11-25T06:54:16.709Z"
+      "lastUsedAt": "2026-11-25T06:55:59.419Z"
     },
     {
       "id": "sakgev6h3n",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-25T06:54:16.709Z",
+    "updatedAt": "2026-11-25T06:55:59.419Z",
     "updatedBy": "Zarra",
     "chars": [
       {
@@ -1216,7 +1216,47 @@
           ]
         },
         "subUnlocked": true,
-        "subs": [],
+        "subs": [
+          {
+            "id": "smwvrs42c10fiu4",
+            "cls": "",
+            "level": 0,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          }
+        ],
         "away": {
           "2026-11-25": {
             "whole": true
