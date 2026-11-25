@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-25T06:34:58.967Z",
+    "updatedAt": "2026-11-25T06:35:20.992Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -1690,17 +1690,10 @@
         "affil": "window",
         "slots": {
           "rhand": [
-            {
-              "itemId": 283,
-              "sa": "Focus"
-            }
+            null
           ],
           "lhand": [
-            {
-              "itemId": 283,
-              "sa": "Focus",
-              "spans": true
-            }
+            null
           ],
           "head": [
             null
@@ -11964,6 +11957,42 @@
             "mod": 0,
             "sa": "Focus"
           }
+        ]
+      },
+      {
+        "ts": "2026-11-25T06:35:13.960Z",
+        "кто": "Мастер",
+        "charId": "cmwizzyop3my3pe",
+        "вид": "слот",
+        "слот": "rhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 283,
+            "mod": 0,
+            "sa": "Focus"
+          }
+        ],
+        "стало": [
+          null
+        ]
+      },
+      {
+        "ts": "2026-11-25T06:35:13.960Z",
+        "кто": "Мастер",
+        "charId": "cmwizzyop3my3pe",
+        "вид": "слот",
+        "слот": "lhand",
+        "subId": null,
+        "было": [
+          {
+            "itemId": 283,
+            "mod": 0,
+            "sa": "Focus"
+          }
+        ],
+        "стало": [
+          null
         ]
       }
     ]
