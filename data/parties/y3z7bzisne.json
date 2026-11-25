@@ -32,7 +32,7 @@
       "charId": "cmvjpcx8wdx14b9",
       "charName": "zarra",
       "createdAt": "2026-10-22T15:35:18.275Z",
-      "lastUsedAt": "2026-11-25T06:55:59.419Z"
+      "lastUsedAt": "2026-11-25T06:58:46.916Z"
     },
     {
       "id": "sakgev6h3n",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-25T06:55:59.419Z",
+    "updatedAt": "2026-11-25T06:58:46.916Z",
     "updatedBy": "Zarra",
     "chars": [
       {
@@ -1219,40 +1219,67 @@
         "subs": [
           {
             "id": "smwvrs42c10fiu4",
-            "cls": "",
+            "cls": "Destroyer",
             "level": 0,
             "slots": {
               "rhand": [
-                null
+                {
+                  "itemId": 78,
+                  "sa": "Focus"
+                }
               ],
               "lhand": [
-                null
+                {
+                  "itemId": 78,
+                  "sa": "Focus",
+                  "spans": true
+                }
               ],
               "head": [
-                null
+                {
+                  "itemId": 503
+                }
               ],
               "chest": [
-                null
+                {
+                  "itemId": 2384
+                }
               ],
               "legs": [
-                null
+                {
+                  "itemId": 2388
+                }
               ],
               "gloves": [
-                null
+                {
+                  "itemId": 5711
+                }
               ],
               "feet": [
-                null
+                {
+                  "itemId": 5727
+                }
               ],
               "neck": [
-                null
+                {
+                  "itemId": 926
+                }
               ],
               "ear": [
-                null,
-                null
+                {
+                  "itemId": 864
+                },
+                {
+                  "itemId": 864
+                }
               ],
               "ring": [
-                null,
-                null
+                {
+                  "itemId": 895
+                },
+                {
+                  "itemId": 895
+                }
               ]
             }
           }
