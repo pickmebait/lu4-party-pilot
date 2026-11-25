@@ -9436,3 +9436,740 @@ a.mx-link:hover {
     max-height: none;
   }
 }
+
+/* ============================================================ знак «Компас» */
+
+/*
+ * Контур собирается при появлении, дальше знак живёт пульсом. Штрихи на
+ * pathLength="1" рисуются одинаково и в шапке 30 px, и на лендинге 38 px.
+ */
+.logo .logo-mark {
+  display: block;
+  width: 30px;
+  height: 30px;
+}
+
+.logo-mark {
+  overflow: visible;
+  color: var(--accent);
+}
+
+.logo-mark .lm-line,
+.logo-mark .lm-halo {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.logo-mark .lm-line {
+  stroke-width: 3;
+}
+
+.logo-mark .lm-thin {
+  stroke-width: 1.4;
+  opacity: 0.6;
+}
+
+.logo-mark .lm-halo {
+  stroke-width: 1.1;
+  opacity: 0;
+}
+
+.logo-mark .lm-fill {
+  fill: currentColor;
+}
+
+.logo-mark .lm-node {
+  fill: var(--accent-2);
+}
+
+.logo-mark .lm-fill,
+.logo-mark .lm-node {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.logo-mark .lm-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: lmDraw 0.95s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.logo-mark .lm-halo {
+  animation: lmHalo 0.35s ease 0.36s forwards;
+}
+
+.logo-mark .lm-fill {
+  opacity: 0;
+  animation: lmPop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.36s forwards;
+}
+
+.logo-mark .lm-node {
+  opacity: 0;
+  animation:
+    lmPop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.36s forwards,
+    lmNodePulse 3.4s ease-in-out 1.35s infinite;
+}
+
+.logo-mark {
+  animation: lmBreathe 3.4s ease-in-out infinite;
+}
+
+.logo-mark .lm-slow {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  animation: lmSpin 30s linear infinite;
+}
+
+@keyframes lmDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes lmHalo {
+  to {
+    opacity: 0.22;
+  }
+}
+
+@keyframes lmPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  65% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes lmBreathe {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 rgba(212, 175, 55, 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 9px color-mix(in srgb, var(--accent) 42%, transparent));
+  }
+}
+
+@keyframes lmSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes lmNodePulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(0.82);
+  }
+}
+
+.landing .brand .logo .logo-mark {
+  display: block;
+  width: 26px;
+  height: 26px;
+}
+
+/* ================================================= движение интерфейса */
+
+/*
+ * Список собирается каскадом: строки входят одна за другой, а не появляются
+ * все сразу. Задержка ограничена первыми десятью — длинный состав не должен
+ * заставлять ждать последнюю карточку.
+ */
+.chars-grid > .char-card,
+.mx-scroll > .char-row {
+  animation: uiRowIn 0.38s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.chars-grid > :nth-child(2),
+.mx-scroll > :nth-child(2) {
+  animation-delay: 40ms;
+}
+.chars-grid > :nth-child(3),
+.mx-scroll > :nth-child(3) {
+  animation-delay: 80ms;
+}
+.chars-grid > :nth-child(4),
+.mx-scroll > :nth-child(4) {
+  animation-delay: 120ms;
+}
+.chars-grid > :nth-child(5),
+.mx-scroll > :nth-child(5) {
+  animation-delay: 160ms;
+}
+.chars-grid > :nth-child(6),
+.mx-scroll > :nth-child(6) {
+  animation-delay: 200ms;
+}
+.chars-grid > :nth-child(7),
+.mx-scroll > :nth-child(7) {
+  animation-delay: 240ms;
+}
+.chars-grid > :nth-child(8),
+.mx-scroll > :nth-child(8) {
+  animation-delay: 280ms;
+}
+.chars-grid > :nth-child(9),
+.mx-scroll > :nth-child(9) {
+  animation-delay: 320ms;
+}
+.chars-grid > :nth-child(10),
+.mx-scroll > :nth-child(10) {
+  animation-delay: 360ms;
+}
+.chars-grid > :nth-child(n + 11),
+.mx-scroll > :nth-child(n + 11) {
+  animation-delay: 400ms;
+}
+
+@keyframes uiRowIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+ * Ячейка снаряжения вспыхивает, когда в ней появляется предмет. Анимация
+ * висит на самом классе filled: класс меняется с void на filled ровно в
+ * момент выбора.
+ */
+.gear-cell.filled,
+.slot-icon.filled {
+  animation: uiSlotFill 0.46s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes uiSlotFill {
+  0% {
+    transform: scale(0.82);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 48%, transparent);
+  }
+  60% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 9px transparent;
+  }
+}
+
+/* Кольцо заполнения в плитке сводки. */
+.dash-kpi.has-ring {
+  padding-right: 44px;
+}
+
+.dash-kpi-ring {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  pointer-events: none;
+}
+
+.dash-kpi-ring svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.dash-kpi-ring circle {
+  fill: none;
+  stroke-width: 3.2;
+}
+
+.dash-kpi-ring-bg {
+  stroke: var(--line);
+}
+
+.dash-kpi-ring-fg {
+  stroke: var(--accent);
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--p));
+  animation: uiRingFill 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes uiRingFill {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: calc(1 - var(--p));
+  }
+}
+
+/* ------------------------------------------------------------------ статус */
+
+.sync-state {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+.sync-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid color-mix(in srgb, var(--accent-2) 24%, transparent);
+  border-top-color: var(--accent-2);
+  border-radius: 50%;
+  animation: uiSpin 0.7s linear infinite;
+}
+
+.sync-check {
+  color: var(--ok);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  animation: uiCheckIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.sync-bang {
+  color: var(--err);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/*
+ * Полоска срока жизни успешного сообщения. Тянется от целого к нулю ровно
+ * столько, сколько надпись проживёт на экране. У ошибки срока нет, поэтому
+ * полоски у неё тоже нет.
+ */
+.sync-bar {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  border-radius: 0 0 8px 8px;
+  background: var(--ok);
+  transform-origin: left;
+  animation: uiToastBar linear forwards;
+}
+
+@keyframes uiToastBar {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes uiSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes uiCheckIn {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Лента сообщений: на широком экране остаётся частью шапки. */
+.sync-feed {
+  display: contents;
+}
+
+/* --------------------------------------------------- переключатель-пилюля */
+
+/*
+ * Подложка едет к выбранной стороне, а не переезжает вместе с фоном кнопки.
+ * Ширина считается от padding box, поэтому 50% − 3px точно совпадает с
+ * половиной внутренней ширины.
+ */
+.seg-pill-switch {
+  position: relative;
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--bg-2);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.seg-pill-switch .seg-pill {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  height: calc(100% - 6px);
+  border: 1px solid var(--accent-line);
+  border-radius: 6px;
+  background: var(--accent-deep);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.seg-pill-switch[data-active='1'] .seg-pill {
+  transform: translateX(100%);
+}
+
+.seg-pill-switch button {
+  position: relative;
+  z-index: 1;
+  padding: 6px 12px;
+  border: 0;
+  background: none;
+}
+
+.seg-pill-switch button + button {
+  border-left: 0;
+}
+
+.seg-pill-switch button.on {
+  background: none;
+  color: var(--accent-2);
+}
+
+/* --------------------------------------------------- расписание: крупный вид */
+
+/*
+ * В недельном и «Ближайшем» видах семь колонок по 170 px шире телефона.
+ * Прокручивается сама сетка, а не вся страница: шапка и легенды остаются на
+ * месте, а колонки не сжимаются до нечитаемых.
+ */
+@media (max-width: 1220px), (max-height: 620px) {
+  .schedule-main .cal.cal-big .cal-grid-big {
+    min-width: 0;
+    width: 100%;
+    overflow-x: auto;
+  }
+}
+
+/* ============================================================ мобильный */
+
+@media (max-width: 760px) {
+  .app {
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /*
+   * Шапка в две строки: логотип с палитрой и доступом к пати, под ними
+   * прокручиваемые разделы. Раньше она переносилась как попало и занимала
+   * четверть экрана.
+   */
+  .top {
+    flex-wrap: wrap;
+    gap: 6px 8px;
+    padding-bottom: 6px;
+  }
+
+  .brand {
+    flex: 1 1 auto;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .brand > div {
+    min-width: 0;
+  }
+
+  .logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .logo .logo-mark {
+    width: 24px;
+    height: 24px;
+  }
+
+  .brand h1 {
+    overflow: hidden;
+    font-size: 14.5px;
+    line-height: 1.2;
+    letter-spacing: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .brand .stage,
+  .brand .tag {
+    display: none;
+  }
+
+  .palettes {
+    order: 1;
+    gap: 3px;
+    padding: 3px 5px;
+  }
+
+  .palette {
+    width: 11px;
+    height: 11px;
+  }
+
+  .sync {
+    order: 2;
+    flex: 0 0 auto;
+    max-width: none;
+    margin-left: 0;
+  }
+
+  .party-btn {
+    gap: 6px;
+    padding: 4px 8px;
+  }
+
+  .party-gear {
+    display: none;
+  }
+
+  .party-name {
+    max-width: 72px;
+    font-size: 11px;
+  }
+
+  .party-btn .party-role {
+    display: none;
+  }
+
+  .tabs {
+    order: 3;
+    flex: 1 1 100%;
+    gap: 0;
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tabs button {
+    flex: 0 0 auto;
+    padding: 5px 9px;
+  }
+
+  .tab-label {
+    font-size: 12px;
+  }
+
+  .tab-note {
+    font-size: 9.5px;
+  }
+
+  /*
+   * Сообщение синхронизации на телефоне — тост у нижнего края. В шапке для
+   * него нет места, а прятать ошибку нельзя: человек должен увидеть, что
+   * правка не ушла, и выбрать версию при конфликте.
+   */
+  .sync-feed {
+    position: fixed;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    left: 10px;
+    z-index: 95;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .sync-feed .sync-note {
+    display: block;
+  }
+
+  .sync-feed .sync-msg {
+    width: 100%;
+    max-width: none;
+    padding: 10px 12px;
+    border-left: 2px solid var(--accent);
+    background: color-mix(in srgb, var(--bg-2) 96%, transparent);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.42);
+    backdrop-filter: blur(12px);
+    animation: uiToastIn 0.26s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .sync-feed .sync-msg.ok {
+    border-left-color: var(--ok);
+  }
+
+  .sync-feed .sync-msg.err {
+    border-left-color: var(--err);
+  }
+
+  .sync-feed .sync-msg,
+  .sync-feed .sync-actions {
+    pointer-events: auto;
+  }
+
+  .sync-feed .sync-actions {
+    flex: 0 0 auto;
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .sync-feed .sync-actions .btn {
+    flex: 1 1 0;
+    white-space: normal;
+  }
+
+  .sync-tip {
+    right: 0;
+    max-width: calc(100vw - 44px);
+  }
+
+  @keyframes uiToastIn {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Сводка: четыре главные цифры в два ряда. */
+  .dash-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .dash-kpi {
+    min-height: 76px;
+    padding: 8px 9px 7px;
+  }
+
+  .dash-kpi.has-ring {
+    padding-right: 36px;
+  }
+
+  .dash-kpi-label {
+    font-size: 9.5px;
+    letter-spacing: 0.04em;
+  }
+
+  .dash-kpi-value {
+    font-size: 19px;
+  }
+
+  .dash-kpi-sub {
+    font-size: 9.5px;
+    line-height: 1.35;
+  }
+
+  .dash-kpi-ring {
+    top: 8px;
+    right: 7px;
+    width: 24px;
+    height: 24px;
+  }
+
+  /*
+   * Матрица: колонка имени остаётся закреплённой, но становится уже, чтобы
+   * на телефоне было видно не только имя, но и следующую колонку.
+   */
+  .chars-matrix {
+    --mx-id: min(42vw, 158px);
+    --mx-role: 56px;
+    --mx-class: 110px;
+    --mx-gear: minmax(360px, 1fr);
+    --mx-count: 42px;
+    --mx-links: 74px;
+    --mx-pa: 58px;
+    --mx-cell: 30px;
+    --mx-cell-gap: 2px;
+    --mx-group-gap: 6px;
+  }
+
+  .mx-head,
+  .char-row {
+    gap: 6px;
+    min-width: 920px;
+  }
+
+  .mx-id,
+  .mx-h-id {
+    padding-left: 8px;
+    box-shadow: 1px 0 0 var(--line);
+  }
+
+  /* Крупный календарь прокручивается внутри сетки, а не растягивает вкладку. */
+  .schedule-main .cal.cal-big .cal-grid-big {
+    grid-template-columns: repeat(7, minmax(150px, 1fr));
+    grid-auto-rows: clamp(220px, 32vh, 320px);
+  }
+}
+
+/* ---------------------------------------------------------- меньше движения */
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-mark,
+  .logo-mark .lm-slow,
+  .logo-mark .lm-line,
+  .logo-mark .lm-halo,
+  .logo-mark .lm-fill,
+  .logo-mark .lm-node,
+  .chars-grid > .char-card,
+  .mx-scroll > .char-row,
+  .gear-cell.filled,
+  .slot-icon.filled,
+  .dash-kpi-ring-fg,
+  .sync-spinner,
+  .sync-check,
+  .sync-bar,
+  .sync-feed .sync-msg {
+    animation: none !important;
+  }
+
+  .sync-bar {
+    display: none;
+  }
+
+  .logo-mark .lm-line {
+    stroke-dashoffset: 0;
+  }
+
+  .logo-mark .lm-halo {
+    opacity: 0.22;
+  }
+
+  .logo-mark .lm-fill,
+  .logo-mark .lm-node {
+    opacity: 1;
+  }
+
+  .seg-pill-switch .seg-pill {
+    transition: none;
+  }
+}

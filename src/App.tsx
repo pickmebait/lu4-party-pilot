@@ -9,6 +9,7 @@ import { ScheduleView } from './components/Schedule'
 import { SummaryView } from './components/Summary'
 import { Tagline } from './components/Tagline'
 import { AppTitle } from './components/AppTitle'
+import { LogoMark } from './components/LogoMark'
 import { startCatalogLoad, useCatalog } from './lib/catalog'
 import { computeSummary, usedItemIds, type Summary } from './lib/derived'
 import { openSession } from './lib/api'
@@ -173,7 +174,9 @@ export default function App() {
       */}
       <header className="top">
         <div className="brand">
-          <span className="logo">⚔</span>
+          <span className="logo">
+            <LogoMark />
+          </span>
           <div>
             <AppTitle />
             <Tagline />

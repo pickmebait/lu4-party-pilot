@@ -34,7 +34,33 @@ export function SyncMessage({
   return (
     <div className="sync-note">
       <div className={`sync-msg ${класс}`.trim()}>
+        <span
+          className={`sync-state ${
+            вид === 'идёт' ? 'busy' : вид === 'сделано' ? 'done' : 'failed'
+          }`}
+          aria-hidden="true"
+        >
+          {вид === 'идёт' ? (
+            <span className="sync-spinner" />
+          ) : вид === 'сделано' ? (
+            <span className="sync-check">✓</span>
+          ) : (
+            <span className="sync-bang">!</span>
+          )}
+        </span>
         <span className="sync-text">{сообщение.текст}</span>
+        {/*
+          * У успеха есть срок жизни, и полоска показывает его наглядно:
+          * сообщение исчезнет, но не внезапно посреди чтения. У ошибки срока
+          * нет — она живёт, пока человек не разберётся.
+          */}
+        {вид === 'сделано' && сообщение.убратьЧерезМс ? (
+          <span
+            className="sync-bar"
+            style={{ animationDuration: `${сообщение.убратьЧерезМс}ms` }}
+            aria-hidden="true"
+          />
+        ) : null}
         {естьПодробности && (
           <span
             className="sync-info"

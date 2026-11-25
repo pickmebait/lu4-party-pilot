@@ -574,6 +574,13 @@ export async function saveDb(
     }
   }
 
+  /*
+   * Запоминаем готовое тело. Если вкладку закроют до ответа, его можно будет
+   * отправить ещё раз без ожидания сжатия — на pagehide это ожидание уже
+   * может не пережить выгрузку страницы.
+   */
+  запомнитьТело(db.updatedAt, baseUpdatedAt, свернуто.тело)
+
   return call<{ updatedAt: string }>(apiUrl, '/api/party/data', {
     method: 'PUT',
     token,
@@ -582,6 +589,141 @@ export async function saveDb(
     ожидание: ОЖИДАНИЕ_ЗАПИСИ_МС,
     body: свернуто.тело,
   })
+}
+
+/** Готовое тело последнего сохранения: уходит с keepalive при уходе со страницы. */
+let последнееТело: { updatedAt: string; baseUpdatedAt: string; тело: string } | null = null
+
+/*
+ * Номер последней подготовки тела.
+ *
+ * Сжатие асинхронное, и две правки подряд могут готовиться одновременно.
+ * Без номера более ранняя могла бы закончить позже и подменить свежее тело
+ * старым — а на уходе со страницы времени проверять его ещё раз уже нет.
+ */
+let поколениеТела = 0
+
+function запомнитьТело(updatedAt: string, baseUpdatedAt: string, тело: string): void {
+  поколениеТела += 1
+  последнееТело = { updatedAt, baseUpdatedAt, тело }
+}
+
+/**
+ * Заранее собирает тело для отправки.
+ *
+ * На телефоне вкладку выгружают, не дожидаясь паузы автосохранения. Тело к
+ * этому моменту должно быть уже готово: сжатие большого JSON через
+ * CompressionStream — асинхронная работа, и на pagehide её никто не будет
+ * ждать. Поэтому после каждой правки готовим тело в фоне, пока человек ещё
+ * работает, а при уходе только отправляем его.
+ */
+export async function prepareDbUpload(db: Db, baseUpdatedAt: string): Promise<void> {
+  if (
+    последнееТело?.updatedAt === db.updatedAt &&
+    последнееТело.baseUpdatedAt === baseUpdatedAt
+  ) {
+    return
+  }
+
+  const поколение = ++поколениеТела
+  const свернуто = await ужатьТело({ db, baseUpdatedAt })
+  if (поколение !== поколениеТела || свернуто.велик) return
+  последнееТело = { updatedAt: db.updatedAt, baseUpdatedAt, тело: свернуто.тело }
+}
+
+/**
+ * Последняя запись при уходе со страницы.
+ *
+ * Мобильный браузер может выгрузить вкладку раньше, чем сработает пауза
+ * автосохранения, и обычный запрос в этот момент обрывается. keepalive
+ * позволяет браузеру довезти тело уже после закрытия страницы. Тело берём
+ * готовое от последней отправки или от prepareDbUpload; если его всё-таки
+ * нет, собираем на месте. Короткое тело уходит сразу, длинное приходится
+ * сжимать — поэтому готовить его заранее так важно.
+ */
+export async function saveDbKeepalive(
+  apiUrl: string,
+  token: string,
+  db: Db,
+  baseUpdatedAt: string,
+): Promise<ApiResult<{ updatedAt: string }>> {
+  let тело: string
+  if (последнееТело?.updatedAt === db.updatedAt && последнееТело.baseUpdatedAt === baseUpdatedAt) {
+    тело = последнееТело.тело
+  } else {
+    const простое = JSON.stringify({ db, baseUpdatedAt })
+    if (простое.length <= ПРЕДЕЛ_ОТПРАВКИ) {
+      тело = простое
+    } else {
+      const свернуто = await ужатьТело({ db, baseUpdatedAt })
+      if (свернуто.велик) {
+        return {
+          ok: false,
+          статус: 0,
+          error: `База не влезает в отправку: ${Math.round(свернуто.тело.length / 1024)} КБ при пределе 30 КБ.`,
+        }
+      }
+      тело = свернуто.тело
+    }
+  }
+
+  try {
+    const res = await fetch(`${apiUrl.replace(/\/+$/, '')}/api/party/data`, {
+      method: 'PUT',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: тело,
+      keepalive: true,
+    })
+
+    let json: unknown = null
+    try {
+      json = await res.json()
+    } catch {
+      // Пустой ответ не мешает разобрать код: ниже он и так важен.
+    }
+    const данные = json as { updatedAt?: string; error?: string; db?: Db } | null
+
+    if (res.ok && данные?.updatedAt) {
+      return {
+        ok: true,
+        value: { updatedAt: данные.updatedAt },
+        попыток: 1,
+        статус: res.status,
+      }
+    }
+
+    if (res.status === 403) {
+      return {
+        ok: false,
+        статус: res.status,
+        error: данные?.error ?? 'Недостаточно прав',
+        forbidden: данные?.db ? { db: данные.db } : undefined,
+      }
+    }
+    if (res.status === 409) {
+      return {
+        ok: false,
+        статус: res.status,
+        error: данные?.error ?? 'В базе есть более свежая версия',
+        conflict: данные?.db,
+      }
+    }
+    return {
+      ok: false,
+      статус: res.status,
+      error: данные?.error ?? `Сервер ответил ${res.status}`,
+    }
+  } catch (e) {
+    return {
+      ok: false,
+      статус: 0,
+      error: `Не удалось отправить правку при закрытии страницы: ${msg(e)}`,
+    }
+  }
 }
 
 export async function fetchMeta(apiUrl: string, token: string): Promise<ApiResult<PartyMeta>> {

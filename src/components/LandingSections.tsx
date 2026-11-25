@@ -2,6 +2,7 @@ import { APP_NAME } from '@/lib/brand'
 import type { AuthMode } from '@/lib/partyAuth'
 import { Login } from './Login'
 import { PaletteBar } from './PaletteBar'
+import { LogoMark } from './LogoMark'
 
 const РАЗДЕЛЫ = [
   { href: '#features', label: 'Возможности' },
@@ -15,7 +16,9 @@ export function LandingHeader({ onEnter }: { onEnter: () => void }) {
     <header className="site-head">
       <div className="wrap">
         <a className="brand" href="#top" aria-label={`${APP_NAME} — наверх`}>
-          <span className="logo">⚔</span>
+          <span className="logo">
+            <LogoMark />
+          </span>
           <span>
             {APP_NAME}
             <span className="stage">pre-alpha</span>

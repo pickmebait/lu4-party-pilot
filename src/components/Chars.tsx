@@ -76,7 +76,13 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
               </button>
             ))}
           </div>
-          <div className="segmented" role="group" aria-label="Вид раздела">
+          <div
+            className="segmented seg-pill-switch"
+            role="group"
+            aria-label="Вид раздела"
+            data-active={вид === 'строка' ? '0' : '1'}
+          >
+            <span className="seg-pill" aria-hidden="true" />
             {ВИДЫ.map((в) => (
               <button
                 key={в.key}

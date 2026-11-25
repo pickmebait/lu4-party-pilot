@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Db } from '@/types'
-import { fetchDb, saveDb } from '@/lib/api'
+import { fetchDb, prepareDbUpload, saveDb, saveDbKeepalive } from '@/lib/api'
 import { ктоЗатронут, одноИТоЖе, слитьСвое } from '@/lib/merge'
 import {
   авторПравки,
@@ -127,6 +127,8 @@ export function SyncBar() {
   const свойCharId = session.role === 'char' ? session.charId : null
   const загружается = useRef(false)
   const сохраняется = useRef(false)
+  /** Когда последний раз отправляли keepalive при уходе: visibilitychange и pagehide идут парой. */
+  const уходОтправлен = useRef(0)
   /**
    * Что мы последний раз отправляли на сервер.
    *
@@ -718,6 +720,76 @@ export function SyncBar() {
   }, [загрузить, формаОткрыта, ждатьДо, session.lastSyncedAt])
 
   /*
+   * Тело для отправки готовим заранее.
+   *
+   * Сжатие большой базы асинхронное, а на pagehide ждать его уже нельзя:
+   * браузер выгрузит страницу раньше. Поэтому после каждой правки, пока
+   * человек ещё работает, собираем тело в фоне — тогда при уходе остаётся
+   * только отправить готовое.
+   */
+  useEffect(() => {
+    if (формаОткрыта) return
+    if (!естьНесохранённое()) return
+    void prepareDbUpload(db, session.lastSyncedAt)
+  }, [db, формаОткрыта, session.lastSyncedAt])
+
+  /*
+   * Уход со страницы.
+   *
+   * Мобильный браузер выгружает вкладку, не дожидаясь паузы автосохранения:
+   * человек выбрал предмет, свернул приложение — и правка осталась только в
+   * памяти, а на сервер не ушла. Обычный запрос в этот момент обрывается
+   * вместе со страницей, поэтому отправляем короткий keepalive-запрос.
+   *
+   * Не ждём состояния «сейчас сохраняется»: именно зависшая отправка и
+   * обрывается при уходе. Если она всё-таки дошла, повтор с той же меткой
+   * сервер примет как свою же запись.
+   */
+  useEffect(() => {
+    const отправитьПриУходе = () => {
+      if (!естьНесохранённое()) return
+      const живое = getSession()
+      if (!живое) return
+
+      /*
+       * visibilitychange и pagehide приходят почти одновременно. Второй
+       * запрос с тем же телом ничего не улучшит, а на телефоне ещё и
+       * отнимает канал у первого.
+       */
+      if (Date.now() - уходОтправлен.current < 5000) return
+      уходОтправлен.current = Date.now()
+
+      const current = getDb()
+      void saveDbKeepalive(живое.apiUrl, живое.token, current, живое.lastSyncedAt).then(
+        (res) => {
+          if (!res.ok) return
+          /*
+           * Пока запрос летел, человек мог вернуться и продолжить править.
+           * Тогда метку не двигаем: следующее автосохранение отправит уже
+           * новую версию.
+           */
+          const теперь = getDb()
+          if (!одноИТоЖе(теперь, current)) return
+          replaceDb({ ...теперь, updatedAt: res.value.updatedAt })
+          updateSession({ lastSyncedAt: res.value.updatedAt })
+        },
+      )
+    }
+
+    const приСкрытии = () => {
+      if (document.visibilityState === 'hidden') отправитьПриУходе()
+    }
+    const приВыгрузке = () => отправитьПриУходе()
+
+    document.addEventListener('visibilitychange', приСкрытии)
+    window.addEventListener('pagehide', приВыгрузке)
+    return () => {
+      document.removeEventListener('visibilitychange', приСкрытии)
+      window.removeEventListener('pagehide', приВыгрузке)
+    }
+  }, [])
+
+  /*
    * Сообщение в разметке идёт раньше кнопки, а на экране оказывается слева от
    * неё: так полоса остаётся одной строкой и шапка не прыгает вниз каждый раз,
    * когда что-то сохранилось. Порядок задаёт не порядок в разметке, а
@@ -729,58 +801,60 @@ export function SyncBar() {
    */
   return (
     <div className="sync">
-      {state.kind === 'busy' && (
-        <SyncMessage вид="идёт" сообщение={state.note} onОткрытие={запомнитьОткрытие} />
-      )}
-      {state.kind === 'ok' && (
-        <SyncMessage вид="сделано" сообщение={state.note} onОткрытие={запомнитьОткрытие} />
-      )}
-      {state.kind === 'err' && (
-        <SyncMessage вид="ошибка" сообщение={state.note} onОткрытие={запомнитьОткрытие} />
-      )}
+      <div className="sync-feed">
+        {state.kind === 'busy' && (
+          <SyncMessage вид="идёт" сообщение={state.note} onОткрытие={запомнитьОткрытие} />
+        )}
+        {state.kind === 'ok' && (
+          <SyncMessage вид="сделано" сообщение={state.note} onОткрытие={запомнитьОткрытие} />
+        )}
+        {state.kind === 'err' && (
+          <SyncMessage вид="ошибка" сообщение={state.note} onОткрытие={запомнитьОткрытие} />
+        )}
+
+        {incoming && (
+          <div className="sync-actions">
+            <button
+              className="btn primary tiny"
+              onClick={() => {
+                replaceDb(incoming)
+                updateSession({ lastSyncedAt: incoming.updatedAt })
+                setIncoming(null)
+                setState({ kind: 'idle' })
+              }}
+            >
+              Взять версию из пати
+            </button>
+            <button
+              className="btn tiny"
+              onClick={() => {
+                /*
+                 * Оставить своё — значит записать своё поверх того, что в пати.
+                 *
+                 * Раньше кнопка просто закрывала выбор, и это было ловушкой:
+                 * метка оставалась прежней, автосохранение через паузу уходило с
+                 * ней снова и снова, и то же самое сообщение возвращалось к
+                 * человеку по кругу. Теперь метка становится свежей, правка
+                 * действительно уходит поверх чужой, а токен персонажа на
+                 * ответе о недостатке прав подставит в неё своего
+                 * персонажа, как и раньше.
+                 */
+                const серверная = incoming
+                setIncoming(null)
+                setState({ kind: 'busy', note: { текст: СЛОВА.сохраняю } })
+                updateSession({ lastSyncedAt: серверная.updatedAt })
+                void сохранить()
+              }}
+            >
+              Оставить мою
+            </button>
+          </div>
+        )}
+      </div>
 
       <div className="sync-main">
         <PartyMenu />
       </div>
-
-      {incoming && (
-        <div className="sync-actions">
-          <button
-            className="btn primary tiny"
-            onClick={() => {
-              replaceDb(incoming)
-              updateSession({ lastSyncedAt: incoming.updatedAt })
-              setIncoming(null)
-              setState({ kind: 'idle' })
-            }}
-          >
-            Взять версию из пати
-          </button>
-          <button
-            className="btn tiny"
-            onClick={() => {
-              /*
-               * Оставить своё — значит записать своё поверх того, что в пати.
-               *
-               * Раньше кнопка просто закрывала выбор, и это было ловушкой:
-               * метка оставалась прежней, автосохранение через паузу уходило с
-               * ней снова и снова, и то же самое сообщение возвращалось к
-               * человеку по кругу. Теперь метка становится свежей, правка
-               * действительно уходит поверх чужой, а токен персонажа на
-               * ответе о недостатке прав подставит в неё своего
-               * персонажа, как и раньше.
-               */
-              const серверная = incoming
-              setIncoming(null)
-              setState({ kind: 'busy', note: { текст: СЛОВА.сохраняю } })
-              updateSession({ lastSyncedAt: серверная.updatedAt })
-              void сохранить()
-            }}
-          >
-            Оставить мою
-          </button>
-        </div>
-      )}
     </div>
   )
 }

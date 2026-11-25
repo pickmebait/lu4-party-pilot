@@ -9,16 +9,40 @@ export function Kpi({
   label,
   value,
   sub,
+  progress,
 }: {
   label: string
   value: ReactNode
   sub: ReactNode
+  /**
+   * Заполнение кольца от 0 до 1. Кольцо показывает долю там, где рядом
+   * стоит пара чисел: «собрано из всего» читается быстрее, когда видно
+   * ещё и заполнение.
+   */
+  progress?: number
 }) {
+  const заполнение =
+    progress === undefined || !Number.isFinite(progress)
+      ? null
+      : Math.max(0, Math.min(1, progress))
+
   return (
-    <div className="dash-kpi">
+    <div className={`dash-kpi${заполнение === null ? '' : ' has-ring'}`}>
       <div className="dash-kpi-label">{label}</div>
       <div className="dash-kpi-value">{value}</div>
       <div className="dash-kpi-sub">{sub}</div>
+      {заполнение !== null && (
+        <span
+          className="dash-kpi-ring"
+          style={{ '--p': заполнение } as CSSProperties}
+          aria-hidden="true"
+        >
+          <svg viewBox="0 0 36 36">
+            <circle className="dash-kpi-ring-bg" cx="18" cy="18" r="15.5" pathLength={1} />
+            <circle className="dash-kpi-ring-fg" cx="18" cy="18" r="15.5" pathLength={1} />
+          </svg>
+        </span>
+      )}
     </div>
   )
 }
