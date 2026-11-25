@@ -32,7 +32,7 @@
       "charId": "cmvjpcx8wdx14b9",
       "charName": "zarra",
       "createdAt": "2026-10-22T15:35:18.275Z",
-      "lastUsedAt": "2026-11-25T08:03:37.443Z"
+      "lastUsedAt": "2026-11-25T08:05:04.357Z"
     },
     {
       "id": "sakgev6h3n",
@@ -100,8 +100,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-25T07:22:36.528Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-11-25T08:05:04.357Z",
+    "updatedBy": "Zarra",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1247,6 +1247,9 @@
             "whole": true
           },
           "2026-11-24": {
+            "whole": true
+          },
+          "2026-11-26": {
             "whole": true
           }
         },
