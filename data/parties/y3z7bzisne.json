@@ -32,7 +32,7 @@
       "charId": "cmvjpcx8wdx14b9",
       "charName": "zarra",
       "createdAt": "2026-10-22T15:35:18.275Z",
-      "lastUsedAt": "2026-11-25T06:54:00.928Z"
+      "lastUsedAt": "2026-11-25T06:54:16.709Z"
     },
     {
       "id": "sakgev6h3n",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-25T06:54:00.928Z",
+    "updatedAt": "2026-11-25T06:54:16.709Z",
     "updatedBy": "Zarra",
     "chars": [
       {
@@ -1148,7 +1148,7 @@
       {
         "id": "cmvjpcx8wdx14b9",
         "name": "Zarra",
-        "cls": "",
+        "cls": "Gladiator",
         "level": 0,
         "affil": "roster",
         "slots": {
