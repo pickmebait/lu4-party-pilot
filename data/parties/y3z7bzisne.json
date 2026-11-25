@@ -32,7 +32,7 @@
       "charId": "cmvjpcx8wdx14b9",
       "charName": "zarra",
       "createdAt": "2026-10-22T15:35:18.275Z",
-      "lastUsedAt": "2026-11-25T07:01:27.385Z"
+      "lastUsedAt": "2026-11-25T07:01:40.959Z"
     },
     {
       "id": "sakgev6h3n",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-25T07:01:27.385Z",
+    "updatedAt": "2026-11-25T07:01:40.959Z",
     "updatedBy": "Zarra",
     "chars": [
       {
@@ -1221,7 +1221,7 @@
           {
             "id": "smwvrs42c10fiu4",
             "cls": "Destroyer",
-            "level": 0,
+            "level": 51,
             "slots": {
               "rhand": [
                 {
