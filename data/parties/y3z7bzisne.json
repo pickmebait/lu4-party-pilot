@@ -71,7 +71,7 @@
       "charId": "cmwq61oy41h41b9",
       "charName": "Murzyaka",
       "createdAt": "2026-11-21T08:59:02.721Z",
-      "lastUsedAt": "2026-11-25T14:47:10.826Z"
+      "lastUsedAt": "2026-11-25T14:47:16.981Z"
     },
     {
       "id": "4xxhbu3ug2",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-25T14:47:10.826Z",
+    "updatedAt": "2026-11-25T14:47:16.981Z",
     "updatedBy": "Murzyaka",
     "chars": [
       {
@@ -2091,7 +2091,7 @@
           {
             "id": "smwrv65yp1cs5w4",
             "cls": "Bounty Hunter",
-            "level": 36,
+            "level": 38,
             "slots": {
               "rhand": [
                 {
