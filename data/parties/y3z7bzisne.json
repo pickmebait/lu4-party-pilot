@@ -40,7 +40,7 @@
       "charId": "cmvjpdktjft6xe4",
       "charName": "DOKTOP",
       "createdAt": "2026-10-22T15:35:47.746Z",
-      "lastUsedAt": "2026-11-25T11:09:38.268Z"
+      "lastUsedAt": "2026-11-25T11:09:55.197Z"
     },
     {
       "id": "64bxutry6w",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-25T11:09:38.268Z",
+    "updatedAt": "2026-11-25T11:09:55.197Z",
     "updatedBy": "DOKTOP",
     "chars": [
       {
@@ -1410,6 +1410,45 @@
                   "itemId": 887,
                   "mod": 3
                 }
+              ]
+            }
+          },
+          {
+            "id": "smww0ukri2jcfcx",
+            "cls": "",
+            "level": 0,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
               ]
             }
           }
