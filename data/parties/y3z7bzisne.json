@@ -100,8 +100,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-25T06:52:47.279Z",
-    "updatedBy": "Zarra",
+    "updatedAt": "2026-11-25T06:53:16.479Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1134,6 +1134,9 @@
             "whole": true
           },
           "2026-11-15": {
+            "whole": true
+          },
+          "2026-11-25": {
             "whole": true
           }
         },
