@@ -40,7 +40,7 @@
       "charId": "cmvjpdktjft6xe4",
       "charName": "DOKTOP",
       "createdAt": "2026-10-22T15:35:47.746Z",
-      "lastUsedAt": "2026-11-25T11:07:25.640Z"
+      "lastUsedAt": "2026-11-25T11:09:38.268Z"
     },
     {
       "id": "64bxutry6w",
@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-25T11:07:25.640Z",
+    "updatedAt": "2026-11-25T11:09:38.268Z",
     "updatedBy": "DOKTOP",
     "chars": [
       {
@@ -1262,7 +1262,7 @@
         "id": "cmvjpdktjft6xe4",
         "name": "DOKTOP",
         "cls": "Bounty Hunter",
-        "level": 74,
+        "level": 75,
         "affil": "decade",
         "slots": {
           "rhand": [
