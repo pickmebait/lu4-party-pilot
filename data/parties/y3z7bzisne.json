@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-25T07:22:13.733Z",
+    "updatedAt": "2026-11-25T07:22:20.784Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -269,36 +269,7 @@
                   "itemId": 887
                 }
               ]
-            },
-            "extraArmorSets": [
-              {
-                "head": [
-                  {
-                    "itemId": 2416
-                  }
-                ],
-                "chest": [
-                  {
-                    "itemId": 358
-                  }
-                ],
-                "legs": [
-                  {
-                    "itemId": 2380
-                  }
-                ],
-                "gloves": [
-                  {
-                    "itemId": 5718
-                  }
-                ],
-                "feet": [
-                  {
-                    "itemId": 5734
-                  }
-                ]
-              }
-            ]
+            }
           },
           {
             "id": "smvjom1e73m4i48",
@@ -12087,6 +12058,96 @@
             "itemId": 300,
             "mod": 0,
             "sa": "Health"
+          }
+        ],
+        "стало": [
+          null
+        ]
+      },
+      {
+        "ts": "2026-11-25T07:22:14.205Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "head",
+        "subId": "smvjolwxp1w64im",
+        "armorSet": 1,
+        "было": [
+          {
+            "itemId": 2416,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          null
+        ]
+      },
+      {
+        "ts": "2026-11-25T07:22:14.205Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "chest",
+        "subId": "smvjolwxp1w64im",
+        "armorSet": 1,
+        "было": [
+          {
+            "itemId": 358,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          null
+        ]
+      },
+      {
+        "ts": "2026-11-25T07:22:14.205Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "legs",
+        "subId": "smvjolwxp1w64im",
+        "armorSet": 1,
+        "было": [
+          {
+            "itemId": 2380,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          null
+        ]
+      },
+      {
+        "ts": "2026-11-25T07:22:14.205Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "gloves",
+        "subId": "smvjolwxp1w64im",
+        "armorSet": 1,
+        "было": [
+          {
+            "itemId": 5718,
+            "mod": 0
+          }
+        ],
+        "стало": [
+          null
+        ]
+      },
+      {
+        "ts": "2026-11-25T07:22:14.205Z",
+        "кто": "Мастер",
+        "charId": "cmvjobl1z1pc1lm",
+        "вид": "слот",
+        "слот": "feet",
+        "subId": "smvjolwxp1w64im",
+        "armorSet": 1,
+        "было": [
+          {
+            "itemId": 5734,
+            "mod": 0
           }
         ],
         "стало": [
