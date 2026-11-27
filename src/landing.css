@@ -70,16 +70,12 @@
 }
 
 .landing .brand .logo {
+  flex: none;
   width: 38px;
   height: 38px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--accent-line);
-  border-radius: 10px;
-  background: var(--accent-deep);
   color: var(--accent-2);
-  font-size: 19px;
-  box-shadow: inset 0 0 22px color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .landing .brand small {
@@ -1278,12 +1274,11 @@
     flex: none;
     width: 32px;
     height: 32px;
-    border-radius: 9px;
   }
 
   .landing .brand .logo .logo-mark {
-    width: 23px;
-    height: 23px;
+    width: 27px;
+    height: 27px;
   }
 
   .landing .brand > span:last-child {

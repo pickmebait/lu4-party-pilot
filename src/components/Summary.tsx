@@ -15,6 +15,7 @@ import { началоИстории } from './summary/format'
 import { РЕЖИМЫ, type Режим } from './summary/model'
 import { Штаб } from './summary/Staff'
 import { Ритм } from './summary/Rhythm'
+import { SegPill } from './SegPill'
 
 /**
  * Выбранный режим живёт в модуле, а не в состоянии компонента.
@@ -113,19 +114,12 @@ export function SummaryView({
     <section className="view dash-view">
       <div className="view-head dash-head">
         <div className="view-actions affil">
-          <div className="segmented" role="group" aria-label="Режим сводки">
-            {РЕЖИМЫ.map((р) => (
-              <button
-                key={String(р.key)}
-                type="button"
-                className={режим === р.key ? 'on' : ''}
-                data-label={р.label}
-                onClick={() => выбрать(р.key)}
-              >
-                {р.label}
-              </button>
-            ))}
-          </div>
+          <SegPill
+            варианты={РЕЖИМЫ}
+            значение={режим}
+            onВыбрать={выбрать}
+            ariaLabel="Режим сводки"
+          />
         </div>
         <span className="dash-crumb">{крошка}</span>
       </div>

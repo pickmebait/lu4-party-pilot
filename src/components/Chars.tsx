@@ -6,6 +6,7 @@ import { addChar, emptyChar, useDb } from '@/lib/store'
 import { sortedChars } from '@/lib/derived'
 import { СписокПерсонажей, type Вид, type Фильтр } from './CharList'
 import { QuickAddForm } from './QuickAddForm'
+import { SegPill } from './SegPill'
 import { SlotPicker, type PickerTarget } from './SlotPicker'
 
 /*
@@ -22,6 +23,11 @@ let сохранённыйФильтр: Фильтр = 'все'
 const ВИДЫ: { key: Вид; label: string; подсказка: string }[] = [
   { key: 'строка', label: 'Строка', подсказка: 'Персонажи в строку, карточка целиком' },
   { key: 'колонка', label: 'Колонка', подсказка: 'Персонажи в столбец, компактно' },
+]
+
+const ФИЛЬТРЫ: { key: Фильтр; label: string }[] = [
+  { key: 'все', label: 'Все' },
+  ...AFFILIATIONS.map((a) => ({ key: a.key, label: a.label })),
 ]
 
 export function CharsView({ catalog }: { catalog: CatalogApi }) {
@@ -55,47 +61,22 @@ export function CharsView({ catalog }: { catalog: CatalogApi }) {
            * раздела повторял бы подпись вкладки, а место нужно самим
            * карточкам. Кнопка добавления — справа, у неё другое назначение.
            */}
-          <div className="segmented" role="group" aria-label="Фильтр по принадлежности">
-            <button
-              type="button"
-              className={фильтр === 'все' ? 'on' : ''}
-              data-label="Все"
-              onClick={() => выбратьФильтр('все')}
-            >
-              Все
-            </button>
-            {AFFILIATIONS.map((a) => (
-              <button
-                key={a.key}
-                type="button"
-                className={фильтр === a.key ? 'on' : ''}
-                data-label={a.label}
-                onClick={() => выбратьФильтр(a.key)}
-              >
-                {a.label}
-              </button>
-            ))}
-          </div>
-          <div
-            className="segmented seg-pill-switch"
-            role="group"
-            aria-label="Вид раздела"
-            data-active={вид === 'строка' ? '0' : '1'}
-          >
-            <span className="seg-pill" aria-hidden="true" />
-            {ВИДЫ.map((в) => (
-              <button
-                key={в.key}
-                type="button"
-                className={вид === в.key ? 'on' : ''}
-                data-label={в.label}
-                title={в.подсказка}
-                onClick={() => выбратьВид(в.key)}
-              >
-                {в.label}
-              </button>
-            ))}
-          </div>
+          <SegPill
+            варианты={ФИЛЬТРЫ}
+            значение={фильтр}
+            onВыбрать={выбратьФильтр}
+            ariaLabel="Фильтр по принадлежности"
+          />
+          <SegPill
+            варианты={ВИДЫ.map((в) => ({
+              key: в.key,
+              label: в.label,
+              title: в.подсказка,
+            }))}
+            значение={вид}
+            onВыбрать={выбратьВид}
+            ariaLabel="Вид раздела"
+          />
           {фильтр !== 'все' && (
             <span className="head-note">
               показано {показанные.length} из {все.length}

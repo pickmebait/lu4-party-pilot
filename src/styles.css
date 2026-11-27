@@ -393,15 +393,17 @@ main {
   gap: 12px;
 }
 
+/*
+ * Знак стоит прямо на фоне страницы: рамка и заливка делали из него
+ * отдельную плитку, хотя рядом уже есть название пати. Размер компонента
+ * прежний, а сам знак внутри крупнее — поля больше не нужны.
+ */
 .logo {
-  font-size: 30px;
+  flex: none;
   width: 48px;
   height: 48px;
   display: grid;
   place-items: center;
-  background: linear-gradient(145deg, var(--accent-deep), var(--bg));
-  border: 1px solid var(--accent-line);
-  border-radius: 12px;
   color: var(--accent);
 }
 
@@ -8784,17 +8786,14 @@ a.mx-link:hover {
   }
 
   .schedule-head .cal-modes {
-    flex: 1 1 100%;
+    flex: 0 1 auto;
+    max-width: 100%;
   }
 
   .schedule-head .cal-nav {
     flex: 1 0 100%;
     flex-wrap: wrap;
     justify-content: flex-end;
-  }
-
-  .cal-modes button {
-    flex: 1 1 0;
   }
 
   .cal-title,
@@ -9441,12 +9440,13 @@ a.mx-link:hover {
 
 /*
  * Контур собирается при появлении, дальше знак живёт пульсом. Штрихи на
- * pathLength="1" рисуются одинаково и в шапке 30 px, и на лендинге 38 px.
+ * pathLength="1" рисуются одинаково и в шапке, и на лендинге, поэтому знак
+ * можно свободно укрупнять внутри прежнего места.
  */
 .logo .logo-mark {
   display: block;
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
 }
 
 .logo-mark {
@@ -9579,60 +9579,171 @@ a.mx-link:hover {
 
 .landing .brand .logo .logo-mark {
   display: block;
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
 }
 
 /* ================================================= движение интерфейса */
 
 /*
- * Список собирается каскадом: строки входят одна за другой, а не появляются
- * все сразу. Задержка ограничена первыми десятью — длинный состав не должен
- * заставлять ждать последнюю карточку.
+ * Содержимое собирается каскадом: карточки входят одна за другой, а не
+ * появляются все сразу. Так же собираются строки персонажей, плитки сводки,
+ * её карточки и клетки расписания — разделы ощущаются одним интерфейсом.
+ *
+ * Задержка ограничена первыми десятью: длинный состав и месячная сетка не
+ * должны заставлять ждать последнюю клетку.
  */
 .chars-grid > .char-card,
-.mx-scroll > .char-row {
+.mx-scroll > .char-row,
+.dash-kpis > .dash-kpi,
+.dash-grid-hero > .dash-card,
+.dash-grid-rhythm > .dash-card,
+.dash-rhythm-side > .dash-card,
+.dash-att-list > .dash-att-row,
+.day-sum > .sum-block,
+.cal-grid > .cal-day,
+.checklist-items > li {
   animation: uiRowIn 0.38s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-.chars-grid > :nth-child(2),
-.mx-scroll > :nth-child(2) {
+:is(
+  .chars-grid,
+  .mx-scroll,
+  .dash-kpis,
+  .dash-grid-hero,
+  .dash-grid-rhythm,
+  .dash-rhythm-side,
+  .dash-att-list,
+  .day-sum,
+  .cal-grid,
+  .checklist-items
+) > :nth-child(2) {
   animation-delay: 40ms;
 }
-.chars-grid > :nth-child(3),
-.mx-scroll > :nth-child(3) {
+:is(
+  .chars-grid,
+  .mx-scroll,
+  .dash-kpis,
+  .dash-grid-hero,
+  .dash-grid-rhythm,
+  .dash-rhythm-side,
+  .dash-att-list,
+  .day-sum,
+  .cal-grid,
+  .checklist-items
+) > :nth-child(3) {
   animation-delay: 80ms;
 }
-.chars-grid > :nth-child(4),
-.mx-scroll > :nth-child(4) {
+:is(
+  .chars-grid,
+  .mx-scroll,
+  .dash-kpis,
+  .dash-grid-hero,
+  .dash-grid-rhythm,
+  .dash-rhythm-side,
+  .dash-att-list,
+  .day-sum,
+  .cal-grid,
+  .checklist-items
+) > :nth-child(4) {
   animation-delay: 120ms;
 }
-.chars-grid > :nth-child(5),
-.mx-scroll > :nth-child(5) {
+:is(
+  .chars-grid,
+  .mx-scroll,
+  .dash-kpis,
+  .dash-grid-hero,
+  .dash-grid-rhythm,
+  .dash-rhythm-side,
+  .dash-att-list,
+  .day-sum,
+  .cal-grid,
+  .checklist-items
+) > :nth-child(5) {
   animation-delay: 160ms;
 }
-.chars-grid > :nth-child(6),
-.mx-scroll > :nth-child(6) {
+:is(
+  .chars-grid,
+  .mx-scroll,
+  .dash-kpis,
+  .dash-grid-hero,
+  .dash-grid-rhythm,
+  .dash-rhythm-side,
+  .dash-att-list,
+  .day-sum,
+  .cal-grid,
+  .checklist-items
+) > :nth-child(6) {
   animation-delay: 200ms;
 }
-.chars-grid > :nth-child(7),
-.mx-scroll > :nth-child(7) {
+:is(
+  .chars-grid,
+  .mx-scroll,
+  .dash-kpis,
+  .dash-grid-hero,
+  .dash-grid-rhythm,
+  .dash-rhythm-side,
+  .dash-att-list,
+  .day-sum,
+  .cal-grid,
+  .checklist-items
+) > :nth-child(7) {
   animation-delay: 240ms;
 }
-.chars-grid > :nth-child(8),
-.mx-scroll > :nth-child(8) {
+:is(
+  .chars-grid,
+  .mx-scroll,
+  .dash-kpis,
+  .dash-grid-hero,
+  .dash-grid-rhythm,
+  .dash-rhythm-side,
+  .dash-att-list,
+  .day-sum,
+  .cal-grid,
+  .checklist-items
+) > :nth-child(8) {
   animation-delay: 280ms;
 }
-.chars-grid > :nth-child(9),
-.mx-scroll > :nth-child(9) {
+:is(
+  .chars-grid,
+  .mx-scroll,
+  .dash-kpis,
+  .dash-grid-hero,
+  .dash-grid-rhythm,
+  .dash-rhythm-side,
+  .dash-att-list,
+  .day-sum,
+  .cal-grid,
+  .checklist-items
+) > :nth-child(9) {
   animation-delay: 320ms;
 }
-.chars-grid > :nth-child(10),
-.mx-scroll > :nth-child(10) {
+:is(
+  .chars-grid,
+  .mx-scroll,
+  .dash-kpis,
+  .dash-grid-hero,
+  .dash-grid-rhythm,
+  .dash-rhythm-side,
+  .dash-att-list,
+  .day-sum,
+  .cal-grid,
+  .checklist-items
+) > :nth-child(10) {
   animation-delay: 360ms;
 }
-.chars-grid > :nth-child(n + 11),
-.mx-scroll > :nth-child(n + 11) {
+:is(
+  .chars-grid,
+  .mx-scroll,
+  .dash-kpis,
+  .dash-grid-hero,
+  .dash-grid-rhythm,
+  .dash-rhythm-side,
+  .dash-att-list,
+  .day-sum,
+  .cal-grid,
+  .checklist-items
+) > :nth-child(n + 11) {
   animation-delay: 400ms;
 }
 
@@ -9804,16 +9915,19 @@ a.mx-link:hover {
 
 /*
  * Подложка едет к выбранной стороне, а не переезжает вместе с фоном кнопки.
- * Ширина считается от padding box, поэтому 50% − 3px точно совпадает с
- * половиной внутренней ширины.
+ * Ширину и смещение считает SegPill по самой кнопке: подписи разной длины,
+ * и равные доли в «Сводке» увели бы группу за край телефона.
+ *
+ * Высота та же, что у прежних фильтров: 18 строки + 8 отступов + 2 рамки
+ * контейнера. Поэтому «Строка/Колонка» и «Все/Состав/Десятка/Окно» стоят
+ * в одной строке без ступеньки.
  */
 .seg-pill-switch {
   position: relative;
-  display: inline-grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  padding: 3px;
-  border-radius: 9px;
+  display: inline-flex;
+  align-items: stretch;
+  padding: 2px;
+  border-radius: 8px;
   background: var(--bg-2);
   overflow: hidden;
   isolation: isolate;
@@ -9821,27 +9935,42 @@ a.mx-link:hover {
 
 .seg-pill-switch .seg-pill {
   position: absolute;
-  top: 3px;
-  left: 3px;
-  width: calc(50% - 3px);
-  height: calc(100% - 6px);
+  top: 2px;
+  left: 0;
+  width: 0;
+  height: calc(100% - 4px);
   border: 1px solid var(--accent-line);
   border-radius: 6px;
   background: var(--accent-deep);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
-  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+  opacity: 0;
+  pointer-events: none;
 }
 
-.seg-pill-switch[data-active='1'] .seg-pill {
-  transform: translateX(100%);
+/*
+ * До первого замера плашка не видна: иначе она мелькнула бы нулевой ширины
+ * в левом углу. Замер идёт до отрисовки, так что на экране этого не видно.
+ */
+.seg-pill-switch[data-ready='true'] .seg-pill {
+  opacity: 1;
+  transition:
+    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .seg-pill-switch button {
   position: relative;
   z-index: 1;
-  padding: 6px 12px;
+  flex: 0 0 auto;
+  padding: 4px 9px;
   border: 0;
   background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 .seg-pill-switch button + button {
@@ -9851,6 +9980,7 @@ a.mx-link:hover {
 .seg-pill-switch button.on {
   background: none;
   color: var(--accent-2);
+  font-weight: 600;
 }
 
 /* --------------------------------------------------- расписание: крупный вид */
@@ -9899,12 +10029,11 @@ a.mx-link:hover {
   .logo {
     width: 34px;
     height: 34px;
-    border-radius: 10px;
   }
 
   .logo .logo-mark {
-    width: 24px;
-    height: 24px;
+    width: 29px;
+    height: 29px;
   }
 
   .brand h1 {
@@ -10131,6 +10260,18 @@ a.mx-link:hover {
   }
 }
 
+/*
+ * На самом узком телефоне «Сводка» — единственная группа, где четыре длинные
+ * подписи не влезают в строку. Ужимаем отступы и кегль только у неё: остальные
+ * переключатели и без этого помещаются.
+ */
+@media (max-width: 340px) {
+  .dash-head .view-actions.affil .seg-pill-switch button {
+    padding: 4px 5px;
+    font-size: 11px;
+  }
+}
+
 /* ---------------------------------------------------------- меньше движения */
 
 @media (prefers-reduced-motion: reduce) {
@@ -10142,6 +10283,14 @@ a.mx-link:hover {
   .logo-mark .lm-node,
   .chars-grid > .char-card,
   .mx-scroll > .char-row,
+  .dash-kpis > .dash-kpi,
+  .dash-grid-hero > .dash-card,
+  .dash-grid-rhythm > .dash-card,
+  .dash-rhythm-side > .dash-card,
+  .dash-att-list > .dash-att-row,
+  .day-sum > .sum-block,
+  .cal-grid > .cal-day,
+  .checklist-items > li,
   .gear-cell.filled,
   .slot-icon.filled,
   .dash-kpi-ring-fg,
@@ -10169,7 +10318,7 @@ a.mx-link:hover {
     opacity: 1;
   }
 
-  .seg-pill-switch .seg-pill {
+  .seg-pill-switch[data-ready='true'] .seg-pill {
     transition: none;
   }
 }

@@ -24,6 +24,7 @@ import { ScheduleNote } from './ReadOnlyNote'
 import { Checklist } from './ScheduleChecklist'
 import { DayBox } from './ScheduleDay'
 import { DaySummary } from './ScheduleSummary'
+import { SegPill } from './SegPill'
 
 /** Период в шапке: часы прайма и число выходных. */
 function периодСловами(часов: number, выходных: number): string {
@@ -199,20 +200,17 @@ export function ScheduleView() {
     <section className="view schedule-view" onMouseUp={закончитьВыбор} onMouseLeave={закончитьВыбор}>
       <div className="view-head schedule-head">
         <div className="schedule-head-left">
-          <div className="segmented cal-modes" role="group" aria-label="Вид календаря">
-            {РЕЖИМЫ.map((р) => (
-              <button
-                key={р.key}
-                type="button"
-                className={режим === р.key ? 'on' : ''}
-                data-label={р.label}
-                title={р.подсказка}
-                onClick={() => выбратьРежим(р.key)}
-              >
-                {р.label}
-              </button>
-            ))}
-          </div>
+          <SegPill
+            className="cal-modes"
+            варианты={РЕЖИМЫ.map((р) => ({
+              key: р.key,
+              label: р.label,
+              title: р.подсказка,
+            }))}
+            значение={режим}
+            onВыбрать={выбратьРежим}
+            ariaLabel="Вид календаря"
+          />
           <span className="head-note">
             {периодСловами(часовПрайма, выходныхВПериоде)}
             {/*
