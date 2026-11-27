@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Db } from '@/types'
-import { fetchDb, prepareDbUpload, saveDb, saveDbKeepalive } from '@/lib/api'
+import { fetchDb, fetchMetaLight, prepareDbUpload, saveDb, saveDbKeepalive } from '@/lib/api'
 import { ктоЗатронут, одноИТоЖе, слитьСвое } from '@/lib/merge'
+import {
+  живойСтатусЗаметка,
+  живойСтатусЛимит,
+  живойСтатусНачали,
+  живойСтатусОбрыв,
+  живойСтатусУспех,
+} from '@/lib/liveStatus'
 import {
   авторПравки,
   базаПрочитана,
@@ -100,7 +107,10 @@ const срокПослеЛимита = (retryAfter?: number): number =>
   Date.now() + (retryAfter && retryAfter > 0 ? retryAfter : 60) * 1000
 
 /** Как часто спрашивать сервер, пока вкладка открыта и правок не сохранено. */
-const ПАУЗА_ПРОВЕРКИ_МС = 45_000
+const ПАУЗА_ПРОВЕРКИ_МС = 7_000
+
+/** Дальше этого опрос не отступает: даже при долгой ошибке проверяем раз в минуту. */
+const ПРЕДЕЛ_ПАУЗЫ_ПРОВЕРКИ_МС = 60_000
 
 /**
  * Синхронизация с пати и меню доступа.
@@ -126,7 +136,12 @@ export function SyncBar() {
 
   const свойCharId = session.role === 'char' ? session.charId : null
   const загружается = useRef(false)
+  const проверяется = useRef(false)
   const сохраняется = useRef(false)
+  /** Сколько проверок меты подряд не вышло: от этого растёт пауза. */
+  const неудачПроверки = useRef(0)
+  /** Канал для соседних вкладок: своя запись должна быть видна им сразу. */
+  const канал = useRef<BroadcastChannel | null>(null)
   /** Когда последний раз отправляли keepalive при уходе: visibilitychange и pagehide идут парой. */
   const уходОтправлен = useRef(0)
   /**
@@ -155,7 +170,7 @@ export function SyncBar() {
    * Общий на чтение и запись: лимит у GitHub один на токен, и если он кончился,
    * то и чтение, и запись получат тот же отказ. Поэтому и опрос, и
    * автосохранение ждут одного и того же срока. Раньше чтение продолжало
-   * ходить каждые 45 секунд даже во время лимита, и это только тратило его.
+   * ходить каждые семь секунд даже во время лимита, и это только тратило его.
    */
   const [ждатьДо, setЖдатьДо] = useState(0)
 
@@ -194,14 +209,16 @@ export function SyncBar() {
   /**
    * Чтение сервера.
    *
-   * молча = не сообщать об успехе: обновление идёт само каждые полминуты,
-   * и надпись «загружено» мигала бы без причины. Говорим, когда приехало
-   * что-то новое, когда сломалось или когда человек нажал кнопку сам.
+   * молча = не сообщать об успехе: обновление идёт само, а лёгкая мета
+   * проверяется каждые семь секунд, и надпись «загружено» мигала бы без
+   * причины. Говорим, когда приехало что-то новое, когда сломалось или когда
+   * человек нажал кнопку сам.
    */
   const загрузить = useCallback(
     async (молча: boolean) => {
       if (загружается.current) return
       загружается.current = true
+      живойСтатусНачали()
       if (!молча) setState({ kind: 'busy', note: { текст: СЛОВА.загружаю } })
 
       try {
@@ -209,10 +226,18 @@ export function SyncBar() {
         if (!res.ok) {
           /*
            * Лимит запоминаем и при молчаливой проверке: иначе опрос каждые
-           * 45 секунд продолжал бы тратить остаток лимита, а сохранение не
+           * 7 секунд продолжал бы тратить остаток лимита, а сохранение не
            * знало бы, что ждать надо до того же срока.
            */
-          if (res.статус === 429) setЖдатьДо(срокПослеЛимита(res.retryAfter))
+          if (res.статус === 429) {
+            const до = срокПослеЛимита(res.retryAfter)
+            setЖдатьДо(до)
+            живойСтатусЛимит(до, res.error)
+          } else if (res.статус === 0) {
+            живойСтатусОбрыв(res.error)
+          } else {
+            живойСтатусЗаметка(res.error)
+          }
           if (!молча) {
             setState({
               kind: 'err',
@@ -251,6 +276,7 @@ export function SyncBar() {
 
         // Чтение прошло — GitHub снова отвечает, значит лимита больше нет.
         setЖдатьДо(0)
+        живойСтатусУспех(res.value.updatedAt ?? null)
 
         const remote = res.value
         /*
@@ -338,10 +364,96 @@ export function SyncBar() {
     [session.apiUrl, session.token, session.lastSyncedAt],
   )
 
+  /**
+   * Лёгкая проверка: изменилась ли база на сервере.
+   *
+   * Полную базу каждые семь секунд не тянем. Спрашиваем только версию и имя;
+   * если версия другая — загружаем базу обычным путём. Ответ сервер берёт из
+   * своего семисекундного снимка, поэтому GitHub не получает запрос на каждую
+   * вкладку и не сжигает лимит.
+   */
+  const проверитьМету = useCallback(async (): Promise<boolean> => {
+    if (проверяется.current) return false
+    проверяется.current = true
+
+    try {
+      const res = await fetchMetaLight(session.apiUrl, session.token)
+      if (!res.ok) {
+        неудачПроверки.current += 1
+        if (res.статус === 429) {
+          const до = срокПослеЛимита(res.retryAfter)
+          setЖдатьДо(до)
+          живойСтатусЛимит(до, res.error)
+        } else if (res.статус === 0) {
+          живойСтатусОбрыв(res.error)
+        } else {
+          живойСтатусЗаметка(res.error)
+        }
+        return false
+      }
+
+      неудачПроверки.current = 0
+      const meta = res.value
+      /*
+       * Сессию читаем здесь, а не из замыкания: пока запрос летел, могла
+       * прийти успешная запись и сдвинуть метку.
+       */
+      const живое = getSession()
+      if (!живое) return false
+
+      if (meta.name && meta.name !== живое.name) updateSession({ name: meta.name })
+      живойСтатусУспех(meta.updatedAt ?? null)
+
+      if ((meta.updatedAt ?? '') !== (живое.lastSyncedAt ?? '')) {
+        await загрузить(true)
+      }
+      return true
+    } catch (e) {
+      неудачПроверки.current += 1
+      живойСтатусОбрыв(e instanceof Error ? e.message : 'неизвестная ошибка')
+      return false
+    } finally {
+      проверяется.current = false
+    }
+  }, [session.apiUrl, session.token, загрузить])
+
+  /*
+   * Соседние вкладки.
+   *
+   * Своя запись обновляет сервер и его снимок сразу, поэтому другим вкладкам
+   * незачем ждать семи секунд: они получают сигнал и проверяют мету тут же.
+   * Канал не заменяет опрос — он только сокращает задержку внутри одного
+   * браузера.
+   */
+  const проверитьМетуСвежая = useRef(проверитьМету)
+  useEffect(() => {
+    проверитьМетуСвежая.current = проверитьМету
+  }, [проверитьМету])
+
+  useEffect(() => {
+    if (typeof BroadcastChannel === 'undefined') return
+    const ch = new BroadcastChannel(`pp-party-${session.partyId}`)
+    канал.current = ch
+    ch.onmessage = (event: MessageEvent) => {
+      if (event.data?.type !== 'saved') return
+      if (document.visibilityState !== 'visible') return
+      void проверитьМетуСвежая.current()
+    }
+    return () => {
+      ch.close()
+      if (канал.current === ch) канал.current = null
+    }
+  }, [session.partyId])
+
+  const сообщитьВкладкам = useCallback((updatedAt: string) => {
+    канал.current?.postMessage({ type: 'saved', partyId: session.partyId, updatedAt })
+  }, [session.partyId])
+
   const сохранить = useCallback(async () => {
     if (сохраняется.current) return
     if (!естьНесохранённое()) return
     сохраняется.current = true
+    живойСтатусНачали()
 
     /*
      * Сессию читаем отсюда, а не из замыкания: замыкание хранит метку на
@@ -395,6 +507,8 @@ export function SyncBar() {
         setНеудач(0)
         setЖдатьДо(0)
         updateSession({ lastSyncedAt: res.value.updatedAt })
+        живойСтатусУспех(res.value.updatedAt)
+        сообщитьВкладкам(res.value.updatedAt)
         // Локальная метка должна совпасть с серверной, иначе следующая
         // правка снова сочтётся несохранённой.
         replaceDb({ ...current, updatedAt: res.value.updatedAt })
@@ -441,13 +555,17 @@ export function SyncBar() {
         if (!повтор.ok) {
           setНеудач((n) => n + 1)
           if (повтор.статус === 429) {
-            setЖдатьДо(срокПослеЛимита(повтор.retryAfter))
+            const до = срокПослеЛимита(повтор.retryAfter)
+            setЖдатьДо(до)
+            живойСтатусЛимит(до, повтор.error)
             setState({
               kind: 'err',
               note: приЛимите(подробностиЗаписи(1, повтор.статус, повтор.error)),
             })
             return
           }
+          if (повтор.статус === 0) живойСтатусОбрыв(повтор.error)
+          else живойСтатусЗаметка(повтор.error)
           setState({ kind: 'err', note: приОтказе(повтор.error, повтор.статус, живое.apiUrl) })
           return
         }
@@ -456,6 +574,8 @@ export function SyncBar() {
         setЖдатьДо(0)
         replaceDb({ ...слияние.db, updatedAt: повтор.value.updatedAt })
         updateSession({ lastSyncedAt: повтор.value.updatedAt })
+        живойСтатусУспех(повтор.value.updatedAt)
+        сообщитьВкладкам(повтор.value.updatedAt)
         /*
          * Список подтянутых имён — уже не часть надписи. Он велик и к правке
          * человека отношения не имеет: чужую правку он не делал и проверять
@@ -496,6 +616,7 @@ export function SyncBar() {
       if (res.conflict && свойCharId && !res.conflict.chars.some((c) => c.id === свойCharId)) {
         replaceDb(res.conflict)
         updateSession({ lastSyncedAt: res.conflict.updatedAt })
+        живойСтатусУспех(res.conflict.updatedAt)
         setIncoming(null)
         setState({
           kind: 'err',
@@ -603,7 +724,7 @@ export function SyncBar() {
       сохраняется.current = false
     }
     посланное.current = null
-  }, [свойCharId])
+  }, [свойCharId, сообщитьВкладкам])
 
   /*
    * Автосохранение.
@@ -657,16 +778,52 @@ export function SyncBar() {
   /**
    * Обновление само, пока вкладка открыта.
    *
-   * Три повода, а не таймер на каждую секунду: вернуться к вкладке,
-   * переключиться на неё и подождать. Каждая проверка — это чтение из
-   * репозитория, поэтому лишних обращений к GitHub быть не должно.
+   * Каждые семь секунд спрашиваем только лёгкую мету: имя, версию базы и
+   * число персонажей. Полную базу тянем лишь тогда, когда версия изменилась.
+   * Ответ сервер берёт из семисекундного снимка, а GitHub — условным
+   * запросом, поэтому 304 не расходует основной лимит.
    *
-   * Лимит GitHub общий с записью. Пока не наступило названное сервером время,
-   * не ходит ни опрос, ни первая загрузка: иначе опрос каждые 45 секунд
-   * тратил бы остаток лимита и не давал ему восстановиться.
+   * Пауза растёт при неудачах: 7 → 14 → 28 → 56 секунд и не больше минуты.
+   * Иначе оборванная связь превращалась бы в запрос каждые семь секунд.
+   *
+   * Скрытая вкладка не ходит совсем: проверка идёт при возвращении. Форма и
+   * несохранённые правки тоже ставят опрос на паузу — серверную версию в этот
+   * момент принимать нельзя, а мета всё равно ни на что не влияет.
    */
   useEffect(() => {
+    let таймер: ReturnType<typeof setTimeout> | null = null
     let таймерПервого: ReturnType<typeof setTimeout> | null = null
+    let остановлено = false
+
+    const занято = () => формаОткрыта || естьНесохранённое()
+    const можно = () =>
+      document.visibilityState === 'visible' &&
+      (typeof navigator === 'undefined' || navigator.onLine !== false) &&
+      !занято() &&
+      Date.now() >= ждатьДо
+
+    const пауза = () => {
+      const обычная = неудачПроверки.current === 0
+        ? ПАУЗА_ПРОВЕРКИ_МС
+        : Math.min(
+            ПАУЗА_ПРОВЕРКИ_МС * 2 ** неудачПроверки.current,
+            ПРЕДЕЛ_ПАУЗЫ_ПРОВЕРКИ_МС,
+          )
+      return Math.max(обычная, ждатьДо - Date.now(), 0)
+    }
+
+    const запланировать = (мс: number) => {
+      if (остановлено) return
+      if (таймер) clearTimeout(таймер)
+      таймер = setTimeout(async () => {
+        if (!можно()) {
+          запланировать(пауза())
+          return
+        }
+        await проверитьМету()
+        if (!остановлено) запланировать(пауза())
+      }, мс)
+    }
 
     const прочитатьПервыйРаз = () => {
       setState({ kind: 'busy', note: { текст: СЛОВА.загружаю } })
@@ -691,33 +848,51 @@ export function SyncBar() {
       else таймерПервого = setTimeout(прочитатьПервыйРаз, ждать)
     }
 
-    const можно = () => Date.now() >= ждатьДо
+    запланировать(надо_прочитать ? ПАУЗА_ПРОВЕРКИ_МС : 0)
 
-    const тик = setInterval(() => {
-      if (document.visibilityState !== 'visible') return
-      if (естьНесохранённое()) return
-      if (формаОткрыта) return
-      if (!можно()) return
-      void загрузить(true)
-    }, ПАУЗА_ПРОВЕРКИ_МС)
-
-    const вернулись = () => {
-      if (document.visibilityState !== 'visible') return
-      if (естьНесохранённое()) return
-      if (формаОткрыта) return
-      if (!можно()) return
-      void загрузить(true)
+    const приВидимости = () => {
+      if (document.visibilityState !== 'visible') {
+        if (таймер) {
+          clearTimeout(таймер)
+          таймер = null
+        }
+        return
+      }
+      запланировать(0)
     }
 
-    window.addEventListener('focus', вернулись)
-    document.addEventListener('visibilitychange', вернулись)
+    const приФокусе = () => {
+      if (document.visibilityState !== 'visible') return
+      запланировать(0)
+    }
+
+    const приСети = () => {
+      неудачПроверки.current = 0
+      запланировать(0)
+    }
+
+    const безСети = () => {
+      живойСтатусОбрыв('Браузер сообщил, что сети нет')
+      if (таймер) {
+        clearTimeout(таймер)
+        таймер = null
+      }
+    }
+
+    window.addEventListener('focus', приФокусе)
+    document.addEventListener('visibilitychange', приВидимости)
+    window.addEventListener('online', приСети)
+    window.addEventListener('offline', безСети)
     return () => {
+      остановлено = true
+      if (таймер) clearTimeout(таймер)
       if (таймерПервого) clearTimeout(таймерПервого)
-      clearInterval(тик)
-      window.removeEventListener('focus', вернулись)
-      document.removeEventListener('visibilitychange', вернулись)
+      window.removeEventListener('focus', приФокусе)
+      document.removeEventListener('visibilitychange', приВидимости)
+      window.removeEventListener('online', приСети)
+      window.removeEventListener('offline', безСети)
     }
-  }, [загрузить, формаОткрыта, ждатьДо, session.lastSyncedAt])
+  }, [загрузить, проверитьМету, формаОткрыта, ждатьДо, session.lastSyncedAt])
 
   /*
    * Тело для отправки готовим заранее.
@@ -772,6 +947,7 @@ export function SyncBar() {
           if (!одноИТоЖе(теперь, current)) return
           replaceDb({ ...теперь, updatedAt: res.value.updatedAt })
           updateSession({ lastSyncedAt: res.value.updatedAt })
+          сообщитьВкладкам(res.value.updatedAt)
         },
       )
     }
@@ -787,7 +963,7 @@ export function SyncBar() {
       document.removeEventListener('visibilitychange', приСкрытии)
       window.removeEventListener('pagehide', приВыгрузке)
     }
-  }, [])
+  }, [сообщитьВкладкам])
 
   /*
    * Сообщение в разметке идёт раньше кнопки, а на экране оказывается слева от

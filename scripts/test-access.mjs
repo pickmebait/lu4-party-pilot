@@ -45,7 +45,8 @@ const настоящийFetch = globalThis.fetch
 
 globalThis.fetch = async (url, init = {}) => {
   const адрес = String(url)
-  запросы.push(`${init.method ?? 'GET'} ${адрес.replace('https://api.github.com/repos/', '')}`)
+  const условие = init.headers?.['If-None-Match'] ? ' (условный)' : ''
+  запросы.push(`${init.method ?? 'GET'} ${адрес.replace('https://api.github.com/repos/', '')}${условие}`)
 
   if (!адрес.startsWith('https://api.github.com/')) return настоящийFetch(url, init)
 
@@ -121,7 +122,21 @@ globalThis.fetch = async (url, init = {}) => {
   if (отсталый) return отсталый
 
   if (!запись) return new Response(JSON.stringify({ message: 'Not Found' }), { status: 404 })
-  return new Response(JSON.stringify({ sha: запись.sha, content: запись.content }), { status: 200 })
+
+  /*
+   * Условное чтение, как у GitHub: если отпечаток совпал, файл не изменился
+   * и ответ 304 не тратит основной лимит. Без этого проверка кеша ничего бы
+   * не проверяла.
+   */
+  const etag = `"${Buffer.from(запись.sha, 'utf8').toString('hex')}"`
+  if (init.headers?.['If-None-Match'] === etag) {
+    return new Response(null, { status: 304, headers: { etag } })
+  }
+
+  return new Response(JSON.stringify({ sha: запись.sha, content: запись.content }), {
+    status: 200,
+    headers: { etag },
+  })
 }
 
 const окружение = {
@@ -134,8 +149,8 @@ const окружение = {
 
 const BASE = 'https://workers.test'
 
-async function call(path, { method = 'GET', body, token } = {}) {
-  const headers = { Accept: 'application/json' }
+async function call(path, { method = 'GET', body, token, headers: extra } = {}) {
+  const headers = { Accept: 'application/json', ...(extra ?? {}) }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (token) headers.Authorization = `Bearer ${token}`
   const res = await worker.fetch(
@@ -153,7 +168,7 @@ async function call(path, { method = 'GET', body, token } = {}) {
   } catch {
     json = { raw: текст }
   }
-  return { status: res.status, json }
+  return { status: res.status, json, headers: res.headers }
 }
 
 let провалено = 0
@@ -917,6 +932,111 @@ const удаление = await call('/api/party', { method: 'DELETE', token: м�
 )
 const послеУдаления = await call('/api/session', { method: 'POST', body: { token: мастер2 } })
 шаг(послеУдаления.status === 401, 'после удаления пати токен не входит', послеУдаления.status)
+
+/* ------------------------------------------------------------- лёгкая мета */
+
+/*
+ * Плашка актуальности спрашивает мету каждые семь секунд. Проверяем три
+ * вещи, ради которых появился отдельный режим: в ответе нет токенов, повтор
+ * не ходит в GitHub, а условный запрос после снимка не тратит лимит.
+ */
+const лёгкая = await call('/api/party', {
+  method: 'POST',
+  body: { name: 'Лёгкая мета' },
+})
+const лёгкийТокен = лёгкая.json.token
+const лёгкийId = лёгкая.json.partyId
+
+const метаЛёгкая = await call('/api/party/meta?light=1', { token: лёгкийТокен })
+шаг(
+  метаЛёгкая.status === 200 && метаЛёгкая.json?.tokens === undefined,
+  'лёгкая мета не отдаёт список токенов даже мастеру',
+  метаЛёгкая.json?.tokens,
+)
+шаг(
+  typeof метаЛёгкая.json?.updatedAt === 'string',
+  'лёгкая мета называет версию базы',
+  метаЛёгкая.json?.updatedAt,
+)
+
+const доПовтора = запросы.length
+const метаПовтор = await call('/api/party/meta?light=1', { token: лёгкийТокен })
+шаг(
+  метаПовтор.status === 200 && запросы.length === доПовтора,
+  'повторная лёгкая мета отвечает из снимка, не трогая GitHub',
+  запросы.slice(доПовтора).join(' | '),
+)
+
+const отпечаток = метаЛёгкая.headers.get('etag')
+шаг(typeof отпечаток === 'string' && отпечаток.length > 0, 'лёгкая мета отдаёт ETag')
+const метаБезИзменений = await call('/api/party/meta?light=1', {
+  token: лёгкийТокен,
+  headers: { 'If-None-Match': отпечаток },
+})
+шаг(
+  метаБезИзменений.status === 304,
+  'вкладка с тем же ETag получает 304 вместо копии меты',
+  метаБезИзменений.status,
+)
+
+const базаЛёгкая = await call('/api/party/data', { token: лёгкийТокен })
+const базаСПравкой = structuredClone(базаЛёгкая.json)
+базаСПравкой.chars.push(НОВЫЙ('lightChar', 'Свет'))
+const записьЛёгкая = await call('/api/party/data', {
+  method: 'PUT',
+  token: лёгкийТокен,
+  body: { db: базаСПравкой, baseUpdatedAt: базаЛёгкая.json.updatedAt },
+})
+const метаПослеЗаписиЛёгкая = await call('/api/party/meta?light=1', { token: лёгкийТокен })
+шаг(
+  записьЛёгкая.status === 200 &&
+    метаПослеЗаписиЛёгкая.json?.updatedAt === записьЛёгкая.json?.updatedAt,
+  'после записи лёгкая мета сразу видит новую версию, не дожидаясь GitHub',
+  `${метаПослеЗаписиЛёгкая.json?.updatedAt} / ${записьЛёгкая.json?.updatedAt}`,
+)
+
+/*
+ * Снимок живёт семь секунд. Сдвигаем часы, чтобы он устарел, и проверяем,
+ * что обновление идёт условным запросом: GitHub отвечает 304, и это не
+ * расходует основной лимит.
+ */
+const настоящееВремя = Date.now
+const доУсловного = запросы.length
+Date.now = () => настоящееВремя() + 8_000
+const метаУсловная = await call('/api/party/meta?light=1', { token: лёгкийТокен })
+Date.now = настоящееВремя
+шаг(
+  метаУсловная.status === 200 && запросы.length - доУсловного === 1,
+  'устаревший снимок обновляется одним запросом, а не пачкой',
+  запросы.slice(доУсловного).join(' | '),
+)
+шаг(
+  /\(условный\)/.test(запросы[запросы.length - 1] ?? ''),
+  'обновление снимка идёт с If-None-Match, а не полным чтением',
+  запросы[запросы.length - 1],
+)
+
+const заголовкиCors = await worker.fetch(
+  new Request(BASE + '/api/party/meta', {
+    method: 'OPTIONS',
+    headers: { Origin: 'https://pickmebait.github.io' },
+  }),
+  окружение,
+)
+шаг(
+  (заголовкиCors.headers.get('Access-Control-Allow-Headers') ?? '').includes('If-None-Match'),
+  'CORS разрешает условный заголовок If-None-Match',
+  заголовкиCors.headers.get('Access-Control-Allow-Headers'),
+)
+шаг(
+  (заголовкиCors.headers.get('Access-Control-Expose-Headers') ?? '').includes('ETag'),
+  'CORS отдаёт ETag вкладке',
+  заголовкиCors.headers.get('Access-Control-Expose-Headers'),
+)
+шаг(
+  репозиторий.has(`data/parties/${лёгкийId}.json`),
+  'лёгкая пати осталась в репозитории',
+)
 
 /* ------------------------------------- лимит пришёл уже после успешной записи */
 

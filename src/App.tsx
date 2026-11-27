@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { CharsView } from './components/Chars'
 import { Landing } from './components/Landing'
 import { PaletteBar } from './components/PaletteBar'
+import { DbStatus } from './components/DbStatus'
 import { SyncBar } from './components/SyncBar'
 import { WarehouseView } from './components/Warehouse'
 import { GoalsView } from './components/Goals'
@@ -192,7 +193,10 @@ export default function App() {
           ))}
         </nav>
 
-        <PaletteBar />
+        <div className="head-tools">
+          <PaletteBar />
+          <DbStatus />
+        </div>
         <SyncBar />
       </header>
 

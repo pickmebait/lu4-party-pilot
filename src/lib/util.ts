@@ -27,6 +27,25 @@ export function formatStamp(iso: string, timeZone = userTimeZone()): string {
   return `${wall.key} ${formatClock(wall.minutes)}`
 }
 
+const КОРОТКИЕ_МЕСЯЦЫ = [
+  'янв', 'фев', 'мар', 'апр', 'мая', 'июн',
+  'июл', 'авг', 'сен', 'окт', 'ноя', 'дек',
+]
+
+/**
+ * «26 ноя, 15:36» — для плашки актуальности.
+ *
+ * Год здесь лишний: базу смотрят сегодня или вчера, а не в прошлом веке.
+ * Месяц сокращён, потому что плашка живёт в одной строке с палитрой.
+ */
+export function formatShortStamp(iso: string, timeZone = userTimeZone()): string {
+  const t = new Date(iso).getTime()
+  if (Number.isNaN(t)) return iso
+  const wall = wallTimeAt(t, timeZone)
+  const [, месяц, день] = wall.key.split('-').map(Number)
+  return `${день} ${КОРОТКИЕ_МЕСЯЦЫ[месяц - 1] ?? ''}, ${formatClock(wall.minutes)}`
+}
+
 /** "3 мин назад", "2 ч назад", "вчера" — для истории операций. */
 export function formatAgo(iso: string): string {
   const t = new Date(iso).getTime()

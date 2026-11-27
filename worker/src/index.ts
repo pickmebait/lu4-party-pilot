@@ -107,7 +107,11 @@ export default {
           ? await writeData(request, env, cors)
           : await readData(request, env, cors)
       }
-      if (путь === '/api/party/meta') return await readMeta(request, env, cors)
+      if (путь === '/api/party/meta') {
+        return url.searchParams.get('light') === '1'
+          ? await readMetaLight(request, env, cors)
+          : await readMeta(request, env, cors)
+      }
       if (путь === '/api/party/name') return await renameParty(request, env, cors)
       if (путь === '/api/party/rotate') return await rotateMaster(request, env, cors)
       if (путь === '/api/party/tokens') {
@@ -141,6 +145,133 @@ export default {
 interface RepoFile {
   sha: string
   data: PartyFile | null
+  /** Отпечаток файла у GitHub. По нему чтение отвечает 304 и не тратит лимит. */
+  etag?: string
+  /** GitHub подтвердил, что файл не менялся с прошлого чтения. */
+  notModified?: boolean
+}
+
+/**
+ * Снимок файла пати для частого опроса.
+ *
+ * Мету спрашивают каждые семь секунд, а файл в GitHub один и тот же. Без
+ * снимка каждая вкладка тратила бы запрос к GitHub на каждую проверку. Снимок
+ * живёт семь секунд, а после этого обновляется условным запросом: если файл не
+ * менялся, GitHub отвечает 304, и такой ответ не расходует основной лимит.
+ *
+ * ЗащищёнДо — короткая пауза после записи. GitHub раздаёт ветку не мгновенно,
+ * и чтение, начатое сразу после записи, может вернуть прежний файл. Пока
+ * защита стоит, такой ответ не затирает только что записанный снимок.
+ */
+interface СнимокФайла {
+  sha: string
+  etag: string
+  data: PartyFile
+  /** Когда началось чтение, из которого получен снимок. */
+  fetchedAt: number
+  /** До какого времени не заменять снимок более старым ответом GitHub. */
+  защищёнДо: number
+}
+
+/** Сколько живёт снимок меты. Ровно столько же, сколько пауза опроса. */
+const СНИМОК_МС = 7_000
+
+/** Сколько после записи доверяем своему снимку, даже если GitHub ещё отстаёт. */
+const ЗАЩИТА_ПОСЛЕ_ЗАПИСИ_МС = 5_000
+
+const снимки = new Map<string, СнимокФайла>()
+const чтенияВПолёте = new Map<string, Promise<RepoFile | { error: string }>>()
+const поколения = new Map<string, number>()
+
+/** Ключ снимка: репозиторий, ветка и файл. Токен сюда не входит — он проверяется отдельно. */
+function ключСнимка(env: Env, partyId: string): string {
+  const r = repo(env)
+  return `${r.owner}/${r.name}@${r.branch}:${filePath(env, partyId)}`
+}
+
+function облачныйКеш(): Cache | null {
+  try {
+    return typeof caches !== 'undefined' && caches.default ? caches.default : null
+  } catch {
+    return null
+  }
+}
+
+function адресСнимка(ключ: string): string {
+  return `https://pp-cache.invalid/${encodeURIComponent(ключ)}`
+}
+
+async function прочитатьОблачныйСнимок(ключ: string): Promise<СнимокФайла | null> {
+  const кеш = облачныйКеш()
+  if (!кеш) return null
+  try {
+    const res = await кеш.match(адресСнимка(ключ))
+    if (!res) return null
+    const снимок = (await res.json()) as СнимокФайла
+    if (!снимок?.sha || !снимок.data) return null
+    return снимок
+  } catch {
+    return null
+  }
+}
+
+async function сохранитьОблачныйСнимок(ключ: string, снимок: СнимокФайла): Promise<void> {
+  const кеш = облачныйКеш()
+  if (!кеш) return
+  try {
+    await кеш.put(
+      адресСнимка(ключ),
+      new Response(JSON.stringify(снимок), {
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          // Срок проверяем сами по fetchedAt: Cache API не умеет TTL меньше минуты.
+          'Cache-Control': 'public, max-age=86400',
+        },
+      }),
+    )
+  } catch {
+    // Кеш — ускорение, а не источник истины. Не сохранился — прочитаем заново.
+  }
+}
+
+/**
+ * Кладёт снимок в кеш, не перетирая более свежий.
+ *
+ * Чтение, начатое до записи, может закончиться после неё. Его fetchedAt
+ * меньше, поэтому запись, уже обновившая снимок, останется на месте.
+ */
+function положитьСнимок(ключ: string, снимок: СнимокФайла): void {
+  const прежний = снимки.get(ключ)
+  if (прежний && прежний.fetchedAt > снимок.fetchedAt) return
+  снимки.set(ключ, снимок)
+  void сохранитьОблачныйСнимок(ключ, снимок)
+}
+
+/**
+ * После записи снимок обновляется сразу и защищается от отставания GitHub.
+ *
+ * Поколение сдвигается, чтобы чтение, начатое до записи, не положило поверх
+ * свой прежний ответ.
+ */
+function запомнитьЗапись(env: Env, partyId: string, data: PartyFile, sha: string, etag?: string): void {
+  const ключ = ключСнимка(env, partyId)
+  поколения.set(ключ, (поколения.get(ключ) ?? 0) + 1)
+  положитьСнимок(ключ, {
+    sha,
+    etag: etag || `"${sha}"`,
+    data,
+    fetchedAt: Date.now(),
+    защищёнДо: Date.now() + ЗАЩИТА_ПОСЛЕ_ЗАПИСИ_МС,
+  })
+}
+
+/** Удалённую пати незачем держать в кеше: следующий запрос должен увидеть 404. */
+function забытьСнимок(env: Env, partyId: string): void {
+  const ключ = ключСнимка(env, partyId)
+  поколения.set(ключ, (поколения.get(ключ) ?? 0) + 1)
+  снимки.delete(ключ)
+  const кеш = облачныйКеш()
+  if (кеш) void кеш.delete(адресСнимка(ключ)).catch(() => undefined)
 }
 
 function repo(env: Env) {
@@ -204,11 +335,22 @@ async function readFile(
   env: Env,
   partyId: string,
   таймаут = ТАЙМАУТ_GITHUB_МС,
+  etag?: string,
 ): Promise<RepoFile | { error: string }> {
   const r = repo(env)
   const url = `${apiBase(env)}/${filePath(env, partyId)}?ref=${encodeURIComponent(r.branch)}`
-  const res = await githubFetch(env, url, {}, таймаут)
+  const headers: Record<string, string> = {}
+  /*
+   * Условное чтение — главное, что экономит лимит.
+   *
+   * GitHub отвечает 304, если файл не менялся, и такой ответ не входит в
+   * часовой лимит. Поэтому опрос раз в семь секунд стоит одного условного
+   * запроса, а не полного чтения файла пати.
+   */
+  if (etag) headers['If-None-Match'] = etag
+  const res = await githubFetch(env, url, { headers }, таймаут)
 
+  if (res.status === 304) return { sha: '', data: null, etag, notModified: true }
   if (res.status === 404) return { sha: '', data: null }
   if (!res.ok) return { error: await describe(res) }
 
@@ -217,10 +359,105 @@ async function readFile(
 
   try {
     const raw = JSON.parse(decodeBase64(json.content)) as StoredPartyFile
-    return { sha: json.sha, data: normalizeParty(raw, partyId) }
+    const etagОтвет = res.headers.get('etag') || `"${json.sha}"`
+    return { sha: json.sha, data: normalizeParty(raw, partyId), etag: etagОтвет }
   } catch {
     return { error: 'Файл пати в репозитории повреждён: не читается JSON' }
   }
+}
+
+/**
+ * Читает файл через семисекундный снимок.
+ *
+ * Так ходит только лёгкая мета. Вход, запись и полное чтение базы обязаны
+ * видеть файл свежим: иначе после собственной записи сервер откажет по старому
+ * отпечатку.
+ */
+async function readFileCached(env: Env, partyId: string): Promise<RepoFile | { error: string }> {
+  const ключ = ключСнимка(env, partyId)
+  let снимок = снимки.get(ключ)
+
+  if (!снимок) {
+    const изОблака = await прочитатьОблачныйСнимок(ключ)
+    if (изОблака) {
+      снимок = изОблака
+      снимки.set(ключ, изОблака)
+    }
+  }
+
+  if (снимок && Date.now() - снимок.fetchedAt < СНИМОК_МС) {
+    return { sha: снимок.sha, data: снимок.data, etag: снимок.etag }
+  }
+
+  /*
+   * Одна загрузка на пати, а не по одной на каждую вкладку.
+   *
+   * Пока снимок устарел, несколько запросов могут прийти одновременно.
+   * Без single-flight каждый из них пошёл бы в GitHub, и семь секунд тишины
+   * превратились бы в пачку одинаковых условных запросов.
+   */
+  const вПолёте = чтенияВПолёте.get(ключ)
+  if (вПолёте) return вПолёте
+
+  let обещание: Promise<RepoFile | { error: string }>
+  обещание = обновитьСнимок(env, partyId, ключ, снимок).finally(() => {
+    if (чтенияВПолёте.get(ключ) === обещание) чтенияВПолёте.delete(ключ)
+  })
+  чтенияВПолёте.set(ключ, обещание)
+  return обещание
+}
+
+async function обновитьСнимок(
+  env: Env,
+  partyId: string,
+  ключ: string,
+  прежний: СнимокФайла | undefined,
+): Promise<RepoFile | { error: string }> {
+  const начало = Date.now()
+  const поколение = поколения.get(ключ) ?? 0
+
+  const чтение = await readFile(env, partyId, ТАЙМАУТ_GITHUB_МС, прежний?.etag)
+  if ('error' in чтение) return чтение
+
+  if (чтение.notModified) {
+    if (!прежний) return { error: 'GitHub ответил 304, а сохранённого снимка нет' }
+    const обновлённый: СнимокФайла = { ...прежний, fetchedAt: начало }
+    положитьСнимок(ключ, обновлённый)
+    return { sha: прежний.sha, data: прежний.data, etag: прежний.etag }
+  }
+
+  if (!чтение.data) {
+    /*
+     * Файла больше нет. Мало выбросить снимок из памяти изолята: в облачном
+     * кеше он тоже мог остаться, и соседний изолят отдал бы удалённую пати
+     * ещё раз. Забываем снимок целиком.
+     */
+    забытьСнимок(env, partyId)
+    return чтение
+  }
+
+  /*
+   * Пока запрос летел, пати могли записать. Тогда ответ GitHub заведомо
+   * старее нашего снимка, и класть его обратно нельзя.
+   */
+  const текущий = снимки.get(ключ)
+  if (поколения.get(ключ) !== поколение) {
+    if (текущий) return { sha: текущий.sha, data: текущий.data, etag: текущий.etag }
+    return чтение
+  }
+  if (текущий && текущий.защищёнДо > Date.now() && текущий.sha !== чтение.sha) {
+    return { sha: текущий.sha, data: текущий.data, etag: текущий.etag }
+  }
+
+  const etag = чтение.etag || `"${чтение.sha}"`
+  положитьСнимок(ключ, {
+    sha: чтение.sha,
+    etag,
+    data: чтение.data,
+    fetchedAt: начало,
+    защищёнДо: 0,
+  })
+  return { sha: чтение.sha, data: чтение.data, etag }
 }
 
 /**
@@ -254,7 +491,23 @@ async function дождатьсяСвежести(env: Env, partyId: string, sha
       if (e instanceof GitHubRateLimitError) return
       throw e
     }
-    if (!('error' in чтение) && чтение.sha === sha) return
+    if (!('error' in чтение) && чтение.sha === sha) {
+      /*
+       * GitHub уже раздаёт новую версию — защита больше не нужна. Заодно
+       * кладём свежий файл в снимок: следующая проверка меты ответит сразу,
+       * не дожидаясь, пока истечёт семисекундный срок.
+       */
+      if (чтение.data) {
+        положитьСнимок(ключСнимка(env, partyId), {
+          sha: чтение.sha,
+          etag: чтение.etag || `"${чтение.sha}"`,
+          data: чтение.data,
+          fetchedAt: Date.now(),
+          защищёнДо: 0,
+        })
+      }
+      return
+    }
     await пауза(паузаМс)
     паузаМс = Math.min(паузаМс * 2, ПАУЗА_СВЕЖЕСТИ_ПРЕДЕЛ_МС)
   }
@@ -344,6 +597,13 @@ async function writeFile(
   const shaОтвет = json.content?.sha ?? ''
 
   /*
+   * Снимок обновляем сразу после успешной записи, не дожидаясь, пока GitHub
+   * раздаст ветку. Иначе следующая же проверка меты в этой или соседней
+   * вкладке прочитала бы прежний файл и откатила бы базу на экране.
+   */
+  if (shaОтвет) запомнитьЗапись(env, partyId, party, shaОтвет)
+
+  /*
    * Пока репозиторий не начал отдавать новое содержимое, читать базу рано:
    * всё, что спрашивают сразу после записи — право по только что выпущенному
    * токену, версия для проверки конфликта, — получит прежнее и откажет по
@@ -373,9 +633,11 @@ async function deleteFile(
   })
   if (res.status === 404) {
     // Файла нет: удалять уже нечего, но и ждать нечего — он и так отсутствует.
+    забытьСнимок(env, partyId)
     return { ok: true }
   }
   if (!res.ok) return { error: await describe(res) }
+  забытьСнимок(env, partyId)
   await дождатьсяИсчезновения(env, partyId)
   return { ok: true }
 }
@@ -715,6 +977,8 @@ type Access =
       partyId: string
       file: PartyFile
       sha: string
+      /** Отпечаток файла: по нему лёгкая мета отвечает 304. */
+      etag: string
       master: true
       charId: null
       tokenId: null
@@ -724,13 +988,21 @@ type Access =
       partyId: string
       file: PartyFile
       sha: string
+      etag: string
       master: false
       charId: string
       tokenId: string
     }
   | { ok: false; error: string; status: number }
 
-async function authorize(env: Env, request: Request): Promise<Access> {
+/** Чем читать файл при проверке доступа: свежим или из снимка. */
+type ЧтениеФайла = (env: Env, partyId: string) => Promise<RepoFile | { error: string }>
+
+async function authorize(
+  env: Env,
+  request: Request,
+  читать: ЧтениеФайла = readFile,
+): Promise<Access> {
   const denied = (error: string, status = 401): Access => ({ ok: false, error, status })
 
   const header = request.headers.get('Authorization') ?? ''
@@ -740,11 +1012,12 @@ async function authorize(env: Env, request: Request): Promise<Access> {
   const parsed = parseToken(token)
   if (!parsed) return denied('Токен недействителен')
 
-  const file = await readFile(env, parsed.partyId)
+  const file = await читать(env, parsed.partyId)
   if ('error' in file) return denied(file.error, 502)
   if (!file.data) return denied('Токен не подходит. Проверь, что скопировал целиком.')
 
   const hash = await hashHex(parsed.secret)
+  const etag = file.etag || (file.sha ? `"${file.sha}"` : '')
 
   if (parsed.kind === 'M') {
     if (hash !== file.data.masterHash) return denied('Токен недействителен')
@@ -753,6 +1026,7 @@ async function authorize(env: Env, request: Request): Promise<Access> {
       partyId: parsed.partyId,
       file: file.data,
       sha: file.sha,
+      etag,
       master: true,
       charId: null,
       tokenId: null,
@@ -776,6 +1050,7 @@ async function authorize(env: Env, request: Request): Promise<Access> {
     partyId: parsed.partyId,
     file: file.data,
     sha: file.sha,
+    etag,
     master: false,
     charId: parsed.charId,
     tokenId: выпущен.id,
@@ -1050,6 +1325,58 @@ async function readMeta(request: Request, env: Env, cors: Cors): Promise<Respons
   }
 
   return json(тело, 200, cors)
+}
+
+/**
+ * Лёгкая мета для опроса каждые семь секунд.
+ *
+ * Отличается от полной тремя вещами:
+ *
+ *   — не отдаёт список токенов даже мастеру: он нужен только экрану доступа,
+ *     а не плашке актуальности;
+ *   — читает файл из семисекундного снимка и условным запросом к GitHub,
+ *     поэтому 304 не тратит лимит;
+ *   — отвечает ETag и умеет 304. Вкладка, у которой ничего не изменилось,
+ *     получает пустой ответ вместо копии меты.
+ *
+ * Чистку токенов удалённых персонажей здесь не делаем: она может писать
+ * файл, а фоновая проверка не должна превращаться в запись.
+ */
+async function readMetaLight(request: Request, env: Env, cors: Cors): Promise<Response> {
+  const access = await authorize(env, request, readFileCached)
+  if (!access.ok) return json({ error: access.error }, access.status, cors)
+
+  const file = access.file
+  const db = file.db as { updatedAt?: string; updatedBy?: string }
+  const etag = access.etag
+
+  if (etag && request.headers.get('If-None-Match') === etag) {
+    return new Response(null, {
+      status: 304,
+      headers: {
+        ...cors,
+        ETag: etag,
+        'Access-Control-Expose-Headers': 'ETag',
+      },
+    })
+  }
+
+  const тело = {
+    name: file.name,
+    partyId: file.partyId,
+    createdAt: file.createdAt,
+    role: access.master ? 'master' : 'char',
+    ownCharId: access.charId,
+    updatedAt: db?.updatedAt ?? null,
+    updatedBy: db?.updatedBy ?? null,
+    chars: countChars(file.db),
+  }
+
+  return json(тело, 200, {
+    ...cors,
+    ETag: etag,
+    'Access-Control-Expose-Headers': 'ETag',
+  })
 }
 
 async function writeData(request: Request, env: Env, cors: Cors): Promise<Response> {
@@ -1493,7 +1820,8 @@ function corsHeaders(request: Request, env: Env): Cors {
   return {
     'Access-Control-Allow-Origin': value,
     'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, If-None-Match',
+    'Access-Control-Expose-Headers': 'ETag',
     'Access-Control-Max-Age': '86400',
     'Cache-Control': 'no-store',
   }

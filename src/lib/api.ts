@@ -730,6 +730,111 @@ export async function fetchMeta(apiUrl: string, token: string): Promise<ApiResul
   return call<PartyMeta>(apiUrl, '/api/party/meta', { method: 'GET', token, повторяемая: true, дубль: true })
 }
 
+/** Последняя лёгкая мета и её отпечаток: по нему сервер отвечает 304. */
+const метаПоТокену = new Map<string, { value: PartyMeta; etag: string }>()
+/** Один запрос меты на пару «адрес + токен», сколько бы вкладок его ни просило. */
+const метаВПолёте = new Map<string, Promise<ApiResult<PartyMeta>>>()
+
+function ключМеты(apiUrl: string, token: string): string {
+  return `${apiUrl.replace(/\/+$/, '')}|${token}`
+}
+
+async function метаОдинРаз(
+  apiUrl: string,
+  token: string,
+  ключ: string,
+  условно: boolean,
+): Promise<ApiResult<PartyMeta>> {
+  const прошлая = условно ? метаПоТокену.get(ключ) : undefined
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    Authorization: `Bearer ${token}`,
+  }
+  if (прошлая?.etag) headers['If-None-Match'] = прошлая.etag
+
+  const отмена = new AbortController()
+  const будильник = setTimeout(() => отмена.abort(), 5_000)
+  try {
+    const res = await fetch(`${apiUrl.replace(/\/+$/, '')}/api/party/meta?light=1`, {
+      method: 'GET',
+      headers,
+      signal: отмена.signal,
+      cache: 'no-store',
+    })
+
+    if (res.status === 304) {
+      if (прошлая) return { ok: true, value: прошлая.value, попыток: 1, статус: 304 }
+      // Сохранённой копии нет — повторяем без условия, иначе ответа не будет.
+      return await метаОдинРаз(apiUrl, token, ключ, false)
+    }
+
+    let json: any = null
+    try {
+      json = await res.json()
+    } catch {
+      /* ответ без тела */
+    }
+
+    if (res.status === 401) {
+      return {
+        ok: false,
+        статус: 401,
+        error: 'Токен не подходит. Проверь его или запроси новый у мастера пати.',
+      }
+    }
+    if (!res.ok) {
+      const retryAfter = Number(json?.retryAfter)
+      return {
+        ok: false,
+        статус: res.status,
+        error: json?.error ?? `Сервер ответил ${res.status}`,
+        ...(Number.isFinite(retryAfter) && retryAfter > 0 ? { retryAfter } : {}),
+      }
+    }
+
+    const value = json as PartyMeta
+    const etag = res.headers.get('etag') ?? ''
+    if (etag) метаПоТокену.set(ключ, { value, etag })
+    else метаПоТокену.delete(ключ)
+    return { ok: true, value, попыток: 1, статус: res.status }
+  } catch (e) {
+    return {
+      ok: false,
+      статус: 0,
+      error: отмена.signal.aborted
+        ? 'Сервер не ответил вовремя. Проверим ещё раз.'
+        : `Не удалось связаться с сервером. (${msg(e)})`,
+    }
+  } finally {
+    clearTimeout(будильник)
+  }
+}
+
+/**
+ * Лёгкая мета для частого опроса.
+ *
+ * Без списка токенов, без дубля и без повтора: это фоновая проверка каждые
+ * семь секунд, а не действие человека. Если она не вышла — повторим по
+ * расписанию, а не двумя запросами сразу. Сервер отвечает на неё из
+ * семисекундного снимка и условным запросом к GitHub, поэтому 304 не тратит
+ * основной лимит.
+ *
+ * ETag помним здесь же: сервер отвечает 304, и вкладка не получает копию
+ * меты, когда ничего не изменилось.
+ */
+export async function fetchMetaLight(apiUrl: string, token: string): Promise<ApiResult<PartyMeta>> {
+  const ключ = ключМеты(apiUrl, token)
+  const уже = метаВПолёте.get(ключ)
+  if (уже) return уже
+
+  let обещание: Promise<ApiResult<PartyMeta>>
+  обещание = метаОдинРаз(apiUrl, token, ключ, true).finally(() => {
+    if (метаВПолёте.get(ключ) === обещание) метаВПолёте.delete(ключ)
+  })
+  метаВПолёте.set(ключ, обещание)
+  return обещание
+}
+
 /**
  * Переименование пати.
  *
