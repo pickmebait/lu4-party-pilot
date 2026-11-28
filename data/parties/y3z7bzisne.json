@@ -64,7 +64,7 @@
       "charId": "cmwq6720w3hg3bx",
       "charName": "aequus",
       "createdAt": "2026-11-21T08:56:22.293Z",
-      "lastUsedAt": "2026-11-28T07:48:08.629Z"
+      "lastUsedAt": "2026-11-28T08:07:55.324Z"
     },
     {
       "id": "xi3a4b7mt2",
@@ -101,7 +101,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-28T07:48:08.629Z",
+    "updatedAt": "2026-11-28T08:07:55.324Z",
     "updatedBy": "aequus",
     "chars": [
       {
@@ -2430,8 +2430,8 @@
       {
         "id": "cmwq6720w3hg3bx",
         "name": "aequus",
-        "cls": "",
-        "level": 0,
+        "cls": "Bounty Hunter",
+        "level": 69,
         "affil": "roster",
         "slots": {
           "rhand": [
@@ -2506,6 +2506,100 @@
         "subs": [
           {
             "id": "smx03yq5l19g1l5",
+            "cls": "Warsmith",
+            "level": 43,
+            "slots": {
+              "rhand": [
+                {
+                  "itemId": 34903
+                }
+              ],
+              "lhand": [
+                {
+                  "itemId": 34903,
+                  "spans": true
+                }
+              ],
+              "head": [
+                {
+                  "itemId": 2414
+                }
+              ],
+              "chest": [
+                {
+                  "itemId": 356
+                }
+              ],
+              "legs": [
+                {
+                  "itemId": 356,
+                  "spans": true
+                }
+              ],
+              "gloves": [
+                {
+                  "itemId": 2462
+                }
+              ],
+              "feet": [
+                {
+                  "itemId": 2438
+                }
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "id": "smx0429t51bhc1s",
+            "cls": "Destroyer",
+            "level": 53,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "id": "smx043jm125cggg",
             "cls": "",
             "level": 0,
             "slots": {
