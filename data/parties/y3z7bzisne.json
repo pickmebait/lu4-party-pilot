@@ -64,7 +64,7 @@
       "charId": "cmwq6720w3hg3bx",
       "charName": "aequus",
       "createdAt": "2026-11-21T08:56:22.293Z",
-      "lastUsedAt": "2026-11-28T07:47:16.987Z"
+      "lastUsedAt": "2026-11-28T07:47:33.433Z"
     },
     {
       "id": "xi3a4b7mt2",
@@ -101,7 +101,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-28T07:47:16.987Z",
+    "updatedAt": "2026-11-28T07:47:33.433Z",
     "updatedBy": "aequus",
     "chars": [
       {
@@ -2485,6 +2485,7 @@
           "ear": [
             {
               "itemId": 864,
+              "mod": 1,
               "rare": true
             },
             {
