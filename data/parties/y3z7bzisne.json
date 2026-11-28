@@ -64,7 +64,7 @@
       "charId": "cmwq6720w3hg3bx",
       "charName": "aequus",
       "createdAt": "2026-11-21T08:56:22.293Z",
-      "lastUsedAt": "2026-11-28T07:43:04.716Z"
+      "lastUsedAt": "2026-11-28T07:43:40.628Z"
     },
     {
       "id": "xi3a4b7mt2",
@@ -101,7 +101,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-28T07:43:04.716Z",
+    "updatedAt": "2026-11-28T07:43:40.628Z",
     "updatedBy": "aequus",
     "chars": [
       {
@@ -2435,10 +2435,15 @@
         "affil": "roster",
         "slots": {
           "rhand": [
-            null
+            {
+              "itemId": 34903
+            }
           ],
           "lhand": [
-            null
+            {
+              "itemId": 34903,
+              "spans": true
+            }
           ],
           "head": [
             null
