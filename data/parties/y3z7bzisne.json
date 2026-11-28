@@ -64,7 +64,7 @@
       "charId": "cmwq6720w3hg3bx",
       "charName": "aequus",
       "createdAt": "2026-11-21T08:56:22.293Z",
-      "lastUsedAt": "2026-11-28T07:44:52.803Z"
+      "lastUsedAt": "2026-11-28T07:45:29.965Z"
     },
     {
       "id": "xi3a4b7mt2",
@@ -101,7 +101,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-28T07:44:52.803Z",
+    "updatedAt": "2026-11-28T07:45:29.965Z",
     "updatedBy": "aequus",
     "chars": [
       {
@@ -2465,7 +2465,9 @@
             }
           ],
           "gloves": [
-            null
+            {
+              "itemId": 5718
+            }
           ],
           "feet": [
             null
