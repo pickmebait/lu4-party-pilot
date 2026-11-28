@@ -40,7 +40,7 @@
       "charId": "cmvjpdktjft6xe4",
       "charName": "DOKTOP",
       "createdAt": "2026-10-22T15:35:47.746Z",
-      "lastUsedAt": "2026-11-25T11:09:55.197Z"
+      "lastUsedAt": "2026-11-28T15:38:17.156Z"
     },
     {
       "id": "64bxutry6w",
@@ -101,8 +101,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-28T10:43:43.005Z",
-    "updatedBy": "Мастер",
+    "updatedAt": "2026-11-28T15:38:17.156Z",
+    "updatedBy": "DOKTOP",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -1463,6 +1463,9 @@
         ],
         "away": {
           "2026-10-26": {
+            "whole": true
+          },
+          "2026-11-28": {
             "whole": true
           }
         },
