@@ -64,7 +64,7 @@
       "charId": "cmwq6720w3hg3bx",
       "charName": "aequus",
       "createdAt": "2026-11-21T08:56:22.293Z",
-      "lastUsedAt": "2026-11-28T07:46:02.920Z"
+      "lastUsedAt": "2026-11-28T07:46:10.881Z"
     },
     {
       "id": "xi3a4b7mt2",
@@ -101,7 +101,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-28T07:46:02.920Z",
+    "updatedAt": "2026-11-28T07:46:10.881Z",
     "updatedBy": "aequus",
     "chars": [
       {
@@ -2461,17 +2461,20 @@
           ],
           "legs": [
             {
-              "itemId": 2380
+              "itemId": 2380,
+              "mod": 3
             }
           ],
           "gloves": [
             {
-              "itemId": 5718
+              "itemId": 5718,
+              "mod": 3
             }
           ],
           "feet": [
             {
-              "itemId": 5734
+              "itemId": 5734,
+              "mod": 3
             }
           ],
           "neck": [
