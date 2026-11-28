@@ -64,7 +64,7 @@
       "charId": "cmwq6720w3hg3bx",
       "charName": "aequus",
       "createdAt": "2026-11-21T08:56:22.293Z",
-      "lastUsedAt": "2026-11-28T07:47:39.351Z"
+      "lastUsedAt": "2026-11-28T07:48:08.629Z"
     },
     {
       "id": "xi3a4b7mt2",
@@ -101,7 +101,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-28T07:47:39.351Z",
+    "updatedAt": "2026-11-28T07:48:08.629Z",
     "updatedBy": "aequus",
     "chars": [
       {
@@ -2503,7 +2503,47 @@
           ]
         },
         "subUnlocked": true,
-        "subs": [],
+        "subs": [
+          {
+            "id": "smx03yq5l19g1l5",
+            "cls": "",
+            "level": 0,
+            "slots": {
+              "rhand": [
+                null
+              ],
+              "lhand": [
+                null
+              ],
+              "head": [
+                null
+              ],
+              "chest": [
+                null
+              ],
+              "legs": [
+                null
+              ],
+              "gloves": [
+                null
+              ],
+              "feet": [
+                null
+              ],
+              "neck": [
+                null
+              ],
+              "ear": [
+                null,
+                null
+              ],
+              "ring": [
+                null,
+                null
+              ]
+            }
+          }
+        ],
         "away": {}
       },
       {
