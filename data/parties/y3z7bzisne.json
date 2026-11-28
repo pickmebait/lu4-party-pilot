@@ -64,7 +64,7 @@
       "charId": "cmwq6720w3hg3bx",
       "charName": "aequus",
       "createdAt": "2026-11-21T08:56:22.293Z",
-      "lastUsedAt": "2026-11-28T07:47:33.433Z"
+      "lastUsedAt": "2026-11-28T07:47:39.351Z"
     },
     {
       "id": "xi3a4b7mt2",
@@ -101,7 +101,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-28T07:47:33.433Z",
+    "updatedAt": "2026-11-28T07:47:39.351Z",
     "updatedBy": "aequus",
     "chars": [
       {
@@ -2494,7 +2494,8 @@
           ],
           "ring": [
             {
-              "itemId": 895
+              "itemId": 895,
+              "mod": 2
             },
             {
               "itemId": 895
