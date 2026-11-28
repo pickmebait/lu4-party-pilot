@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-28T03:53:00.901Z",
+    "updatedAt": "2026-11-28T03:59:33.778Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -2726,8 +2726,22 @@
       }
     ],
     "warehouse": {
-      "stacks": [],
-      "log": []
+      "stacks": [
+        {
+          "itemId": 6661,
+          "count": 1
+        }
+      ],
+      "log": [
+        {
+          "id": "lmwzvsp0v187ekc",
+          "ts": "2026-11-28T03:59:27.919Z",
+          "who": "Мастер",
+          "itemId": 6661,
+          "count": 1,
+          "dir": "in"
+        }
+      ]
     },
     "goals": [
       {
