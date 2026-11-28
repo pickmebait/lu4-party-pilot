@@ -101,8 +101,8 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-28T08:07:55.324Z",
-    "updatedBy": "aequus",
+    "updatedAt": "2026-11-28T10:43:43.005Z",
+    "updatedBy": "Мастер",
     "chars": [
       {
         "id": "cmvjobl1z1pc1lm",
@@ -2563,45 +2563,6 @@
             "id": "smx0429t51bhc1s",
             "cls": "Destroyer",
             "level": 53,
-            "slots": {
-              "rhand": [
-                null
-              ],
-              "lhand": [
-                null
-              ],
-              "head": [
-                null
-              ],
-              "chest": [
-                null
-              ],
-              "legs": [
-                null
-              ],
-              "gloves": [
-                null
-              ],
-              "feet": [
-                null
-              ],
-              "neck": [
-                null
-              ],
-              "ear": [
-                null,
-                null
-              ],
-              "ring": [
-                null,
-                null
-              ]
-            }
-          },
-          {
-            "id": "smx043jm125cggg",
-            "cls": "",
-            "level": 0,
             "slots": {
               "rhand": [
                 null
