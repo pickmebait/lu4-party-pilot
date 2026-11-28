@@ -64,7 +64,7 @@
       "charId": "cmwq6720w3hg3bx",
       "charName": "aequus",
       "createdAt": "2026-11-21T08:56:22.293Z",
-      "lastUsedAt": "2026-11-28T07:46:10.881Z"
+      "lastUsedAt": "2026-11-28T07:46:46.267Z"
     },
     {
       "id": "xi3a4b7mt2",
@@ -101,7 +101,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-28T07:46:10.881Z",
+    "updatedAt": "2026-11-28T07:46:46.267Z",
     "updatedBy": "aequus",
     "chars": [
       {
@@ -2478,7 +2478,9 @@
             }
           ],
           "neck": [
-            null
+            {
+              "itemId": 926
+            }
           ],
           "ear": [
             null,
