@@ -64,7 +64,7 @@
       "charId": "cmwq6720w3hg3bx",
       "charName": "aequus",
       "createdAt": "2026-11-21T08:56:22.293Z",
-      "lastUsedAt": "2026-11-28T07:44:06.100Z"
+      "lastUsedAt": "2026-11-28T07:44:24.247Z"
     },
     {
       "id": "xi3a4b7mt2",
@@ -101,7 +101,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-28T07:44:06.100Z",
+    "updatedAt": "2026-11-28T07:44:24.247Z",
     "updatedBy": "aequus",
     "chars": [
       {
@@ -2451,7 +2451,9 @@
             }
           ],
           "chest": [
-            null
+            {
+              "itemId": 358
+            }
           ],
           "legs": [
             null
