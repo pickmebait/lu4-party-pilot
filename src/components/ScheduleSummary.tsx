@@ -43,7 +43,16 @@ export function DaySummary({
   const местный = прайм.kind === 'окно' ? userWindow(день, прайм.window, timeZone) : null
   const сдвиг = местный ? dayShiftBetween(день, местный.from.key) : 0
   const состав = chars.filter((c) => c.affil === 'roster')
-  const уходят = chars.filter((c) => c.away?.[день])
+  /*
+   * «Окно» — запасные: в явке они не участвуют, поэтому и в списке
+   * отсутствующих им не место. Имена идут по алфавиту: список читают
+   * глазами, и порядок из базы тут ничего не значит.
+   */
+  const уходят = chars
+    .filter((c) => c.affil !== 'window' && c.away?.[день])
+    .sort((a, b) =>
+      (a.name || 'Без имени').localeCompare(b.name || 'Без имени', 'ru'),
+    )
   const пойдут = состав.filter((c) => !c.away?.[день])
   const процент = состав.length ? Math.round((пойдут.length / состав.length) * 100) : 0
   const неПридут = Math.max(0, состав.length - пойдут.length)

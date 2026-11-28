@@ -569,6 +569,21 @@ function БлокОтсутствия({
   onСнять: () => void
   onСнятьУВсех: () => void
 }) {
+  /*
+   * Мастеру для отметки доступен только основной состав: «Окно» — запасные,
+   * и в списке отсутствующих им не место. Имена идут по алфавиту, чтобы
+   * выбор не зависел от порядка персонажей в базе.
+   */
+  const список = useMemo(
+    () =>
+      chars
+        .filter((c) => c.affil !== 'window')
+        .sort((a, b) =>
+          (a.name || 'Без имени').localeCompare(b.name || 'Без имени', 'ru'),
+        ),
+    [chars],
+  )
+
   return (
     <section className="editor-block">
       {/*
@@ -590,10 +605,10 @@ function БлокОтсутствия({
             className="input who"
             value={герой}
             onChange={(e) => onСменаГероя(e.target.value)}
-            disabled={chars.length === 0}
+            disabled={список.length === 0}
             title="Кого отмечаем отсутствующим"
           >
-            {chars.map((c) => (
+            {список.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name || 'Без имени'}
               </option>
