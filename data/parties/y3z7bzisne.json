@@ -100,7 +100,7 @@
   ],
   "db": {
     "version": 11,
-    "updatedAt": "2026-11-28T03:59:33.778Z",
+    "updatedAt": "2026-11-28T03:59:41.824Z",
     "updatedBy": "Мастер",
     "chars": [
       {
@@ -2726,12 +2726,7 @@
       }
     ],
     "warehouse": {
-      "stacks": [
-        {
-          "itemId": 6661,
-          "count": 1
-        }
-      ],
+      "stacks": [],
       "log": [
         {
           "id": "lmwzvsp0v187ekc",
